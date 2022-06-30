@@ -16,16 +16,16 @@
   <meta name="author" content="azhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="作者:  Fangjun Kuang, Liyong Guo, Wei Kang,Long Lin, Mingshuang Luo, Zengwei Yao, Daniel Povey Xiaomi机构:  Xiaomi Corp., Beijing, China关键词: RNN-T, memory-efficient链接:  https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2206.13236">
+    <meta name="description" content="作者:  Fangjun Kuang, Liyong Guo, Wei Kang,Long Lin, Mingshuang Luo, Zengwei Yao, Daniel Povey Xiaomi 机构:  Xiaomi Corp., Beijing, China 关键词: RNN-T, memory-efficient 链接:  https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2206.13236">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Pruned RNN-T for fast, memory-efficient ASR training Fangjun">
+<meta property="og:title" content="Pruned RNN-T for fast, memory-efficient ASR training">
 <meta property="og:url" content="http://example.com/2022/06/30/puned-rnnt/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="作者:  Fangjun Kuang, Liyong Guo, Wei Kang,Long Lin, Mingshuang Luo, Zengwei Yao, Daniel Povey Xiaomi机构:  Xiaomi Corp., Beijing, China关键词: RNN-T, memory-efficient链接:  https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2206.13236">
+<meta property="og:description" content="作者:  Fangjun Kuang, Liyong Guo, Wei Kang,Long Lin, Mingshuang Luo, Zengwei Yao, Daniel Povey Xiaomi 机构:  Xiaomi Corp., Beijing, China 关键词: RNN-T, memory-efficient 链接:  https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2206.13236">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/post_img/6.jpg">
 <meta property="article:published_time" content="2022-06-30T07:14:32.000Z">
-<meta property="article:modified_time" content="2022-06-30T07:24:22.986Z">
+<meta property="article:modified_time" content="2022-06-30T12:51:46.548Z">
 <meta property="article:author" content="azhang">
 <meta property="article:tag" content="asr">
 <meta property="article:tag" content="rnn-t">
@@ -34,7 +34,7 @@
   
   
   
-  <title>Pruned RNN-T for fast, memory-efficient ASR training Fangjun - 聪明的小奥</title>
+  <title>Pruned RNN-T for fast, memory-efficient ASR training - 聪明的小奥</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -199,7 +199,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Pruned RNN-T for fast, memory-efficient ASR training Fangjun"></span>
+            <span id="subtitle" data-typed-text="Pruned RNN-T for fast, memory-efficient ASR training"></span>
           
         </div>
 
@@ -222,7 +222,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          189 字
+          954 字
         
       </span>
     
@@ -233,7 +233,7 @@
         
         
         
-          2 分钟
+          8 分钟
         
       </span>
     
@@ -271,13 +271,59 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">Pruned RNN-T for fast, memory-efficient ASR training Fangjun</h1>
+            <h1 style="display: none">Pruned RNN-T for fast, memory-efficient ASR training</h1>
             
             
               <div class="markdown-body">
                 
-                <p>作者:  Fangjun Kuang, Liyong Guo, Wei Kang,Long Lin, Mingshuang Luo, Zengwei Yao, Daniel Povey Xiaomi<br>机构:  Xiaomi Corp., Beijing, China<br>关键词: RNN-T, memory-efficient<br>链接:  <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2206.13236">https://arxiv.org/abs/2206.13236</a>       </p>
-<h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><h4 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h4><h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3>
+                <p>作者:  Fangjun Kuang, Liyong Guo, Wei Kang,Long Lin, Mingshuang Luo, Zengwei Yao, Daniel Povey Xiaomi<br>
+机构:  Xiaomi Corp., Beijing, China<br>
+关键词: RNN-T, memory-efficient<br>
+链接:  <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2206.13236">https://arxiv.org/abs/2206.13236</a></p>
+<h3 id="动机">动机</h3>
+<p>RNN-T 输出一个四维的矩阵(N,T,U,V)，N为batch size，T为时间，U为序列长度，V为词典大小，V很大的情况下，训练显存占用太大了，之前有很多减少显存占用的工作，比如去除padding，在logits上计算梯度，本文提出一种方法，用S取代U，S&lt;&lt;U，从而降低内存占用。</p>
+<h3 id="背景">背景</h3>
+<p>rnn-t三个部分：encoder，predictor，joint network</p>
+<ul>
+<li>encdoer输出(T,E)维度的矩阵，E为encoder输出维度。</li>
+<li>predictor基于之前的非blank标签预测下一个token的分布，输出(U+1,D)维度的矩阵</li>
+<li>joiner 组合两边的输出得到(T,U+1,V)其中L[t,u,v]代表token v在t时刻出现given y[0…u]<br>
+rnn-t的解码图如下：<br>
+<img src="https://s2.loli.net/2022/06/30/4IlWAgayPXZqc3J.png" srcset="/img/loading.gif" lazyload alt="decode graph"><br>
+我们用y代表离开这个node的概率，blank代表水平移动的概率<br>
+<img src="https://s2.loli.net/2022/06/30/or47tnRgGOkYZSA.png" srcset="/img/loading.gif" lazyload alt><br>
+α(t,u)代表看到x[0…t]输出y[0…u]的log输出，推理过程如下：<br>
+<img src="https://s2.loli.net/2022/06/30/Bb5gYoLpvxc1eWH.png" srcset="/img/loading.gif" lazyload alt><br>
+包括上一个t从u水平过来和从上一个token跳过来<br>
+<img src="https://s2.loli.net/2022/06/30/bFtRO1g7Quz8r4X.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>
+最终RNN-T的输出是(NTUV)和ctc和aed模型的(NTV)/(NUV)他的消耗大得多。<br>
+<img src="https://s2.loli.net/2022/06/30/hvYzo78GLUNkrQK.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>
+而实际上大部分梯度接近0，中间部分的梯度比较明显，可以看到训练后模型梯度非常集中，有点类似对齐的感觉。</li>
+</ul>
+<h3 id="方法">方法</h3>
+<h4 id="Trivial-joiner-network">Trivial joiner network</h4>
+<p>避免引入一个很大线性层<br>
+<img src="https://s2.loli.net/2022/06/30/cKFPTlHtoWOZwyq.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<h4 id="Pruning-bounds">Pruning bounds</h4>
+<p>引入常量S，只在S范围内计算loss，S之外的部分置为负无穷。这就需要我们找到一个S的边界，使得这个边界内的后验是最大的，本文提出一种估计方法，来估计S的起始位置。<br>
+设S=4，起始为2，那么估计为<br>
+<img src="https://s2.loli.net/2022/06/30/bGyI5fmTt762EBq.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>
+我们需要找到其中最大的起始位置：<br>
+<img src="https://s2.loli.net/2022/06/30/HegPh1UVbO72E6Q.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>
+孤立着看很难理解，但是如果连续看T就能理解了。<br>
+为了裁剪的合理，进一步约束了起始点的位置，不能倒退，不能一步超过S。<br>
+<img src="https://s2.loli.net/2022/06/30/DCIU6Ac4ouvWwHj.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<h4 id="损失函数">损失函数</h4>
+<p><img src="https://s2.loli.net/2022/06/30/YoK7lCyx1PzhdVL.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>
+<img src="https://s2.loli.net/2022/06/30/cqprab2XtOSzHNo.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>
+<img src="https://s2.loli.net/2022/06/30/G9TIZL2eXHjvScE.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<h3 id="实验">实验</h3>
+<h4 id="实验结果">实验结果</h4>
+<p>比较了性能和训练效率两个方面。<br>
+<img src="https://s2.loli.net/2022/06/30/wg7Z3etybuCPlin.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>
+<img src="https://s2.loli.net/2022/06/30/exbscahmIDEiRwT.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>
+<img src="https://s2.loli.net/2022/06/30/HFul9zKdeqQjWN1.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+
                 
               </div>
             
@@ -324,7 +370,7 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Pruned RNN-T for fast, memory-efficient ASR training Fangjun</div>
+      <div>Pruned RNN-T for fast, memory-efficient ASR training</div>
       <div>http://example.com/2022/06/30/puned-rnnt/</div>
     </div>
     <div class="license-meta">
