@@ -4,30 +4,11 @@
   
   
   <entry>
-    <title>test</title>
-    <link href="/2022/06/30/test/"/>
-    <url>/2022/06/30/test/</url>
-    
-    <content type="html"><![CDATA[<p>作者:<br>机构:<br>关键词:<br>链接:         </p><h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p><img src="/.com//maxpooling2.png"></p><h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><h4 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h4><h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3>]]></content>
-    
-    
-    <categories>
-      
-      <category>论文解读</category>
-      
-    </categories>
-    
-    
-  </entry>
-  
-  
-  
-  <entry>
     <title>PROGRESSIVE VOICE TRIGGER DETECTION Latency Control for Keyword Spotting</title>
     <link href="/2022/06/30/kws-0630/"/>
     <url>/2022/06/30/kws-0630/</url>
     
-    <content type="html"><![CDATA[<p>作者: Christin Jose, Joseph Wang, Grant P. Strimel, Mohammad Omar Khursheed, Yuriy Mishchenko,<br>Brian Kulis<br>机构: Amazon Science, United States<br>关键词: kws,max-pooling<br>链接:  <a href="https://arxiv.org/pdf/2206.07261.pdf">https://arxiv.org/pdf/2206.07261.pdf</a>       </p><h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><p>maxpooling不需要用对齐模型生成label，但是会导致额外的延迟，因为模型会倾向于多看一点下文再判断，而有时候我们需要灵活的控制延迟，像celoss我们就可以移动label来控制。</p><h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p>原始的maxpooling loss 对于正样例选取正类别后验最高的一帧算loss，对于负样例则选取负类别后验最低的一帧算loss<br><img src="/.com//maxpooling.png" alt="maxpooling"><br>本文在选取正样例的位置的时候加了一个前移的随机量，这个量服从伯努利分布，通过控制分布中为1的概率参数，来控制前移的幅度。<br><img src="/.com//maxpooling2.png" alt="maxpooling-2"></p><h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><h4 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h4><p>cnn网络，64维 Mel-filterbank energy (LFBE) features<br><img src="/.com//cnn.png"></p><h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><p>准确度上b越大效果越差，0.1,0.2下和celoss性能相当<br><img src="/.com//res1.png"><br>对时延的影响也符合预期<br><img src="/.com//res2.png"></p><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>复现简单，解决实际问题。</p>]]></content>
+    <content type="html"><![CDATA[<p>作者: Christin Jose, Joseph Wang, Grant P. Strimel, Mohammad Omar Khursheed, Yuriy Mishchenko,<br>Brian Kulis<br>机构: Amazon Science, United States<br>关键词: kws,max-pooling<br>链接:  <a href="https://arxiv.org/pdf/2206.07261.pdf">https://arxiv.org/pdf/2206.07261.pdf</a>       </p><h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><p>maxpooling不需要用对齐模型生成label，但是会导致额外的延迟，因为模型会倾向于多看一点下文再判断，而有时候我们需要灵活的控制延迟，像celoss我们就可以移动label来控制。</p><h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p>原始的maxpooling loss 对于正样例选取正类别后验最高的一帧算loss，对于负样例则选取负类别后验最低的一帧算loss<br><img src="https://s2.loli.net/2022/06/30/F3aUJjMI4uRzBkm.png" alt="maxpooling.png"><br>本文在选取正样例的位置的时候加了一个前移的随机量，这个量服从伯努利分布，通过控制分布中为1的概率参数，来控制前移的幅度。<br><img src="https://s2.loli.net/2022/06/30/Nf8Hl96Ja4wgztE.png" alt="maxpooling2.png"></p><h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><h4 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h4><p>cnn网络，64维 Mel-filterbank energy (LFBE) features<br><img src="https://s2.loli.net/2022/06/30/Xv6K58AUHR3CGak.png" alt="cnn.png"></p><h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><p>准确度上b越大效果越差，0.1,0.2下和celoss性能相当<br><img src="https://s2.loli.net/2022/06/30/LkxMH2tpiXzvQ6c.png" alt="res1.png"><br>对时延的影响也符合预期<br><img src="https://s2.loli.net/2022/06/30/McBSfbCE1x8kaZ5.png" alt="res2.png"></p><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>复现简单，解决实际问题。</p>]]></content>
     
     
     <categories>
@@ -81,7 +62,7 @@
     <link href="/2022/06/30/ctc-0630/"/>
     <url>/2022/06/30/ctc-0630/</url>
     
-    <content type="html"><![CDATA[<p>作者：Yuting Yang, Yuke Li, Binbin Du<br>机构：网易<br>关键词：CTC、流式、文本融合           </p><h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><p>ctc的独立性假设不合理，无法在模型前向中利用到文本信息</p><h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p>encoder使用conformer<br>提出一种融合方法gated interlayer collaboration （GIC）<br>首先将隐状态过一个线性层映射到字典维度得到后验，之后过embedding得到textual feature     </p><p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1653620245806/9-pCZOsHA.png" alt="image.png"></p><p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1653620256457/qabF0GuNs.png" alt="image.png"></p><p>通过门控的方式融合两个模态</p><p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1653620298741/K8ecK9ker.png" alt="image.png"></p><p>最终loss是原本的ctcloss加上所有的中间CTC的平均值</p><p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1653620353727/4jlpuJez_.png" alt="image.png"></p><h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><h4 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h4><ul><li>实验数据<br>aishell-1 数据堂</li></ul><h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1653627039503/eTfIiAjja.png" alt="image.png"></p><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>其实跟<br><a href="https://arxiv.org/pdf/2104.02724.pdf">Relaxing the Conditional Independence Assumption of CTC-based ASR<br>by Conditioning on Intermediate Predictions</a><br>相比就是加了一个embedding和加权相加</p>]]></content>
+    <content type="html"><![CDATA[<p>作者：Yuting Yang, Yuke Li, Binbin Du<br>机构：网易<br>关键词：CTC、流式、文本融合           </p><h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><p>ctc的独立性假设不合理，无法在模型前向中利用到文本信息</p><h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p>encoder使用conformer<br>提出一种融合方法gated interlayer collaboration （GIC）<br>首先将隐状态过一个线性层映射到字典维度得到后验，之后过embedding得到textual feature     </p><p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1653620245806/9-pCZOsHA.png"></p><p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1653620256457/qabF0GuNs.png"></p><p>通过门控的方式融合两个模态</p><p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1653620298741/K8ecK9ker.png"></p><p>最终loss是原本的ctcloss加上所有的中间CTC的平均值</p><p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1653620353727/4jlpuJez_.png"></p><h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><h4 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h4><ul><li>实验数据<br>aishell-1 数据堂</li></ul><h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1653627039503/eTfIiAjja.png"></p><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>其实跟<br><a href="https://arxiv.org/pdf/2104.02724.pdf">Relaxing the Conditional Independence Assumption of CTC-based ASR<br>by Conditioning on Intermediate Predictions</a><br>相比就是加了一个embedding和加权相加</p>]]></content>
     
     
     <categories>
@@ -98,32 +79,6 @@
       <tag>asr</tag>
       
     </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
-    <title>new whitepsace</title>
-    <link href="/2022/06/29/new-whitepsace/"/>
-    <url>/2022/06/29/new-whitepsace/</url>
-    
-    <content type="html"><![CDATA[]]></content>
-    
-    
-    
-  </entry>
-  
-  
-  
-  <entry>
-    <title>Hello World</title>
-    <link href="/2022/06/29/hello-world/"/>
-    <url>/2022/06/29/hello-world/</url>
-    
-    <content type="html"><![CDATA[<p>Welcome to <a href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p><h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/writing.html">Writing</a></p><h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/server.html">Server</a></p><h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/generating.html">Generating</a></p><h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure><p>More info: <a href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>]]></content>
-    
-    
     
   </entry>
   
