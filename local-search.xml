@@ -4,6 +4,25 @@
   
   
   <entry>
+    <title>test</title>
+    <link href="/2022/06/30/test/"/>
+    <url>/2022/06/30/test/</url>
+    
+    <content type="html"><![CDATA[<p>作者:<br>机构:<br>关键词:<br>链接:         </p><h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p><img src="/.com//maxpooling2.png"></p><h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><h4 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h4><h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3>]]></content>
+    
+    
+    <categories>
+      
+      <category>论文解读</category>
+      
+    </categories>
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>PROGRESSIVE VOICE TRIGGER DETECTION Latency Control for Keyword Spotting</title>
     <link href="/2022/06/30/kws-0630/"/>
     <url>/2022/06/30/kws-0630/</url>
