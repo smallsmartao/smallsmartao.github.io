@@ -4,6 +4,60 @@
   
   
   <entry>
+    <title>PROGRESSIVE VOICE TRIGGER DETECTION Latency Control for Keyword Spotting</title>
+    <link href="/2022/06/30/kws-0630/"/>
+    <url>/2022/06/30/kws-0630/</url>
+    
+    <content type="html"><![CDATA[<p>作者: Christin Jose, Joseph Wang, Grant P. Strimel, Mohammad Omar Khursheed, Yuriy Mishchenko,<br>Brian Kulis<br>机构: Amazon Science, United States<br>关键词: kws,max-pooling<br>链接:  <a href="https://arxiv.org/pdf/2206.07261.pdf">https://arxiv.org/pdf/2206.07261.pdf</a>       </p><h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><p>maxpooling不需要用对齐模型生成label，但是会导致额外的延迟，因为模型会倾向于多看一点下文再判断，而有时候我们需要灵活的控制延迟，像celoss我们就可以移动label来控制。</p><h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p>原始的maxpooling loss 对于正样例选取正类别后验最高的一帧算loss，对于负样例则选取负类别后验最低的一帧算loss<br><img src="/.com//maxpooling.png" alt="maxpooling"><br>本文在选取正样例的位置的时候加了一个前移的随机量，这个量服从伯努利分布，通过控制分布中为1的概率参数，来控制前移的幅度。<br><img src="/.com//maxpooling2.png" alt="maxpooling-2"></p><h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><h4 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h4><p>cnn网络，64维 Mel-filterbank energy (LFBE) features<br><img src="/.com//cnn.png"></p><h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><p>准确度上b越大效果越差，0.1,0.2下和celoss性能相当<br><img src="/.com//res1.png"><br>对时延的影响也符合预期<br><img src="/.com//res2.png"></p><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>复现简单，解决实际问题。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>论文解读</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>kws</tag>
+      
+      <tag>maxpooling</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Pruned RNN-T for fast, memory-efficient ASR training Fangjun</title>
+    <link href="/2022/06/30/puned-rnnt/"/>
+    <url>/2022/06/30/puned-rnnt/</url>
+    
+    <content type="html"><![CDATA[<p>作者:  Fangjun Kuang, Liyong Guo, Wei Kang,Long Lin, Mingshuang Luo, Zengwei Yao, Daniel Povey Xiaomi<br>机构:  Xiaomi Corp., Beijing, China<br>关键词: RNN-T, memory-efficient<br>链接:  <a href="https://arxiv.org/abs/2206.13236">https://arxiv.org/abs/2206.13236</a>       </p><h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><h4 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h4><h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3>]]></content>
+    
+    
+    <categories>
+      
+      <category>论文解读</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>asr</tag>
+      
+      <tag>rnn-t</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>Improving CTC-based ASR Models with Gated Interlayer Collaboration</title>
     <link href="/2022/06/30/ctc-0630/"/>
     <url>/2022/06/30/ctc-0630/</url>
