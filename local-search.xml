@@ -4,6 +4,33 @@
   
   
   <entry>
+    <title>Improving CTC-based ASR Models with Gated Interlayer Collaboration</title>
+    <link href="/2022/06/30/ctc-0630/"/>
+    <url>/2022/06/30/ctc-0630/</url>
+    
+    <content type="html"><![CDATA[<p>作者：Yuting Yang, Yuke Li, Binbin Du<br>机构：网易<br>关键词：CTC、流式、文本融合           </p><h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><p>ctc的独立性假设不合理，无法在模型前向中利用到文本信息</p><h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p>encoder使用conformer<br>提出一种融合方法gated interlayer collaboration （GIC）<br>首先将隐状态过一个线性层映射到字典维度得到后验，之后过embedding得到textual feature     </p><p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1653620245806/9-pCZOsHA.png" alt="image.png"></p><p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1653620256457/qabF0GuNs.png" alt="image.png"></p><p>通过门控的方式融合两个模态</p><p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1653620298741/K8ecK9ker.png" alt="image.png"></p><p>最终loss是原本的ctcloss加上所有的中间CTC的平均值</p><p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1653620353727/4jlpuJez_.png" alt="image.png"></p><h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><h4 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h4><ul><li>实验数据<br>aishell-1 数据堂</li></ul><h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><p><img src="https://cdn.hashnode.com/res/hashnode/image/upload/v1653627039503/eTfIiAjja.png" alt="image.png"></p><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>其实跟<br><a href="https://arxiv.org/pdf/2104.02724.pdf">Relaxing the Conditional Independence Assumption of CTC-based ASR<br>by Conditioning on Intermediate Predictions</a><br>相比就是加了一个embedding和加权相加</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>论文解读</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>ctc</tag>
+      
+      <tag>asr</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>new whitepsace</title>
     <link href="/2022/06/29/new-whitepsace/"/>
     <url>/2022/06/29/new-whitepsace/</url>
