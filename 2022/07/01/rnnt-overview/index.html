@@ -16,14 +16,16 @@
   <meta name="author" content="azhang">
   <meta name="keywords" content="">
   
-    <meta property="og:type" content="article">
+    <meta name="description" content="rnn-t简介 rnn-t三个部分：encoder，predictor，joint network   encdoer 提取声学高维表示，输出(T,E)维度的矩阵，E为encoder输出维度，最早是RNN结构，现在为conformer等attention base的结构&#x2F; predictor基于之前的非blank标签预测下一个token的分布，输出(U+1,D)维度的矩阵。最早为LSTM等，后续替">
+<meta property="og:type" content="article">
 <meta property="og:title" content="rnnt相关总结">
 <meta property="og:url" content="http://example.com/2022/07/01/rnnt-overview/index.html">
 <meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="rnn-t简介 rnn-t三个部分：encoder，predictor，joint network   encdoer 提取声学高维表示，输出(T,E)维度的矩阵，E为encoder输出维度，最早是RNN结构，现在为conformer等attention base的结构&#x2F; predictor基于之前的非blank标签预测下一个token的分布，输出(U+1,D)维度的矩阵。最早为LSTM等，后续替">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/post_img/49.jpg">
 <meta property="article:published_time" content="2022-07-01T08:25:59.000Z">
-<meta property="article:modified_time" content="2022-07-01T08:35:53.691Z">
+<meta property="article:modified_time" content="2022-07-01T09:05:34.212Z">
 <meta property="article:author" content="azhang">
 <meta property="article:tag" content="asr">
 <meta property="article:tag" content="rnn-t">
@@ -220,7 +222,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          0 字
+          699 字
         
       </span>
     
@@ -231,7 +233,7 @@
         
         
         
-          1 分钟
+          6 分钟
         
       </span>
     
@@ -274,7 +276,38 @@
             
               <div class="markdown-body">
                 
-                
+                <h2 id="rnn-t简介">rnn-t简介</h2>
+<p>rnn-t三个部分：encoder，predictor，joint network<br>
+<img src="https://s2.loli.net/2022/07/01/lNZDCIOh5Woz1KY.png" srcset="/img/loading.gif" lazyload alt="rnnt"></p>
+<ul>
+<li>encdoer 提取声学高维表示，输出(T,E)维度的矩阵，E为encoder输出维度，最早是RNN结构，现在为conformer等attention base的结构/</li>
+<li>predictor基于之前的非blank标签预测下一个token的分布，输出(U+1,D)维度的矩阵。最早为LSTM等，后续替换为CNN乃至embedding。</li>
+<li>joiner 组合两边的输出得到(T,U+1,V)其中L[t,u,v]代表token v在t时刻出现given y[0…u]。fusion方式为encoder predictor两边的输出expand后相加/相乘/拼接，后面又有一些双线性的fusion。<br>
+rnn-t的解码图如下：<br>
+<img src="https://s2.loli.net/2022/06/30/4IlWAgayPXZqc3J.png" srcset="/img/loading.gif" lazyload alt="decode graph"><br>
+我们用y代表离开这个node的概率，blank代表水平移动的概率<br>
+<img src="https://s2.loli.net/2022/06/30/or47tnRgGOkYZSA.png" srcset="/img/loading.gif" lazyload alt><br>
+α(t,u)代表看到x[0…t]输出y[0…u]的log输出，推理过程如下：<br>
+<img src="https://s2.loli.net/2022/06/30/Bb5gYoLpvxc1eWH.png" srcset="/img/loading.gif" lazyload alt><br>
+包括上一个t从u水平过来和从上一个token跳过来<br>
+<img src="https://s2.loli.net/2022/06/30/bFtRO1g7Quz8r4X.png" srcset="/img/loading.gif" lazyload alt><br>
+和CTC一样，rnn-t使用前向后向算法计算rnnt-loss<br>
+<img src="https://s2.loli.net/2022/07/01/waR4UznFbPCyQeM.png" srcset="/img/loading.gif" lazyload alt="rnnt-loss"></li>
+</ul>
+<h2 id="rnn-t研究方向">rnn-t研究方向</h2>
+<h3 id="领域迁移">领域迁移</h3>
+<h4 id="引入额外语言模型">引入额外语言模型</h4>
+<ul>
+<li>shallow fusion<br>
+在beam search时引入外部语言模型，虽然后面又提出deep fusion，cold fusion，Simple Fusion and Component Fusion等方法，但是这些方法引入额外的计算代价和训练步骤，因此没有取代sf。<br>
+<img src="https://s2.loli.net/2022/07/01/Ers2CXivb3acA8l.png" srcset="/img/loading.gif" lazyload alt="sf"></li>
+<li>cold fusion<br>
+<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1503.03535.pdf">https://arxiv.org/pdf/1503.03535.pdf</a></li>
+</ul>
+<h3 id="predictor改进">predictor改进</h3>
+<h3 id="fusion改进">fusion改进</h3>
+<h3 id="effcient-training">effcient training</h3>
+
                 
               </div>
             
