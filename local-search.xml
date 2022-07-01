@@ -4,6 +4,33 @@
   
   
   <entry>
+    <title>rnnt相关总结</title>
+    <link href="/2022/07/01/rnnt-overview/"/>
+    <url>/2022/07/01/rnnt-overview/</url>
+    
+    <content type="html"><![CDATA[]]></content>
+    
+    
+    <categories>
+      
+      <category>论文总结</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>asr</tag>
+      
+      <tag>rnn-t</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>INTERNAL LANGUAGE MODEL ESTIMATION FOR DOMAIN-ADAPTIVE END-TO-END SPEECH RECOGNITION</title>
     <link href="/2022/07/01/ilme/"/>
     <url>/2022/07/01/ilme/</url>
