@@ -16,25 +16,25 @@
   <meta name="author" content="azhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="作者: Christin Jose, Joseph Wang, Grant P. Strimel, Mohammad Omar Khursheed, Yuriy Mishchenko,Brian Kulis机构: Amazon Science, United States关键词: kws,max-pooling链接:  https:&#x2F;&#x2F;arxiv.org&#x2F;pdf&#x2F;2206.07261.pdf">
+    <meta name="description" content="作者：Jaesong Lee1∗, Lukas Lee1∗, Shinji Watanabe关键词：RNN-T softmax  动机RNN-T训练由于最后的输出是TxUxV的矩阵并且要过softmax这就导致这个矩阵的所有变量及其梯度都要存储，导致大量的显存占用。之前的一些方法会采用降低最后的矩阵的尺度来降低显存的占用比如使用sylable降低V，通过降采样降低T来减少显存的占用。还有一些降低p">
 <meta property="og:type" content="article">
-<meta property="og:title" content="PROGRESSIVE VOICE TRIGGER DETECTION Latency Control for Keyword Spotting">
-<meta property="og:url" content="http://example.com/2022/06/30/kws-0630/index.html">
+<meta property="og:title" content="Memory-Efficient Training of RNN-Transducer with Sampled Softmax">
+<meta property="og:url" content="http://example.com/2022/07/01/rnnt-0701/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="作者: Christin Jose, Joseph Wang, Grant P. Strimel, Mohammad Omar Khursheed, Yuriy Mishchenko,Brian Kulis机构: Amazon Science, United States关键词: kws,max-pooling链接:  https:&#x2F;&#x2F;arxiv.org&#x2F;pdf&#x2F;2206.07261.pdf">
+<meta property="og:description" content="作者：Jaesong Lee1∗, Lukas Lee1∗, Shinji Watanabe关键词：RNN-T softmax  动机RNN-T训练由于最后的输出是TxUxV的矩阵并且要过softmax这就导致这个矩阵的所有变量及其梯度都要存储，导致大量的显存占用。之前的一些方法会采用降低最后的矩阵的尺度来降低显存的占用比如使用sylable降低V，通过降采样降低T来减少显存的占用。还有一些降低p">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/post_img/15.jpg">
-<meta property="article:published_time" content="2022-06-30T07:24:48.000Z">
-<meta property="article:modified_time" content="2022-06-30T13:11:54.662Z">
+<meta property="og:image" content="http://example.com/post_img/6.jpg">
+<meta property="article:published_time" content="2022-07-01T06:03:39.000Z">
+<meta property="article:modified_time" content="2022-07-01T06:07:30.280Z">
 <meta property="article:author" content="azhang">
-<meta property="article:tag" content="kws">
-<meta property="article:tag" content="maxpooling">
+<meta property="article:tag" content="asr">
+<meta property="article:tag" content="rnnt">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/post_img/15.jpg">
+<meta name="twitter:image" content="http://example.com/post_img/6.jpg">
   
   
   
-  <title>PROGRESSIVE VOICE TRIGGER DETECTION Latency Control for Keyword Spotting - 聪明的小奥</title>
+  <title>Memory-Efficient Training of RNN-Transducer with Sampled Softmax - 聪明的小奥</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -199,7 +199,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="PROGRESSIVE VOICE TRIGGER DETECTION Latency Control for Keyword Spotting"></span>
+            <span id="subtitle" data-typed-text="Memory-Efficient Training of RNN-Transducer with Sampled Softmax"></span>
           
         </div>
 
@@ -210,8 +210,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-06-30 15:24" pubdate>
-          2022年6月30日 下午
+        <time datetime="2022-07-01 14:03" pubdate>
+          2022年7月1日 下午
         </time>
       </span>
     
@@ -222,7 +222,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          507 字
+          805 字
         
       </span>
     
@@ -233,7 +233,7 @@
         
         
         
-          5 分钟
+          7 分钟
         
       </span>
     
@@ -271,17 +271,20 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">PROGRESSIVE VOICE TRIGGER DETECTION Latency Control for Keyword Spotting</h1>
+            <h1 style="display: none">Memory-Efficient Training of RNN-Transducer with Sampled Softmax</h1>
             
             
               <div class="markdown-body">
                 
-                <p>作者: Christin Jose, Joseph Wang, Grant P. Strimel, Mohammad Omar Khursheed, Yuriy Mishchenko,<br>Brian Kulis<br>机构: Amazon Science, United States<br>关键词: kws,max-pooling<br>链接:  <a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2206.07261.pdf">https://arxiv.org/pdf/2206.07261.pdf</a>       </p>
-<h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><p>maxpooling不需要用对齐模型生成label，但是会导致额外的延迟，因为模型会倾向于多看一点下文再判断，而有时候我们需要灵活的控制延迟，像celoss我们就可以移动label来控制。</p>
-<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p>原始的maxpooling loss 对于正样例选取正类别后验最高的一帧算loss，对于负样例则选取负类别后验最低的一帧算loss<br><img src="https://s2.loli.net/2022/06/30/F3aUJjMI4uRzBkm.png" srcset="/img/loading.gif" lazyload alt="maxpooling.png"><br>本文在选取正样例的位置的时候加了一个前移的随机量，这个量服从伯努利分布，通过控制分布中为1的概率参数，来控制前移的幅度。<br><img src="https://s2.loli.net/2022/06/30/Nf8Hl96Ja4wgztE.png" srcset="/img/loading.gif" lazyload alt="maxpooling2.png"></p>
-<h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><h4 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h4><p>cnn网络，64维 Mel-filterbank energy (LFBE) features<br><img src="https://s2.loli.net/2022/06/30/Xv6K58AUHR3CGak.png" srcset="/img/loading.gif" lazyload alt="cnn.png"></p>
-<h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><p>准确度上b越大效果越差，0.1,0.2下和celoss性能相当<br><img src="https://s2.loli.net/2022/06/30/LkxMH2tpiXzvQ6c.png" srcset="/img/loading.gif" lazyload alt="res1.png"><br>对时延的影响也符合预期<br><img src="https://s2.loli.net/2022/06/30/McBSfbCE1x8kaZ5.png" srcset="/img/loading.gif" lazyload alt="res2.png"></p>
-<h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>复现简单，解决实际问题。</p>
+                <p>作者：Jaesong Lee1∗, Lukas Lee1∗, Shinji Watanabe<br>关键词：RNN-T softmax </p>
+<h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><p>RNN-T训练由于最后的输出是TxUxV的矩阵并且要过softmax这就导致这个矩阵的所有变量及其梯度都要存储，导致大量的显存占用。之前的一些方法会采用降低最后的矩阵的尺度来降低显存的占用比如使用sylable降低V，通过降采样降低T来减少显存的占用。还有一些降低padding，预训练的策略来加速rnn-t的训练。</p>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><ol>
+<li>sampled softmax降低训练的显存占用<br><img src="https://s2.loli.net/2022/07/01/m4EMR9uNVkUyFpq.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>只包括对齐中需要的字的后验<br>Vneg源自对剩下字的采样<br><img src="https://s2.loli.net/2022/07/01/tRVawyj2AW1kfiI.png" srcset="/img/loading.gif" lazyload alt="image.png"></li>
+</ol>
+<p>这样的话最终计算对齐的矩阵就减小到了TxUxsmaple-V<br>但是如果采样的方式不合理会导致对部分字的后验估计错误导致解码出现不该出现的字。<br>2. 样本单独采样<br>一般的sample-softmax一个batch共用一组正负集合，这就使得在batch较大的时候，正集合变得很大，而负集合也必须跟着扩大，无法有效的降低显存。这里采用每个样本单独的正负集合来降低现存的占用，这样即使batch-size较大，两个集合也不会过大。<br>3. 利用ctc的头来协助采样<br>采样需要一个分布，如果按照平均分布肯定是不合理，我们肯定是希望让预测错误的部分进入loss来让模型学习正确的结果，但是如果每次都进行一次解码来得到后验就加大了显存的消耗，而作为正则的ctc与rnn-t的最终输出有相关性，所以我们就使用ctc的头的后验去除正字符后作为采样的分布使用。<br>4. CTC-constrained 解码<br>由于训练的时候的后验基于ctc的分布，所以解码时候我们也要引入ctc，否则会出现很多没有被正确建模概率的字，我们将ctc头的结果选出topk个字作为解码空间进行rnn-t的解码。    </p>
+<h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><h4 id="数据："><a href="#数据：" class="headerlink" title="数据："></a>数据：</h4><p>LibriSpeech、Aishell-1，CSJ<br>libriseech对比不同的建模单元数<br>aishell-1使用4231     </p>
+<h5 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h5><p><img src="https://s2.loli.net/2022/07/01/3Sdkzw54O9Zifpb.png" srcset="/img/loading.gif" lazyload alt="image.png"><br><img src="https://s2.loli.net/2022/07/01/BTWOthFCHvpPsu2.png" srcset="/img/loading.gif" lazyload alt="image.png">     </p>
+<p><img src="https://s2.loli.net/2022/07/01/fpZTOrU5EHn3bBw.png" srcset="/img/loading.gif" lazyload alt="image.png">  </p>
 
                 
               </div>
@@ -315,9 +318,9 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/kws/">#kws</a>
+        <a href="/tags/asr/">#asr</a>
       
-        <a href="/tags/maxpooling/">#maxpooling</a>
+        <a href="/tags/rnnt/">#rnnt</a>
       
     </div>
   
@@ -329,8 +332,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>PROGRESSIVE VOICE TRIGGER DETECTION Latency Control for Keyword Spotting</div>
-      <div>http://example.com/2022/06/30/kws-0630/</div>
+      <div>Memory-Efficient Training of RNN-Transducer with Sampled Softmax</div>
+      <div>http://example.com/2022/07/01/rnnt-0701/</div>
     </div>
     <div class="license-meta">
       
@@ -342,7 +345,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年6月30日</div>
+          <div>2022年7月1日</div>
         </div>
       
       
@@ -372,18 +375,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/07/01/rnnt-0701/" title="Memory-Efficient Training of RNN-Transducer with Sampled Softmax">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Memory-Efficient Training of RNN-Transducer with Sampled Softmax</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/06/30/puned-rnnt/" title="Pruned RNN-T for fast, memory-efficient ASR training">
-                        <span class="hidden-mobile">Pruned RNN-T for fast, memory-efficient ASR training</span>
+                      <a href="/2022/06/30/kws-0630/" title="PROGRESSIVE VOICE TRIGGER DETECTION Latency Control for Keyword Spotting">
+                        <span class="hidden-mobile">PROGRESSIVE VOICE TRIGGER DETECTION Latency Control for Keyword Spotting</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
