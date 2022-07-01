@@ -16,25 +16,28 @@
   <meta name="author" content="azhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="作者：Jaesong Lee1∗, Lukas Lee1∗, Shinji Watanabe关键词：RNN-T softmax  动机RNN-T训练由于最后的输出是TxUxV的矩阵并且要过softmax这就导致这个矩阵的所有变量及其梯度都要存储，导致大量的显存占用。之前的一些方法会采用降低最后的矩阵的尺度来降低显存的占用比如使用sylable降低V，通过降采样降低T来减少显存的占用。还有一些降低p">
+    <meta name="description" content="作者:Zhong Meng, Sarangarajan Parthasarathy, Eric Sun, Yashesh Gaur, Naoyuki Kanda, Liang Lu, Xie Chen, Rui Zhao, Jinyu Li, Yifan Gong机构:  Microsoft Corporation, Redmond, WA, USA arXiv:2011.01991v1链接:">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Memory-Efficient Training of RNN-Transducer with Sampled Softmax">
-<meta property="og:url" content="http://example.com/2022/07/01/rnnt-0701/index.html">
+<meta property="og:title" content="INTERNAL LANGUAGE MODEL ESTIMATION FOR DOMAIN-ADAPTIVE END-TO-END SPEECH RECOGNITION">
+<meta property="og:url" content="http://example.com/2022/07/01/ilme/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="作者：Jaesong Lee1∗, Lukas Lee1∗, Shinji Watanabe关键词：RNN-T softmax  动机RNN-T训练由于最后的输出是TxUxV的矩阵并且要过softmax这就导致这个矩阵的所有变量及其梯度都要存储，导致大量的显存占用。之前的一些方法会采用降低最后的矩阵的尺度来降低显存的占用比如使用sylable降低V，通过降采样降低T来减少显存的占用。还有一些降低p">
+<meta property="og:description" content="作者:Zhong Meng, Sarangarajan Parthasarathy, Eric Sun, Yashesh Gaur, Naoyuki Kanda, Liang Lu, Xie Chen, Rui Zhao, Jinyu Li, Yifan Gong机构:  Microsoft Corporation, Redmond, WA, USA arXiv:2011.01991v1链接:">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/post_img/6.jpg">
-<meta property="article:published_time" content="2022-07-01T06:03:39.000Z">
-<meta property="article:modified_time" content="2022-07-01T08:07:57.413Z">
+<meta property="article:published_time" content="2022-07-01T07:09:26.000Z">
+<meta property="article:modified_time" content="2022-07-01T08:23:34.909Z">
 <meta property="article:author" content="azhang">
 <meta property="article:tag" content="asr">
-<meta property="article:tag" content="rnnt">
+<meta property="article:tag" content="rnn-t">
+<meta property="article:tag" content="lm">
+<meta property="article:tag" content="domain adapt">
+<meta property="article:tag" content="aed">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="http://example.com/post_img/6.jpg">
   
   
   
-  <title>Memory-Efficient Training of RNN-Transducer with Sampled Softmax - 聪明的小奥</title>
+  <title>INTERNAL LANGUAGE MODEL ESTIMATION FOR DOMAIN-ADAPTIVE END-TO-END SPEECH RECOGNITION - 聪明的小奥</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -199,7 +202,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Memory-Efficient Training of RNN-Transducer with Sampled Softmax"></span>
+            <span id="subtitle" data-typed-text="INTERNAL LANGUAGE MODEL ESTIMATION FOR DOMAIN-ADAPTIVE END-TO-END SPEECH RECOGNITION"></span>
           
         </div>
 
@@ -210,7 +213,7 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-07-01 14:03" pubdate>
+        <time datetime="2022-07-01 15:09" pubdate>
           2022年7月1日 下午
         </time>
       </span>
@@ -222,7 +225,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          805 字
+          561 字
         
       </span>
     
@@ -233,7 +236,7 @@
         
         
         
-          7 分钟
+          5 分钟
         
       </span>
     
@@ -271,21 +274,16 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">Memory-Efficient Training of RNN-Transducer with Sampled Softmax</h1>
+            <h1 style="display: none">INTERNAL LANGUAGE MODEL ESTIMATION FOR DOMAIN-ADAPTIVE END-TO-END SPEECH RECOGNITION</h1>
             
             
               <div class="markdown-body">
                 
-                <p>作者：Jaesong Lee1∗, Lukas Lee1∗, Shinji Watanabe<br>关键词：RNN-T softmax </p>
-<h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><p>RNN-T训练由于最后的输出是TxUxV的矩阵并且要过softmax这就导致这个矩阵的所有变量及其梯度都要存储，导致大量的显存占用。之前的一些方法会采用降低最后的矩阵的尺度来降低显存的占用比如使用sylable降低V，通过降采样降低T来减少显存的占用。还有一些降低padding，预训练的策略来加速rnn-t的训练。</p>
-<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><ol>
-<li>sampled softmax降低训练的显存占用<br><img src="https://s2.loli.net/2022/07/01/m4EMR9uNVkUyFpq.png" srcset="/img/loading.gif" lazyload><br>只包括对齐中需要的字的后验<br>Vneg源自对剩下字的采样<br><img src="https://s2.loli.net/2022/07/01/tRVawyj2AW1kfiI.png" srcset="/img/loading.gif" lazyload></li>
-</ol>
-<p>这样的话最终计算对齐的矩阵就减小到了TxUxsmaple-V<br>但是如果采样的方式不合理会导致对部分字的后验估计错误导致解码出现不该出现的字。<br>2. 样本单独采样<br>一般的sample-softmax一个batch共用一组正负集合，这就使得在batch较大的时候，正集合变得很大，而负集合也必须跟着扩大，无法有效的降低显存。这里采用每个样本单独的正负集合来降低现存的占用，这样即使batch-size较大，两个集合也不会过大。<br>3. 利用ctc的头来协助采样<br>采样需要一个分布，如果按照平均分布肯定是不合理，我们肯定是希望让预测错误的部分进入loss来让模型学习正确的结果，但是如果每次都进行一次解码来得到后验就加大了显存的消耗，而作为正则的ctc与rnn-t的最终输出有相关性，所以我们就使用ctc的头的后验去除正字符后作为采样的分布使用。<br>4. CTC-constrained 解码<br>由于训练的时候的后验基于ctc的分布，所以解码时候我们也要引入ctc，否则会出现很多没有被正确建模概率的字，我们将ctc头的结果选出topk个字作为解码空间进行rnn-t的解码。    </p>
-<h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><h4 id="数据："><a href="#数据：" class="headerlink" title="数据："></a>数据：</h4><p>LibriSpeech、Aishell-1，CSJ<br>libriseech对比不同的建模单元数<br>aishell-1使用4231     </p>
-<h5 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h5><p><img src="https://s2.loli.net/2022/07/01/3Sdkzw54O9Zifpb.png" srcset="/img/loading.gif" lazyload><br><img src="https://s2.loli.net/2022/07/01/BTWOthFCHvpPsu2.png" srcset="/img/loading.gif" lazyload>     </p>
-<p><img src="https://s2.loli.net/2022/07/01/fpZTOrU5EHn3bBw.png" srcset="/img/loading.gif" lazyload>  </p>
-
+                <p>作者:Zhong Meng, Sarangarajan Parthasarathy, Eric Sun, Yashesh Gaur, Naoyuki Kanda, Liang Lu, Xie Chen, Rui Zhao, Jinyu Li, Yifan Gong<br>机构:  Microsoft Corporation, Redmond, WA, USA arXiv:2011.01991v1<br>链接:   <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2011.01991">https://arxiv.org/abs/2011.01991</a>      </p>
+<h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><p>通过引入外部语言模型来实现adapt，提出一个不限制e2e模型的集成外部语言模型方式</p>
+<h3 id="相关工作"><a href="#相关工作" class="headerlink" title="相关工作"></a>相关工作</h3><h4 id="Shallow-Fusion"><a href="#Shallow-Fusion" class="headerlink" title="Shallow Fusion"></a>Shallow Fusion</h4><p>在beam search时引入外部语言模型，虽然后面又提出deep fusion，cold fusion，Simple Fusion and Component Fusion等方法，但是这些方法引入额外的计算代价和训练步骤，因此没有取代sf。<br><img src="https://s2.loli.net/2022/07/01/Ers2CXivb3acA8l.png" srcset="/img/loading.gif" lazyload alt="sf">       </p>
+<h4 id="Density-Ratio-Method-In"><a href="#Density-Ratio-Method-In" class="headerlink" title="Density Ratio Method In"></a>Density Ratio Method In</h4><p>类似于hybrid模型，将e2e的后验按照声学和语言分解<br><img src="https://s2.loli.net/2022/07/01/YVfHzTXE6NvjCak.png" srcset="/img/loading.gif" lazyload alt="source"><br><img src="https://s2.loli.net/2022/07/01/HAC9qIuBLrc6XJp.png" srcset="/img/loading.gif" lazyload alt="target"><br>我们认为声学部分两边是一样的，就得到下面的式子：<br><img src="https://s2.loli.net/2022/07/01/aguEGKbXBJItfOW.png" srcset="/img/loading.gif" lazyload alt="ratio"><br>x部分在given x的情况下对所有y不变，所以只需要考虑y部分，y部分实际是两个domain语言模型后验的比值，于是我们得出西面的fusion方式。<br><img src="https://s2.loli.net/2022/07/01/HNcb6vUMVKZCnfp.png" srcset="/img/loading.gif" lazyload alt="image.png"><br>注意语言模型单独训练和e2e系统是两个模型。</p>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><h4 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h4><h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3>
                 
               </div>
             
@@ -320,7 +318,13 @@
       
         <a href="/tags/asr/">#asr</a>
       
-        <a href="/tags/rnnt/">#rnnt</a>
+        <a href="/tags/rnn-t/">#rnn-t</a>
+      
+        <a href="/tags/lm/">#lm</a>
+      
+        <a href="/tags/domain-adapt/">#domain adapt</a>
+      
+        <a href="/tags/aed/">#aed</a>
       
     </div>
   
@@ -332,8 +336,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Memory-Efficient Training of RNN-Transducer with Sampled Softmax</div>
-      <div>http://example.com/2022/07/01/rnnt-0701/</div>
+      <div>INTERNAL LANGUAGE MODEL ESTIMATION FOR DOMAIN-ADAPTIVE END-TO-END SPEECH RECOGNITION</div>
+      <div>http://example.com/2022/07/01/ilme/</div>
     </div>
     <div class="license-meta">
       
@@ -375,18 +379,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2022/07/01/ilme/" title="INTERNAL LANGUAGE MODEL ESTIMATION FOR DOMAIN-ADAPTIVE END-TO-END SPEECH RECOGNITION">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">INTERNAL LANGUAGE MODEL ESTIMATION FOR DOMAIN-ADAPTIVE END-TO-END SPEECH RECOGNITION</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/06/30/kws-0630/" title="PROGRESSIVE VOICE TRIGGER DETECTION Latency Control for Keyword Spotting">
-                        <span class="hidden-mobile">PROGRESSIVE VOICE TRIGGER DETECTION Latency Control for Keyword Spotting</span>
+                      <a href="/2022/07/01/rnnt-0701/" title="Memory-Efficient Training of RNN-Transducer with Sampled Softmax">
+                        <span class="hidden-mobile">Memory-Efficient Training of RNN-Transducer with Sampled Softmax</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
