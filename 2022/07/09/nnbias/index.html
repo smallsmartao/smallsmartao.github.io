@@ -1,0 +1,640 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/mao.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="azhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="背景端到端系统在落地的时候，我们需要加强对一些词的识别，这些词包括命名实体、地名、网络热词等等，但是对于一个上线的系统，我们不可能每次更换热词列表都扩充数据，重新训练模型，所以就出现了很多bias的技术，之前主要是基于语言模型的各种fusion，包括shallow fusion和WFST插值和合并等，还有一种基于神经网络的bias方法，我们重点介绍这种方法。 On-the-fly Rescorin">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nn-bias总结">
+<meta property="og:url" content="http://example.com/2022/07/09/nnbias/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="背景端到端系统在落地的时候，我们需要加强对一些词的识别，这些词包括命名实体、地名、网络热词等等，但是对于一个上线的系统，我们不可能每次更换热词列表都扩充数据，重新训练模型，所以就出现了很多bias的技术，之前主要是基于语言模型的各种fusion，包括shallow fusion和WFST插值和合并等，还有一种基于神经网络的bias方法，我们重点介绍这种方法。 On-the-fly Rescorin">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/post_img/49.jpg">
+<meta property="article:published_time" content="2022-07-09T12:04:45.000Z">
+<meta property="article:modified_time" content="2022-07-12T07:47:17.632Z">
+<meta property="article:author" content="azhang">
+<meta property="article:tag" content="asr">
+<meta property="article:tag" content="rnn-t">
+<meta property="article:tag" content="bias">
+<meta property="article:tag" content="hotword">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/post_img/49.jpg">
+  
+  
+  
+  <title>nn-bias总结 - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.2","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.2.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/post_img/6.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="nn-bias总结"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-07-09 20:04" pubdate>
+          2022年7月9日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          7.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          60 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">nn-bias总结</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>端到端系统在落地的时候，我们需要加强对一些词的识别，这些词包括命名实体、地名、网络热词等等，但是对于一个上线的系统，我们不可能每次更换热词列表都扩充数据，重新<br>训练模型，所以就出现了很多bias的技术，之前主要是基于语言模型的各种fusion，包括shallow fusion和WFST插值和合并等，还有一种基于神经网络的bias方法，我们重点介绍这种方法。</p>
+<h2 id="On-the-fly-Rescoring"><a href="#On-the-fly-Rescoring" class="headerlink" title="On-the-fly Rescoring"></a>On-the-fly Rescoring</h2><p><a target="_blank" rel="noopener" href="https://static.googleusercontent.com/media/research.google.com/zh-CN//pubs/archive/43816.pdf">https://static.googleusercontent.com/media/research.google.com/zh-CN//pubs/archive/43816.pdf</a><br>这是一种基于WFST的方法，但是非常重要，现在很多热词系统就是基于这个方法。</p>
+<h2 id="C-LAS"><a href="#C-LAS" class="headerlink" title="C-LAS"></a>C-LAS</h2><p><a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1808.02480.pdf">https://arxiv.org/pdf/1808.02480.pdf</a><br>Contextualized LAS 提出基于nn的bias方法，后面的很多方法都是基于这个方法的迁移，这篇论文也解释了很多nn-bias中的细节，以及这种方法的可解释性。</p>
+<h3 id="bias-embedding"><a href="#bias-embedding" class="headerlink" title="bias embedding"></a>bias embedding</h3><p>首先需要提取热词的列表的embedding，将不同长度的热词都变成一个embedding的形式，本文采用一个LSTN，将最后一个状态作为embedding。<br><img src="https://s2.loli.net/2022/07/11/xzDmHAQXOiMIR42.png" srcset="/img/loading.gif" lazyload> </p>
+<h3 id="bias-attention"><a href="#bias-attention" class="headerlink" title="bias attention"></a>bias attention</h3><p>将embedding和encoder的h做attention，得到的结果和原本的拼接送入decoder。<br><img src="https://s2.loli.net/2022/07/11/MtxPOvu4N6sSgEG.png" srcset="/img/loading.gif" lazyload> </p>
+<h3 id="训练和推理"><a href="#训练和推理" class="headerlink" title="训练和推理"></a>训练和推理</h3><p>训练时随机选取热词，用一个概率控制一个batch内句子被选取热词的概率，同时对于带热词的句子在热词部分插入一个标记，来帮助bias部分的梯度更新。比如之前是“你看哔哩哔哩<bias>的哪个视频没”，热词为哔哩哔哩，那么就改写为“你看哔哩哔哩<bias>的那个视频没”。<br>推理时可以预先根据热词生成好bias_embedding，然后只需要额外做attention的计算。</bias></bias></p>
+<h3 id="bias-condition"><a href="#bias-condition" class="headerlink" title="bias condition"></a>bias condition</h3><p>维护热词前缀的列表，只有对齐出现了前缀的时候才激活对应热词的embedding。</p>
+<h3 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h3><h4 id="数据"><a href="#数据" class="headerlink" title="数据"></a>数据</h4><p><img src="https://s2.loli.net/2022/07/12/ZGTRy5Cp1FNsxia.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="非热词场景"><a href="#非热词场景" class="headerlink" title="非热词场景"></a>非热词场景</h4><p><img src="https://s2.loli.net/2022/07/12/ZGTRy5Cp1FNsxia.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="对比结果"><a href="#对比结果" class="headerlink" title="对比结果"></a>对比结果</h4><p><img src="https://s2.loli.net/2022/07/12/MiKsmbSuGr9qowY.png" srcset="/img/loading.gif" lazyload></p>
+<h4 id="稳定性"><a href="#稳定性" class="headerlink" title="稳定性"></a>稳定性</h4><p><img src="https://s2.loli.net/2022/07/12/h7x6vLWcVCKD2pT.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="Context-transformer-transducer"><a href="#Context-transformer-transducer" class="headerlink" title="Context transformer transducer"></a>Context transformer transducer</h2><p><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2006.03411">https://arxiv.org/abs/2006.03411</a><br>将bias做到encoder和decoder，也是基于attention的bias<br><img src="https://s2.loli.net/2022/07/12/mJshDSNfOtqXZnB.png" srcset="/img/loading.gif" lazyload><br><img src="https://s2.loli.net/2022/07/12/Sx6YZWVrUbO3ImP.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="Contextual-Transformer"><a href="#Contextual-Transformer" class="headerlink" title="Contextual Transformer"></a>Contextual Transformer</h2><p>在decoder上做bias<br><img src="https://s2.loli.net/2022/07/12/SwKtzQYr1DikyU7.png" srcset="/img/loading.gif" lazyload><br><img src="https://s2.loli.net/2022/07/12/aQtCbFMADlWqek4.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="一些细节和改进"><a href="#一些细节和改进" class="headerlink" title="一些细节和改进"></a>一些细节和改进</h2><h3 id="热词列表"><a href="#热词列表" class="headerlink" title="热词列表"></a>热词列表</h3><p>维护一个动态的热词池，刚开始retrain的时候热词比例高，随着训练热词比例逐渐降低。</p>
+<h3 id="整体编码"><a href="#整体编码" class="headerlink" title="整体编码"></a>整体编码</h3><p>对热词列表坐一个整体的变换，让模型学习热词间的相关性</p>
+<h3 id="纯化"><a href="#纯化" class="headerlink" title="纯化"></a>纯化</h3><p>推理的时候对attention分数做排序，保留topk的分数将剩下的分数设为0，重新归一化热词概率。<br><img src="https://s2.loli.net/2022/07/12/yr1DeJonLaiBHVb.png" srcset="/img/loading.gif" lazyload></p>
+<h3 id="代码细节"><a href="#代码细节" class="headerlink" title="代码细节"></a>代码细节</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">ContextBias</span>(torch.nn.Module):<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params"></span><br><span class="hljs-params">        self,</span><br><span class="hljs-params">        input_size: <span class="hljs-built_in">int</span>,</span><br><span class="hljs-params">        output_size: <span class="hljs-built_in">int</span>,</span><br><span class="hljs-params">        vocab_size: <span class="hljs-built_in">int</span>,</span><br><span class="hljs-params">        embedding_size: <span class="hljs-built_in">int</span>,</span><br><span class="hljs-params">        num_layers: <span class="hljs-built_in">int</span> = <span class="hljs-number">2</span>,</span><br><span class="hljs-params">        attention_heads: <span class="hljs-built_in">int</span> = <span class="hljs-number">4</span>,</span><br><span class="hljs-params">        linear_units: <span class="hljs-built_in">int</span> = <span class="hljs-number">512</span>,</span><br><span class="hljs-params">        num_block: <span class="hljs-built_in">int</span> = <span class="hljs-number">4</span>,</span><br><span class="hljs-params">        dropout_rate: <span class="hljs-built_in">float</span> = <span class="hljs-number">0.0</span>,</span><br><span class="hljs-params">        bias_encoder_type: <span class="hljs-built_in">str</span> = <span class="hljs-string">&quot;linear&quot;</span>,</span><br><span class="hljs-params">        bias_encoder: <span class="hljs-built_in">bool</span> = <span class="hljs-literal">True</span></span><br><span class="hljs-params">    </span>):<br>        <span class="hljs-keyword">assert</span> check_argument_types()<br>        <span class="hljs-built_in">super</span>().__init__()<br>        self.input_size = input_size<br>        self.output_size = output_size<br>        self.embedding_size = embedding_size<br>        self.num_layers = num_layers<br>        self.vocab_size = vocab_size<br>        self.attention_heads = attention_heads<br>        self.linear_units = linear_units<br>        self.num_blocks = num_block<br>        self.dropout_rate = dropout_rate<br>        self.encoder_type = bias_encoder_type<br>        self.if_bias_encoder = bias_encoder<br>        self.context_extractor = BLSTM(<br>            self.vocab_size, self.embedding_size, self.num_layers)<br>          self.context_encoder = torch.nn.Sequential(torch.nn.Linear(self.embedding_size * <span class="hljs-number">4</span>,self.embedding_size),torch.nn.LayerNorm(self.embedding_size))<br>          self.encoder_bias = MultiHeadedAttention(<br>              n_head=self.attention_heads,<br>              n_feat=self.embedding_size,<br>              dropout_rate=<span class="hljs-number">0.0</span><br>          )<br>        self.encoder_norm = torch.nn.LayerNorm(self.embedding_size)<br>        self.encoder_bias_norm = torch.nn.LayerNorm(self.embedding_size)<br></code></pre></td></tr></table></figure>
+<p>模型前向</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">forword_common</span>(<span class="hljs-params">self, context_list, context_lengths, h_enc</span>):<br>    bias_vector = self.context_extractor(context_list,context_lengths)<br>    bias_lengths = torch.tensor([bias_vector.shape[<span class="hljs-number">0</span>]],dtype=torch.int32,device=bias_vector.device)<br>    <span class="hljs-keyword">if</span> self.encoder_type == <span class="hljs-string">&#x27;transformer&#x27;</span>:<br>        bias_hidden, bias_mask = self.context_encoder(<br>            bias_vector.unsqueeze(<span class="hljs-number">0</span>),bias_lengths<br>        )<br>    <span class="hljs-keyword">elif</span> self.encoder_type == <span class="hljs-string">&#x27;linear&#x27;</span>:<br>        bias_hidden = self.context_encoder(bias_vector.unsqueeze(<span class="hljs-number">0</span>))<br>    <span class="hljs-keyword">elif</span> self.encoder_type == <span class="hljs-string">&#x27;mytransformer&#x27;</span>:<br>        bias_hidden, ilens, bias_mask = self.context_encoder(<br>            bias_vector.unsqueeze(<span class="hljs-number">0</span>),bias_lengths<br>        )<br>    bias_hidden = bias_hidden.expand(h_enc.shape[<span class="hljs-number">0</span>],-<span class="hljs-number">1</span>,-<span class="hljs-number">1</span>)<br>        <span class="hljs-keyword">return</span> bias_hidden<br><span class="hljs-keyword">def</span> <span class="hljs-title function_">forward_encoder</span>(<span class="hljs-params">self, bias_hidden, h_enc</span>):<br>    <span class="hljs-keyword">if</span> self.encoder_type == <span class="hljs-string">&#x27;mytransformer&#x27;</span>:<br>        h_enc_bias = self.encoder_bias(h_enc, bias_hidden, bias_hidden)<br>    <span class="hljs-keyword">else</span>:<br>        h_enc_bias,_ = self.encoder_bias(h_enc, bias_hidden, bias_hidden)<br>    encoder_norm_out = self.encoder_norm(h_enc)<br>    encoder_bias_norm_out = self.encoder_bias_norm(h_enc_bias)<br>    h_enc_concat = torch.cat(<br>        [encoder_norm_out, encoder_bias_norm_out],dim=-<span class="hljs-number">1</span><br>    )<br>    <br>    <span class="hljs-keyword">return</span> h_enc + self.encoder_ffn(h_enc_concat)<br><br></code></pre></td></tr></table></figure>
+<p>decoder bias</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">class</span> <span class="hljs-title class_">DecoderLayerContext</span>(nn.Module):<br>    <span class="hljs-string">&quot;&quot;&quot;Single decoder layer module.</span><br><span class="hljs-string"></span><br><span class="hljs-string">    Args:</span><br><span class="hljs-string">        size (int): Input dimension.</span><br><span class="hljs-string">        self_attn (torch.nn.Module): Self-attention module instance.</span><br><span class="hljs-string">            `MultiHeadedAttention` instance can be used as the argument.</span><br><span class="hljs-string">        src_attn (torch.nn.Module): Inter-attention module instance.</span><br><span class="hljs-string">            `MultiHeadedAttention` instance can be used as the argument.</span><br><span class="hljs-string">        feed_forward (torch.nn.Module): Feed-forward module instance.</span><br><span class="hljs-string">            `PositionwiseFeedForward` instance can be used as the argument.</span><br><span class="hljs-string">        dropout_rate (float): Dropout rate.</span><br><span class="hljs-string">        normalize_before (bool):</span><br><span class="hljs-string">            True: use layer_norm before each sub-block.</span><br><span class="hljs-string">            False: to use layer_norm after each sub-block.</span><br><span class="hljs-string">        concat_after (bool): Whether to concat attention layer&#x27;s inpu</span><br><span class="hljs-string">            and output.</span><br><span class="hljs-string">            True: x -&gt; x + linear(concat(x, att(x)))</span><br><span class="hljs-string">            False: x -&gt; x + att(x)</span><br><span class="hljs-string">    &quot;&quot;&quot;</span><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params"></span><br><span class="hljs-params">        self,</span><br><span class="hljs-params">        size: <span class="hljs-built_in">int</span>,</span><br><span class="hljs-params">        self_attn: nn.Module,</span><br><span class="hljs-params">        src_attn: nn.Module,</span><br><span class="hljs-params">        bias_attn: nn.Module,</span><br><span class="hljs-params">        feed_forward: nn.Module,</span><br><span class="hljs-params">        dropout_rate: <span class="hljs-built_in">float</span>,</span><br><span class="hljs-params">        normalize_before: <span class="hljs-built_in">bool</span> = <span class="hljs-literal">True</span>,</span><br><span class="hljs-params">        concat_after: <span class="hljs-built_in">bool</span> = <span class="hljs-literal">False</span>,</span><br><span class="hljs-params">    </span>):<br>        <span class="hljs-string">&quot;&quot;&quot;Construct an DecoderLayer object.&quot;&quot;&quot;</span><br>        <span class="hljs-built_in">super</span>().__init__()<br>        self.size = size<br>        self.self_attn = self_attn<br>        self.src_attn = src_attn<br>        self.bias_attn = bias_attn<br>        self.feed_forward = feed_forward<br>        self.linear = nn.Linear(<span class="hljs-number">2</span> * size,size)<br>        self.norm1 = nn.LayerNorm(size, eps=<span class="hljs-number">1e-5</span>)<br>        self.norm2 = nn.LayerNorm(size, eps=<span class="hljs-number">1e-5</span>)<br>        self.norm3 = nn.LayerNorm(size, eps=<span class="hljs-number">1e-5</span>)<br>        self.dropout = nn.Dropout(dropout_rate)<br>        self.normalize_before = normalize_before<br>        self.concat_after = concat_after<br>        <span class="hljs-keyword">if</span> self.concat_after:<br>            self.concat_linear1 = nn.Linear(size + size, size)<br>            self.concat_linear2 = nn.Linear(size + size, size)<br>        <span class="hljs-keyword">else</span>:<br>            self.concat_linear1 = nn.Identity()<br>            self.concat_linear2 = nn.Identity()<br>        self.if_bias = <span class="hljs-literal">True</span><br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params"></span><br><span class="hljs-params">        self,</span><br><span class="hljs-params">        tgt: torch.Tensor,</span><br><span class="hljs-params">        tgt_mask: torch.Tensor,</span><br><span class="hljs-params">        memory: torch.Tensor,</span><br><span class="hljs-params">        memory_mask: torch.Tensor,</span><br><span class="hljs-params">        bias_hidden: torch.Tensor,</span><br><span class="hljs-params">        cache: <span class="hljs-type">Optional</span>[torch.Tensor] = <span class="hljs-literal">None</span></span><br><span class="hljs-params">    </span>) -&gt; <span class="hljs-type">Tuple</span>[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:<br>        <span class="hljs-string">&quot;&quot;&quot;Compute decoded features.</span><br><span class="hljs-string"></span><br><span class="hljs-string">        Args:</span><br><span class="hljs-string">            tgt (torch.Tensor): Input tensor (#batch, maxlen_out, size).</span><br><span class="hljs-string">            tgt_mask (torch.Tensor): Mask for input tensor</span><br><span class="hljs-string">                (#batch, maxlen_out).</span><br><span class="hljs-string">            memory (torch.Tensor): Encoded memory</span><br><span class="hljs-string">                (#batch, maxlen_in, size).</span><br><span class="hljs-string">            memory_mask (torch.Tensor): Encoded memory mask</span><br><span class="hljs-string">                (#batch, maxlen_in).</span><br><span class="hljs-string">            cache (torch.Tensor): cached tensors.</span><br><span class="hljs-string">                (#batch, maxlen_out - 1, size).</span><br><span class="hljs-string"></span><br><span class="hljs-string">        Returns:</span><br><span class="hljs-string">            torch.Tensor: Output tensor (#batch, maxlen_out, size).</span><br><span class="hljs-string">            torch.Tensor: Mask for output tensor (#batch, maxlen_out).</span><br><span class="hljs-string">            torch.Tensor: Encoded memory (#batch, maxlen_in, size).</span><br><span class="hljs-string">            torch.Tensor: Encoded memory mask (#batch, maxlen_in).</span><br><span class="hljs-string"></span><br><span class="hljs-string">        &quot;&quot;&quot;</span><br>        <span class="hljs-comment"># import pdb;pdb.set_trace()</span><br>        residual = tgt<br>        tgt = self.norm1(tgt)<br><br>        <span class="hljs-keyword">if</span> cache <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span>:<br>            tgt_q = tgt<br>            tgt_q_mask = tgt_mask<br>        <span class="hljs-keyword">else</span>:<br>            <span class="hljs-comment"># compute only the last frame query keeping dim: max_time_out -&gt; 1</span><br>            <span class="hljs-keyword">assert</span> cache.shape == (<br>                tgt.shape[<span class="hljs-number">0</span>],<br>                tgt.shape[<span class="hljs-number">1</span>] - <span class="hljs-number">1</span>,<br>                self.size,<br>            ), <span class="hljs-string">&quot;&#123;cache.shape&#125; == &#123;(tgt.shape[0], tgt.shape[1] - 1, self.size)&#125;&quot;</span><br>            tgt_q = tgt[:, -<span class="hljs-number">1</span>:, :]<br>            residual = residual[:, -<span class="hljs-number">1</span>:, :]<br>            tgt_q_mask = tgt_mask[:, -<span class="hljs-number">1</span>:, :]<br><br>        <span class="hljs-keyword">if</span> self.concat_after:<br>            tgt_concat = torch.cat(<br>                (tgt_q, self.self_attn(tgt_q, tgt, tgt, tgt_q_mask)[<span class="hljs-number">0</span>]), dim=-<span class="hljs-number">1</span>)<br>            x = residual + self.concat_linear1(tgt_concat)<br>        <span class="hljs-keyword">else</span>:<br>            x = residual + self.dropout(<br>                self.self_attn(tgt_q, tgt, tgt, tgt_q_mask)[<span class="hljs-number">0</span>])<br>        residual = x<br>        x = self.norm2(x)<br>        <span class="hljs-keyword">if</span> self.concat_after:<br>            x_concat = torch.cat(<br>                (x, self.src_attn(x, memory, memory, memory_mask)[<span class="hljs-number">0</span>]), dim=-<span class="hljs-number">1</span>)<br>            x = residual + self.concat_linear2(x_concat)<br>        <span class="hljs-keyword">else</span>:<br>            x_ori = self.dropout(<br>                self.src_attn(x, memory, memory, memory_mask)[<span class="hljs-number">0</span>])<br>            x_bias = self.dropout(<br>                self.bias_attn(x, bias_hidden, bias_hidden, memory_mask)[<span class="hljs-number">0</span>])<br>            x = torch.cat([x_ori,x_bias], dim=-<span class="hljs-number">1</span>)<br>            x = self.linear(x)<br>        x = self.norm3(x)<br>        x = residual + self.dropout(self.feed_forward(x))<br>        <span class="hljs-keyword">if</span> cache <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span>:<br>            x = torch.cat([cache, x], dim=<span class="hljs-number">1</span>)<br><br>        <span class="hljs-keyword">return</span> x, tgt_mask, memory, memory_mask<br></code></pre></td></tr></table></figure>
+
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E6%80%BB%E7%BB%93/" class="category-chain-item">论文总结</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/asr/">#asr</a>
+      
+        <a href="/tags/rnn-t/">#rnn-t</a>
+      
+        <a href="/tags/bias/">#bias</a>
+      
+        <a href="/tags/hotword/">#hotword</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>nn-bias总结</div>
+      <div>http://example.com/2022/07/09/nnbias/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>azhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年7月9日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/07/01/rnnt-overview/" title="rnnt相关总结">
+                        <span class="hidden-mobile">rnnt相关总结</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+<script src="/live2dw/lib/L2Dwidget.min.js?094cbace49a39548bed64abff5988b05"></script><script>L2Dwidget.init({"log":false,"pluginJsPath":"lib/","pluginModelPath":"assets/","pluginRootPath":"live2dw/","tagMode":false});</script></body>
+</html>
