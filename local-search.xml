@@ -4,6 +4,35 @@
   
   
   <entry>
+    <title>FACTORIZED NEURAL TRANSDUCER FOR EFFICIENT LANGUAGE MODEL ADAPTATION</title>
+    <link href="/2022/07/13/rnnt-0713/"/>
+    <url>/2022/07/13/rnnt-0713/</url>
+    
+    <content type="html"><![CDATA[<p>作者:  Xie Chen, Zhong Meng, Sarangarajan Parthasarathy, Jinyu Li<br>机构: Microsoft Speech and Language Group<br>关键词: rnnt lm<br>链接:  <a href="https://arxiv.org/abs/2110.01500">https://arxiv.org/abs/2110.01500</a>       </p><h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><p>e2e架构中没有单独的声学和语言建模，所以难以直接利用纯文本的数据完成领域迁移，在这方面有很多工作，但是都存在一些缺点：</p><ul><li>tts生成配对数据，但是这个方法计算量太大，而且不够灵活。</li><li>LM fusion 对fusion的系数很敏感，需要根据任务调整</li><li>用语言模型loss改进predictor或者内部语言模型<br>predictor虽然很多人把他视作语言模型，但是其实并非如此，之前也有很多论文说过这个结论，这篇论文也举例说明这个结论。<br><img src="https://s2.loli.net/2022/07/13/ZIBvgxoVJ695meQ.png" alt="image.png"><br>在预测A时他的作用类似语言模型，但是下一帧，他得到的声学模型其实和上一帧类似，预测的目标实际上变成了blank，这就说明predictor至少有两个任务一个是语言模型一个是对齐。</li></ul><h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p>本文对rnnt结构改造，将precitor分成两个，一个负责预测blank一个负责预测token。<br><img src="https://s2.loli.net/2022/07/13/NYS37KF2ufW4OL8.png" alt="image.png"><br>具体的前向过程如下：<br><img src="https://s2.loli.net/2022/07/13/akJXOCt4eGb1x8d.png" alt="image.png"><br>原始的前向如下：<br><img src="https://s2.loli.net/2022/07/13/EVOqLCNg2s3MQly.png" alt="image.png"><br>loss变换为：<br><img src="https://s2.loli.net/2022/07/13/TA3gLSKYPUmoCrQ.png" alt="image.png"><br>第二部分为预测token的部分的语言模型loss<br>这个部分可以换成其他词典一样的语言模型，而且改进后的rnnt不需要和原本的rnnt一样在四维矩阵上计算，所以比较节省显存。</p><h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><h4 id="数据"><a href="#数据" class="headerlink" title="数据"></a>数据</h4><p>64k h 训练数据<br>两个测试集：</p><ul><li>librispeech 的train-960的训练抄本作为adapt数据，dev和test作为测试集合。</li><li>微软内部测试集</li></ul><h4 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h4><p>4000  sentence pieces<br>640 dim feature<br>encoder: 18 transformer layer<br>baseline: 84M<br>factorized Transducer: 103M</p><h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><p>在通用测试集表现如下：<br><img src="https://s2.loli.net/2022/07/13/KnqhC6SgkwRN8uy.png" alt="image.png"><br>可以看到在通用测试集上随着系数增加 效果会变差，但是ppl会降低，也就是说虽然效果差了但是实际语言模型的效果是在提升的。<br>adpat的结果如下：<br><img src="https://s2.loli.net/2022/07/13/XtkmblRwNcQZOxF.png" alt="image.png"><br>相比sf提升明显。<br>随着adapt，在80k位置逐渐稳定。<br><img src="https://s2.loli.net/2022/07/13/XtkmblRwNcQZOxF.png" alt="image.png"><br>内部测试集结果<br><img src="https://s2.loli.net/2022/07/13/DncJ9CIqv1fxhFG.png" alt="image.png"></p>]]></content>
+    
+    
+    <categories>
+      
+      <category>论文解读</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>asr</tag>
+      
+      <tag>rnnt</tag>
+      
+      <tag>lm</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>nn-bias总结</title>
     <link href="/2022/07/09/nnbias/"/>
     <url>/2022/07/09/nnbias/</url>
