@@ -4,6 +4,25 @@
   
   
   <entry>
+    <title>bpe算法</title>
+    <link href="/2022/08/09/bpe/"/>
+    <url>/2022/08/09/bpe/</url>
+    
+    <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>最近在librispeech做实验，发现很多开源模型的bpe设置差别特别大，有点好奇这个划分建模单元的原理，为什么可以按照要求随心所欲的设置建模单元，于是学习了一点bpe的原理，总结在这里。</p><h3 id="英文分词"><a href="#英文分词" class="headerlink" title="英文分词"></a>英文分词</h3><p>英文和中文不同，如果按词建模，词典就会过大，而且oov完全无法处理，按照字符划分虽然不会oov但是力度太细，不好训练，其次还有short， shorter这种比较级，还是不同时态的动词等情况需要合理进行划分。<br>于是现在流行基于subword的方法，将一个词划分为多个部分，这个部分介于整个单词和单个字符之间，这个方法能够取得粒度的平衡，并且能够学习到一些词缀的关系。而BPE就可以看成生成这个中间建模单元词表的算法。</p><h3 id="BPE"><a href="#BPE" class="headerlink" title="BPE"></a>BPE</h3><p>bpe算法步骤如下：   </p><ol><li>确定建模单元数目</li><li>给每个单词开头加一个_标记来记录开头，并统计出现的频率。例如出现五次的smart就记录为’_smart:5’</li><li>所有的单词拆分为字符作为最初的词表，统计每个建模单元的出现次数。</li><li>选出字典中出现频率最高的字符对，将新字符加入词表，然后重新统计词表建模单元的个数。注意如果t,h的频率最高，将th加入词表后，分别统计t,h时要减去th 的个数。</li><li>重复4操作，直到达到要求的建模单元数或者最高频率的字符对只出现了一次。</li></ol><p>bpe有个缺陷是一个句子可能有不同的token序列，但是对asr来说只要转换的方式固定就不存在问题。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>算法</category>
+      
+    </categories>
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>FACTORIZED NEURAL TRANSDUCER FOR EFFICIENT LANGUAGE MODEL ADAPTATION</title>
     <link href="/2022/07/13/rnnt-0713/"/>
     <url>/2022/07/13/rnnt-0713/</url>
