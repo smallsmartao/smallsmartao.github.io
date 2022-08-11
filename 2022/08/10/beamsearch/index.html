@@ -18,14 +18,14 @@
   
     <meta name="description" content="前言beam search是asr中最重要的解码算法，但是原始的beam search 其实是无法满足asr的解码需求的，不管是ctc，aed还是rnnt。都需要对beam search进行优化，来完成解码任务，这里总结下不同模型&#x2F;工具包对beam search做的一些优化。 beam searchbeam search的逻辑其实很简单，首先设定波束大小B，B&lt;&lt; V，起始时">
 <meta property="og:type" content="article">
-<meta property="og:title" content="bpe算法">
+<meta property="og:title" content="beam search总结">
 <meta property="og:url" content="http://example.com/2022/08/10/beamsearch/index.html">
 <meta property="og:site_name" content="聪明的小奥">
 <meta property="og:description" content="前言beam search是asr中最重要的解码算法，但是原始的beam search 其实是无法满足asr的解码需求的，不管是ctc，aed还是rnnt。都需要对beam search进行优化，来完成解码任务，这里总结下不同模型&#x2F;工具包对beam search做的一些优化。 beam searchbeam search的逻辑其实很简单，首先设定波束大小B，B&lt;&lt; V，起始时">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/post_img/150.jpg">
 <meta property="article:published_time" content="2022-08-10T12:02:38.000Z">
-<meta property="article:modified_time" content="2022-08-11T07:06:58.336Z">
+<meta property="article:modified_time" content="2022-08-11T07:37:34.268Z">
 <meta property="article:author" content="azhang">
 <meta property="article:tag" content="asr">
 <meta property="article:tag" content="rnnt">
@@ -37,7 +37,7 @@
   
   
   
-  <title>bpe算法 - 聪明的小奥</title>
+  <title>beam search总结 - 聪明的小奥</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -202,7 +202,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="bpe算法"></span>
+            <span id="subtitle" data-typed-text="beam search总结"></span>
           
         </div>
 
@@ -274,7 +274,7 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">bpe算法</h1>
+            <h1 style="display: none">beam search总结</h1>
             
             
               <div class="markdown-body">
@@ -291,6 +291,7 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">1</span>, maxlen + <span class="hljs-number">1</span>):<br>    <span class="hljs-comment"># Stop if all batch and all beam produce eos</span><br>    <span class="hljs-keyword">if</span> end_flag.<span class="hljs-built_in">sum</span>() == running_size:<br>        <span class="hljs-keyword">break</span><br>    ...<br>    ...<br>    end_flag = torch.eq(hyps[:, -<span class="hljs-number">1</span>], self.eos).view(-<span class="hljs-number">1</span>, <span class="hljs-number">1</span>)<br></code></pre></td></tr></table></figure>
 <h3 id="AED解码的改进"><a href="#AED解码的改进" class="headerlink" title="AED解码的改进"></a>AED解码的改进</h3><p>实际上，上述的算法仍然存在很大的改进空间，这里记录下我知道一些改进。</p>
 <h4 id="ctc"><a href="#ctc" class="headerlink" title="ctc"></a>ctc</h4><p>wenet和espnet最优的解码结果都引入了CTC，只是引入的方式不同。wenet的方式是attention 重打分，也就是decoder对ctc beam search的结果重新算个分数，然后这个分数和ctc的分数结合，来选择最优的结果，这个实际上跟decoder上的beam search无关了。而espnet则是在decoder做beam search的时候引入ctc的分数。这两种方法本质都是利用ctc强对齐的特性，来弥补decoder对对齐的忽视，避免过长和过短等不正常结果的出现。相比espnet，wenet对对齐的要求实际上是更严格的，不正常的对齐结果根本无法进入ctc的beam，但是这个也导致wenet的性能受限于ctc，decoder的表现被限制在ctc的beam内。</p>
+<h3 id="ctc-prefix-beam-search"><a href="#ctc-prefix-beam-search" class="headerlink" title="ctc prefix beam search"></a>ctc prefix beam search</h3><p>to be continue…</p>
 
                 
               </div>
@@ -344,7 +345,7 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>bpe算法</div>
+      <div>beam search总结</div>
       <div>http://example.com/2022/08/10/beamsearch/</div>
     </div>
     <div class="license-meta">
