@@ -16,16 +16,16 @@
   <meta name="author" content="azhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="ctc训练出的对齐并不是真正的对齐，首先，他无法反映一个音素的持续时间，其次他尖峰的位置">
+    <meta name="description" content="ctc训练出的对齐并不是真正的对齐，首先，他无法反映一个音素的持续时间，其次他尖峰的位置相对真实的音素位置是滞后的。 尖峰使用kaldi中的对齐模型，我们能够得到一个音素的持续时间，但是CTC就无法得到。这是由于CTC loss的原因。对于CTC-loss来说blank可以看作是正确label后验的延续，具体怎么理解可以看下面的例子。对于一个音素a持续三帧，下面表示两种预测方式的代价。对于ctc来">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ctc的尖峰和滞后现象">
 <meta property="og:url" content="http://example.com/2022/08/11/ctc-peak/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="ctc训练出的对齐并不是真正的对齐，首先，他无法反映一个音素的持续时间，其次他尖峰的位置">
+<meta property="og:description" content="ctc训练出的对齐并不是真正的对齐，首先，他无法反映一个音素的持续时间，其次他尖峰的位置相对真实的音素位置是滞后的。 尖峰使用kaldi中的对齐模型，我们能够得到一个音素的持续时间，但是CTC就无法得到。这是由于CTC loss的原因。对于CTC-loss来说blank可以看作是正确label后验的延续，具体怎么理解可以看下面的例子。对于一个音素a持续三帧，下面表示两种预测方式的代价。对于ctc来">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/post_img/ACG.GY_35.png">
 <meta property="article:published_time" content="2022-08-11T07:47:31.000Z">
-<meta property="article:modified_time" content="2022-09-16T07:40:16.008Z">
+<meta property="article:modified_time" content="2022-09-16T09:22:44.728Z">
 <meta property="article:author" content="azhang">
 <meta property="article:tag" content="ctc">
 <meta property="article:tag" content="asr">
@@ -222,7 +222,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          44 字
+          848 字
         
       </span>
     
@@ -233,7 +233,7 @@
         
         
         
-          1 分钟
+          8 分钟
         
       </span>
     
@@ -276,7 +276,9 @@
             
               <div class="markdown-body">
                 
-                <p>ctc训练出的对齐并不是真正的对齐，首先，他无法反映一个音素的持续时间，其次他尖峰的位置</p>
+                <p>ctc训练出的对齐并不是真正的对齐，首先，他无法反映一个音素的持续时间，其次他尖峰的位置相对真实的音素位置是滞后的。</p>
+<h3 id="尖峰"><a href="#尖峰" class="headerlink" title="尖峰"></a>尖峰</h3><p>使用kaldi中的对齐模型，我们能够得到一个音素的持续时间，但是CTC就无法得到。这是由于CTC loss的原因。对于CTC-loss来说blank可以看作是正确label后验的延续，具体怎么理解可以看下面的例子。<br>对于一个音素a持续三帧，下面表示两种预测方式的代价。<br><img src="https://s2.loli.net/2022/09/16/DMLUdnsPXaguYw6.png" srcset="/img/loading.gif" lazyload><br>对于ctc来说，正确的label包括aaa,-a-,–a,aa-,-aa,aaa.<br>两个矩阵计算这些组合的概率的得分是一样的都是0.745.<br>但是加入这几个序列是b的三帧，那么正确的label包括bbb,-b-,–b,bb-,bbb,-bb.<br>对与高峰法对应的分数为0.000006而对于尖峰法则是0.008461，可以看到后者的分数更高。<br>也就是说尖峰的表现会在错误的情况下产生更好的损失，在正确时和高原相当。可以看到在ctc中blank有点像川麻里的癞子，可以看成对正确label的延续，而ctcloss计算时实际计算的就是正确结果的所有对齐，所以增大blank的帧数是由于ctc-loss的优化导致的。<br>而高原法，也就是kaldi中的对齐，基于HMM的跳转和自环就和blank不同，自环和跳到下一个状态都有各自的代价，因此不会出现尖峰。</p>
+<h3 id="滞后"><a href="#滞后" class="headerlink" title="滞后"></a>滞后</h3><p>加入我们不关系音素的持续时间只关心音素什么时候出现，这种情况也不能用ctc做对齐，因为ctc有滞后效应。<br><img src="https://s2.loli.net/2022/09/16/VoDJhuBTMPwSWjl.png" srcset="/img/loading.gif" lazyload><br>图中虚线是DNN得到的高原对齐结果，可以看到ctc的尖峰并不出现在一个音素的中心，而是在他结束的时候才出现。这是因为CTCloss完全不对尖峰的位置做约束，只关心整体的对齐最优，这就会导致网络可能会倾向于在音素加上一定后文之后再出现尖峰，就像用max-pooling训练kws模型也会出现延迟一样，网络会倾向信息最多的时候产生max的后验。<br>要想控制延迟，提升系统的实时性和上屏体验，可以通过DNN对齐的结果，限制CTC的对齐路径，让ctc-loss去优化延迟范围内的对齐。</p>
 
                 
               </div>
