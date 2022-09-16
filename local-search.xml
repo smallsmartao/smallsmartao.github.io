@@ -4,6 +4,66 @@
   
   
   <entry>
+    <title>dual-mode-9-8</title>
+    <link href="/2022/09/08/dual-mode-9-8/"/>
+    <url>/2022/09/08/dual-mode-9-8/</url>
+    
+    <content type="html"><![CDATA[<p>作者:  Chunxi Liu, Yuan Shangguan, Haichuan Yang, Yangyang Shi, Raghuraman Krishnamoorthi, Ozlem Kalinli<br>机构:     Meta AI<br>关键词: RNN-T，Dual-mode, pre-train<br>链接:         <a href="https://arxiv.org/pdf/2207.11906.pdf">https://arxiv.org/pdf/2207.11906.pdf</a></p><h3 id="动机"><a href="#动机" class="headerlink" title="动机"></a>动机</h3><p>asr模型在端侧部署和服务器部署有着不同的模型要求，在端侧我们需要流式小模型在服务器端我们往往是非流式大模型，分别训练的代价比较大，而且模型大小的控制也需要对结构进行调参。本文提出一种在一个supernet上同时训练两个场景模型的方法。</p><h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><h4 id="Emformer-encoder"><a href="#Emformer-encoder" class="headerlink" title="Emformer encoder"></a>Emformer encoder</h4><p>将语音输入划分成chunk，中间chunk和前后的chunk一起作为一个声学chunk送入encoder。这样就可以通过前后chunk的大小来控制时延。在训练的时候，采用类似wenet那种dynamic chunk，每个step我们在目标时延和整句长度两者之间采样一个chunk size，（要么整句要么chunk）用这个chunk生成的mask去训练模型。</p><h4 id="Dual-mode-ASR-supernet-training"><a href="#Dual-mode-ASR-supernet-training" class="headerlink" title="Dual-mode ASR supernet training"></a>Dual-mode ASR supernet training</h4><p>我们用f(x; θ )表示离线的大模型，用f(x; m ·θ )表示小模型，其中m为权重的mask，对应大模型中每个元素，决定是否将一些位置的权重置零。本文通过m对模型进行layer wise的剪枝，给定稀疏度s，最终每层会有s比例的权重被剪枝掉。具体训练和剪枝的步骤如下：</p><ol><li>首先训练整个supernet达到t0步，训练过程中随机采样流式和非流式。</li><li>从t0步开始：<ol><li>对于每一层每过T步就将P比例的幅度小的权重通过mask置零。</li><li>每一步训练，mask只对流式mode生效，对非流式模型不采用mask。</li></ol></li><li>经过n个T后，(1-p)n的权重被置零，当置零的权重满足稀疏指标时，就停止剪枝继续训练。</li></ol><h4 id="SELF-PRUNING-VIA-SELF-SUPERVISED-LEARNING"><a href="#SELF-PRUNING-VIA-SELF-SUPERVISED-LEARNING" class="headerlink" title="SELF-PRUNING VIA SELF-SUPERVISED LEARNING"></a>SELF-PRUNING VIA SELF-SUPERVISED LEARNING</h4><p>使用wav2vec2.0做预训练，训练时既使用非流式encoder也使用流式encoder，并且在预训练时只训练encoder不进行剪枝。finetune时使用小学习率并加入decoder，进行剪枝。    </p><h3 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h3><h4 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h4><p>有监督训练使用librispeech，无监督训练使用Libri-Light。decoder为一层LSTM。<br>80维Fbank拼6帧。<br>流式chunk维分别为(20,3,1),非流式则采用36s，也就是整句。<br>具体参数量和剪枝参数如下：<br><img src="https://s2.loli.net/2022/09/08/OoHx64CFdI2arqR.png"><br><img src="https://s2.loli.net/2022/09/08/U5w9vlTs1bWtLR8.png"></p><h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><p>首先是dual-mode模型与单mode模型的性能对比：<br><img src="https://s2.loli.net/2022/09/08/5KZfUeqlObBawCn.png"><br>可以看到相比单独streaming模型，dual-mode的训练方式再streaming上效果更好，说明离线的训练会帮助流式的模型。<br>除此之外通过C1，C2，D1的对比可以看出dual-mode的训练对streaming是正向作用对非流式是负向作用，为了缓解这个情况，将剪枝开始前的步数提高，并且剪枝前只用非流式的模型训练，在开始剪枝后才开始dual-mode训练。<br>之后是预训练对系统的影响。<br><img src="https://s2.loli.net/2022/09/08/KtCnFqOpgMcumeS.png"><br>可以看到非流式的wav2vec取得了最大的提升。<br>最后是weight decay的实验结果<br><img src="https://s2.loli.net/2022/09/08/AWCbch3rBVJzStp.png"></p><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><p>本文证明了dual-mode训练方法相比单独流式的优越性，并且将wav2vec应用到了流式模型中。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>论文解读</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>asr</tag>
+      
+      <tag>rnn-t</tag>
+      
+      <tag>unified model</tag>
+      
+      <tag>dual-mode</tag>
+      
+      <tag>pretrain</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>ctc的尖峰和滞后现象</title>
+    <link href="/2022/08/11/ctc-peak/"/>
+    <url>/2022/08/11/ctc-peak/</url>
+    
+    <content type="html"><![CDATA[<p>ctc训练出的对齐并不是真正的对齐，首先，他无法反映一个音素的持续时间，其次他尖峰的位置</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>算法</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>ctc</tag>
+      
+      <tag>asr</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>beam search总结</title>
     <link href="/2022/08/10/beamsearch/"/>
     <url>/2022/08/10/beamsearch/</url>
