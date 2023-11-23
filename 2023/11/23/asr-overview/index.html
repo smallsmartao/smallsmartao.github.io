@@ -16,28 +16,28 @@
   <meta name="author" content="azhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="作者:  Chunxi Liu, Yuan Shangguan, Haichuan Yang, Yangyang Shi, Raghuraman Krishnamoorthi, Ozlem Kalinli 机构:     Meta AI 关键词: RNN-T，Dual-mode, pre-train 链接:         https:&#x2F;&#x2F;arxiv.org&#x2F;pdf&#x2F;2207.11906.pdf">
+    <meta name="description" content="最近带师弟给师弟将一些端到端的ASR模型，自己也有一点感悟，自己以前虽然对模型啥的也比较熟悉，但是一直没有串起来的感觉，这里分享一下自己和师弟交流之后的一些感悟。 首先，ASR到底是什么，可以用公式这么表达： ‘W’就是文本，我们需要找的是给定语音’X’下概率最大的文本’W’（后面的贝叶斯分解则是把他分成了声学文本两个部分，这里不详细描述），可见识别就是在搜索一个W，一个极端的方法就是我便利所有的">
 <meta property="og:type" content="article">
-<meta property="og:title" content="LEARNING A DUAL-MODE SPEECH RECOGNITION MODEL VIA SELF-PRUNING">
-<meta property="og:url" content="http://example.com/2022/09/08/dual-mode-9-8/index.html">
+<meta property="og:title" content="当我们讨论asr的时候我们在讨论什么">
+<meta property="og:url" content="http://example.com/2023/11/23/asr-overview/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="作者:  Chunxi Liu, Yuan Shangguan, Haichuan Yang, Yangyang Shi, Raghuraman Krishnamoorthi, Ozlem Kalinli 机构:     Meta AI 关键词: RNN-T，Dual-mode, pre-train 链接:         https:&#x2F;&#x2F;arxiv.org&#x2F;pdf&#x2F;2207.11906.pdf">
+<meta property="og:description" content="最近带师弟给师弟将一些端到端的ASR模型，自己也有一点感悟，自己以前虽然对模型啥的也比较熟悉，但是一直没有串起来的感觉，这里分享一下自己和师弟交流之后的一些感悟。 首先，ASR到底是什么，可以用公式这么表达： ‘W’就是文本，我们需要找的是给定语音’X’下概率最大的文本’W’（后面的贝叶斯分解则是把他分成了声学文本两个部分，这里不详细描述），可见识别就是在搜索一个W，一个极端的方法就是我便利所有的">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/post_img/6.jpg">
-<meta property="article:published_time" content="2022-09-08T08:45:17.000Z">
-<meta property="article:modified_time" content="2022-09-16T07:11:01.913Z">
+<meta property="og:image" content="http://example.com/post_img/ACG.GY_35.png">
+<meta property="article:published_time" content="2023-11-23T07:33:24.000Z">
+<meta property="article:modified_time" content="2023-11-23T08:01:49.184Z">
 <meta property="article:author" content="azhang">
 <meta property="article:tag" content="asr">
-<meta property="article:tag" content="rnn-t">
-<meta property="article:tag" content="unified model">
-<meta property="article:tag" content="dual-mode">
-<meta property="article:tag" content="pretrain">
+<meta property="article:tag" content="rnnt">
+<meta property="article:tag" content="aed">
+<meta property="article:tag" content="beamsearch">
+<meta property="article:tag" content="decode">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="http://example.com/post_img/6.jpg">
+<meta name="twitter:image" content="http://example.com/post_img/ACG.GY_35.png">
   
   
   
-  <title>LEARNING A DUAL-MODE SPEECH RECOGNITION MODEL VIA SELF-PRUNING - 聪明的小奥</title>
+  <title>当我们讨论asr的时候我们在讨论什么 - 聪明的小奥</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -202,7 +202,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="LEARNING A DUAL-MODE SPEECH RECOGNITION MODEL VIA SELF-PRUNING"></span>
+            <span id="subtitle" data-typed-text="当我们讨论asr的时候我们在讨论什么"></span>
           
         </div>
 
@@ -213,8 +213,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2022-09-08 16:45" pubdate>
-          2022年9月8日 下午
+        <time datetime="2023-11-23 15:33" pubdate>
+          2023年11月23日 下午
         </time>
       </span>
     
@@ -225,7 +225,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.4k 字
+          1.3k 字
         
       </span>
     
@@ -236,7 +236,7 @@
         
         
         
-          12 分钟
+          11 分钟
         
       </span>
     
@@ -274,54 +274,18 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">LEARNING A DUAL-MODE SPEECH RECOGNITION MODEL VIA SELF-PRUNING</h1>
+            <h1 style="display: none">当我们讨论asr的时候我们在讨论什么</h1>
             
             
               <div class="markdown-body">
                 
-                <p>作者:  Chunxi Liu, Yuan Shangguan, Haichuan Yang, Yangyang Shi, Raghuraman Krishnamoorthi, Ozlem Kalinli<br>
-机构:     Meta AI<br>
-关键词: RNN-T，Dual-mode, pre-train<br>
-链接:         <a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2207.11906.pdf">https://arxiv.org/pdf/2207.11906.pdf</a></p>
-<h3 id="动机">动机</h3>
-<p>asr模型在端侧部署和服务器部署有着不同的模型要求，在端侧我们需要流式小模型在服务器端我们往往是非流式大模型，分别训练的代价比较大，而且模型大小的控制也需要对结构进行调参。本文提出一种在一个supernet上同时训练两个场景模型的方法。</p>
-<h3 id="方法">方法</h3>
-<h4 id="Emformer-encoder">Emformer encoder</h4>
-<p>将语音输入划分成chunk，中间chunk和前后的chunk一起作为一个声学chunk送入encoder。这样就可以通过前后chunk的大小来控制时延。在训练的时候，采用类似wenet那种dynamic chunk，每个step我们在目标时延和整句长度两者之间采样一个chunk size，（要么整句要么chunk）用这个chunk生成的mask去训练模型。</p>
-<h4 id="Dual-mode-ASR-supernet-training">Dual-mode ASR supernet training</h4>
-<p>我们用f(x; θ )表示离线的大模型，用f(x; m ·θ )表示小模型，其中m为权重的mask，对应大模型中每个元素，决定是否将一些位置的权重置零。本文通过m对模型进行layer wise的剪枝，给定稀疏度s，最终每层会有s比例的权重被剪枝掉。具体训练和剪枝的步骤如下：</p>
-<ol>
-<li>首先训练整个supernet达到t0步，训练过程中随机采样流式和非流式。</li>
-<li>从t0步开始：
-<ol>
-<li>对于每一层每过T步就将P比例的幅度小的权重通过mask置零。</li>
-<li>每一步训练，mask只对流式mode生效，对非流式模型不采用mask。</li>
-</ol>
-</li>
-<li>经过n个T后，(1-p)n的权重被置零，当置零的权重满足稀疏指标时，就停止剪枝继续训练。</li>
-</ol>
-<h4 id="SELF-PRUNING-VIA-SELF-SUPERVISED-LEARNING">SELF-PRUNING VIA SELF-SUPERVISED LEARNING</h4>
-<p>使用wav2vec2.0做预训练，训练时既使用非流式encoder也使用流式encoder，并且在预训练时只训练encoder不进行剪枝。finetune时使用小学习率并加入decoder，进行剪枝。</p>
-<h3 id="实验">实验</h3>
-<h4 id="实验设置">实验设置</h4>
-<p>有监督训练使用librispeech，无监督训练使用Libri-Light。decoder为一层LSTM。<br>
-80维Fbank拼6帧。<br>
-流式chunk维分别为(20,3,1),非流式则采用36s，也就是整句。<br>
-具体参数量和剪枝参数如下：<br>
-<img src="https://s2.loli.net/2022/09/08/OoHx64CFdI2arqR.png" srcset="/img/loading.gif" lazyload alt=""><br>
-<img src="https://s2.loli.net/2022/09/08/U5w9vlTs1bWtLR8.png" srcset="/img/loading.gif" lazyload alt=""></p>
-<h4 id="实验结果">实验结果</h4>
-<p>首先是dual-mode模型与单mode模型的性能对比：<br>
-<img src="https://s2.loli.net/2022/09/08/5KZfUeqlObBawCn.png" srcset="/img/loading.gif" lazyload alt=""><br>
-可以看到相比单独streaming模型，dual-mode的训练方式再streaming上效果更好，说明离线的训练会帮助流式的模型。<br>
-除此之外通过C1，C2，D1的对比可以看出dual-mode的训练对streaming是正向作用对非流式是负向作用，为了缓解这个情况，将剪枝开始前的步数提高，并且剪枝前只用非流式的模型训练，在开始剪枝后才开始dual-mode训练。<br>
-之后是预训练对系统的影响。<br>
-<img src="https://s2.loli.net/2022/09/08/KtCnFqOpgMcumeS.png" srcset="/img/loading.gif" lazyload alt=""><br>
-可以看到非流式的wav2vec取得了最大的提升。<br>
-最后是weight decay的实验结果<br>
-<img src="https://s2.loli.net/2022/09/08/AWCbch3rBVJzStp.png" srcset="/img/loading.gif" lazyload alt=""></p>
-<h3 id="总结">总结</h3>
-<p>本文证明了dual-mode训练方法相比单独流式的优越性，并且将wav2vec应用到了流式模型中。</p>
+                <p>最近带师弟给师弟将一些端到端的ASR模型，自己也有一点感悟，自己以前虽然对模型啥的也比较熟悉，但是一直没有串起来的感觉，这里分享一下自己和师弟交流之后的一些感悟。</p>
+<p>首先，ASR到底是什么，可以用公式这么表达：<br><img src="https://s2.loli.net/2023/11/23/3tOI5phmY7i4qGj.png" srcset="/img/loading.gif" lazyload alt="image.png"></p>
+<p>‘W’就是文本，我们需要找的是给定语音’X’下概率最大的文本’W’（后面的贝叶斯分解则是把他分成了声学文本两个部分，这里不详细描述），可见识别就是在搜索一个W，一个极端的方法就是我便利所有的W找到里面最大的就是识别结果，这样效率显然是非常低的，因此ASR的搜索’W’都是以beam search等方式，而我们在优化模型的时候，是知道正确答案的，也就是我们知道想要模型搜到什么结果，因此我们优化的目标就是让搜索的时候正确结果的得分高，但是我们训练时候不知道搜索是什么样的，因此我们就尽量让所有可能的正确搜索得分都高，这样最后反映到搜索（也就是解码）上，我们就能尽可能的得到搜索的正确结果。理解这点，我们觉得要搞清楚CTC，AED，RNN-T这些端到端模型的关键，就在于搞清楚训练和解码的关系，为什么训练的准则能够让模型在解码时候得到正确的结果。</p>
+<h2 id="CTC"><a href="#CTC" class="headerlink" title="CTC"></a>CTC</h2><p>CTC就是典型的训练时候考虑所有正确的可能的路径，测试时候搜索最大路径，这种只考虑正确的路劲的准则也导致了尖峰现象的出现，实际优化到最后训练和搜索已经比较类似了，因为搜索的最大路径往往几乎等于全体路径的得分。</p>
+<h2 id="RNN-T"><a href="#RNN-T" class="headerlink" title="RNN-T"></a>RNN-T</h2><p>RNN-T和CTC比较类似，但是不同在于他encoder之外还有一个输入token预测token的predictor，这就导致你要想在训练的时候遍历所有的路径就不能简单的直接计算，而是需要expand声学和文本两个部分，然后直接join成一个四维矩阵，这个矩阵就表示了所有的可能的对齐组合，这里直接文本expand也体现了端到端直接优化正确答案的特点，这个矩阵也只是表征了正确答案和音频的所有可能对齐，解码时候会发现beam和greedy的差距比较大也有这方面的影响。虽然predictor的引入让rnnt和CTC有了一些明显的区分，但是他们的共性仍然明显，比如尖峰现象从而导致最优路径占据大部分的分数，K2-loss就是基于这个现象来裁剪四维矩阵从而降低显存占用，提升模型表现。 rnnt的显存占用以前是一个大家比较关注的问题，现在好像关注比较少了，以前会有一些削减维度（下采样T，因素建模减小V，K2减小U）或者算子优化（softmax优化）的工作。</p>
+<h2 id="AED"><a href="#AED" class="headerlink" title="AED"></a>AED</h2><p>这里讨论最标准的AED。AED算是另一个体系，完全非流式一次得到全部的声学表征，然后完全在token级别自回归，AED没有硬对齐将token长度预测这个回归任务当作一个分类任务，这产生了一些弊端，但不是这里的重点，再beam search那篇里面提了一下，大家感兴趣可以看一下，这里的重点还是他的训练和推理。AED训练还是标准的逻辑，甚至更加直接，直接计算正确路径的得分，让每一步正确答案的概率都最大，解码时候则是自回归的解码，预测下一个token的方式去做greedy和beam。</p>
+<p>暂时就想到这么多，虽然脑子里觉得串起来了，但是实际写出来感觉还是有些表达不清楚的地方，等我想清楚怎么表达了再修改。</p>
 
                 
               </div>
@@ -340,7 +304,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  <a href="/categories/%E7%AE%97%E6%B3%95/" class="category-chain-item">算法</a>
   
   
 
@@ -357,13 +321,13 @@
       
         <a href="/tags/asr/">#asr</a>
       
-        <a href="/tags/rnn-t/">#rnn-t</a>
+        <a href="/tags/rnnt/">#rnnt</a>
       
-        <a href="/tags/unified-model/">#unified model</a>
+        <a href="/tags/aed/">#aed</a>
       
-        <a href="/tags/dual-mode/">#dual-mode</a>
+        <a href="/tags/beamsearch/">#beamsearch</a>
       
-        <a href="/tags/pretrain/">#pretrain</a>
+        <a href="/tags/decode/">#decode</a>
       
     </div>
   
@@ -375,8 +339,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>LEARNING A DUAL-MODE SPEECH RECOGNITION MODEL VIA SELF-PRUNING</div>
-      <div>http://example.com/2022/09/08/dual-mode-9-8/</div>
+      <div>当我们讨论asr的时候我们在讨论什么</div>
+      <div>http://example.com/2023/11/23/asr-overview/</div>
     </div>
     <div class="license-meta">
       
@@ -388,7 +352,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2022年9月8日</div>
+          <div>2023年11月23日</div>
         </div>
       
       
@@ -418,18 +382,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2023/11/23/asr-overview/" title="当我们讨论asr的时候我们在讨论什么">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">当我们讨论asr的时候我们在讨论什么</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/08/11/ctc-peak/" title="ctc的尖峰和滞后现象">
-                        <span class="hidden-mobile">ctc的尖峰和滞后现象</span>
+                      <a href="/2022/09/08/dual-mode-9-8/" title="LEARNING A DUAL-MODE SPEECH RECOGNITION MODEL VIA SELF-PRUNING">
+                        <span class="hidden-mobile">LEARNING A DUAL-MODE SPEECH RECOGNITION MODEL VIA SELF-PRUNING</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
