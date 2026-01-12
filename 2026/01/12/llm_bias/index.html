@@ -1,0 +1,667 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/mao.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="LLM based ASR中Hot Word Bias的应用思考Context Bias是提升特定词汇识别准确率的关键技术，在垂直领域ASR落地中不可或缺。随着大语言模型（LLM）与自动语音识别（ASR）的深度融合，Bias任务的实现逻辑与效果边界均发生了显著变化。本文将从传统方法回顾、LLM带来的核心增益，以及当前LLM-ASR领域的相关Bias工作三个维度展开总结。 一、回顾：LLM base">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LLM based ASR中Context Bias">
+<meta property="og:url" content="http://example.com/2026/01/12/llm_bias/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="LLM based ASR中Hot Word Bias的应用思考Context Bias是提升特定词汇识别准确率的关键技术，在垂直领域ASR落地中不可或缺。随着大语言模型（LLM）与自动语音识别（ASR）的深度融合，Bias任务的实现逻辑与效果边界均发生了显著变化。本文将从传统方法回顾、LLM带来的核心增益，以及当前LLM-ASR领域的相关Bias工作三个维度展开总结。 一、回顾：LLM base">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/images/post_img/nnbias2.png">
+<meta property="article:published_time" content="2026-01-12T12:04:45.000Z">
+<meta property="article:modified_time" content="2026-01-12T13:01:52.152Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="asr">
+<meta property="article:tag" content="bias">
+<meta property="article:tag" content="hotword">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/images/post_img/nnbias2.png">
+  
+  
+  
+  <title>LLM based ASR中Context Bias - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/cover.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="LLM based ASR中Context Bias"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-01-12 20:04" pubdate>
+          2026年1月12日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          12 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">LLM based ASR中Context Bias</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="LLM-based-ASR中Hot-Word-Bias的应用思考"><a href="#LLM-based-ASR中Hot-Word-Bias的应用思考" class="headerlink" title="LLM based ASR中Hot Word Bias的应用思考"></a>LLM based ASR中Hot Word Bias的应用思考</h1><p>Context Bias是提升特定词汇识别准确率的关键技术，在垂直领域ASR落地中不可或缺。随着大语言模型（LLM）与自动语音识别（ASR）的深度融合，Bias任务的实现逻辑与效果边界均发生了显著变化。本文将从传统方法回顾、LLM带来的核心增益，以及当前LLM-ASR领域的相关Bias工作三个维度展开总结。</p>
+<h2 id="一、回顾：LLM-based-ASR之前的Hot-Word-Bias方法"><a href="#一、回顾：LLM-based-ASR之前的Hot-Word-Bias方法" class="headerlink" title="一、回顾：LLM based ASR之前的Hot Word Bias方法"></a>一、回顾：LLM based ASR之前的Hot Word Bias方法</h2><p>在LLM融入ASR体系之前，行业内已形成两类核心的Hot Word Bias实现方案：一类是基于WFST的传统解码层加权方法（如On-the-fly Rescoring），另一类是更灵活的基于神经网络的Bias方法（NN-Bias，含C-LAS、Context Transformer Transducer等代表性方案）。关于这些传统方法的详细技术细节、实验结果及代码实现，可参考我此前的博客《NN-Bias总结》：NN-Bias总结。</p>
+<p>整体来看，传统方法虽能提升热词识别率，但存在明显局限：未登录热词适配成本高、上下文语义建模能力弱、易出现偏置过度导致误召回等问题。而LLM的融入，恰好为解决这些痛点提供了新的思路。</p>
+<h2 id="二、LLM为Hot-Word-Bias任务带来的核心增益"><a href="#二、LLM为Hot-Word-Bias任务带来的核心增益" class="headerlink" title="二、LLM为Hot Word Bias任务带来的核心增益"></a>二、LLM为Hot Word Bias任务带来的核心增益</h2><p>LLM的加入对于ASR中的热词的影响有两个主要方面，分别是模型能力和工具方法，具体体现在以下三点，其中前两点是我说的能力，最后则是一些可以利用的工具和方法：</p>
+<h3 id="1-更强的语言先验知识覆盖，降低未登录热词识别门槛"><a href="#1-更强的语言先验知识覆盖，降低未登录热词识别门槛" class="headerlink" title="1. 更强的语言先验知识覆盖，降低未登录热词识别门槛"></a>1. 更强的语言先验知识覆盖，降低未登录热词识别门槛</h3><p>传统ASR的语言模型（如N-gram、基础Transformer LM）的文本语料覆盖范围有限，多依赖于ASR专属的音频-文本平行语料，导致大量垂直领域热词（如医疗领域的“硝苯地平”、金融领域的“北向资金”）成为未登录词，需额外进行词表扩充与适配。而LLM的训练语料覆盖海量通用文本与各类专业文本，其词汇覆盖率远超传统ASR的LM——即使是部分生僻热词，LLM也大概率已在训练过程中习得其语义与拼写形式。</p>
+<p>这种优势让Context Bias任务无需过度依赖“热词词表扩充+微调”的模式：对于传统ASR完全陌生的热词，LLM可凭借自身的语言先验知识，直接理解其语义属性与上下文适配场景，通过偏置引导即可实现精准识别。</p>
+<h3 id="2-更强的上下文利用能力，提升热词识别的精准度"><a href="#2-更强的上下文利用能力，提升热词识别的精准度" class="headerlink" title="2. 更强的上下文利用能力，提升热词识别的精准度"></a>2. 更强的上下文利用能力，提升热词识别的精准度</h3><p>传统ASR解码器的上下文利用能力较弱，其效果接近于n-gram模型，因此本质上不具备基于语义判断词汇合理性的能力。例如在句子“患者服用硝苯地平后血压下降”中，传统ASR可能因“硝苯地平”发音复杂而误判为“心痛地平”，且无法借助“患者”“血压”等上下文信息修正这一错误。</p>
+<p>而LLM具备强大的上下文理解与推理能力，其建模的上下文窗口可覆盖数百甚至数千个token。在Bias任务中，LLM不仅能接收“热词列表”的引导，还能结合当前语音对应的文本上下文，判断热词是否符合语义逻辑——即便热词发音存在模糊性，也能通过上下文推理排除错误选项，同时避免非热词的误召回（如不会将普通词汇错误识别为热词）。反观WFST或早期的NN-Bias方法，其核心逻辑都是提升近似发音词汇的发射概率，本质上不具备上下文判断能力，因此工程实践中常见的优化手段是在WFST中加入前导词约束，以减少过度偏置带来的误报问题。</p>
+<h3 id="3-适配热词任务的技术工具迁移，提升方案灵活性"><a href="#3-适配热词任务的技术工具迁移，提升方案灵活性" class="headerlink" title="3. 适配热词任务的技术工具迁移，提升方案灵活性"></a>3. 适配热词任务的技术工具迁移，提升方案灵活性</h3><p>LLM生态中已发展出多种成熟的“外部信息融合”与“强化学习”技术，这些技术可直接迁移至Hot Word Bias任务，大幅提升方案的适配性与效果可控性。其中最具代表性的两类技术的应用逻辑如下：</p>
+<ul>
+<li><p>RAG：热词词表本质是一类结构化外部信息，传统方法需将热词硬编码到解码规则或词表中，不仅灵活性差，若要支持大词表还需投入大量优化工作。而基于RAG的思路，可将热词词表构建为检索库，在LLM解码过程中实时匹配上下文并调用热词信息，大幅提升适配效率。</p>
+</li>
+<li><p>RLHF&#x2F;GRPO：辅助loss曾是NN-Bias领域的研究热点，核心原因在于ASR的基础loss未针对热词任务优化，因此需额外增设辅助loss提升效果。而在LLM框架下，热词任务天然适配GRPO等强化学习方法：可直接将“热词正确召回”“无过度偏置误报”作为正向奖励信号，引导模型自主学习最优偏置策略。</p>
+</li>
+</ul>
+<h2 id="三、LLM-based-ASR领域的相关Bias工作现状"><a href="#三、LLM-based-ASR领域的相关Bias工作现状" class="headerlink" title="三、LLM based ASR领域的相关Bias工作现状"></a>三、LLM based ASR领域的相关Bias工作现状</h2>
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E6%80%BB%E7%BB%93/" class="category-chain-item">论文总结</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/asr/" class="print-no-link">#asr</a>
+      
+        <a href="/tags/bias/" class="print-no-link">#bias</a>
+      
+        <a href="/tags/hotword/" class="print-no-link">#hotword</a>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>LLM based ASR中Context Bias</div>
+      <div>http://example.com/2026/01/12/llm_bias/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年1月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/08/10/beamsearch/" title="beam search基本原理以及在语音识别中的应用">
+                        <span class="hidden-mobile">beam search基本原理以及在语音识别中的应用</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
