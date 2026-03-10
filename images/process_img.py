@@ -2,8 +2,8 @@ import os
 from PIL import Image
 
 # ===================== 【这里是你需要修改的2个配置项，其他不用动】 =====================
-INPUT_FOLDER = "/home/zhangao/hexo/blog/source/images/post_img_raw"  # 待处理的图片文件夹，复制你的文件夹路径粘贴到这里
-OUTPUT_FOLDER = "/home/zhangao/hexo/blog/source/images/post_img"  # 处理完的图片保存路径，自动创建该文件夹
+INPUT_FOLDER = "/home/zhangao/hexo/blog/source/images/mj_raw"  # 待处理的图片文件夹，复制你的文件夹路径粘贴到这里
+OUTPUT_FOLDER = "/home/zhangao/hexo/blog/source/images/mj"  # 处理完的图片保存路径，自动创建该文件夹
 # =====================================================================================
 
 # 目标尺寸：Fluid主题最佳封面尺寸
