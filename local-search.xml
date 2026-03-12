@@ -4,11 +4,11 @@
   
   
   <entry>
-    <title>Vibe Voice ASR</title>
-    <link href="/2026/03/10/vibevoice/"/>
-    <url>/2026/03/10/vibevoice/</url>
+    <title>VIBEVOICE-ASR 论文解读</title>
+    <link href="/2026/03/12/vibevoice/"/>
+    <url>/2026/03/12/vibevoice/</url>
     
-    <content type="html"><![CDATA[]]></content>
+    <content type="html"><![CDATA[<h1 id="VIBEVOICE-ASR-论文解读"><a href="#VIBEVOICE-ASR-论文解读" class="headerlink" title="VIBEVOICE-ASR 论文解读"></a>VIBEVOICE-ASR 论文解读</h1><h2 id="背景与动机"><a href="#背景与动机" class="headerlink" title="背景与动机"></a>背景与动机</h2><p>长音频（会议、播客等）的语音识别面临两个核心挑战：</p><ol><li><strong>上下文碎片化 (Context Fragmentation)</strong>：长音频被切分成多个片段后，各片段独立识别，导致上下文信息丢失</li><li><strong>多说话人复杂性 (Multi-Speaker Complexity)</strong>：多人对话场景下的说话人分离和识别难度增加</li></ol><p>传统方案通常采用 pipeline 方式：先做说话人分离 (Speaker Diarization)，再切片送 ASR，最后拼接。这种方式存在误差传播问题。</p><h2 id="核心贡献"><a href="#核心贡献" class="headerlink" title="核心贡献"></a>核心贡献</h2><p>VibeVoice-ASR 提出了一个统一框架，在单一端到端生成模型中完成以下任务：</p><table><thead><tr><th>任务</th><th>描述</th></tr></thead><tbody><tr><td>ASR</td><td>自动语音识别</td></tr><tr><td>Speaker Diarization</td><td>说话人分离</td></tr><tr><td>Timestamping</td><td>时间戳生成</td></tr></tbody></table><h3 id="关键特性"><a href="#关键特性" class="headerlink" title="关键特性"></a>关键特性</h3><ol><li><strong>单次处理能力</strong>：支持最长 60 分钟音频的单次处理，无需切片</li><li><strong>多语言支持</strong>：支持 50+ 语言，无需显式语言设置</li><li><strong>Code-switching 原生支持</strong>：原生支持 utterance 内部和跨 utterance 的代码切换</li><li><strong>Prompt-based Context Injection</strong>：用户可通过 prompt 提供自定义上下文信息，提升领域术语和多音字消歧的准确率</li></ol><h2 id="技术方案"><a href="#技术方案" class="headerlink" title="技术方案"></a>技术方案</h2><h3 id="统一建模框架"><a href="#统一建模框架" class="headerlink" title="统一建模框架"></a>统一建模框架</h3><p>将 ASR、Speaker Diarization、Timestamping 统一为单一生成任务，通过一个模型输出多任务结果，避免 pipeline 方式带来的误差传播。</p><h3 id="Context-Injection-机制"><a href="#Context-Injection-机制" class="headerlink" title="Context Injection 机制"></a>Context Injection 机制</h3><p>通过 prompt 方式注入上下文信息，包括：</p><ul><li>领域术语（提升垂直领域识别准确率）</li><li>多音字消歧（提升专有名词识别准确率）</li></ul><h2 id="相关资料"><a href="#相关资料" class="headerlink" title="相关资料"></a>相关资料</h2><ul><li><a href="https://arxiv.org/abs/2601.18184">Paper</a></li><li><a href="https://github.com/microsoft/VibeVoice">GitHub</a></li><li><a href="https://huggingface.co/collections/microsoft/vibevoice-68a2ef24a875c44be47b034f">Hugging Face</a></li></ul><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>VibeVoice-ASR 通过统一的端到端框架解决了长音频语音识别的核心痛点，单次处理 60 分钟音频的能力在实际场景中有很大实用价值。其 prompt-based context injection 机制与当前 LLM 趋势结合，是值得关注的亮点。</p>]]></content>
     
     
     <categories>
@@ -22,11 +22,11 @@
       
       <tag>asr</tag>
       
-      <tag>LLM</tag>
-      
       <tag>long-form audio</tag>
       
       <tag>rich transcription</tag>
+      
+      <tag>VibeVoice</tag>
       
     </tags>
     
