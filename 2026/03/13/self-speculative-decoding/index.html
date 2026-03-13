@@ -28,7 +28,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/mj/ssd-flow.png">
 <meta property="article:published_time" content="2026-03-13T09:20:00.000Z">
-<meta property="article:modified_time" content="2026-03-13T09:26:54.843Z">
+<meta property="article:modified_time" content="2026-03-13T09:30:45.932Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="LLM">
@@ -344,7 +344,6 @@
 <h2 id="三、实验结果"><a href="#三、实验结果" class="headerlink" title="三、实验结果"></a>三、实验结果</h2><h3 id="3-1-运行时分析"><a href="#3-1-运行时分析" class="headerlink" title="3.1 运行时分析"></a>3.1 运行时分析</h3><p><img src="/images/mj/ssd-runtime.png" srcset="/img/loading.gif" lazyload alt="各阶段运行时间分布"></p>
 <h3 id="3-2-阈值影响"><a href="#3-2-阈值影响" class="headerlink" title="3.2 阈值影响"></a>3.2 阈值影响</h3><p><img src="/images/mj/ssd-threshold.png" srcset="/img/loading.gif" lazyload alt="阈值对 WER 和 RTFx 的影响"></p>
 <h3 id="3-3-主实验结果"><a href="#3-3-主实验结果" class="headerlink" title="3.3 主实验结果"></a>3.3 主实验结果</h3><p>在 <strong>HuggingFace Open ASR</strong> 基准上，使用 1B 参数 LLM + 440M 参数 CTC 编码器：</p>
-<p><img src="/images/mj/ssd-table1.png" srcset="/img/loading.gif" lazyload alt="实验结果对比"></p>
 <table>
 <thead>
 <tr>
@@ -390,7 +389,6 @@
 <p>LLM 验证能够<strong>降低 WER</strong>，是因为 CTC 和 SLM 产生<strong>互补的错误模式</strong>。</p>
 </blockquote>
 <p>AR 输出通常更流畅但不一定忠实于音频（LM bias 问题），而 CTC 验证可以纠正这些错误。</p>
-<p><img src="/images/mj/ssd-table2.png" srcset="/img/loading.gif" lazyload alt="示例对比"></p>
 <h2 id="四、模型细节"><a href="#四、模型细节" class="headerlink" title="四、模型细节"></a>四、模型细节</h2><ul>
 <li><strong>CTC 编码器</strong>：440M 参数，16 层 Conformer</li>
 <li><strong>Projector</strong>：37M 参数，2 层 Query Transformer</li>
