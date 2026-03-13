@@ -4,6 +4,39 @@
   
   
   <entry>
+    <title>强化学习在 LLM-based ASR 和 TTS 系统中的应用探索</title>
+    <link href="/2026/03/13/rl-asr-tts/"/>
+    <url>/2026/03/13/rl-asr-tts/</url>
+    
+    <content type="html"><![CDATA[<h1 id="强化学习在-LLM-based-ASR-和-TTS-系统中的应用探索"><a href="#强化学习在-LLM-based-ASR-和-TTS-系统中的应用探索" class="headerlink" title="强化学习在 LLM-based ASR 和 TTS 系统中的应用探索"></a>强化学习在 LLM-based ASR 和 TTS 系统中的应用探索</h1><h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul><li><strong>标题</strong>: Explore the Reinforcement Learning for the LLM based ASR and TTS system</li><li><strong>链接</strong>: <a href="https://arxiv.org/abs/2509.18569">https://arxiv.org/abs/2509.18569</a></li></ul><h2 id="一、背景与动机"><a href="#一、背景与动机" class="headerlink" title="一、背景与动机"></a>一、背景与动机</h2><h3 id="1-1-LLM-在语音领域的应用"><a href="#1-1-LLM-在语音领域的应用" class="headerlink" title="1.1 LLM 在语音领域的应用"></a>1.1 LLM 在语音领域的应用</h3><p>近年来，大语言模型（LLM）在语音领域取得了显著进展，包括：</p><ul><li><strong>ASR（自动语音识别）</strong>：将语音转换为文本</li><li><strong>TTS（文本转语音）</strong>：将文本转换为语音</li></ul><p>目前大多数 ASR 和 TTS 系统都基于 LLM，相较于传统小模型有显著优势。</p><h3 id="1-2-强化学习在-LLM-中的作用"><a href="#1-2-强化学习在-LLM-中的作用" class="headerlink" title="1.2 强化学习在 LLM 中的作用"></a>1.2 强化学习在 LLM 中的作用</h3><p>在 LLM 训练中，强化学习（RL）是关键步骤：</p><ul><li>使模型与人类偏好对齐</li><li>增强模型的推理能力</li></ul><p>常见的 RL 方法包括：</p><ul><li><strong>PPO</strong>（Proximal Policy Optimization）</li><li><strong>GRPO</strong>（Group Relative Policy Optimization）</li><li><strong>DiffRO</strong>（Differentiable Reward Optimization）</li></ul><h3 id="1-3-本文研究问题"><a href="#1-3-本文研究问题" class="headerlink" title="1.3 本文研究问题"></a>1.3 本文研究问题</h3><p>相较于文本和视频模态，<strong>音频 LLM 的 RL 研究仍然有限</strong>。本文详细研究了 RL 在 LLM-based ASR 和 TTS 系统中的效果。</p><h2 id="二、方法详解"><a href="#二、方法详解" class="headerlink" title="二、方法详解"></a>二、方法详解</h2><h3 id="2-1-音频-LLM-的-RL-训练框架"><a href="#2-1-音频-LLM-的-RL-训练框架" class="headerlink" title="2.1 音频 LLM 的 RL 训练框架"></a>2.1 音频 LLM 的 RL 训练框架</h3><p>本文设计了一个<strong>交替 GPU 利用框架</strong>，高效管理音频 LLM 的 RL 训练：</p><p><img src="/images/mj/rl-asr-tts-1.png" alt="RL 训练框架"></p><p><strong>ASR 训练流程</strong>：</p><ol><li><strong>PyTorch 音频编码器</strong>占用 GPU，提取音频 embedding</li><li><strong>SGLang LLM</strong> 生成多组假设，计算奖励</li><li><strong>FSDP LLM</strong> 策略模型执行策略优化</li></ol><p><strong>TTS 训练流程</strong>：</p><ol><li>SGLang 生成 acoustic token 序列</li><li>Flow-matching 模型和 vocoder 生成波形</li><li>奖励模型计算奖励分数</li><li>FSDP 策略模型执行 GRPO 或 DiffRO</li></ol><h3 id="2-2-GRPO-在-ASR-中的应用"><a href="#2-2-GRPO-在-ASR-中的应用" class="headerlink" title="2.2 GRPO 在 ASR 中的应用"></a>2.2 GRPO 在 ASR 中的应用</h3><p><strong>奖励函数设计</strong>：</p><table><thead><tr><th>奖励</th><th>描述</th></tr></thead><tbody><tr><td>$R^1$</td><td>ASR 准确率：$1 - WER(y^*, y)$</td></tr><tr><td>$R^2$</td><td>幻觉检测：检测重复、不存在、翻译结果</td></tr><tr><td>$R^3$</td><td>关键词准确率和召回率</td></tr></tbody></table><p><strong>RL 训练数据构建</strong>：</p><ul><li>$D^1$：不同 ASR 系统转录差异大的样本（hard samples）</li><li>$D^2$：长音频（&gt;20秒）</li><li>$D^3$：包含专有名词（品牌、人名）的样本</li></ul><h3 id="2-3-DiffRO-与-GRPO-结合用于-TTS"><a href="#2-3-DiffRO-与-GRPO-结合用于-TTS" class="headerlink" title="2.3 DiffRO 与 GRPO 结合用于 TTS"></a>2.3 DiffRO 与 GRPO 结合用于 TTS</h3><p><strong>DiffRO 原理</strong>：</p><ul><li>使用 GumbelSoftmax 从 LLM 采样输出 token</li><li>用 token-based ASR 计算奖励</li><li>梯度可以直接反向传播到 TTS 模型</li></ul><p><strong>GRPO 奖励设计</strong>：</p><table><thead><tr><th>奖励</th><th>描述</th></tr></thead><tbody><tr><td>$R^1$</td><td>ASR 识别准确率</td></tr><tr><td>$R^2$</td><td>音频时长：防止语音过慢</td></tr><tr><td>$R^3$</td><td>Token 和 Pitch 多样性</td></tr></tbody></table><p><strong>结合方法（Sample Filter）</strong>：</p><ul><li>根据 advantage 区分正负样本</li><li>只对正样本计算 DiffRO loss</li><li>使训练更稳定有效</li></ul><h2 id="三、实验结果"><a href="#三、实验结果" class="headerlink" title="三、实验结果"></a>三、实验结果</h2><h3 id="3-1-训练效率"><a href="#3-1-训练效率" class="headerlink" title="3.1 训练效率"></a>3.1 训练效率</h3><p><img src="/images/mj/rl-asr-tts-2.png" alt="训练效率分析"></p><ul><li><strong>ASR</strong>：1小时音频数据，RTF ≈ 0.015</li><li><strong>TTS</strong>：单步训练耗时 16.73s（batch&#x3D;128）</li></ul><h3 id="3-2-ASR-实验结果"><a href="#3-2-ASR-实验结果" class="headerlink" title="3.2 ASR 实验结果"></a>3.2 ASR 实验结果</h3><table><thead><tr><th>配置</th><th>短语音 WER</th><th>长语音 WER</th></tr></thead><tbody><tr><td>Baseline</td><td>-</td><td>-</td></tr><tr><td><strong>GRPO (全部)</strong></td><td><strong>5.3% 相对提升</strong></td><td><strong>5.3% 相对提升</strong></td></tr></tbody></table><p><strong>关键发现</strong>：</p><ul><li>幻觉问题在长音频中更严重</li><li>关键词相关数据和奖励设计对缓解幻觉至关重要</li><li>Hard samples ($D^1$) 对长语音提升明显</li></ul><h3 id="3-3-TTS-实验结果"><a href="#3-3-TTS-实验结果" class="headerlink" title="3.3 TTS 实验结果"></a>3.3 TTS 实验结果</h3><p><img src="/images/mj/rl-asr-tts-3.png" alt="训练稳定性分析"></p><table><thead><tr><th>方法</th><th>WER</th><th>说话人相似度 (SS)</th></tr></thead><tbody><tr><td>Baseline</td><td>-</td><td>-</td></tr><tr><td>DiffRO</td><td>更优</td><td>下降较多</td></tr><tr><td>GRPO</td><td>改善</td><td>轻微下降</td></tr><tr><td><strong>Sample Filter 结合</strong></td><td><strong>最佳</strong></td><td><strong>最佳平衡</strong></td></tr></tbody></table><p><strong>关键发现</strong>：</p><ul><li>DiffRO 在 WER 上更好，但 SS 下降更多</li><li>Sample Filter 结合方法效果最佳</li><li>音频时长奖励可以防止语音速度变慢</li></ul><h2 id="四、总结"><a href="#四、总结" class="headerlink" title="四、总结"></a>四、总结</h2><p>本文探索了 RL 在音频 LLM（ASR 和 TTS）中的应用：</p><ol><li><strong>提出交替 GPU 利用框架</strong>，训练效率高</li><li><strong>ASR</strong>：GRPO + 多种奖励函数，WER 相对提升 5.3%</li><li><strong>TTS</strong>：结合 DiffRO 和 GRPO，通过 Sample Filter 实现最佳效果</li><li><strong>奖励设计</strong>对塑造模型输出偏好和用户体验至关重要</li></ol><p><strong>局限与未来方向</strong>：</p><ul><li>需要更高效的音频 RL 框架</li><li>探索更多奖励函数设计</li></ul>]]></content>
+    
+    
+    <categories>
+      
+      <category>论文解读</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>LLM</tag>
+      
+      <tag>ASR</tag>
+      
+      <tag>论文解读</tag>
+      
+      <tag>强化学习</tag>
+      
+      <tag>TTS</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>Self-Speculative Decoding for LLM-based ASR 论文解读</title>
     <link href="/2026/03/13/self-speculative-decoding/"/>
     <url>/2026/03/13/self-speculative-decoding/</url>
