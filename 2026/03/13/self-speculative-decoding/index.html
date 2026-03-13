@@ -19,27 +19,27 @@
   <meta name="author" content="Ao Zhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="LLM based ASR中Hot Word Bias的应用思考Context Bias是提升特定词汇识别准确率的关键技术，在垂直领域ASR落地中不可或缺。随着大语言模型（LLM）与自动语音识别（ASR）的深度融合，Bias任务的实现逻辑与效果边界均发生了显著变化。本文将从传统方法回顾、LLM带来的核心增益，以及当前LLM-ASR领域的相关Bias工作三个维度展开总结。 一、回顾：LLM base">
+    <meta name="description" content="Self-Speculative Decoding for LLM-based ASR 论文解读论文信息 标题: Self-Speculative Decoding for LLM-based ASR with CTC Encoder Drafts 作者: George Saon, Samuel Thomas, Takashi Fukuda, Tohru Nagano, Avihu Dekel,">
 <meta property="og:type" content="article">
-<meta property="og:title" content="LLM based ASR中Context Bias">
-<meta property="og:url" content="https://smallsmartao.github.io/2026/01/12/llm_bias/index.html">
+<meta property="og:title" content="Self-Speculative Decoding for LLM-based ASR 论文解读">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/03/13/self-speculative-decoding/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="LLM based ASR中Hot Word Bias的应用思考Context Bias是提升特定词汇识别准确率的关键技术，在垂直领域ASR落地中不可或缺。随着大语言模型（LLM）与自动语音识别（ASR）的深度融合，Bias任务的实现逻辑与效果边界均发生了显著变化。本文将从传统方法回顾、LLM带来的核心增益，以及当前LLM-ASR领域的相关Bias工作三个维度展开总结。 一、回顾：LLM base">
+<meta property="og:description" content="Self-Speculative Decoding for LLM-based ASR 论文解读论文信息 标题: Self-Speculative Decoding for LLM-based ASR with CTC Encoder Drafts 作者: George Saon, Samuel Thomas, Takashi Fukuda, Tohru Nagano, Avihu Dekel,">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://smallsmartao.github.io/images/mj/bias2.png">
-<meta property="article:published_time" content="2026-01-12T12:04:45.000Z">
-<meta property="article:modified_time" content="2026-03-12T12:24:24.103Z">
+<meta property="og:image" content="https://smallsmartao.github.io/images/mj/asr1.png">
+<meta property="article:published_time" content="2026-03-13T09:20:00.000Z">
+<meta property="article:modified_time" content="2026-03-13T09:23:09.307Z">
 <meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
 <meta property="article:tag" content="LLM">
-<meta property="article:tag" content="asr">
-<meta property="article:tag" content="bias">
-<meta property="article:tag" content="hotword">
+<meta property="article:tag" content="论文解读">
+<meta property="article:tag" content="语音识别">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://smallsmartao.github.io/images/mj/bias2.png">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/mj/asr1.png">
   
   
   
-  <title>LLM based ASR中Context Bias - 聪明的小奥</title>
+  <title>Self-Speculative Decoding for LLM-based ASR 论文解读 - 聪明的小奥</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -205,7 +205,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="LLM based ASR中Context Bias"></span>
+            <span id="subtitle" data-typed-text="Self-Speculative Decoding for LLM-based ASR 论文解读"></span>
           
         </div>
 
@@ -216,8 +216,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-01-12 20:04" pubdate>
-          2026年1月12日 晚上
+        <time datetime="2026-03-13 17:20" pubdate>
+          2026年3月13日 下午
         </time>
       </span>
     
@@ -228,7 +228,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.3k 字
+          1k 字
         
       </span>
     
@@ -239,7 +239,7 @@
         
         
         
-          12 分钟
+          9 分钟
         
       </span>
     
@@ -276,27 +276,164 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">LLM based ASR中Context Bias</h1>
+            <h1 id="seo-header">Self-Speculative Decoding for LLM-based ASR 论文解读</h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="LLM-based-ASR中Hot-Word-Bias的应用思考"><a href="#LLM-based-ASR中Hot-Word-Bias的应用思考" class="headerlink" title="LLM based ASR中Hot Word Bias的应用思考"></a>LLM based ASR中Hot Word Bias的应用思考</h1><p>Context Bias是提升特定词汇识别准确率的关键技术，在垂直领域ASR落地中不可或缺。随着大语言模型（LLM）与自动语音识别（ASR）的深度融合，Bias任务的实现逻辑与效果边界均发生了显著变化。本文将从传统方法回顾、LLM带来的核心增益，以及当前LLM-ASR领域的相关Bias工作三个维度展开总结。</p>
-<h2 id="一、回顾：LLM-based-ASR之前的Hot-Word-Bias方法"><a href="#一、回顾：LLM-based-ASR之前的Hot-Word-Bias方法" class="headerlink" title="一、回顾：LLM based ASR之前的Hot Word Bias方法"></a>一、回顾：LLM based ASR之前的Hot Word Bias方法</h2><p>在LLM融入ASR体系之前，行业内已形成两类核心的Hot Word Bias实现方案：一类是基于WFST的传统解码层加权方法（如On-the-fly Rescoring），另一类是更灵活的基于神经网络的Bias方法（NN-Bias，含C-LAS、Context Transformer Transducer等代表性方案）。关于这些传统方法的详细技术细节、实验结果及代码实现，可参考我此前的博客《NN-Bias总结》：NN-Bias总结。</p>
-<p>整体来看，传统方法虽能提升热词识别率，但存在明显局限：未登录热词适配成本高、上下文语义建模能力弱、易出现偏置过度导致误召回等问题。而LLM的融入，恰好为解决这些痛点提供了新的思路。</p>
-<h2 id="二、LLM为Hot-Word-Bias任务带来的核心增益"><a href="#二、LLM为Hot-Word-Bias任务带来的核心增益" class="headerlink" title="二、LLM为Hot Word Bias任务带来的核心增益"></a>二、LLM为Hot Word Bias任务带来的核心增益</h2><p>LLM的加入对于ASR中的热词的影响有两个主要方面，分别是模型能力和工具方法，具体体现在以下三点，其中前两点是我说的能力，最后则是一些可以利用的工具和方法：</p>
-<h3 id="1-更强的语言先验知识覆盖，降低未登录热词识别门槛"><a href="#1-更强的语言先验知识覆盖，降低未登录热词识别门槛" class="headerlink" title="1. 更强的语言先验知识覆盖，降低未登录热词识别门槛"></a>1. 更强的语言先验知识覆盖，降低未登录热词识别门槛</h3><p>传统ASR的语言模型（如N-gram、基础Transformer LM）的文本语料覆盖范围有限，多依赖于ASR专属的音频-文本平行语料，导致大量垂直领域热词（如医疗领域的“硝苯地平”、金融领域的“北向资金”）成为未登录词，需额外进行词表扩充与适配。而LLM的训练语料覆盖海量通用文本与各类专业文本，其词汇覆盖率远超传统ASR的LM——即使是部分生僻热词，LLM也大概率已在训练过程中习得其语义与拼写形式。</p>
-<p>这种优势让Context Bias任务无需过度依赖“热词词表扩充+微调”的模式：对于传统ASR完全陌生的热词，LLM可凭借自身的语言先验知识，直接理解其语义属性与上下文适配场景，通过偏置引导即可实现精准识别。</p>
-<h3 id="2-更强的上下文利用能力，提升热词识别的精准度"><a href="#2-更强的上下文利用能力，提升热词识别的精准度" class="headerlink" title="2. 更强的上下文利用能力，提升热词识别的精准度"></a>2. 更强的上下文利用能力，提升热词识别的精准度</h3><p>传统ASR解码器的上下文利用能力较弱，其效果接近于n-gram模型，因此本质上不具备基于语义判断词汇合理性的能力。例如在句子“患者服用硝苯地平后血压下降”中，传统ASR可能因“硝苯地平”发音复杂而误判为“心痛地平”，且无法借助“患者”“血压”等上下文信息修正这一错误。</p>
-<p>而LLM具备强大的上下文理解与推理能力，其建模的上下文窗口可覆盖数百甚至数千个token。在Bias任务中，LLM不仅能接收“热词列表”的引导，还能结合当前语音对应的文本上下文，判断热词是否符合语义逻辑——即便热词发音存在模糊性，也能通过上下文推理排除错误选项，同时避免非热词的误召回（如不会将普通词汇错误识别为热词）。反观WFST或早期的NN-Bias方法，其核心逻辑都是提升近似发音词汇的发射概率，本质上不具备上下文判断能力，因此工程实践中常见的优化手段是在WFST中加入前导词约束，以减少过度偏置带来的误报问题。</p>
-<h3 id="3-适配热词任务的技术工具迁移，提升方案灵活性"><a href="#3-适配热词任务的技术工具迁移，提升方案灵活性" class="headerlink" title="3. 适配热词任务的技术工具迁移，提升方案灵活性"></a>3. 适配热词任务的技术工具迁移，提升方案灵活性</h3><p>LLM生态中已发展出多种成熟的“外部信息融合”与“强化学习”技术，这些技术可直接迁移至Hot Word Bias任务，大幅提升方案的适配性与效果可控性。其中最具代表性的两类技术的应用逻辑如下：</p>
-<ul>
-<li><p>RAG：热词词表本质是一类结构化外部信息，传统方法需将热词硬编码到解码规则或词表中，不仅灵活性差，若要支持大词表还需投入大量优化工作。而基于RAG的思路，可将热词词表构建为检索库，在LLM解码过程中实时匹配上下文并调用热词信息，大幅提升适配效率。</p>
-</li>
-<li><p>RLHF&#x2F;GRPO：辅助loss曾是NN-Bias领域的研究热点，核心原因在于ASR的基础loss未针对热词任务优化，因此需额外增设辅助loss提升效果。而在LLM框架下，热词任务天然适配GRPO等强化学习方法：可直接将“热词正确召回”“无过度偏置误报”作为正向奖励信号，引导模型自主学习最优偏置策略。</p>
-</li>
+                <h1 id="Self-Speculative-Decoding-for-LLM-based-ASR-论文解读"><a href="#Self-Speculative-Decoding-for-LLM-based-ASR-论文解读" class="headerlink" title="Self-Speculative Decoding for LLM-based ASR 论文解读"></a>Self-Speculative Decoding for LLM-based ASR 论文解读</h1><h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>: Self-Speculative Decoding for LLM-based ASR with CTC Encoder Drafts</li>
+<li><strong>作者</strong>: George Saon, Samuel Thomas, Takashi Fukuda, Tohru Nagano, Avihu Dekel, Luis Lastras (IBM)</li>
+<li><strong>链接</strong>: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2603.11243">https://arxiv.org/abs/2603.11243</a></li>
 </ul>
-<h2 id="三、LLM-based-ASR领域的相关Bias工作现状"><a href="#三、LLM-based-ASR领域的相关Bias工作现状" class="headerlink" title="三、LLM based ASR领域的相关Bias工作现状"></a>三、LLM based ASR领域的相关Bias工作现状</h2>
+<h2 id="一、背景与动机"><a href="#一、背景与动机" class="headerlink" title="一、背景与动机"></a>一、背景与动机</h2><h3 id="1-1-Speech-aware-Language-Models-SLMs"><a href="#1-1-Speech-aware-Language-Models-SLMs" class="headerlink" title="1.1 Speech-aware Language Models (SLMs)"></a>1.1 Speech-aware Language Models (SLMs)</h3><p>语音感知语言模型（SLM）是目前开源 ASR 排行榜上表现最好的模型架构。它们通常由以下组件构成：</p>
+<ul>
+<li><strong>Conformer 声学编码器</strong>：使用 CTC loss 或 RNN-T loss 训练</li>
+<li><strong>语音模态适配器</strong>：MLP 或 Query Transformer，将声学嵌入投影到 LLM 可理解的空间</li>
+<li><strong>大语言模型</strong>：负责生成文本输出</li>
+</ul>
+<h3 id="1-2-核心问题"><a href="#1-2-核心问题" class="headerlink" title="1.2 核心问题"></a>1.2 核心问题</h3><p>自回归（AR）推理是 SLM 的主要瓶颈：</p>
+<ul>
+<li>每个 token 都需要一次 LLM 前向传播</li>
+<li>无法像 CTC 那样并行解码</li>
+<li>延迟高，不适合实时场景</li>
+</ul>
+<h3 id="1-3-现有加速方法"><a href="#1-3-现有加速方法" class="headerlink" title="1.3 现有加速方法"></a>1.3 现有加速方法</h3><p><strong>Speculative Decoding</strong>：</p>
+<ul>
+<li>使用小型 draft 模型并行生成候选 token</li>
+<li>大模型在单次 forward 中验证候选</li>
+<li>验证失败则回退到 AR 解码</li>
+</ul>
+<p><strong>本文创新</strong>：直接复用 SLM 的 CTC 编码器作为 draft model，无需额外训练。</p>
+<h2 id="二、方法详解"><a href="#二、方法详解" class="headerlink" title="二、方法详解"></a>二、方法详解</h2><h3 id="2-1-整体架构"><a href="#2-1-整体架构" class="headerlink" title="2.1 整体架构"></a>2.1 整体架构</h3><p>本文提出 <strong>Self-Speculative Decoding (SSD)</strong>，三步流程如下：</p>
+<figure class="highlight objectivec"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><code class="hljs objectivec">┌─────────────────────────────────────────────────────────────┐<br>│                    输入: 语音信号 x                          │<br>└─────────────────────────────────────────────────────────────┘<br>                              │<br>                              ▼<br>┌─────────────────────────────────────────────────────────────┐<br>│  Step <span class="hljs-number">1</span>: <span class="hljs-built_in">CTC</span> 编码器解码 (非自回归)                           │<br>│  - 使用 <span class="hljs-built_in">CTC</span> greedy 解码得到 hypothesis ŷ                   │<br>│  - 计算每帧的输出分布熵                                     │<br>│  - 如果所有帧熵 &lt; τ<span class="hljs-built_in">CTC</span> → 直接接受作为最终结果               │<br>└─────────────────────────────────────────────────────────────┘<br>                              │<br>                              ▼<br>┌─────────────────────────────────────────────────────────────┐<br>│  Step <span class="hljs-number">2</span>: LLM 验证 <span class="hljs-built_in">CTC</span> hypothesis (单次前向传播)            │<br>│  - 将 <span class="hljs-built_in">CTC</span> hypothesis 输入 LLM                               │<br>│  - 验证每个 token 的似然是否 &gt; τSLM                        │<br>│  - 如果全部通过 → 接受为最终结果                            │<br>└─────────────────────────────────────────────────────────────┘<br>                              │<br>                              ▼<br>┌─────────────────────────────────────────────────────────────┐<br>│  Step <span class="hljs-number">3</span>: AR 回退解码                                        │<br>│  - 找到最长的已验证 <span class="hljs-built_in">CTC</span> 前缀                                │<br>│  - 从该前缀继续自回归生成                                   │<br>└─────────────────────────────────────────────────────────────┘<br></code></pre></td></tr></table></figure>
+
+<h3 id="2-2-关键技术"><a href="#2-2-关键技术" class="headerlink" title="2.2 关键技术"></a>2.2 关键技术</h3><p><strong>1. 帧级熵阈值 (Frame Entropy Threshold)</strong></p>
+<p>使用 CTC 输出分布的帧级熵作为置信度指标：</p>
+<p>$$\sum_{a \in \bar{Y}} -p(a|h_t) \log p(a|h_t) &lt; \tau_{CTC}$$</p>
+<p>熵低说明模型对当前帧的预测很确定，可以直接接受。</p>
+<p><strong>2. Token 似然验证 (LLM Verification)</strong></p>
+<p>用 LLM 验证 CTC hypothesis：</p>
+<p>$$p(y_i|\hat{y}<em>{&lt;i}, g) &gt; \tau</em>{SLM}$$</p>
+<p>由于 LLM 是因果模型，所有 token 的验证可以在<strong>一次前向传播</strong>中并行完成。</p>
+<p><strong>3. 宽松接受准则 (Relaxed Acceptance Criterion)</strong></p>
+<p>验证失败时，不需要完全匹配，只需找到最长已验证前缀，然后从该前缀继续 AR 解码。这比传统的 speculative decoding 更灵活。</p>
+<h3 id="2-3-与之前工作的区别"><a href="#2-3-与之前工作的区别" class="headerlink" title="2.3 与之前工作的区别"></a>2.3 与之前工作的区别</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>之前工作 (Lim et al.)</th>
+<th>本文</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Draft Model</td>
+<td>单独训练的 TDT 解码器</td>
+<td>复用 CTC 编码器</td>
+</tr>
+<tr>
+<td>目标</td>
+<td>减少重复错误</td>
+<td>互补错误模式提升 WER</td>
+</tr>
+<tr>
+<td>置信度</td>
+<td>-</td>
+<td>帧级熵，可跳过 LLM 验证</td>
+</tr>
+</tbody></table>
+<h2 id="三、实验结果"><a href="#三、实验结果" class="headerlink" title="三、实验结果"></a>三、实验结果</h2><h3 id="3-1-主实验结果"><a href="#3-1-主实验结果" class="headerlink" title="3.1 主实验结果"></a>3.1 主实验结果</h3><p>在 <strong>HuggingFace Open ASR</strong> 基准上，使用 1B 参数 LLM + 440M 参数 CTC 编码器：</p>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>WER</th>
+<th>RTFx (逆实时因子)</th>
+<th>相对 AR WER 变化</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Full AR</td>
+<td>5.75%</td>
+<td>564</td>
+<td>-</td>
+</tr>
+<tr>
+<td><strong>High Accuracy (SSD)</strong></td>
+<td><strong>5.58%</strong></td>
+<td>548</td>
+<td><strong>-3% (提升)</strong></td>
+</tr>
+<tr>
+<td>High RTFx (SSD)</td>
+<td>6.56%</td>
+<td>2491</td>
+<td>+12%</td>
+</tr>
+</tbody></table>
+<p>关键发现：</p>
+<ul>
+<li><strong>高精度模式</strong>：同时提升准确率（WER 降低）和吞吐量</li>
+<li><strong>高吞吐模式</strong>：4.4x 加速，WER 仅增加 12%</li>
+</ul>
+<h3 id="3-2-多语言结果"><a href="#3-2-多语言结果" class="headerlink" title="3.2 多语言结果"></a>3.2 多语言结果</h3><table>
+<thead>
+<tr>
+<th>语种</th>
+<th>Full AR WER</th>
+<th>SSD WER</th>
+<th>提升</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>MLS (英&#x2F;德&#x2F;西&#x2F;法&#x2F;葡)</td>
+<td>5.47%</td>
+<td>5.33%</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>CommonVoice (英&#x2F;德&#x2F;西&#x2F;法&#x2F;葡)</td>
+<td>5.06%</td>
+<td>5.03%</td>
+<td>✓</td>
+</tr>
+</tbody></table>
+<h3 id="3-3-消融实验"><a href="#3-3-消融实验" class="headerlink" title="3.3 消融实验"></a>3.3 消融实验</h3><p>验证两个验证阶段是否都必要：</p>
+<ul>
+<li><strong>只用 CTC 接受</strong>：高吞吐但无法达到最低 WER</li>
+<li><strong>只用 LLM 验证</strong>：高准确但 RTFx 较低</li>
+<li><strong>两者结合</strong>：Pareto 最优</li>
+</ul>
+<h3 id="3-4-关键洞察"><a href="#3-4-关键洞察" class="headerlink" title="3.4 关键洞察"></a>3.4 关键洞察</h3><blockquote>
+<p>LLM 验证能够<strong>降低 WER</strong>，是因为 CTC 和 SLM 产生<strong>互补的错误模式</strong>。</p>
+</blockquote>
+<p>AR 输出通常更流畅但不一定忠实于音频（LM bias 问题），而 CTC 验证可以纠正这些错误。</p>
+<h2 id="四、模型细节"><a href="#四、模型细节" class="headerlink" title="四、模型细节"></a>四、模型细节</h2><ul>
+<li><strong>CTC 编码器</strong>：440M 参数，16 层 Conformer</li>
+<li><strong>Projector</strong>：37M 参数，2 层 Query Transformer</li>
+<li><strong>LLM</strong>：Granite-4.0-nano (1B 参数)</li>
+<li><strong>LoRA</strong>：rank&#x3D;64</li>
+<li><strong>训练数据</strong>：90,000 小时多语言数据</li>
+</ul>
+<h2 id="五、总结"><a href="#五、总结" class="headerlink" title="五、总结"></a>五、总结</h2><p>本文提出了一种创新的自投机解码方法：</p>
+<ol>
+<li><strong>复用 CTC 编码器</strong>作为 draft model，无需额外训练</li>
+<li><strong>双阶段验证</strong>：帧熵 + LLM 似然，平衡速度与精度</li>
+<li><strong>精度与速度兼得</strong>：高精度模式 WER 比纯 AR 还低</li>
+</ol>
+<p><strong>局限</strong>：</p>
+<ul>
+<li>需要带 CTC 头的 SLM</li>
+<li>验证失败时需要整句回退 AR 解码</li>
+</ul>
+<p><strong>未来方向</strong>：</p>
+<ul>
+<li>联合训练编码器与 LLM，专门优化投机解码</li>
+<li>应用于实时对话场景</li>
+</ul>
+<hr>
+<p><em>本文使用 AI 辅助解读</em></p>
+
                 
               </div>
             
@@ -314,7 +451,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E8%AE%BA%E6%96%87%E6%80%BB%E7%BB%93/" class="category-chain-item">论文总结</a>
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
   
   
 
@@ -329,13 +466,13 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/asr/" class="print-no-link">#asr</a>
-      
         <a href="/tags/LLM/" class="print-no-link">#LLM</a>
       
-        <a href="/tags/bias/" class="print-no-link">#bias</a>
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
       
-        <a href="/tags/hotword/" class="print-no-link">#hotword</a>
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/%E8%AF%AD%E9%9F%B3%E8%AF%86%E5%88%AB/" class="print-no-link">#语音识别</a>
       
     </div>
   
@@ -347,8 +484,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>LLM based ASR中Context Bias</div>
-      <div>https://smallsmartao.github.io/2026/01/12/llm_bias/</div>
+      <div>Self-Speculative Decoding for LLM-based ASR 论文解读</div>
+      <div>https://smallsmartao.github.io/2026/03/13/self-speculative-decoding/</div>
     </div>
     <div class="license-meta">
       
@@ -360,7 +497,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2026年1月12日</div>
+          <div>2026年3月13日</div>
         </div>
       
       
@@ -392,18 +529,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/03/13/self-speculative-decoding/" title="Self-Speculative Decoding for LLM-based ASR 论文解读">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Self-Speculative Decoding for LLM-based ASR 论文解读</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2022/08/10/beamsearch/" title="beam search基本原理以及在语音识别中的应用">
-                        <span class="hidden-mobile">beam search基本原理以及在语音识别中的应用</span>
+                      <a href="/2026/01/12/llm_bias/" title="LLM based ASR中Context Bias">
+                        <span class="hidden-mobile">LLM based ASR中Context Bias</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
