@@ -28,7 +28,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/mj/bias2.png">
 <meta property="article:published_time" content="2026-01-12T12:04:45.000Z">
-<meta property="article:modified_time" content="2026-03-12T12:24:24.103Z">
+<meta property="article:modified_time" content="2026-03-13T10:55:10.674Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="LLM">
 <meta property="article:tag" content="asr">
@@ -246,7 +246,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.3k 字
+          2.1k 字
         
       </span>
     
@@ -257,7 +257,7 @@
         
         
         
-          12 分钟
+          18 分钟
         
       </span>
     
@@ -308,7 +308,7 @@
               <p id="updated-time" class="note note-info" style="">
                 
                   
-                    本文最后更新于 2026年3月12日 晚上
+                    本文最后更新于 2026年3月13日 晚上
                   
                 
               </p>
@@ -331,7 +331,127 @@
 <li><p>RLHF&#x2F;GRPO：辅助loss曾是NN-Bias领域的研究热点，核心原因在于ASR的基础loss未针对热词任务优化，因此需额外增设辅助loss提升效果。而在LLM框架下，热词任务天然适配GRPO等强化学习方法：可直接将“热词正确召回”“无过度偏置误报”作为正向奖励信号，引导模型自主学习最优偏置策略。</p>
 </li>
 </ul>
-<h2 id="三、LLM-based-ASR领域的相关Bias工作现状"><a href="#三、LLM-based-ASR领域的相关Bias工作现状" class="headerlink" title="三、LLM based ASR领域的相关Bias工作现状"></a>三、LLM based ASR领域的相关Bias工作现状</h2>
+<h2 id="三、LLM-based-ASR领域的相关Bias工作现状"><a href="#三、LLM-based-ASR领域的相关Bias工作现状" class="headerlink" title="三、LLM based ASR领域的相关Bias工作现状"></a>三、LLM based ASR领域的相关Bias工作现状</h2><p>上文提到，LLM为Context Bias任务带来了新的可能性，本节将结合最新论文深入介绍这一方向的研究进展。</p>
+<h3 id="3-1-核心挑战：大词表热词偏置"><a href="#3-1-核心挑战：大词表热词偏置" class="headerlink" title="3.1 核心挑战：大词表热词偏置"></a>3.1 核心挑战：大词表热词偏置</h3><p>虽然 LLM-ASR 在各种任务上取得了显著进展，但<strong>大词表下的实体和热词上下文偏置</strong>仍然是一个核心挑战。这些词汇（如联系人列表、地点等）通常具有高语义或商业价值，但：</p>
+<ul>
+<li>在训练数据中出现频率低</li>
+<li>可能是未登录词（OOV）</li>
+</ul>
+<h3 id="3-2-两阶段框架：热词检索-ASR-适配"><a href="#3-2-两阶段框架：热词检索-ASR-适配" class="headerlink" title="3.2 两阶段框架：热词检索 + ASR 适配"></a>3.2 两阶段框架：热词检索 + ASR 适配</h3><p>最新研究（arXiv:2512.21828）提出了一种<strong>可扩展的两阶段框架</strong>，将上下文偏置分解为两个紧密耦合的子问题：</p>
+<h4 id="阶段一：基于-GLCLAP-的热词检索"><a href="#阶段一：基于-GLCLAP-的热词检索" class="headerlink" title="阶段一：基于 GLCLAP 的热词检索"></a>阶段一：基于 GLCLAP 的热词检索</h4><p><strong>Global-Local Contrastive Language-Audio Pre-trained Model (GLCLAP)</strong> 的工作流程：</p>
+<ol>
+<li><strong>音频编码器</strong>提取音频 embedding</li>
+<li><strong>文本编码器</strong>将候选偏置词编码为语义向量</li>
+<li>计算相似度，选择 top-k 候选热词</li>
+</ol>
+<p><strong>三大增强策略</strong>：</p>
+<ol>
+<li><p><strong>Robustness-Aware Data Augmentation (RADA)</strong></p>
+<ul>
+<li>目的：减少热词词表大小（词表越大，recall 越低，干扰越多）</li>
+<li>方法：用 TTS 合成热词语音，用 ASR 解码检查是否能识别</li>
+<li>效果：词表从 60万条目缩减到 9.8万</li>
+</ul>
+</li>
+<li><p><strong>Fuzzy Matching（模糊匹配）</strong></p>
+<ul>
+<li>问题：传统方法要求精确匹配，但实际应用中用户可能使用变形、部分提及或释义</li>
+<li>方法：在训练数据中加入上下文句子和故意扰动的偏置词变体</li>
+<li>效果：显著提升 recall 和鲁棒性</li>
+</ul>
+</li>
+<li><p><strong>RL 引导的判别训练</strong></p>
+<ul>
+<li>问题：需要抑制误报（false positives）</li>
+<li>方法：使用 GRPO 强化学习，奖励函数设计：<ul>
+<li><strong>Match reward</strong>：候选词同时出现在输出和参考中，或都不出现 → 奖励 1</li>
+<li><strong>WER-based reward</strong>：$1 - WER$，确保转写准确率</li>
+</ul>
+</li>
+</ul>
+</li>
+</ol>
+<h4 id="阶段二：热词感知的-ASR-适配"><a href="#阶段二：热词感知的-ASR-适配" class="headerlink" title="阶段二：热词感知的 ASR 适配"></a>阶段二：热词感知的 ASR 适配</h4><ol>
+<li><p><strong>构建偏置提示</strong>：</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs css">⟨<span class="hljs-selector-tag">Audio</span>⟩ Transcribe the <span class="hljs-selector-tag">audio</span> into <span class="hljs-selector-tag">text</span>. These biasing words you may <span class="hljs-selector-tag">use</span>: ⟨g1⟩ ⟨g2⟩ … ⟨gk⟩<br></code></pre></td></tr></table></figure>
+<ul>
+<li>提示中故意包含不相关的干扰词，抑制过度依赖</li>
+</ul>
+</li>
+<li><p><strong>联合 Beam Search</strong>：在推理阶段联合解码上下文无关和上下文条件假设</p>
+</li>
+</ol>
+<h3 id="3-3-实验结果"><a href="#3-3-实验结果" class="headerlink" title="3.3 实验结果"></a>3.3 实验结果</h3><h4 id="热词检索性能"><a href="#热词检索性能" class="headerlink" title="热词检索性能"></a>热词检索性能</h4><table>
+<thead>
+<tr>
+<th>方法</th>
+<th>Recall@10 (Medical)</th>
+<th>Recall@10 (Media)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GLCLAP</td>
+<td>42.37%</td>
+<td>43.58%</td>
+</tr>
+<tr>
+<td>+RADA</td>
+<td>67.56%</td>
+<td>76.61%</td>
+</tr>
+<tr>
+<td>+Fuzzy Matching</td>
+<td><strong>85.12%</strong></td>
+<td><strong>93.58%</strong></td>
+</tr>
+</tbody></table>
+<h4 id="ASR-性能"><a href="#ASR-性能" class="headerlink" title="ASR 性能"></a>ASR 性能</h4><table>
+<thead>
+<tr>
+<th>配置</th>
+<th>Media KER</th>
+<th>Media SACC</th>
+<th>Medical KER</th>
+<th>General SACC</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Base</td>
+<td>22.63%</td>
+<td>72.99%</td>
+<td>23.31%</td>
+<td>77.49%</td>
+</tr>
+<tr>
+<td>+GLCLAP (top-2)</td>
+<td>11.99%</td>
+<td>80.57%</td>
+<td>15.89%</td>
+<td>77.36%</td>
+</tr>
+<tr>
+<td><strong>+GRPO</strong></td>
+<td><strong>8.29%</strong></td>
+<td><strong>85.78%</strong></td>
+<td><strong>11.24%</strong></td>
+<td><strong>78.16%</strong></td>
+</tr>
+</tbody></table>
+<p><strong>关键发现</strong>：</p>
+<ul>
+<li>KER 大幅降低：Media 从 22.63% 降到 8.29%（相对降低 63%）</li>
+<li>SACC 在 General 任务上也提升了：说明 GRPO 的 WER 奖励有效</li>
+<li>top-k 并非越大越好：过大的 k 会引入更多干扰词，反而降低效果</li>
+</ul>
+<h3 id="3-4-小结"><a href="#3-4-小结" class="headerlink" title="3.4 小结"></a>3.4 小结</h3><p>这一工作完美体现了前文提到的三个核心增益：</p>
+<ol>
+<li><strong>更强语言先验</strong>：LLM 能理解未登录热词</li>
+<li><strong>更强上下文利用</strong>：通过结构化提示和 GRPO 学习正确使用热词</li>
+<li><strong>RL 技术迁移</strong>：GRPO 奖励函数同时优化热词召回和整体准确率</li>
+</ol>
+<hr>
+<p><em>参考文献：Contextual Biasing for LLM-Based ASR with Hotword Retrieval and Reinforcement Learning (arXiv:2512.21828)</em></p>
+
                 
               </div>
             
@@ -401,7 +521,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>更新于</div>
-          <div>2026年3月12日</div>
+          <div>2026年3月13日</div>
         </div>
       
       
