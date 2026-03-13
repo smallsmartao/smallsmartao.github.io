@@ -22,11 +22,11 @@
       
       <tag>LLM</tag>
       
-      <tag>推理框架</tag>
-      
       <tag>vLLM</tag>
       
       <tag>SGLang</tag>
+      
+      <tag>推理框架</tag>
       
     </tags>
     
@@ -84,11 +84,11 @@
       
       <tag>asr</tag>
       
+      <tag>LLM</tag>
+      
       <tag>bias</tag>
       
       <tag>hotword</tag>
-      
-      <tag>LLM</tag>
       
     </tags>
     
@@ -186,11 +186,11 @@
       
       <tag>asr</tag>
       
-      <tag>rnn-t</tag>
-      
       <tag>bias</tag>
       
       <tag>hotword</tag>
+      
+      <tag>rnn-t</tag>
       
     </tags>
     
