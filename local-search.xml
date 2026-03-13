@@ -28,6 +28,12 @@
       
       <tag>语音识别</tag>
       
+      <tag>CTC</tag>
+      
+      <tag>Non-AR</tag>
+      
+      <tag>efficient inference</tag>
+      
     </tags>
     
   </entry>
