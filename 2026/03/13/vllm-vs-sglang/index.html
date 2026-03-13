@@ -19,30 +19,29 @@
   <meta name="author" content="Ao Zhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Understanding the Modality Gap: An Empirical Study on the Speech-Text Alignment Mechanism of Large Speech Language Models论文信息 标题: Understanding the Modality Gap: An Empirical Study on the Speech-Text">
+    <meta name="description" content="vLLM vs SGLang：大模型推理框架对比一、引言在大模型落地部署中，推理框架的选择至关重要。目前开源社区最主流的两个 LLM 推理框架分别是 vLLM 和 SGLang。两者都致力于提供高吞吐量、低延迟的大模型服务能力，但各有侧重。本文将从核心技术、应用场景、性能对比等多个维度进行深入分析。 二、框架简介vLLMGitHub: https:&#x2F;&#x2F;github.com&#x2F;vllm-project">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Understanding the Modality Gap - An Empirical Study on the Speech-Text Alignment Mechanism of Large Speech Language Models">
-<meta property="og:url" content="https://smallsmartao.github.io/2026/03/13/modality-gap/index.html">
+<meta property="og:title" content="vLLM vs SGLang：大模型推理框架对比">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/03/13/vllm-vs-sglang/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="Understanding the Modality Gap: An Empirical Study on the Speech-Text Alignment Mechanism of Large Speech Language Models论文信息 标题: Understanding the Modality Gap: An Empirical Study on the Speech-Text">
+<meta property="og:description" content="vLLM vs SGLang：大模型推理框架对比一、引言在大模型落地部署中，推理框架的选择至关重要。目前开源社区最主流的两个 LLM 推理框架分别是 vLLM 和 SGLang。两者都致力于提供高吞吐量、低延迟的大模型服务能力，但各有侧重。本文将从核心技术、应用场景、性能对比等多个维度进行深入分析。 二、框架简介vLLMGitHub: https:&#x2F;&#x2F;github.com&#x2F;vllm-project">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://smallsmartao.github.io/images/mj/cover_vnbwjxaz.png">
-<meta property="article:published_time" content="2026-03-13T14:21:00.000Z">
-<meta property="article:modified_time" content="2026-03-13T15:35:21.258Z">
+<meta property="og:image" content="https://smallsmartao.github.io/images/mj/cover_3997xgcs.png">
+<meta property="article:published_time" content="2026-03-13T15:57:00.000Z">
+<meta property="article:modified_time" content="2026-03-13T15:57:29.346Z">
 <meta property="article:author" content="Ao Zhang">
-<meta property="article:tag" content="ASR">
 <meta property="article:tag" content="LLM">
-<meta property="article:tag" content="多模态">
-<meta property="article:tag" content="论文解读">
-<meta property="article:tag" content="语音识别">
+<meta property="article:tag" content="SGLang">
+<meta property="article:tag" content="vLLM">
+<meta property="article:tag" content="推理框架">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://smallsmartao.github.io/images/mj/cover_vnbwjxaz.png">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/mj/cover_3997xgcs.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>Understanding the Modality Gap - An Empirical Study on the Speech-Text Alignment Mechanism of Large Speech Language Models - 聪明的小奥</title>
+  <title>vLLM vs SGLang：大模型推理框架对比 - 聪明的小奥</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -219,7 +218,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Understanding the Modality Gap - An Empirical Study on the Speech-Text Alignment Mechanism of Large Speech Language Models"></span>
+            <span id="subtitle" data-typed-text="vLLM vs SGLang：大模型推理框架对比"></span>
           
         </div>
 
@@ -235,7 +234,7 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-03-13 22:21" pubdate>
+        <time datetime="2026-03-13 23:57" pubdate>
           2026年3月13日 晚上
         </time>
       </span>
@@ -258,7 +257,7 @@
         
         
         
-          11 分钟
+          12 分钟
         
       </span>
     
@@ -304,7 +303,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">Understanding the Modality Gap - An Empirical Study on the Speech-Text Alignment Mechanism of Large Speech Language Models</h1>
+            <h1 id="seo-header">vLLM vs SGLang：大模型推理框架对比</h1>
             
               <p id="updated-time" class="note note-info" style="">
                 
@@ -317,172 +316,228 @@
             
               <div class="markdown-body">
                 
-                <h1 id="Understanding-the-Modality-Gap-An-Empirical-Study-on-the-Speech-Text-Alignment-Mechanism-of-Large-Speech-Language-Models"><a href="#Understanding-the-Modality-Gap-An-Empirical-Study-on-the-Speech-Text-Alignment-Mechanism-of-Large-Speech-Language-Models" class="headerlink" title="Understanding the Modality Gap: An Empirical Study on the Speech-Text Alignment Mechanism of Large Speech Language Models"></a>Understanding the Modality Gap: An Empirical Study on the Speech-Text Alignment Mechanism of Large Speech Language Models</h1><h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
-<li><strong>标题</strong>: Understanding the Modality Gap: An Empirical Study on the Speech-Text Alignment Mechanism of Large Speech Language Models</li>
-<li><strong>作者</strong>: Bajian Xiang, Shuaijiang Zhao, Tingwei Guo, Wei Zou (贝壳找房)</li>
-<li><strong>链接</strong>: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2510.12116">https://arxiv.org/abs/2510.12116</a></li>
-<li><strong>会议</strong>: EMNLP 2025</li>
-</ul>
-<h2 id="一、研究背景"><a href="#一、研究背景" class="headerlink" title="一、研究背景"></a>一、研究背景</h2><h3 id="1-1-大语音语言模型（LSLMs）的崛起"><a href="#1-1-大语音语言模型（LSLMs）的崛起" class="headerlink" title="1.1 大语音语言模型（LSLMs）的崛起"></a>1.1 大语音语言模型（LSLMs）的崛起</h3><p>端到端大语音语言模型（LSLMs）通过直接处理语音和文本输入，能够生成文本或语音输出，相比传统 pipeline 架构（ASR + LLM + TTS）具有显著优势：</p>
+                <h1 id="vLLM-vs-SGLang：大模型推理框架对比"><a href="#vLLM-vs-SGLang：大模型推理框架对比" class="headerlink" title="vLLM vs SGLang：大模型推理框架对比"></a>vLLM vs SGLang：大模型推理框架对比</h1><h2 id="一、引言"><a href="#一、引言" class="headerlink" title="一、引言"></a>一、引言</h2><p>在大模型落地部署中，推理框架的选择至关重要。目前开源社区最主流的两个 LLM 推理框架分别是 <strong>vLLM</strong> 和 <strong>SGLang</strong>。两者都致力于提供高吞吐量、低延迟的大模型服务能力，但各有侧重。本文将从核心技术、应用场景、性能对比等多个维度进行深入分析。</p>
+<h2 id="二、框架简介"><a href="#二、框架简介" class="headerlink" title="二、框架简介"></a>二、框架简介</h2><h3 id="vLLM"><a href="#vLLM" class="headerlink" title="vLLM"></a>vLLM</h3><p><strong>GitHub</strong>: <a target="_blank" rel="noopener" href="https://github.com/vllm-project/vllm">https://github.com/vllm-project/vllm</a></p>
+<p><strong>HuggingFace</strong>: <a target="_blank" rel="noopener" href="https://huggingface.co/vllm-project/vllm">https://huggingface.co/vllm-project/vllm</a></p>
+<p>vLLM 是由 UC Berkeley 的 <strong>Sky Computing Lab</strong> 开发的开源推理框架，其核心创新是 <strong>PagedAttention</strong>，能够在推理过程中高效管理 Attention 的 Key 和 Value 内存。</p>
+<p><strong>主要特点</strong>：</p>
 <ul>
-<li>更低延迟</li>
-<li>更好的错误容忍性</li>
-<li>更具表现力的语音合成</li>
+<li>PagedAttention：像操作系统的虚拟内存一样管理 KV Cache</li>
+<li>连续批处理（Continuous Batching）：动态调整批次，提高 GPU 利用率</li>
+<li>CUDA Graph 加速：减少 kernel 启动开销</li>
+<li>量化支持：FP8、INT4、AWQ、GPTQ 等</li>
+<li>分布式推理：Tensor Parallelism、Pipeline Parallelism</li>
 </ul>
-<h3 id="1-2-核心问题：性能差距"><a href="#1-2-核心问题：性能差距" class="headerlink" title="1.2 核心问题：性能差距"></a>1.2 核心问题：性能差距</h3><p>然而，LSLMs 在语义理解任务上始终不如传统 pipeline 系统：</p>
+<p><strong>适用场景</strong>：需要高吞吐量服务、关注显存优化的生产环境</p>
+<h3 id="SGLang"><a href="#SGLang" class="headerlink" title="SGLang"></a>SGLang</h3><p><strong>GitHub</strong>: <a target="_blank" rel="noopener" href="https://github.com/sgl-project/sglang">https://github.com/sgl-project/sglang</a></p>
+<p><strong>HuggingFace</strong>: <a target="_blank" rel="noopener" href="https://huggingface.co/sgl-project">https://huggingface.co/sgl-project</a></p>
+<p>SGLang 是由 <strong>LMSYS</strong>（ChatBot Arena 组织）开发的推理框架，核心创新是 <strong>RadixAttention</strong>，提供高效的前缀缓存能力。</p>
+<p><strong>主要特点</strong>：</p>
+<ul>
+<li>RadixAttention：前缀复用，避免重复计算</li>
+<li>Prefill-Decode 分离：优化不同阶段的资源分配</li>
+<li>零开销调度器：CPU 调度开销极低</li>
+<li>结构化输出：高效支持 JSON、代码等结构化生成</li>
+<li>多模态支持：原生支持 LLaVA 等多模态模型</li>
+<li>强化学习后端：原生支持 RL 训练框架</li>
+</ul>
+<p><strong>适用场景</strong>：需要复杂 Prompt 工程、多轮对话、Agent 场景、RL 训练</p>
+<h2 id="三、核心技术对比"><a href="#三、核心技术对比" class="headerlink" title="三、核心技术对比"></a>三、核心技术对比</h2><h3 id="3-1-注意力机制"><a href="#3-1-注意力机制" class="headerlink" title="3.1 注意力机制"></a>3.1 注意力机制</h3><table>
+<thead>
+<tr>
+<th>特性</th>
+<th>vLLM</th>
+<th>SGLang</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>核心创新</td>
+<td>PagedAttention</td>
+<td>RadixAttention</td>
+</tr>
+<tr>
+<td>KV Cache 管理</td>
+<td>分页管理，按需分配</td>
+<td>前缀树复用</td>
+</tr>
+<tr>
+<td>内存效率</td>
+<td>高（碎片少）</td>
+<td>高（复用率高）</td>
+</tr>
+<tr>
+<td>适用场景</td>
+<td>长序列推理</td>
+<td>多轮对话、Agent</td>
+</tr>
+</tbody></table>
+<p><strong>PagedAttention</strong> 将 KV Cache 划分为固定大小的”页”，像操作系统管理内存一样灵活调配，减少内存碎片。</p>
+<p><strong>RadixAttention</strong> 在前缀树上维护请求的 KV Cache，新请求如果与历史请求有共享前缀，可以直接复用已计算的 Cache。</p>
+<h3 id="3-2-调度策略"><a href="#3-2-调度策略" class="headerlink" title="3.2 调度策略"></a>3.2 调度策略</h3><p><strong>vLLM</strong> 采用连续批处理（Continuous Batching）：</p>
+<ul>
+<li>动态添加新请求到当前批次</li>
+<li>当某个请求完成时，释放其占用的资源</li>
+<li>批次大小动态变化，最大化 GPU 利用率</li>
+</ul>
+<p><strong>SGLang</strong> 采用零开销调度器：</p>
+<ul>
+<li>专为复杂工作负载设计</li>
+<li>支持 Prefill-Decode 分离部署</li>
+<li>优化了调度逻辑，减少 CPU 开销</li>
+</ul>
+<h3 id="3-3-量化支持"><a href="#3-3-量化支持" class="headerlink" title="3.3 量化支持"></a>3.3 量化支持</h3><table>
+<thead>
+<tr>
+<th>量化方法</th>
+<th>vLLM</th>
+<th>SGLang</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FP8</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>INT8</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>INT4</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>AWQ</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>GPTQ</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>FP4</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody></table>
+<p>两者量化支持都比较完善。</p>
+<h2 id="四、代码-Demo"><a href="#四、代码-Demo" class="headerlink" title="四、代码 Demo"></a>四、代码 Demo</h2><h3 id="4-1-vLLM-服务启动"><a href="#4-1-vLLM-服务启动" class="headerlink" title="4.1 vLLM 服务启动"></a>4.1 vLLM 服务启动</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 安装</span><br>pip install vllm<br><br><span class="hljs-comment"># 启动 OpenAI 兼容 API</span><br><span class="hljs-keyword">from</span> vllm <span class="hljs-keyword">import</span> LLM, SamplingParams<br><br>llm = LLM(model=<span class="hljs-string">&quot;Qwen/Qwen2.5-7B-Instruct&quot;</span>)<br>sampling_params = SamplingParams(temperature=<span class="hljs-number">0.8</span>, max_tokens=<span class="hljs-number">512</span>)<br><br><span class="hljs-comment"># 推理</span><br>outputs = llm.generate(<br>    [<span class="hljs-string">&quot;写一首关于春天的诗&quot;</span>, <span class="hljs-string">&quot;解释一下量子计算&quot;</span>],<br>    sampling_params<br>)<br><br><span class="hljs-keyword">for</span> output <span class="hljs-keyword">in</span> outputs:<br>    <span class="hljs-built_in">print</span>(output.outputs[<span class="hljs-number">0</span>].text)<br></code></pre></td></tr></table></figure>
+
+<p><strong>API 调用</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">curl http://localhost:8000/v1/completions \<br>  -H <span class="hljs-string">&quot;Content-Type: application/json&quot;</span> \<br>  -d <span class="hljs-string">&#x27;&#123;&quot;model&quot;: &quot;qwen&quot;, &quot;prompt&quot;: &quot;hello&quot;&#125;&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="4-2-SGLang-服务启动"><a href="#4-2-SGLang-服务启动" class="headerlink" title="4.2 SGLang 服务启动"></a>4.2 SGLang 服务启动</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 安装</span><br>pip install sglang<br><br><span class="hljs-comment"># 启动服务</span><br><span class="hljs-keyword">import</span> sglang <span class="hljs-keyword">as</span> sgl<br><br><span class="hljs-meta">@sgl.gen</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">generate</span>():<br>    sgl.user(<span class="hljs-string">&quot;写一首关于春天的诗&quot;</span>)<br>    sgl.assistant(sgl.gen())<br><br><span class="hljs-comment"># 运行</span><br>result = generate()<br><span class="hljs-built_in">print</span>(result)<br></code></pre></td></tr></table></figure>
+
+<p><strong>API 调用</strong>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs bash">curl http://localhost:30000/v1/completions \<br>  -H <span class="hljs-string">&quot;Content-Type: application/json&quot;</span> \<br>  -d <span class="hljs-string">&#x27;&#123;&quot;model&quot;: &quot;qwen&quot;, &quot;prompt&quot;: &quot;hello&quot;&#125;&#x27;</span><br></code></pre></td></tr></table></figure>
+
+<h3 id="4-3-多轮对话示例"><a href="#4-3-多轮对话示例" class="headerlink" title="4.3 多轮对话示例"></a>4.3 多轮对话示例</h3><p><strong>SGLang</strong>（原生支持多轮对话）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> sglang <span class="hljs-keyword">as</span> sgl<br><br><span class="hljs-meta">@sgl.gen</span><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">chat</span>():<br>    <span class="hljs-comment"># 第一轮</span><br>    sgl.user(<span class="hljs-string">&quot;你好&quot;</span>)<br>    sgl.assistant(<span class="hljs-string">&quot;你好！有什么可以帮你的？&quot;</span>)<br>    <br>    <span class="hljs-comment"># 第二轮（自动复用第一轮的 KV Cache）</span><br>    sgl.user(<span class="hljs-string">&quot;推荐一部电影&quot;</span>)<br>    sgl.assistant(sgl.gen())<br><br>result = chat()<br></code></pre></td></tr></table></figure>
+
+<p><strong>vLLM</strong>（需要手动管理上下文）：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> vllm <span class="hljs-keyword">import</span> LLM, SamplingParams<br><br>llm = LLM(model=<span class="hljs-string">&quot;Qwen/Qwen2.5-7B-Instruct&quot;</span>)<br><br><span class="hljs-comment"># 手动拼接历史对话</span><br>history = [<br>    &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;你好&quot;</span>&#125;,<br>    &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;assistant&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;你好！&quot;</span>&#125;,<br>    &#123;<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;推荐一部电影&quot;</span>&#125;<br>]<br><br><span class="hljs-comment"># 构建 prompt</span><br>prompt = build_chat_prompt(history)<br>outputs = llm.generate(prompt, SamplingParams(max_tokens=<span class="hljs-number">512</span>))<br></code></pre></td></tr></table></figure>
+
+<h2 id="五、性能对比"><a href="#五、性能对比" class="headerlink" title="五、性能对比"></a>五、性能对比</h2><h3 id="吞吐量对比"><a href="#吞吐量对比" class="headerlink" title="吞吐量对比"></a>吞吐量对比</h3><p>根据官方 benchmarks：</p>
 <table>
 <thead>
 <tr>
-<th>系统</th>
-<th>VoiceBench 得分</th>
+<th>场景</th>
+<th>vLLM</th>
+<th>SGLang</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>Whisper-large-v3 + LLaMA-3.1-8B</td>
-<td>79.06</td>
+<td>单卡 LLaMA-70B</td>
+<td>高</td>
+<td>高</td>
 </tr>
 <tr>
-<td>LLaMA-Omni (LSLM)</td>
-<td>37.51</td>
+<td>多轮对话</td>
+<td>一般</td>
+<td><strong>优秀</strong>（前缀缓存）</td>
+</tr>
+<tr>
+<td>Agent 复杂推理</td>
+<td>一般</td>
+<td><strong>优秀</strong></td>
+</tr>
+<tr>
+<td>长序列推理</td>
+<td><strong>优秀</strong></td>
+<td>良好</td>
+</tr>
+<tr>
+<td>多模态模型</td>
+<td>良好</td>
+<td><strong>优秀</strong></td>
 </tr>
 </tbody></table>
-<p>尽管使用相同的底层 LLM，性能差距高达 <strong>41.55 分</strong>！</p>
-<h3 id="1-3-本文研究问题"><a href="#1-3-本文研究问题" class="headerlink" title="1.3 本文研究问题"></a>1.3 本文研究问题</h3><p>本文首次系统性地研究了这一性能差距的内在机制，提出：</p>
-<ul>
-<li><strong>模态差距（Modality Gap）</strong>：同一模型中，语音输入和文本输入的性能差异</li>
-<li>语音-文本对齐训练后，LSLMs 丢失了部分文本输入性能，但语音与文本之间的性能差距更加显著</li>
-</ul>
-<h2 id="二、实验设置"><a href="#二、实验设置" class="headerlink" title="二、实验设置"></a>二、实验设置</h2><h3 id="2-1-模型架构"><a href="#2-1-模型架构" class="headerlink" title="2.1 模型架构"></a>2.1 模型架构</h3><p><img src="/images/mj/modality-gap-1.png" srcset="/img/loading.gif" lazyload alt="LSLMs 架构"></p>
-<p>模型包含三个核心组件：</p>
-<ol>
-<li><strong>语音编码器</strong>：Whisper-large-v3</li>
-<li><strong>语音适配器</strong>：两层线性投影，压缩 5 倍</li>
-<li><strong>LLM 主干</strong>：LLaMA3.2-3B, LLaMA3.1-8B, Qwen2.5-1.5B, Qwen2.5-7B</li>
-</ol>
-<h3 id="2-2-训练配置"><a href="#2-2-训练配置" class="headerlink" title="2.2 训练配置"></a>2.2 训练配置</h3><ul>
-<li>数据集：637,283 样本，1,604 小时语音</li>
-<li>训练：2 epochs，AdamW 优化器，lr&#x3D;2e-5</li>
-<li>微调方式：全参数微调和 LoRA (r&#x3D;8, α&#x3D;4.0)</li>
-</ul>
-<h3 id="2-3-性能下降分析"><a href="#2-3-性能下降分析" class="headerlink" title="2.3 性能下降分析"></a>2.3 性能下降分析</h3><p><img src="/images/mj/modality-gap-2.png" srcset="/img/loading.gif" lazyload alt="性能对比"></p>
-<p>LSLMs 在语音输入上相对于文本输入平均下降 <strong>25%</strong>，其中：</p>
-<ul>
-<li><strong>微调导致的推理能力下降</strong>：8.79%</li>
-<li><strong>次优的语音-文本对齐</strong>：16.46%</li>
-</ul>
-<p><strong>关键发现</strong>：性能下降主要来自语音-文本模态差距！</p>
-<h2 id="三、粗粒度分析：序列级表征"><a href="#三、粗粒度分析：序列级表征" class="headerlink" title="三、粗粒度分析：序列级表征"></a>三、粗粒度分析：序列级表征</h2><h3 id="3-1-方法"><a href="#3-1-方法" class="headerlink" title="3.1 方法"></a>3.1 方法</h3><p><img src="/images/mj/modality-gap-3.png" srcset="/img/loading.gif" lazyload alt="序列级表征计算"></p>
-<p>对每层表征计算：</p>
-<ul>
-<li><strong>Cosine Similarity</strong>：方向对齐</li>
-<li><strong>Euclidean Distance</strong>：幅度差异</li>
-</ul>
-<h3 id="3-2-关键发现"><a href="#3-2-关键发现" class="headerlink" title="3.2 关键发现"></a>3.2 关键发现</h3><p><img src="/images/mj/modality-gap-4.png" srcset="/img/loading.gif" lazyload alt="Layer-wise 相似度"></p>
-<p><strong>重要观察</strong>：</p>
-<ol>
-<li><p><strong>方向对齐（Cosine Similarity）</strong>：</p>
-<ul>
-<li>深层表示的 cosine similarity 持续增加</li>
-<li>说明模型在更深层实现更好的方向对齐</li>
-<li>更多训练轮次 → 更高相似度</li>
-</ul>
-</li>
-<li><p><strong>幅度差异（Euclidean Distance）</strong>：</p>
-<ul>
-<li>浅层到深层，Euclidean distance 逐渐增加</li>
-<li>深层加速增长</li>
-<li>说明<strong>方向趋同但幅度分化</strong></li>
-</ul>
-</li>
-</ol>
-<blockquote>
-<p>这一模式意味着：模型在保持模态特有表征的同时，实现了有效的多模态融合。</p>
-</blockquote>
-<h3 id="3-3-表征相似性与性能差距的相关性"><a href="#3-3-表征相似性与性能差距的相关性" class="headerlink" title="3.3 表征相似性与性能差距的相关性"></a>3.3 表征相似性与性能差距的相关性</h3><p><img src="/images/mj/modality-gap-5.png" srcset="/img/loading.gif" lazyload alt="相关性分析"></p>
-<table>
+<h3 id="延迟对比"><a href="#延迟对比" class="headerlink" title="延迟对比"></a>延迟对比</h3><table>
 <thead>
 <tr>
-<th>微调方式</th>
-<th>Cosine Similarity 与 GAP 相关性</th>
+<th>指标</th>
+<th>vLLM</th>
+<th>SGLang</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>LoRA</td>
-<td>R² &#x3D; 0.75（强相关）</td>
+<td>首 token 延迟 (Prefill)</td>
+<td>低</td>
+<td>低</td>
 </tr>
 <tr>
-<td>全参数</td>
-<td>R² &#x3D; 0.39</td>
+<td>Token 间延迟 (Decode)</td>
+<td>低</td>
+<td>低</td>
+</tr>
+<tr>
+<td>多轮上下文延迟</td>
+<td>一般</td>
+<td><strong>低</strong>（缓存复用）</td>
 </tr>
 </tbody></table>
-<p><strong>关键发现</strong>：</p>
+<h2 id="六、选型建议"><a href="#六、选型建议" class="headerlink" title="六、选型建议"></a>六、选型建议</h2><p><strong>选择 vLLM 的场景</strong>：</p>
 <ul>
-<li>更好的跨模态对齐 → 更小的性能差距</li>
-<li>LoRA 约束性低秩 adaptation 保留了预训练文本表征的完整性</li>
-<li>全参数微调可能导致过拟合，弱化相关性</li>
+<li>单一长序列推理任务为主</li>
+<li>对显存优化要求极高</li>
+<li>部署环境以 NVIDIA GPU 为主</li>
+<li>简单的一问一答场景</li>
 </ul>
-<h2 id="四、细粒度分析：Token-级对齐"><a href="#四、细粒度分析：Token-级对齐" class="headerlink" title="四、细粒度分析：Token 级对齐"></a>四、细粒度分析：Token 级对齐</h2><h3 id="4-1-单调对齐模式"><a href="#4-1-单调对齐模式" class="headerlink" title="4.1 单调对齐模式"></a>4.1 单调对齐模式</h3><p><img src="/images/mj/modality-gap-6.png" srcset="/img/loading.gif" lazyload alt="Token 级别对齐矩阵"></p>
-<p>在所有模型和训练范式中，<strong>token 级别相似度矩阵呈现单调路径</strong>：</p>
+<p><strong>选择 SGLang 的场景</strong>：</p>
 <ul>
-<li>随着文本 token 索引增加，语音帧序列中存在一条单调对齐路径</li>
-<li>这条路径不一定严格对齐主对角线，但反映了语音和文本之间的实际时间对齐结构</li>
+<li>多轮对话场景多</li>
+<li>需要复杂 Prompt 工程</li>
+<li>Agent 架构部署</li>
+<li>强化学习训练后端</li>
+<li>多模态模型部署</li>
+<li>需要 AMD&#x2F;Intel&#x2F;TPU 等多样化硬件支持</li>
 </ul>
-<p><strong>统计验证</strong>：</p>
+<h2 id="七、在线-Demo"><a href="#七、在线-Demo" class="headerlink" title="七、在线 Demo"></a>七、在线 Demo</h2><h3 id="vLLM-Demo"><a href="#vLLM-Demo" class="headerlink" title="vLLM Demo"></a>vLLM Demo</h3><ul>
+<li><strong>OpenAI Playground</strong>: <a target="_blank" rel="noopener" href="https://platform.openai.com/playground">https://platform.openai.com/playground</a></li>
+<li><strong>Fireworks AI</strong> (基于 vLLM): <a target="_blank" rel="noopener" href="https://fireworks.ai/">https://fireworks.ai</a></li>
+</ul>
+<h3 id="SGLang-Demo"><a href="#SGLang-Demo" class="headerlink" title="SGLang Demo"></a>SGLang Demo</h3><ul>
+<li><strong>SGLang Playground</strong>: <a target="_blank" rel="noopener" href="https://sgl-project.github.io/chat">https://sgl-project.github.io/chat</a></li>
+<li><strong>LMSYS ChatBot Arena</strong>: <a target="_blank" rel="noopener" href="https://chat.lmsys.org/">https://chat.lmsys.org</a></li>
+</ul>
+<h2 id="八、总结"><a href="#八、总结" class="headerlink" title="八、总结"></a>八、总结</h2><p>vLLM 和 SGLang 都是当前最优秀的开源 LLM 推理框架：</p>
 <ul>
-<li>平均 Spearman 相关系数：0.85（Cosine）</li>
-<li>两种相似度度量下完美对齐的 token 比例：59%</li>
+<li><strong>vLLM</strong>：专注显存优化和简单推理场景，PagedAttention 是其核心杀手锏</li>
+<li><strong>SGLang</strong>：专注复杂推理和多轮对话场景，RadixAttention 和对 Agent&#x2F;RL 的原生支持是其差异化优势</li>
 </ul>
-<p><strong>机制分析</strong>：</p>
-<ul>
-<li>模型不仅在全局层面实现模态对齐</li>
-<li>还自动学习到<strong>软单调的 token 级对齐</strong></li>
-<li>反映了模型捕捉语音时间结构到文本语义结构映射的能力</li>
+<p>在实际项目中，可以根据业务场景的具体需求进行选择。如果需要两者的优势，也可以考虑在架构中同时部署，根据请求类型灵活路由。</p>
+<h2 id="相关资料"><a href="#相关资料" class="headerlink" title="相关资料"></a>相关资料</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/vllm-project/vllm">vLLM GitHub</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/sgl-project/sglang">SGLang GitHub</a></li>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/vllm-project/vllm">vLLM HuggingFace</a></li>
+<li><a target="_blank" rel="noopener" href="https://huggingface.co/sgl-project">SGLang HuggingFace</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.vllm.ai/">vLLM 官方文档</a></li>
+<li><a target="_blank" rel="noopener" href="https://docs.sglang.io/">SGLang 官方文档</a></li>
 </ul>
-<h3 id="4-2-Alignment-Path-Score"><a href="#4-2-Alignment-Path-Score" class="headerlink" title="4.2 Alignment Path Score"></a>4.2 Alignment Path Score</h3><p>基于 token 级对齐模式，本文提出 <strong>Alignment Path Score (APS)</strong>：</p>
-<ul>
-<li>量化 token 级别对齐质量</li>
-<li>与模态差距的相关性<strong>比序列级表征更强</strong></li>
-</ul>
-<h2 id="五、干预实验"><a href="#五、干预实验" class="headerlink" title="五、干预实验"></a>五、干预实验</h2><p>基于上述分析，本文设计了两种针对性干预策略：</p>
-<h3 id="5-1-Angle-Projection（角度投影）"><a href="#5-1-Angle-Projection（角度投影）" class="headerlink" title="5.1 Angle Projection（角度投影）"></a>5.1 Angle Projection（角度投影）</h3><p>对关键 token 的语音 embedding 进行角度投影，改善方向对齐。</p>
-<h3 id="5-2-Length-Normalization（长度归一化）"><a href="#5-2-Length-Normalization（长度归一化）" class="headerlink" title="5.2 Length Normalization（长度归一化）"></a>5.2 Length Normalization（长度归一化）</h3><p>对语音 token embedding 进行长度归一化，减少幅度差异。</p>
-<h3 id="5-3-实验结果"><a href="#5-3-实验结果" class="headerlink" title="5.3 实验结果"></a>5.3 实验结果</h3><p>在 VoiceBench 的 sd-qa 子集上，干预策略显著提升了困难样本的语音输入正确率，证明了对语音表征的针对性干预具有改进潜力。</p>
-<h2 id="六、总结"><a href="#六、总结" class="headerlink" title="六、总结"></a>六、总结</h2><h3 id="6-1-主要贡献"><a href="#6-1-主要贡献" class="headerlink" title="6.1 主要贡献"></a>6.1 主要贡献</h3><ol>
-<li><strong>系统识别</strong>性能差距的主要来源是语音和文本输入之间的模态差异</li>
-<li><strong>分析内部表征</strong>，发现模态差距与表征相似度在序列级和 token 级都密切相关</li>
-<li><strong>首次实证证据</strong>表明针对语音表征的干预可以改善语音输入性能</li>
-</ol>
-<h3 id="6-2-核心洞察"><a href="#6-2-核心洞察" class="headerlink" title="6.2 核心洞察"></a>6.2 核心洞察</h3><table>
-<thead>
-<tr>
-<th>层级</th>
-<th>趋势</th>
-<th>意义</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>序列级</td>
-<td>Cosine ↑, Distance ↑</td>
-<td>方向趋同，幅度分化</td>
-</tr>
-<tr>
-<td>Token 级</td>
-<td>单调对齐路径</td>
-<td>自动学习时间-语义映射</td>
-</tr>
-<tr>
-<td>相关性</td>
-<td>强线性相关</td>
-<td>表征相似度可预测性能差距</td>
-</tr>
-</tbody></table>
-<h3 id="6-3-实践意义"><a href="#6-3-实践意义" class="headerlink" title="6.3 实践意义"></a>6.3 实践意义</h3><ul>
-<li><strong>LoRA &gt; 全参数微调</strong>：更适合语音-文本对齐任务</li>
-<li><strong>干预策略有效</strong>：Angle Projection 和 Length Normalization 可改善语音输入性能</li>
-<li><strong>表征分析有价值</strong>：内部表征相似度可作为模态差距的预测指标</li>
-</ul>
-<hr>
-<p><em>本文为 EMNLP 2025 接收论文</em></p>
 
                 
               </div>
@@ -501,7 +556,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  <a href="/categories/%E6%8A%80%E6%9C%AF%E6%80%BB%E7%BB%93/" class="category-chain-item">技术总结</a>
   
   
 
@@ -518,13 +573,11 @@
       
         <a href="/tags/LLM/" class="print-no-link">#LLM</a>
       
-        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+        <a href="/tags/vLLM/" class="print-no-link">#vLLM</a>
       
-        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+        <a href="/tags/SGLang/" class="print-no-link">#SGLang</a>
       
-        <a href="/tags/%E8%AF%AD%E9%9F%B3%E8%AF%86%E5%88%AB/" class="print-no-link">#语音识别</a>
-      
-        <a href="/tags/%E5%A4%9A%E6%A8%A1%E6%80%81/" class="print-no-link">#多模态</a>
+        <a href="/tags/%E6%8E%A8%E7%90%86%E6%A1%86%E6%9E%B6/" class="print-no-link">#推理框架</a>
       
     </div>
   
@@ -536,8 +589,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Understanding the Modality Gap - An Empirical Study on the Speech-Text Alignment Mechanism of Large Speech Language Models</div>
-      <div>https://smallsmartao.github.io/2026/03/13/modality-gap/</div>
+      <div>vLLM vs SGLang：大模型推理框架对比</div>
+      <div>https://smallsmartao.github.io/2026/03/13/vllm-vs-sglang/</div>
     </div>
     <div class="license-meta">
       
@@ -586,18 +639,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/03/13/vllm-vs-sglang/" title="vLLM vs SGLang：大模型推理框架对比">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">vLLM vs SGLang：大模型推理框架对比</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/03/13/rl-asr-tts/" title="Explore the Reinforcement Learning for the LLM based ASR and TTS system">
-                        <span class="hidden-mobile">Explore the Reinforcement Learning for the LLM based ASR and TTS system</span>
+                      <a href="/2026/03/13/modality-gap/" title="Understanding the Modality Gap - An Empirical Study on the Speech-Text Alignment Mechanism of Large Speech Language Models">
+                        <span class="hidden-mobile">Understanding the Modality Gap - An Empirical Study on the Speech-Text Alignment Mechanism of Large Speech Language Models</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
