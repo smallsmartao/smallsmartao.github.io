@@ -26,9 +26,9 @@
 <meta property="og:site_name" content="聪明的小奥">
 <meta property="og:description" content="论文链接：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.14877Github：https:&#x2F;&#x2F;github.com&#x2F;Soul-AILab&#x2F;SoulX-Duplug作者：Ruiqi Yan, Wenxi Chen 等（上海交通大学 X-LANCE Lab、Soul AI Lab）  一、引言语音对话系统是人工智能领域的重要研究方向。传统的语音对话模型（SDM）以半双工方式运行——用户说话">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://smallsmartao.github.io/images/mj/cover_uzvv81jg.png">
+<meta property="og:image" content="https://smallsmartao.github.io/images/mj/paper_p4_0.png">
 <meta property="article:published_time" content="2026-03-18T05:30:00.000Z">
-<meta property="article:modified_time" content="2026-03-18T05:41:22.388Z">
+<meta property="article:modified_time" content="2026-03-18T06:30:18.644Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="全双工">
 <meta property="article:tag" content="即插即用">
@@ -36,7 +36,7 @@
 <meta property="article:tag" content="论文解读">
 <meta property="article:tag" content="语音对话">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://smallsmartao.github.io/images/mj/cover_uzvv81jg.png">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/mj/paper_p4_0.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
@@ -247,7 +247,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.5k 字
+          1.4k 字
         
       </span>
     
@@ -258,7 +258,7 @@
         
         
         
-          13 分钟
+          12 分钟
         
       </span>
     
@@ -328,6 +328,7 @@
 <li><strong>动态轮次转换</strong>：像真人一样自然地交接对话主权</li>
 </ul>
 <p>这对于构建更自然、更智能的语音助手至关重要。</p>
+<p><img src="/images/mj/paper_p1_0.png" srcset="/img/loading.gif" lazyload alt="全双工系统概览"></p>
 <h3 id="现有方法的问题"><a href="#现有方法的问题" class="headerlink" title="现有方法的问题"></a>现有方法的问题</h3><p>当前全双工系统主要分为两类：</p>
 <table>
 <thead>
@@ -348,6 +349,7 @@
 <td>VAD缺乏语义理解，ASR和轮次检测存在延迟</td>
 </tr>
 </tbody></table>
+<p><img src="/images/mj/paper_p2_0.png" srcset="/img/loading.gif" lazyload alt="全双工对话系统研究概览"></p>
 <p><strong>SoulX-Duplug</strong> 提出了第三种方案：一个即插即用的流式状态预测模块，可以在不修改原有对话模型的情况下，为半双工系统赋予全双工能力。</p>
 <h2 id="二、核心贡献"><a href="#二、核心贡献" class="headerlink" title="二、核心贡献"></a>二、核心贡献</h2><ol>
 <li><strong>SoulX-Duplug</strong>：首个 ASR 辅助的流式状态预测模块，统一了 VAD、ASR 和轮次检测</li>
@@ -355,9 +357,9 @@
 <li><strong>低延迟</strong>：流式轮次检测平均延迟仅 <strong>240ms</strong></li>
 </ol>
 <h2 id="三、方法详解"><a href="#三、方法详解" class="headerlink" title="三、方法详解"></a>三、方法详解</h2><h3 id="3-1-系统架构"><a href="#3-1-系统架构" class="headerlink" title="3.1 系统架构"></a>3.1 系统架构</h3><p>SoulX-Duplug 的核心思想是：将双工交互控制建模为<strong>流式状态预测问题</strong>。</p>
-<figure class="highlight gauss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><code class="hljs gauss">┌─────────────────────────────────────────────────────────────┐<br>│                    SoulX-Duplug 架构                        │<br>├─────────────────────────────────────────────────────────────┤<br>│                                                             │<br>│   音频输入 ──► 语音编码器 ──► 音频 <span class="hljs-built_in">Token</span>                    │<br>│                         │                                   │<br>│                         ▼                                   │<br>│              ┌────────────────────────┐                    │<br>│              │   交织音频/文本/状态    │  ◄── 关键设计      │<br>│              │      <span class="hljs-built_in">Token</span> 序列         │                    │<br>│              └────────────────────────┘                    │<br>│                         │                                   │<br>│                         ▼                                   │<br>│              ┌────────────────────────┐                    │<br>│              │    大语言模型 (LLM)     │                    │<br>│              └────────────────────────┘                    │<br>│                         │                                   │<br>│           ┌─────────────┴─────────────┐                    │<br>│           ▼                           ▼                     │<br>│      ASR 输出                  对话状态预测                  │<br>│   (文本转录)                  (VAD/轮次检测)                │<br>│                                                             │<br>└─────────────────────────────────────────────────────────────┘<br></code></pre></td></tr></table></figure>
-
-<p><strong>关键创新</strong>：</p>
+<p>SoulX-Duplug 的架构如下所示：</p>
+<p><img src="/images/mj/paper_p4_0.png" srcset="/img/loading.gif" lazyload alt="SoulX-Duplug 架构"></p>
+<p><strong>核心创新</strong>：</p>
 <ul>
 <li>音频 Token 和文本 Token 交织输入，确保预测状态时可以利用文本信息</li>
 <li>训练时：VAD、ASR、状态预测端到端优化</li>
@@ -419,6 +421,7 @@
 <li>预测状态 Token 时已经看到了对应的文本</li>
 <li>本质上是一个<strong>语义 VAD</strong></li>
 </ul>
+<p><img src="/images/mj/paper_p5_0.png" srcset="/img/loading.gif" lazyload alt="流式推理示例"></p>
 <figure class="highlight nestedtext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs nestedtext"><span class="hljs-attribute">传统 VAD</span><span class="hljs-punctuation">:</span> <span class="hljs-string"> 音频特征 ──► 能量检测 ──► 有/无语音</span><br><br><span class="hljs-attribute">SoulX-Duplug</span><span class="hljs-punctuation">:</span> <span class="hljs-string"> 音频特征 + ASR文本 ──► 语义理解 ──► 状态判断</span><br>                                              ↑<br>                                         （关键区别）<br></code></pre></td></tr></table></figure>
 
 <h2 id="四、实验结果"><a href="#四、实验结果" class="headerlink" title="四、实验结果"></a>四、实验结果</h2><h3 id="4-1-与现有方法对比"><a href="#4-1-与现有方法对比" class="headerlink" title="4.1 与现有方法对比"></a>4.1 与现有方法对比</h3><table>
@@ -468,6 +471,7 @@
 </tr>
 </tbody></table>
 <p>SoulX-Duplug 是首个同时满足这四个条件的模块！</p>
+<p><img src="/images/mj/paper_p3_0.png" srcset="/img/loading.gif" lazyload alt="三种全双工系统对比"></p>
 <h3 id="4-2-延迟性能"><a href="#4-2-延迟性能" class="headerlink" title="4.2 延迟性能"></a>4.2 延迟性能</h3><ul>
 <li><strong>平均延迟</strong>：240ms（接近理论下限）</li>
 <li>在 Full-Duplex-Bench 上达到最佳轮次管理性能</li>
