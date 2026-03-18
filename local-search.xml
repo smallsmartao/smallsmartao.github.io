@@ -4,6 +4,41 @@
   
   
   <entry>
+    <title>SoulX-Duplug: 实时全双工语音对话的即插即用状态预测模块</title>
+    <link href="/2026/03/18/soulx-duplug/"/>
+    <url>/2026/03/18/soulx-duplug/</url>
+    
+    <content type="html"><![CDATA[<h1 id="SoulX-Duplug-实时全双工语音对话的即插即用状态预测模块"><a href="#SoulX-Duplug-实时全双工语音对话的即插即用状态预测模块" class="headerlink" title="SoulX-Duplug: 实时全双工语音对话的即插即用状态预测模块"></a>SoulX-Duplug: 实时全双工语音对话的即插即用状态预测模块</h1><blockquote><p>论文链接：<a href="https://arxiv.org/abs/2603.14877">https://arxiv.org/abs/2603.14877</a><br>Github：<a href="https://github.com/Soul-AILab/SoulX-Duplug">https://github.com/Soul-AILab/SoulX-Duplug</a></p></blockquote><h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>近年来，语音对话系统引起了人们对类人全双工语音交互的广泛关注。然而，该领域存在几个挑战：训练数据获取困难、灾难性遗忘和可扩展性有限。</p><p>本文提出了 <strong>SoulX-Duplug</strong>，一个用于全双工语音对话系统的即插即用流式状态预测模块。通过联合执行流式 ASR，SoulX-Duplug 利用文本信息来识别用户意图，有效充当语义 VAD。</p><p>为了促进公平评估，本文引入了 <strong>SoulX-Duplug-Eval</strong>，扩展了广泛使用的基准测试并改善了双语覆盖。</p><p>实验结果表明，SoulX-Duplug 能够实现低延迟的流式对话状态控制，基于它的系统在整体轮次管理和延迟性能方面优于现有的全双工模型。</p><h2 id="核心贡献"><a href="#核心贡献" class="headerlink" title="核心贡献"></a>核心贡献</h2><ol><li><strong>SoulX-Duplug</strong>：首个 ASR 辅助的流式状态预测模块，统一了 VAD、ASR 和轮次检测</li><li><strong>SoulX-Duplug-Eval</strong>：双语评估基准，促进标准化和可比较的跨语言评估</li><li><strong>低延迟</strong>：流式轮次检测平均延迟仅 <strong>240ms</strong></li></ol><h2 id="研究背景"><a href="#研究背景" class="headerlink" title="研究背景"></a>研究背景</h2><h3 id="传统-vs-全双工"><a href="#传统-vs-全双工" class="headerlink" title="传统 vs 全双工"></a>传统 vs 全双工</h3><p>传统的语音对话模型（SDM）以<strong>半双工</strong>方式运行，听和说是分时的。而**全双工语音对话系统（FD-SDS）**能够同时听和说，支持：</p><ul><li><strong>打断处理</strong></li><li><strong>停顿处理</strong></li><li><strong>动态轮次转换</strong></li></ul><p>这对于更自然的交互至关重要。</p><h3 id="现有方法的问题"><a href="#现有方法的问题" class="headerlink" title="现有方法的问题"></a>现有方法的问题</h3><p>现有的全双工系统主要分为两类：</p><ol><li><strong>端到端模型</strong>：将轮次策略与语言建模紧密耦合，难以解耦</li><li><strong>模块化系统</strong>：使用 VAD-ASR-轮次检测级联，但存在延迟问题</li></ol><p>SoulX-Duplug 提出了第三种方案：<strong>即插即用的流式状态预测模块</strong>。</p><h2 id="方法亮点"><a href="#方法亮点" class="headerlink" title="方法亮点"></a>方法亮点</h2><h3 id="1-统一框架"><a href="#1-统一框架" class="headerlink" title="1. 统一框架"></a>1. 统一框架</h3><p>SoulX-Duplug 将 VAD、ASR 和轮次检测统一在单个流式架构中，而不是分解为独立的级联模块。</p><h3 id="2-文本引导的状态预测"><a href="#2-文本引导的状态预测" class="headerlink" title="2. 文本引导的状态预测"></a>2. 文本引导的状态预测</h3><p>通过联合执行流式 ASR 和状态预测，模型在预测状态时能够利用文本信息进行语义级别的轮次检测，有效充当<strong>语义 VAD</strong>。</p><h3 id="3-端到端优化"><a href="#3-端到端优化" class="headerlink" title="3. 端到端优化"></a>3. 端到端优化</h3><p>训练时，VAD、ASR 和状态预测进行端到端优化；推理时，轻量级 ASR 模型通过教师强制提供文本指导。</p><h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><h3 id="延迟性能"><a href="#延迟性能" class="headerlink" title="延迟性能"></a>延迟性能</h3><p>SoulX-Duplug 实现平均 <strong>240ms</strong> 的流式轮次检测延迟，接近理论下限。</p><h3 id="系统级评估"><a href="#系统级评估" class="headerlink" title="系统级评估"></a>系统级评估</h3><p>在 Full-Duplex-Bench 和 SoulX-Duplug-Eval 上的实验表明，基于 SoulX-Duplug 的全双工语音对话系统在轮次管理和延迟方面达到了最佳整体性能。</p><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>SoulX-Duplug 是一个创新的即插即用模块，可以在不修改主干架构的情况下，为半双工系统赋予全双工交互能力。结合双语评估基准 SoulX-Duplug-Eval，这项工作为全双工语音对话研究提供了重要的开源贡献。</p><hr><p><strong>关键词</strong>：全双工、语音交互、轮次转换、即插即用、流式、实时</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>论文解读</category>
+      
+      <category>语音识别</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>论文解读</tag>
+      
+      <tag>语音对话</tag>
+      
+      <tag>全双工</tag>
+      
+      <tag>即插即用</tag>
+      
+      <tag>流式识别</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>vLLM vs SGLang：大模型推理框架对比</title>
     <link href="/2026/03/13/vllm-vs-sglang/"/>
     <url>/2026/03/13/vllm-vs-sglang/</url>
