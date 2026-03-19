@@ -19,16 +19,16 @@
   <meta name="author" content="Ao Zhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="VibeVoice‑ASR 技术解析论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2601.18184 模型整体架构 VibeVoice 提出统一语音模型，将语音编码、语义建模与文本生成整合到统一 Transformer 架构。 语音表示 模型通过语音 encoder 将 waveform 转为特征，并通过统一 representation 进行建模。 训练流程 训练包括大规模预训练与 ASR">
+    <meta name="description" content="VibeVoice‑ASR 技术解读论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2601.18184 模型架构 VibeVoice 提出统一语音模型框架，将语音编码、表示学习与文本生成整合到统一 Transformer 架构。 训练流程 训练分为大规模语音预训练与 ASR 微调两个阶段。 实验结果 实验表明该模型在多个语音识别 benchmark 上具有竞争力。">
 <meta property="og:type" content="article">
 <meta property="og:title" content="VibeVoice-ASR Technical Report">
 <meta property="og:url" content="https://smallsmartao.github.io/2026/03/19/vibevoice-asr/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="VibeVoice‑ASR 技术解析论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2601.18184 模型整体架构 VibeVoice 提出统一语音模型，将语音编码、语义建模与文本生成整合到统一 Transformer 架构。 语音表示 模型通过语音 encoder 将 waveform 转为特征，并通过统一 representation 进行建模。 训练流程 训练包括大规模预训练与 ASR">
+<meta property="og:description" content="VibeVoice‑ASR 技术解读论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2601.18184 模型架构 VibeVoice 提出统一语音模型框架，将语音编码、表示学习与文本生成整合到统一 Transformer 架构。 训练流程 训练分为大规模语音预训练与 ASR 微调两个阶段。 实验结果 实验表明该模型在多个语音识别 benchmark 上具有竞争力。">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice.png">
 <meta property="article:published_time" content="2026-03-18T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-03-19T15:23:41.362Z">
+<meta property="article:modified_time" content="2026-03-19T15:45:05.746Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="LLM">
@@ -245,7 +245,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          118 字
+          99 字
         
       </span>
     
@@ -315,15 +315,13 @@
             
               <div class="markdown-body">
                 
-                <h1 id="VibeVoice‑ASR-技术解析"><a href="#VibeVoice‑ASR-技术解析" class="headerlink" title="VibeVoice‑ASR 技术解析"></a>VibeVoice‑ASR 技术解析</h1><p>论文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2601.18184">https://arxiv.org/abs/2601.18184</a></p>
-<h2 id="模型整体架构"><a href="#模型整体架构" class="headerlink" title="模型整体架构"></a>模型整体架构</h2><p><img src="/images/mj/vibevoice_fix_p2_0.png" srcset="/img/loading.gif" lazyload></p>
-<p>VibeVoice 提出统一语音模型，将语音编码、语义建模与文本生成整合到统一 Transformer 架构。</p>
-<h2 id="语音表示"><a href="#语音表示" class="headerlink" title="语音表示"></a>语音表示</h2><p><img src="/images/mj/vibevoice_fix_p2_1.png" srcset="/img/loading.gif" lazyload></p>
-<p>模型通过语音 encoder 将 waveform 转为特征，并通过统一 representation 进行建模。</p>
-<h2 id="训练流程"><a href="#训练流程" class="headerlink" title="训练流程"></a>训练流程</h2><p><img src="/images/mj/vibevoice_fix_p2_2.png" srcset="/img/loading.gif" lazyload></p>
-<p>训练包括大规模预训练与 ASR 微调。</p>
-<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><p><img src="/images/mj/vibevoice_fix_p2_3.png" srcset="/img/loading.gif" lazyload></p>
-<p>实验显示模型在多个语音识别 benchmark 上具有竞争力。</p>
+                <h1 id="VibeVoice‑ASR-技术解读"><a href="#VibeVoice‑ASR-技术解读" class="headerlink" title="VibeVoice‑ASR 技术解读"></a>VibeVoice‑ASR 技术解读</h1><p>论文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2601.18184">https://arxiv.org/abs/2601.18184</a></p>
+<h2 id="模型架构"><a href="#模型架构" class="headerlink" title="模型架构"></a>模型架构</h2><p><img src="/images/paper_figs/figure_1.png" srcset="/img/loading.gif" lazyload></p>
+<p>VibeVoice 提出统一语音模型框架，将语音编码、表示学习与文本生成整合到统一 Transformer 架构。</p>
+<h2 id="训练流程"><a href="#训练流程" class="headerlink" title="训练流程"></a>训练流程</h2><p><img src="/images/paper_figs/figure_2.png" srcset="/img/loading.gif" lazyload></p>
+<p>训练分为大规模语音预训练与 ASR 微调两个阶段。</p>
+<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><p><img src="/images/paper_figs/figure_3.png" srcset="/img/loading.gif" lazyload></p>
+<p>实验表明该模型在多个语音识别 benchmark 上具有竞争力。</p>
 
                 
               </div>

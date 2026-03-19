@@ -8,7 +8,7 @@
     <link href="/2026/03/19/vibevoice-asr/"/>
     <url>/2026/03/19/vibevoice-asr/</url>
     
-    <content type="html"><![CDATA[<h1 id="VibeVoice‑ASR-技术解析"><a href="#VibeVoice‑ASR-技术解析" class="headerlink" title="VibeVoice‑ASR 技术解析"></a>VibeVoice‑ASR 技术解析</h1><p>论文：<a href="https://arxiv.org/abs/2601.18184">https://arxiv.org/abs/2601.18184</a></p><h2 id="模型整体架构"><a href="#模型整体架构" class="headerlink" title="模型整体架构"></a>模型整体架构</h2><p><img src="/images/mj/vibevoice_fix_p2_0.png"></p><p>VibeVoice 提出统一语音模型，将语音编码、语义建模与文本生成整合到统一 Transformer 架构。</p><h2 id="语音表示"><a href="#语音表示" class="headerlink" title="语音表示"></a>语音表示</h2><p><img src="/images/mj/vibevoice_fix_p2_1.png"></p><p>模型通过语音 encoder 将 waveform 转为特征，并通过统一 representation 进行建模。</p><h2 id="训练流程"><a href="#训练流程" class="headerlink" title="训练流程"></a>训练流程</h2><p><img src="/images/mj/vibevoice_fix_p2_2.png"></p><p>训练包括大规模预训练与 ASR 微调。</p><h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><p><img src="/images/mj/vibevoice_fix_p2_3.png"></p><p>实验显示模型在多个语音识别 benchmark 上具有竞争力。</p>]]></content>
+    <content type="html"><![CDATA[<h1 id="VibeVoice‑ASR-技术解读"><a href="#VibeVoice‑ASR-技术解读" class="headerlink" title="VibeVoice‑ASR 技术解读"></a>VibeVoice‑ASR 技术解读</h1><p>论文：<a href="https://arxiv.org/abs/2601.18184">https://arxiv.org/abs/2601.18184</a></p><h2 id="模型架构"><a href="#模型架构" class="headerlink" title="模型架构"></a>模型架构</h2><p><img src="/images/paper_figs/figure_1.png"></p><p>VibeVoice 提出统一语音模型框架，将语音编码、表示学习与文本生成整合到统一 Transformer 架构。</p><h2 id="训练流程"><a href="#训练流程" class="headerlink" title="训练流程"></a>训练流程</h2><p><img src="/images/paper_figs/figure_2.png"></p><p>训练分为大规模语音预训练与 ASR 微调两个阶段。</p><h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><p><img src="/images/paper_figs/figure_3.png"></p><p>实验表明该模型在多个语音识别 benchmark 上具有竞争力。</p>]]></content>
     
     
     <categories>
@@ -37,7 +37,7 @@
     <link href="/2026/03/19/fireredasr2s/"/>
     <url>/2026/03/19/fireredasr2s/</url>
     
-    <content type="html"><![CDATA[<h1 id="FireRedASR2S-系统解析"><a href="#FireRedASR2S-系统解析" class="headerlink" title="FireRedASR2S 系统解析"></a>FireRedASR2S 系统解析</h1><p>论文：<a href="https://arxiv.org/abs/2603.10420">https://arxiv.org/abs/2603.10420</a></p><h2 id="系统架构"><a href="#系统架构" class="headerlink" title="系统架构"></a>系统架构</h2><p><img src="/images/mj/firered_fix_p3_0.png"></p><p>FireRedASR2S 是工业级 ASR 系统，整合多模块语音识别 pipeline。</p><h2 id="ASR-pipeline"><a href="#ASR-pipeline" class="headerlink" title="ASR pipeline"></a>ASR pipeline</h2><p><img src="/images/mj/firered_fix_p3_1.png"></p><p>系统同时支持 streaming 与离线识别。</p><h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><p><img src="/images/mj/firered_fix_p3_2.png"></p><p>实验结果展示了系统在多场景语音识别任务中的性能。</p>]]></content>
+    <content type="html"><![CDATA[<h1 id="FireRedASR2S-系统解读"><a href="#FireRedASR2S-系统解读" class="headerlink" title="FireRedASR2S 系统解读"></a>FireRedASR2S 系统解读</h1><p>论文：<a href="https://arxiv.org/abs/2603.10420">https://arxiv.org/abs/2603.10420</a></p><h2 id="系统架构"><a href="#系统架构" class="headerlink" title="系统架构"></a>系统架构</h2><p><img src="/images/paper_figs/figure_1.png"></p><p>FireRedASR2S 是一个工业级语音识别系统，整合 streaming 与离线 ASR pipeline。</p><h2 id="ASR-pipeline"><a href="#ASR-pipeline" class="headerlink" title="ASR pipeline"></a>ASR pipeline</h2><p><img src="/images/paper_figs/figure_2.png"></p><p>系统设计重点在于统一模型架构与高性能部署。</p><h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><p><img src="/images/paper_figs/figure_3.png"></p><p>论文展示了系统在多种语音识别任务上的性能表现。</p>]]></content>
     
     
     <categories>
