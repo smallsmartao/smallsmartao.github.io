@@ -33,6 +33,33 @@
   
   
   <entry>
+    <title>FireRedASR2S: Industrial-Grade All-in-One ASR System</title>
+    <link href="/2026/03/19/fireredasr2s/"/>
+    <url>/2026/03/19/fireredasr2s/</url>
+    
+    <content type="html"><![CDATA[<h1 id="FireRedASR2S-论文解读"><a href="#FireRedASR2S-论文解读" class="headerlink" title="FireRedASR2S 论文解读"></a>FireRedASR2S 论文解读</h1><p>论文: <a href="https://arxiv.org/abs/2603.10420">https://arxiv.org/abs/2603.10420</a></p><h2 id="模型架构"><a href="#模型架构" class="headerlink" title="模型架构"></a>模型架构</h2><p><img src="/images/mj/firered_p1_0.png"></p><p>FireRedASR2S 提出了一个工业级一体化语音识别系统，将多个语音处理组件整合为统一架构。</p><h2 id="系统设计"><a href="#系统设计" class="headerlink" title="系统设计"></a>系统设计</h2><p><img src="/images/mj/firered_p2_0.png"></p><p>系统重点关注：</p><ul><li>统一模型架构</li><li>工业级稳定性</li><li>高性能语音识别</li></ul><h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><p><img src="/images/mj/firered_p3_0.png"></p><p>实验表明该系统在多个语音识别任务上取得了先进性能。</p><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>FireRedASR2S 代表了一种工业级 ASR 系统设计思路，将模型结构、训练策略和工程系统整合在一起。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>论文解读</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>ASR</tag>
+      
+      <tag>论文解读</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>SoulX-Duplug: 实时全双工语音对话的即插即用状态预测模块</title>
     <link href="/2026/03/18/soulx-duplug/"/>
     <url>/2026/03/18/soulx-duplug/</url>

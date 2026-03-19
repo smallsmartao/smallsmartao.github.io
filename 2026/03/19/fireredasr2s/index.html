@@ -19,19 +19,18 @@
   <meta name="author" content="Ao Zhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="VibeVoice‑ASR Technical Report 论文解读论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2601.18184 研究背景随着大模型的发展，语音识别系统正在从传统的 模块化 ASR（声学模型 + 语言模型 + 解码器） 转向 统一的大模型架构。VibeVoice‑ASR 的目标是构建一个统一的语音模型框架，使语音识别可以像语言模型一样进行统一训练和扩展。  模型整体架构">
+    <meta name="description" content="FireRedASR2S 论文解读论文: https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.10420 模型架构 FireRedASR2S 提出了一个工业级一体化语音识别系统，将多个语音处理组件整合为统一架构。 系统设计 系统重点关注：  统一模型架构 工业级稳定性 高性能语音识别  实验结果 实验表明该系统在多个语音识别任务上取得了先进性能。 总结FireRedASR2S 代表了一种工业级">
 <meta property="og:type" content="article">
-<meta property="og:title" content="VibeVoice-ASR Technical Report">
-<meta property="og:url" content="https://smallsmartao.github.io/2026/03/19/vibevoice-asr/index.html">
+<meta property="og:title" content="FireRedASR2S: Industrial-Grade All-in-One ASR System">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/03/19/fireredasr2s/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="VibeVoice‑ASR Technical Report 论文解读论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2601.18184 研究背景随着大模型的发展，语音识别系统正在从传统的 模块化 ASR（声学模型 + 语言模型 + 解码器） 转向 统一的大模型架构。VibeVoice‑ASR 的目标是构建一个统一的语音模型框架，使语音识别可以像语言模型一样进行统一训练和扩展。  模型整体架构">
+<meta property="og:description" content="FireRedASR2S 论文解读论文: https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.10420 模型架构 FireRedASR2S 提出了一个工业级一体化语音识别系统，将多个语音处理组件整合为统一架构。 系统设计 系统重点关注：  统一模型架构 工业级稳定性 高性能语音识别  实验结果 实验表明该系统在多个语音识别任务上取得了先进性能。 总结FireRedASR2S 代表了一种工业级">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice.png">
 <meta property="article:published_time" content="2026-03-18T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-03-19T15:15:12.044Z">
+<meta property="article:modified_time" content="2026-03-19T15:18:03.931Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
-<meta property="article:tag" content="LLM">
 <meta property="article:tag" content="论文解读">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice.png">
@@ -40,7 +39,7 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>VibeVoice-ASR Technical Report - 聪明的小奥</title>
+  <title>FireRedASR2S: Industrial-Grade All-in-One ASR System - 聪明的小奥</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -217,7 +216,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="VibeVoice-ASR Technical Report"></span>
+            <span id="subtitle" data-typed-text="FireRedASR2S: Industrial-Grade All-in-One ASR System"></span>
           
         </div>
 
@@ -245,7 +244,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          595 字
+          143 字
         
       </span>
     
@@ -256,7 +255,7 @@
         
         
         
-          5 分钟
+          2 分钟
         
       </span>
     
@@ -302,7 +301,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">VibeVoice-ASR Technical Report</h1>
+            <h1 id="seo-header">FireRedASR2S: Industrial-Grade All-in-One ASR System</h1>
             
               <p id="updated-time" class="note note-info" style="">
                 
@@ -315,61 +314,19 @@
             
               <div class="markdown-body">
                 
-                <h1 id="VibeVoice‑ASR-Technical-Report-论文解读"><a href="#VibeVoice‑ASR-Technical-Report-论文解读" class="headerlink" title="VibeVoice‑ASR Technical Report 论文解读"></a>VibeVoice‑ASR Technical Report 论文解读</h1><p>论文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2601.18184">https://arxiv.org/abs/2601.18184</a></p>
-<h2 id="研究背景"><a href="#研究背景" class="headerlink" title="研究背景"></a>研究背景</h2><p>随着大模型的发展，语音识别系统正在从传统的 <strong>模块化 ASR（声学模型 + 语言模型 + 解码器）</strong> 转向 <strong>统一的大模型架构</strong>。VibeVoice‑ASR 的目标是构建一个统一的语音模型框架，使语音识别可以像语言模型一样进行统一训练和扩展。</p>
-<hr>
-<h2 id="模型整体架构"><a href="#模型整体架构" class="headerlink" title="模型整体架构"></a>模型整体架构</h2><p><img src="/images/mj/vibevoice_p2_0.png" srcset="/img/loading.gif" lazyload></p>
-<p>VibeVoice 的核心结构可以概括为：</p>
-<p>Audio Encoder → Speech Representation → Transformer Backbone → Text Decoder</p>
-<ol>
-<li><strong>Audio Encoder</strong>：将原始音频转换为语音特征表示。</li>
-<li><strong>Speech Representation</strong>：对语音序列进行压缩和编码，使其适合 Transformer 处理。</li>
-<li><strong>Transformer Backbone</strong>：负责长上下文建模和语义理解。</li>
-<li><strong>Text Decoder</strong>：输出最终识别文本。</li>
-</ol>
-<p>这种结构使语音识别模型能够像 LLM 一样进行统一训练。</p>
-<hr>
-<h2 id="语音表示学习"><a href="#语音表示学习" class="headerlink" title="语音表示学习"></a>语音表示学习</h2><p><img src="/images/mj/vibevoice_p2_1.png" srcset="/img/loading.gif" lazyload></p>
-<p>论文提出统一的语音表示空间，使模型能够处理长语音序列，并保持良好的语义表达能力。语音信号在编码后被转换为类似 token 的序列，使 Transformer 能够进行高效建模。</p>
-<p>关键特点包括：</p>
+                <h1 id="FireRedASR2S-论文解读"><a href="#FireRedASR2S-论文解读" class="headerlink" title="FireRedASR2S 论文解读"></a>FireRedASR2S 论文解读</h1><p>论文: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2603.10420">https://arxiv.org/abs/2603.10420</a></p>
+<h2 id="模型架构"><a href="#模型架构" class="headerlink" title="模型架构"></a>模型架构</h2><p><img src="/images/mj/firered_p1_0.png" srcset="/img/loading.gif" lazyload></p>
+<p>FireRedASR2S 提出了一个工业级一体化语音识别系统，将多个语音处理组件整合为统一架构。</p>
+<h2 id="系统设计"><a href="#系统设计" class="headerlink" title="系统设计"></a>系统设计</h2><p><img src="/images/mj/firered_p2_0.png" srcset="/img/loading.gif" lazyload></p>
+<p>系统重点关注：</p>
 <ul>
-<li>统一语音 token 表示</li>
-<li>支持长语音输入</li>
-<li>与语言模型结构兼容</li>
+<li>统一模型架构</li>
+<li>工业级稳定性</li>
+<li>高性能语音识别</li>
 </ul>
-<hr>
-<h2 id="模型训练策略"><a href="#模型训练策略" class="headerlink" title="模型训练策略"></a>模型训练策略</h2><p><img src="/images/mj/vibevoice_p2_2.png" srcset="/img/loading.gif" lazyload></p>
-<p>训练分为两个阶段：</p>
-<h3 id="1-预训练"><a href="#1-预训练" class="headerlink" title="1 预训练"></a>1 预训练</h3><p>使用大规模语音数据进行自监督学习，使模型学习通用语音表示。</p>
-<h3 id="2-微调"><a href="#2-微调" class="headerlink" title="2 微调"></a>2 微调</h3><p>在 ASR 数据集上进行监督训练，使模型优化语音到文本的映射能力。</p>
-<hr>
-<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><p><img src="/images/mj/vibevoice_p2_3.png" srcset="/img/loading.gif" lazyload></p>
-<p>论文在多个语音识别任务上进行评测，结果表明：</p>
-<ul>
-<li>模型在标准 ASR benchmark 上具有竞争力</li>
-<li>在长语音场景中表现稳定</li>
-<li>模型结构具有良好的扩展能力</li>
-</ul>
-<hr>
-<h2 id="关键技术特点"><a href="#关键技术特点" class="headerlink" title="关键技术特点"></a>关键技术特点</h2><ol>
-<li><p><strong>统一语音模型架构</strong></p>
-<p>将语音建模和文本生成整合到一个统一模型中。</p>
-</li>
-<li><p><strong>兼容 Transformer &#x2F; LLM 架构</strong></p>
-<p>可以直接利用大模型训练范式。</p>
-</li>
-<li><p><strong>支持多任务扩展</strong></p>
-<p>模型不仅可用于 ASR，还可以扩展到语音理解等任务。</p>
-</li>
-</ol>
-<hr>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>VibeVoice‑ASR 展示了一种新的语音模型设计思路：</p>
-<ul>
-<li>将语音识别与大模型架构结合</li>
-<li>使用统一语音表示</li>
-<li>构建可扩展的语音基础模型</li>
-</ul>
-<p>这一方向可能会推动未来 <strong>语音基础模型（Speech Foundation Model）</strong> 的发展。</p>
+<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><p><img src="/images/mj/firered_p3_0.png" srcset="/img/loading.gif" lazyload></p>
+<p>实验表明该系统在多个语音识别任务上取得了先进性能。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>FireRedASR2S 代表了一种工业级 ASR 系统设计思路，将模型结构、训练策略和工程系统整合在一起。</p>
 
                 
               </div>
@@ -403,8 +360,6 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
-      
         <a href="/tags/ASR/" class="print-no-link">#ASR</a>
       
         <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
@@ -419,8 +374,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>VibeVoice-ASR Technical Report</div>
-      <div>https://smallsmartao.github.io/2026/03/19/vibevoice-asr/</div>
+      <div>FireRedASR2S: Industrial-Grade All-in-One ASR System</div>
+      <div>https://smallsmartao.github.io/2026/03/19/fireredasr2s/</div>
     </div>
     <div class="license-meta">
       
@@ -469,12 +424,18 @@
                   <article class="post-prev col-6">
                     
                     
+                      <a href="/2026/03/19/vibevoice-asr/" title="VibeVoice-ASR Technical Report">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">VibeVoice-ASR Technical Report</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/03/19/fireredasr2s/" title="FireRedASR2S: Industrial-Grade All-in-One ASR System">
-                        <span class="hidden-mobile">FireRedASR2S: Industrial-Grade All-in-One ASR System</span>
+                      <a href="/2026/03/18/soulx-duplug/" title="SoulX-Duplug: 实时全双工语音对话的即插即用状态预测模块">
+                        <span class="hidden-mobile">SoulX-Duplug: 实时全双工语音对话的即插即用状态预测模块</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
