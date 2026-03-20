@@ -28,7 +28,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_firered_822ee463.png">
 <meta property="article:published_time" content="2026-03-19T15:45:00.000Z">
-<meta property="article:modified_time" content="2026-03-20T02:16:58.352Z">
+<meta property="article:modified_time" content="2026-03-20T02:36:41.495Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="LID">
@@ -246,7 +246,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          719 字
+          867 字
         
       </span>
     
@@ -257,7 +257,7 @@
         
         
         
-          6 分钟
+          8 分钟
         
       </span>
     
@@ -335,21 +335,22 @@
 <li>顺序：VAD → LID → ASR → 标点 → 输出结构化转写（含时间戳&#x2F;置信度&#x2F;语言标签）。  </li>
 <li>模块化：每个组件可独立服务，也可默认串联输出。</li>
 </ul>
-<h2 id="四、模块要点"><a href="#四、模块要点" class="headerlink" title="四、模块要点"></a>四、模块要点</h2><p><img src="/images/paper_figs/firered_fig_components.png" srcset="/img/loading.gif" lazyload alt="模块设计"></p>
+<h2 id="四、方法细节（翻译向）"><a href="#四、方法细节（翻译向）" class="headerlink" title="四、方法细节（翻译向）"></a>四、方法细节（翻译向）</h2><p><img src="/images/paper_figs/firered_fig_components.png" srcset="/img/loading.gif" lazyload alt="模块设计"></p>
 <ul>
-<li><strong>ASR</strong>：在 FireRedASR 基础上小改架构，扩充监督数据，主打方言&#x2F;口音覆盖；LLM 版追求精度，AED 版追求延迟和成本。  </li>
-<li><strong>VAD</strong>：人标声学事件数据训练（非强制对齐伪标），鲁棒于音乐&#x2F;静音&#x2F;多语种。  </li>
-<li><strong>LID</strong>：编码器-解码器架构，层次化预测语言与方言标签，沿用 ASR 编码器初始化。  </li>
-<li><strong>Punc</strong>：BERT 风格，中英多域，补标点与格式。</li>
+<li><strong>ASR 主体</strong>：在 FireRedASR 基础上微调架构，提供两版：LLM（8B+）追求精度，AED（1B+）追求实时与成本；支持中文&#x2F;方言&#x2F;英文&#x2F;code-switch 与唱歌转写，输出时间戳、置信度、语言标签。  </li>
+<li><strong>训练策略</strong>：核心提升来自 <strong>20 万小时多域监督数据</strong>（比上一代更大、更多口音），而非大改网络；保持兼容上一代模型，便于迁移。  </li>
+<li><strong>VAD</strong>：0.6M DFSMN，支持 streaming &#x2F; non-streaming &#x2F; multi-label（语音&#x2F;音乐&#x2F;静音）；训练集是人工标注声学事件，避免强制对齐伪标导致的噪声。  </li>
+<li><strong>LID</strong>：Encoder-Decoder，两 token 层次化预测“语言 + 方言&#x2F;口音”，编码器初始化来自 ASR-AED，解码器量化语言与方言标签。  </li>
+<li><strong>Punc</strong>：BERT&#x2F;LERT 初始化，覆盖中英文多域，补标点与格式；与 ASR 输出保持时间戳对齐，便于直接落地。</li>
 </ul>
-<h2 id="五、训练与数据"><a href="#五、训练与数据" class="headerlink" title="五、训练与数据"></a>五、训练与数据</h2><ul>
-<li><strong>数据规模</strong>：约 20 万小时，多域、多语言、多方言，包含唱歌与代码混说。  </li>
-<li><strong>VAD 数据</strong>：数千小时人工标注的声学事件，提升多场景切分鲁棒性。  </li>
-<li><strong>初始化与迁移</strong>：LID&#x2F;Punc 继承 ASR 或 LERT 初始化，统一表示空间，减少冷启动成本。</li>
+<h2 id="五、训练与数据（翻译向）"><a href="#五、训练与数据（翻译向）" class="headerlink" title="五、训练与数据（翻译向）"></a>五、训练与数据（翻译向）</h2><ul>
+<li><strong>语音规模</strong>：约 200k 小时，涵盖新闻&#x2F;对话&#x2F;方言&#x2F;唱歌&#x2F;中英混说，显式扩充方言与口音分布。  </li>
+<li><strong>VAD 数据</strong>：数千小时人工标注的声学事件，提供 streaming、non-streaming、multi-label 三类 supervision。  </li>
+<li><strong>初始化与迁移</strong>：LID 编码器直接复用 ASR-AED 编码器；Punc 基于 LERT&#x2F;BERT 初始化；统一表示空间降低冷启动成本。</li>
 </ul>
-<h2 id="六、实验结果（摘要）"><a href="#六、实验结果（摘要）" class="headerlink" title="六、实验结果（摘要）"></a>六、实验结果（摘要）</h2><ul>
-<li><strong>ASR</strong>：FireRedASR2-LLM 在 4 个中文公开集 CER ≈ <strong>2.89%</strong>，19 个方言&#x2F;口音 CER ≈ <strong>11.55%</strong>，优于 Doubao-ASR &#x2F; Qwen3-ASR &#x2F; Fun-ASR。  </li>
-<li><strong>VAD</strong>：FLEURS-VAD-102 上 F1 <strong>97.57%</strong>、AUC-ROC <strong>99.60%</strong>，领先 Silero-VAD &#x2F; TEN-VAD &#x2F; FunASR-VAD &#x2F; WebRTC-VAD。  </li>
+<h2 id="六、实验结果（翻译向）"><a href="#六、实验结果（翻译向）" class="headerlink" title="六、实验结果（翻译向）"></a>六、实验结果（翻译向）</h2><ul>
+<li><strong>ASR</strong>：FireRedASR2-LLM 在 4 个中文公开集平均 CER ≈ <strong>2.89%</strong>，19 个方言&#x2F;口音集 CER ≈ <strong>11.55%</strong>；相较 Doubao-ASR、Qwen3-ASR、Fun-ASR 有优势。  </li>
+<li><strong>VAD</strong>：FLEURS-VAD-102 F1 <strong>97.57%</strong>、AUC-ROC <strong>99.60%</strong>，优于 Silero-VAD &#x2F; TEN-VAD &#x2F; FunASR-VAD &#x2F; WebRTC-VAD。  </li>
 <li><strong>LID</strong>：FLEURS（82 语言）准确率 <strong>97.18%</strong>，优于 Whisper &#x2F; SpeechBrain。  </li>
 <li><strong>Punc</strong>：中英多域平均 F1 <strong>78.9%</strong>，高于 FunASR-Punc（62.8%）。</li>
 </ul>

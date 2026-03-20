@@ -28,7 +28,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice_8c37e152.png">
 <meta property="article:published_time" content="2026-03-19T15:45:00.000Z">
-<meta property="article:modified_time" content="2026-03-20T02:18:35.391Z">
+<meta property="article:modified_time" content="2026-03-20T02:37:13.640Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="Diarization">
@@ -246,7 +246,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          944 字
+          1k 字
         
       </span>
     
@@ -257,7 +257,7 @@
         
         
         
-          8 分钟
+          9 分钟
         
       </span>
     
@@ -329,11 +329,12 @@
 <li><strong>双 Tokenizer + LLM 主干</strong>：复用 VibeVoice 的声学&#x2F;语义双 tokenizer，输出交给解码器式 LLM（如 Qwen2.5）自回归生成。  </li>
 <li><strong>长序列训练策略</strong>：LLM 输入长度由 8k 逐步 curriculum 到 65k tokens，覆盖长语音场景。</li>
 </ul>
-<h2 id="三、架构"><a href="#三、架构" class="headerlink" title="三、架构"></a>三、架构</h2><p><img src="/images/paper_figs/vibevoice_fig2.png" srcset="/img/loading.gif" lazyload alt="整体框架"></p>
+<h2 id="三、方法细节（翻译向）"><a href="#三、方法细节（翻译向）" class="headerlink" title="三、方法细节（翻译向）"></a>三、方法细节（翻译向）</h2><p><img src="/images/paper_figs/vibevoice_fig2.png" srcset="/img/loading.gif" lazyload alt="整体框架"></p>
 <ul>
-<li>输入：60 分钟音频 → 声学&#x2F;语义双 tokenizer → 连续音频嵌入序列；可选文本 prompt 直接前置。  </li>
-<li>主干：decoder-only LLM（Qwen2.5 系）接收多模态序列，单通道自回归生成。  </li>
-<li>输出：Rich Transcription 序列（Who&#x2F;When&#x2F;What），天然包含说话人分离与时间戳。</li>
+<li><strong>输入侧</strong>：最长 60 分钟音频，经声学&#x2F;语义双 tokenizer 生成连续音频嵌入；可选文本 prompt（术语&#x2F;背景）直接前置。  </li>
+<li><strong>主干</strong>：decoder-only LLM（Qwen2.5 系）接收多模态序列，单通道自回归生成。  </li>
+<li><strong>Rich Transcription</strong>：输出序列中交织 Who&#x2F;When&#x2F;What，推理时一次性给出文本+说话人+时间戳。  </li>
+<li><strong>说话人&#x2F;时间对齐</strong>：训练数据的说话人标签由 vblinkp（WeSpeaker）声纹 + HDBSCAN 聚类获得，时间戳由 ASR 对齐并按标点切分，保证生成序列的标注粒度与输入对齐。</li>
 </ul>
 <h2 id="四、训练与数据"><a href="#四、训练与数据" class="headerlink" title="四、训练与数据"></a>四、训练与数据</h2><ul>
 <li><strong>预训练</strong>：大量伪标长语音，覆盖会议&#x2F;播客等长场景，重点建模长上下文与跨说话人依赖。  </li>
@@ -342,9 +343,15 @@
 <li><strong>SFT</strong>：高质量对话&#x2F;会议（MLC-SLM、Fisher 等）+ Muse 音乐数据，校准说话人&#x2F;对齐；输入长度 curriculum 从 8k → 65k。  </li>
 <li><strong>说话人标注流程</strong>：用 vblinkp（WeSpeaker）提取声纹（1.5s 窗 &#x2F; 0.75s hop），HDBSCAN 聚类并用 0.67 余弦阈值合并，得到干净的说话人标签。</li>
 </ul>
-<h2 id="五、实验与结果（摘要）"><a href="#五、实验与结果（摘要）" class="headerlink" title="五、实验与结果（摘要）"></a>五、实验与结果（摘要）</h2><ul>
-<li><strong>长语音流水线对比</strong>：在 AISHELL-4 &#x2F; AMI &#x2F; AliMeeting 等集上，相比 WhisperX、Emilia 的分段流水线，VibeVoice-ASR 自己的单通道 pipeline 在 DER&#x2F;WER 上同时下降（如 AMI-IHM DER ~15.5%，WER ~23.2%；AliMeeting DER ~25.3%，WER ~30.8%）。  </li>
-<li><strong>多语言与混说</strong>：报告支持 50+ 语言并能自动语言识别；强调 code-switching 场景无需手动切换。  </li>
+<h2 id="五、实验与结果（翻译向）"><a href="#五、实验与结果（翻译向）" class="headerlink" title="五、实验与结果（翻译向）"></a>五、实验与结果（翻译向）</h2><ul>
+<li><strong>长语音流水线对比</strong>：<ul>
+<li>AISHELL-4：WhisperX DER&#x2F;WER 14.6&#x2F;29.7，Emilia 16.6&#x2F;49.4，VibeVoice-ASR pipeline 16.9&#x2F;19.0（DER 近似持平，WER 大幅下降）。</li>
+<li>AMI-IHM：WhisperX 18.3&#x2F;24.1，Emilia 35.4&#x2F;47.9，VibeVoice-ASR 15.5&#x2F;23.2。  </li>
+<li>AMI-SDM：WhisperX 23.1&#x2F;39.7，Emilia 46.6&#x2F;61.7，VibeVoice-ASR 17.8&#x2F;28.4。  </li>
+<li>AliMeeting：WhisperX 35.5&#x2F;36.6，Emilia 25.6&#x2F;54.3，VibeVoice-ASR 25.3&#x2F;30.8。</li>
+</ul>
+</li>
+<li><strong>多语言与混说</strong>：原生支持 50+ 语言，自动语言识别，code-switch 无需手动切换。  </li>
 <li><strong>Rich Transcription</strong>：生成序列直接包含说话人与时间戳，减少后处理复杂度。</li>
 </ul>
 <p><img src="/images/paper_figs/vibevoice_fig3.png" srcset="/img/loading.gif" lazyload alt="训练数据分布示意"></p>
