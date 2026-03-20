@@ -28,7 +28,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice_8c37e152.png">
 <meta property="article:published_time" content="2026-03-19T15:45:00.000Z">
-<meta property="article:modified_time" content="2026-03-20T02:49:38.498Z">
+<meta property="article:modified_time" content="2026-03-20T02:51:22.848Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="Diarization">
@@ -246,7 +246,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          742 字
+          786 字
         
       </span>
     
@@ -329,13 +329,7 @@
 <li><strong>双 Tokenizer + LLM 主干</strong>：复用 VibeVoice 的声学&#x2F;语义双 tokenizer，输出交给解码器式 LLM（如 Qwen2.5）自回归生成。  </li>
 <li><strong>长序列训练策略</strong>：LLM 输入长度由 8k 逐步 curriculum 到 65k tokens，覆盖长语音场景。</li>
 </ul>
-<h2 id="三、方法细节"><a href="#三、方法细节" class="headerlink" title="三、方法细节"></a>三、方法细节</h2><p><img src="/images/paper_figs/vibevoice_fig2.png" srcset="/img/loading.gif" lazyload alt="整体框架"></p>
-<ul>
-<li><strong>输入侧</strong>：最长 60 分钟音频，经声学&#x2F;语义双 tokenizer 生成连续音频嵌入；可选文本 prompt（术语&#x2F;背景）直接前置。  </li>
-<li><strong>主干</strong>：decoder-only LLM（Qwen2.5 系）接收多模态序列，单通道自回归生成。  </li>
-<li><strong>Rich Transcription</strong>：输出序列交织 Who&#x2F;When&#x2F;What，推理一次性给出文本+说话人+时间戳。  </li>
-<li><strong>说话人&#x2F;时间对齐</strong>：训练标签由 vblinkp（WeSpeaker）声纹 + HDBSCAN 聚类获得，时间戳由 ASR 对齐并按标点切分，保证生成序列粒度与输入对齐。</li>
-</ul>
+<h2 id="三、方法细节"><a href="#三、方法细节" class="headerlink" title="三、方法细节"></a>三、方法细节</h2><p><img src="/images/paper_figs/vibevoice_fig2.png" srcset="/img/loading.gif" lazyload alt="整体框架"><br>论文将长语音理解表述为语言建模任务：模型输入是预训练声学&#x2F;语义编码器输出的连续音频嵌入，可选的文本提示（术语&#x2F;背景）直接前置；decoder-only LLM（Qwen2.5 系）在单一通道上自回归生成目标序列。与传统只输出文本的 ASR 不同，VibeVoice-ASR 生成 Rich Transcription 序列，显式交织说话人身份（Who）、时间边界（When）和内容（What），一次性给出转写+分离+时间戳。训练用的说话人标签由 vblinkp（WeSpeaker）声纹提取、HDBSCAN 聚类并用 0.67 余弦阈值合并得到，时间戳来自 ASR 对齐并按标点切分，以匹配生成序列的粒度。</p>
 <h2 id="四、训练与数据"><a href="#四、训练与数据" class="headerlink" title="四、训练与数据"></a>四、训练与数据</h2><ul>
 <li><strong>预训练</strong>：大量伪标长语音，覆盖会议&#x2F;播客等长场景，建模长上下文与跨说话人依赖。  </li>
 <li><strong>上下文合成数据管线</strong>：GPT-5 生成含实体&#x2F;技术词&#x2F;跨语对话脚本 + 对应上下文提示；VibeVoice 引擎合成多说话人中英及 code-switch 音频；闭环 ASR 过滤高 WER 样本，得到 ~6k 小时合成数据。  </li>

@@ -28,7 +28,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_firered_822ee463.png">
 <meta property="article:published_time" content="2026-03-19T15:45:00.000Z">
-<meta property="article:modified_time" content="2026-03-20T02:49:29.178Z">
+<meta property="article:modified_time" content="2026-03-20T02:51:10.105Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="LID">
@@ -246,7 +246,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          852 字
+          896 字
         
       </span>
     
@@ -335,13 +335,7 @@
 <li>顺序：VAD → LID → ASR → 标点 → 输出结构化转写（含时间戳&#x2F;置信度&#x2F;语言标签）。  </li>
 <li>模块化：每个组件可独立服务，也可默认串联输出。</li>
 </ul>
-<h2 id="四、方法细节"><a href="#四、方法细节" class="headerlink" title="四、方法细节"></a>四、方法细节</h2><p><img src="/images/paper_figs/firered_fig_components.png" srcset="/img/loading.gif" lazyload alt="模块设计"></p>
-<ul>
-<li><strong>FireRedASR2</strong>：在上一代 FireRedASR 上做最小改动，提供 FireRedASR2-LLM（8B+）和 FireRedASR2-AED（1B+），支持中文、方言、英文、code-switch 与唱歌，输出带时间戳、置信度、语言标签的转写。  </li>
-<li><strong>FireRedVAD</strong>：DFSMN，0.6M 参数，支持流式&#x2F;非流式&#x2F;mVAD，多标签覆盖语音&#x2F;音乐&#x2F;静音，使用人工标注声学事件训练。  </li>
-<li><strong>FireRedLID</strong>：Encoder-Decoder，编码器从 FireRedASR2-AED 初始化，解码器用两 token 层次化解码 100+ 语言和 20+ 方言&#x2F;口音。  </li>
-<li><strong>FireRedPunc</strong>：BERT 风格编码器，从 LERT 初始化，训练于大规模中英多域语料，为 ASR 输出补标点。</li>
-</ul>
+<h2 id="四、方法细节"><a href="#四、方法细节" class="headerlink" title="四、方法细节"></a>四、方法细节</h2><p><img src="/images/paper_figs/firered_fig_components.png" srcset="/img/loading.gif" lazyload alt="模块设计"><br>FireRedASR2S 将四个模块串成一条流水线：FireRedASR2 负责识别，FireRedVAD 做切分，FireRedLID 产出语言&#x2F;方言标签，FireRedPunc 还原标点。FireRedASR2 在上一代 FireRedASR 的框架上做最小改动，分别给出 LLM（8B+）和 AED（1B+）两版，覆盖中文、方言、英文、code-switch 与唱歌，并输出时间戳、置信度、语言标签。FireRedVAD 基于 DFSMN（0.6M 参数），支持流式、非流式和多标签（语音&#x2F;音乐&#x2F;静音）模式，训练数据来自人工标注的声学事件。FireRedLID 采用 Encoder-Decoder，编码器从 FireRedASR2-AED 初始化，解码器用两个 token 层次化解码 100+ 语言和 20+ 方言&#x2F;口音。FireRedPunc 使用 BERT 风格编码器，从 LERT 初始化，在大规模中英多域语料上训练，为 ASR 输出补标点。</p>
 <h2 id="五、训练与数据"><a href="#五、训练与数据" class="headerlink" title="五、训练与数据"></a>五、训练与数据</h2><ul>
 <li>监督语音规模约 200k 小时，相比 FireRedASR 显著放大并拓展域&#x2F;语言&#x2F;方言多样性。  </li>
 <li>VAD 训练集是人工标注的声学事件，非强制对齐伪标；提供 streaming、non-streaming、multi-label 三类 supervision。  </li>
