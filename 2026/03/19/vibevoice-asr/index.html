@@ -26,16 +26,16 @@
 <meta property="og:site_name" content="聪明的小奥">
 <meta property="og:description" content="VibeVoice-ASR 技术解读 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2601.18184   作者：Microsoft Research  一、背景与痛点长语音（会议&#x2F;播客&#x2F;讲座）仍难：传统做法把音频切成 &lt;30s，再用分离&#x2F;ASR&#x2F;对齐多级流水线，导致 上下文割裂、对齐误差累积、难以端到端优化。VibeVoice-ASR 的目标是">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_f1cbfno6.png">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice_8c37e152.png">
 <meta property="article:published_time" content="2026-03-19T15:45:00.000Z">
-<meta property="article:modified_time" content="2026-03-20T02:09:09.862Z">
+<meta property="article:modified_time" content="2026-03-20T02:18:35.391Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="Diarization">
 <meta property="article:tag" content="LLM">
 <meta property="article:tag" content="论文解读">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_f1cbfno6.png">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice_8c37e152.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
@@ -246,7 +246,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          812 字
+          944 字
         
       </span>
     
@@ -257,7 +257,7 @@
         
         
         
-          7 分钟
+          8 分钟
         
       </span>
     
@@ -337,8 +337,10 @@
 </ul>
 <h2 id="四、训练与数据"><a href="#四、训练与数据" class="headerlink" title="四、训练与数据"></a>四、训练与数据</h2><ul>
 <li><strong>预训练</strong>：大量伪标长语音，覆盖会议&#x2F;播客等长场景，重点建模长上下文与跨说话人依赖。  </li>
-<li><strong>SFT</strong>：精调时混合高质量对话&#x2F;会议（MLC-SLM、Fisher 等）+ 合成音乐 Muse，保证说话人标签与对齐精度。  </li>
-<li><strong>序列长度 curriculum</strong>：输入序列从 8k → 65k 逐步增长，提升长文本建模能力。</li>
+<li><strong>上下文合成数据管线</strong>：GPT-5 生成含实体&#x2F;技术词&#x2F;跨语对话脚本 + 对应上下文提示；VibeVoice 引擎合成多说话人中英及 code-switch 音频；闭环 ASR 过滤高 WER 样本，得到 ~6k 小时合成数据。  </li>
+<li><strong>长语音转写修复</strong>：&gt;50 分钟录音的分段转写交给 GPT-5 重写与拼合，缓解切块导致的语义割裂；补齐长录音中的非语音间隔占位。  </li>
+<li><strong>SFT</strong>：高质量对话&#x2F;会议（MLC-SLM、Fisher 等）+ Muse 音乐数据，校准说话人&#x2F;对齐；输入长度 curriculum 从 8k → 65k。  </li>
+<li><strong>说话人标注流程</strong>：用 vblinkp（WeSpeaker）提取声纹（1.5s 窗 &#x2F; 0.75s hop），HDBSCAN 聚类并用 0.67 余弦阈值合并，得到干净的说话人标签。</li>
 </ul>
 <h2 id="五、实验与结果（摘要）"><a href="#五、实验与结果（摘要）" class="headerlink" title="五、实验与结果（摘要）"></a>五、实验与结果（摘要）</h2><ul>
 <li><strong>长语音流水线对比</strong>：在 AISHELL-4 &#x2F; AMI &#x2F; AliMeeting 等集上，相比 WhisperX、Emilia 的分段流水线，VibeVoice-ASR 自己的单通道 pipeline 在 DER&#x2F;WER 上同时下降（如 AMI-IHM DER ~15.5%，WER ~23.2%；AliMeeting DER ~25.3%，WER ~30.8%）。  </li>
