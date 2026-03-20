@@ -8,7 +8,7 @@
     <link href="/2026/03/19/vibevoice-asr/"/>
     <url>/2026/03/19/vibevoice-asr/</url>
     
-    <content type="html"><![CDATA[<h1 id="VibeVoice‑ASR-技术解读"><a href="#VibeVoice‑ASR-技术解读" class="headerlink" title="VibeVoice‑ASR 技术解读"></a>VibeVoice‑ASR 技术解读</h1><p>论文：<a href="https://arxiv.org/abs/2601.18184">https://arxiv.org/abs/2601.18184</a></p><h2 id="模型架构"><a href="#模型架构" class="headerlink" title="模型架构"></a>模型架构</h2><p><img src="/images/paper_figs/figure_1.png"></p><p>VibeVoice 提出统一语音模型框架，将语音编码、表示学习与文本生成整合到统一 Transformer 架构。</p><h2 id="训练流程"><a href="#训练流程" class="headerlink" title="训练流程"></a>训练流程</h2><p><img src="/images/paper_figs/figure_2.png"></p><p>训练分为大规模语音预训练与 ASR 微调两个阶段。</p><h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><p><img src="/images/paper_figs/figure_3.png"></p><p>实验表明该模型在多个语音识别 benchmark 上具有竞争力。</p>]]></content>
+    <content type="html"><![CDATA[<h1 id="VibeVoice-ASR-技术解读"><a href="#VibeVoice-ASR-技术解读" class="headerlink" title="VibeVoice-ASR 技术解读"></a>VibeVoice-ASR 技术解读</h1><p>论文：<a href="https://arxiv.org/abs/2601.18184">https://arxiv.org/abs/2601.18184</a></p><h2 id="亮点速览"><a href="#亮点速览" class="headerlink" title="亮点速览"></a>亮点速览</h2><ul><li><strong>长语音单次生成</strong>：支持最长 ~60 分钟音频，避免传统分段带来的上下文割裂。  </li><li><strong>三合一任务</strong>：ASR + 说话人分离 + 时间戳统一到单一生成任务，无需多级流水线。  </li><li><strong>多语种与中英混说</strong>：原生支持 50+ 语言，自动语言识别，无需显式设置。  </li><li><strong>上下文注入</strong>：提示式（prompt-based）外部知识注入，提升领域术语与多音字判别。  </li><li><strong>大模型加持</strong>：基于 VibeVoice 框架，长上下文建模与生成质量相对传统 ASR 更优。</li></ul><h2 id="方法与架构"><a href="#方法与架构" class="headerlink" title="方法与架构"></a>方法与架构</h2><p><img src="/images/paper_figs/vibevoice_page1.png"></p><ul><li><strong>统一建模</strong>：把文本、说话人标签、时间戳视作同一序列的生成目标，减少模块间误差累积。  </li><li><strong>长上下文</strong>：单次处理长达 60 分钟音频，避免切块重组带来的错位与标签对齐问题。  </li><li><strong>多语种自适应</strong>：无需设定语种，模型输出自动带语言标签并处理中英混说。  </li><li><strong>Prompt 注入</strong>：通过额外上下文提示，将专有词汇、人物&#x2F;地名等信息融入解码过程。</li></ul><h2 id="训练与推理要点"><a href="#训练与推理要点" class="headerlink" title="训练与推理要点"></a>训练与推理要点</h2><ul><li><strong>训练数据</strong>：覆盖多语种长对话、会议、播客；强调多说话人、多语言混说。  </li><li><strong>解码</strong>：单通道生成，内含说话人标签与时间戳，减少后处理复杂度。  </li><li><strong>鲁棒性</strong>：设计上对长上下文与多说话人场景友好，但对极端噪声的表现需结合实际评测。</li></ul><h2 id="实验概览"><a href="#实验概览" class="headerlink" title="实验概览"></a>实验概览</h2><ul><li>报告强调在长对话（会议&#x2F;播客）下，相比传统分段流水线，VibeVoice-ASR 在上下文连续性与说话人归属上更一致。  </li><li>支持 50+ 语言与 code-switching，自动语言识别，无需手动切换。  </li><li>具体基准与数值在报告中限量呈现，整体定位为“通用长语音理解”框架。</li></ul><h2 id="个人点评"><a href="#个人点评" class="headerlink" title="个人点评"></a>个人点评</h2><ul><li>优点：把 ASR&#x2F;分离&#x2F;时间戳统一生成，简化了后处理，对长场景更友好；prompt 注入是实用亮点。  </li><li>风险：单次 60 分钟解码对显存&#x2F;延迟要求较高，实际部署需评估硬件与缓存策略；报告公开的量化指标有限。  </li><li>建议：补充公开基准（如 AMI&#x2F;LibriCSS&#x2F;Meetings）与噪声、重口音场景的对比，便于复现与对标。</li></ul>]]></content>
     
     
     <categories>
@@ -26,6 +26,8 @@
       
       <tag>论文解读</tag>
       
+      <tag>Diarization</tag>
+      
     </tags>
     
   </entry>
@@ -37,7 +39,7 @@
     <link href="/2026/03/19/fireredasr2s/"/>
     <url>/2026/03/19/fireredasr2s/</url>
     
-    <content type="html"><![CDATA[<h1 id="FireRedASR2S-系统解读"><a href="#FireRedASR2S-系统解读" class="headerlink" title="FireRedASR2S 系统解读"></a>FireRedASR2S 系统解读</h1><p>论文：<a href="https://arxiv.org/abs/2603.10420">https://arxiv.org/abs/2603.10420</a></p><h2 id="系统架构"><a href="#系统架构" class="headerlink" title="系统架构"></a>系统架构</h2><p><img src="/images/paper_figs/figure_1.png"></p><p>FireRedASR2S 是一个工业级语音识别系统，整合 streaming 与离线 ASR pipeline。</p><h2 id="ASR-pipeline"><a href="#ASR-pipeline" class="headerlink" title="ASR pipeline"></a>ASR pipeline</h2><p><img src="/images/paper_figs/figure_2.png"></p><p>系统设计重点在于统一模型架构与高性能部署。</p><h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><p><img src="/images/paper_figs/figure_3.png"></p><p>论文展示了系统在多种语音识别任务上的性能表现。</p>]]></content>
+    <content type="html"><![CDATA[<h1 id="FireRedASR2S-系统解读"><a href="#FireRedASR2S-系统解读" class="headerlink" title="FireRedASR2S 系统解读"></a>FireRedASR2S 系统解读</h1><p>论文：<a href="https://arxiv.org/abs/2603.10420">https://arxiv.org/abs/2603.10420</a>  ｜  代码：<a href="https://github.com/FireRedTeam/FireRedASR2S">https://github.com/FireRedTeam/FireRedASR2S</a></p><h2 id="亮点速览"><a href="#亮点速览" class="headerlink" title="亮点速览"></a>亮点速览</h2><ul><li><strong>一体化流水线</strong>：ASR + VAD + LID + 标点预测四件套，统一设计，覆盖流式&#x2F;离线、唱歌、中英文及多方言。  </li><li><strong>双 ASR 模型</strong>：FireRedASR2-LLM（8B+ 参数）面向高精度，FireRedASR2-AED（1B+）面向高效部署。  </li><li><strong>高指标</strong>：Mandarin 公共集 CER ~2.9%，19 个方言&#x2F;口音 CER ~11.6%，VAD 在 FLEURS-VAD-102 上 F1 97.6%、AUC 99.6%。  </li><li><strong>轻量 VAD</strong>：0.6M 参数 DFSMN，支持 streaming &#x2F; non-streaming &#x2F; multi-label。  </li><li><strong>覆盖 100+ 语言的 LID</strong>：FLEURS 82 语言准确率 97.18%，优于 Whisper&#x2F;SpeechBrain。  </li><li><strong>标点模块</strong>：BERT 风格，中文&#x2F;英文多域平均 F1 78.9%。</li></ul><h2 id="系统架构"><a href="#系统架构" class="headerlink" title="系统架构"></a>系统架构</h2><p><img src="/images/paper_figs/firered_page1.png"></p><ul><li><strong>前端</strong>：FireRedVAD 负责切分，FireRedLID 负责语种&#x2F;方言识别并路由。  </li><li><strong>核心 ASR</strong>：FireRedASR2-LLM（基于大模型）与 FireRedASR2-AED（轻量 AED）可按场景切换。  </li><li><strong>后处理</strong>：FireRedPunc 还原标点与格式，输出可直接落地业务。</li></ul><h2 id="模块与关键技巧"><a href="#模块与关键技巧" class="headerlink" title="模块与关键技巧"></a>模块与关键技巧</h2><ul><li><strong>FireRedASR2-LLM</strong>：更高精度，支持唱歌、代码混说；强化方言覆盖。  </li><li><strong>FireRedASR2-AED</strong>：1B 级，推理成本低，适合线上大规模并发。  </li><li><strong>VAD</strong>：DFSMN 结构，提供多标签（语音&#x2F;音乐&#x2F;静音）模式。  </li><li><strong>LID</strong>：编码器-解码器方案，100+ 语言 &amp; 20+ 方言。  </li><li><strong>Punc</strong>：BERT 风格，兼容中英文场景。</li></ul><h2 id="实验与指标"><a href="#实验与指标" class="headerlink" title="实验与指标"></a>实验与指标</h2><ul><li><strong>ASR</strong>：相比 FireRedASR 提升显著；公开对比优于 Doubao-ASR、Qwen3-ASR、Fun-ASR。  </li><li><strong>VAD</strong>：FLEURS-VAD-102 F1 97.57%、AUC-ROC 99.60%，领先 Silero-VAD &#x2F; TEN-VAD &#x2F; FunASR-VAD &#x2F; WebRTC-VAD。  </li><li><strong>LID</strong>：FLEURS 82 语言准确率 97.18%，优于 Whisper &#x2F; SpeechBrain。  </li><li><strong>Punc</strong>：多域平均 F1 78.9%，高于 FunASR-Punc（62.8%）。</li></ul><h2 id="部署与开源"><a href="#部署与开源" class="headerlink" title="部署与开源"></a>部署与开源</h2><ul><li>模型与代码已开放：<a href="https://github.com/FireRedTeam/FireRedASR2S">https://github.com/FireRedTeam/FireRedASR2S</a>  </li><li>全链路方案，可按精度&#x2F;性能切换 ASR 版本并混合部署。</li></ul><h2 id="个人点评"><a href="#个人点评" class="headerlink" title="个人点评"></a>个人点评</h2><ul><li>将 VAD&#x2F;LID&#x2F;Punc&#x2F;ASR 统一打包，落地友好；轻量 VAD + 大&#x2F;小双 ASR 便于按场景路由。  </li><li>亮点在多方言、唱歌与流式&#x2F;离线的覆盖，但仍依赖较大规模模型；推理成本与硬件需求需要结合业务评估。  </li><li>若要进一步上线，建议补充长语音鲁棒性（噪声&#x2F;重口音）与端侧性能数据。</li></ul>]]></content>
     
     
     <categories>
@@ -52,6 +54,10 @@
       <tag>ASR</tag>
       
       <tag>论文解读</tag>
+      
+      <tag>LID</tag>
+      
+      <tag>VAD</tag>
       
     </tags>
     

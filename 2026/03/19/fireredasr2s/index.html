@@ -19,21 +19,23 @@
   <meta name="author" content="Ao Zhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="FireRedASR2S 系统解读论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.10420 系统架构 FireRedASR2S 是一个工业级语音识别系统，整合 streaming 与离线 ASR pipeline。 ASR pipeline 系统设计重点在于统一模型架构与高性能部署。 实验 论文展示了系统在多种语音识别任务上的性能表现。">
+    <meta name="description" content="FireRedASR2S 系统解读论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.10420  ｜  代码：https:&#x2F;&#x2F;github.com&#x2F;FireRedTeam&#x2F;FireRedASR2S 亮点速览 一体化流水线：ASR + VAD + LID + 标点预测四件套，统一设计，覆盖流式&#x2F;离线、唱歌、中英文及多方言。   双 ASR 模型：FireRedASR2-LLM（8">
 <meta property="og:type" content="article">
 <meta property="og:title" content="FireRedASR2S: Industrial‑Grade All‑in‑One ASR">
 <meta property="og:url" content="https://smallsmartao.github.io/2026/03/19/fireredasr2s/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="FireRedASR2S 系统解读论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.10420 系统架构 FireRedASR2S 是一个工业级语音识别系统，整合 streaming 与离线 ASR pipeline。 ASR pipeline 系统设计重点在于统一模型架构与高性能部署。 实验 论文展示了系统在多种语音识别任务上的性能表现。">
+<meta property="og:description" content="FireRedASR2S 系统解读论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.10420  ｜  代码：https:&#x2F;&#x2F;github.com&#x2F;FireRedTeam&#x2F;FireRedASR2S 亮点速览 一体化流水线：ASR + VAD + LID + 标点预测四件套，统一设计，覆盖流式&#x2F;离线、唱歌、中英文及多方言。   双 ASR 模型：FireRedASR2-LLM（8">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice.png">
-<meta property="article:published_time" content="2026-03-18T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-03-19T15:45:05.753Z">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_hbrpoig8.png">
+<meta property="article:published_time" content="2026-03-19T15:45:00.000Z">
+<meta property="article:modified_time" content="2026-03-20T01:58:21.794Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
+<meta property="article:tag" content="LID">
+<meta property="article:tag" content="VAD">
 <meta property="article:tag" content="论文解读">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice.png">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_hbrpoig8.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
@@ -232,8 +234,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-03-19 00:00" pubdate>
-          2026年3月19日 凌晨
+        <time datetime="2026-03-19 23:45" pubdate>
+          2026年3月19日 晚上
         </time>
       </span>
     
@@ -244,7 +246,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          80 字
+          541 字
         
       </span>
     
@@ -255,7 +257,7 @@
         
         
         
-          1 分钟
+          5 分钟
         
       </span>
     
@@ -306,7 +308,7 @@
               <p id="updated-time" class="note note-info" style="">
                 
                   
-                    本文最后更新于 2026年3月19日 晚上
+                    本文最后更新于 2026年3月20日 上午
                   
                 
               </p>
@@ -314,13 +316,43 @@
             
               <div class="markdown-body">
                 
-                <h1 id="FireRedASR2S-系统解读"><a href="#FireRedASR2S-系统解读" class="headerlink" title="FireRedASR2S 系统解读"></a>FireRedASR2S 系统解读</h1><p>论文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2603.10420">https://arxiv.org/abs/2603.10420</a></p>
-<h2 id="系统架构"><a href="#系统架构" class="headerlink" title="系统架构"></a>系统架构</h2><p><img src="/images/paper_figs/figure_1.png" srcset="/img/loading.gif" lazyload></p>
-<p>FireRedASR2S 是一个工业级语音识别系统，整合 streaming 与离线 ASR pipeline。</p>
-<h2 id="ASR-pipeline"><a href="#ASR-pipeline" class="headerlink" title="ASR pipeline"></a>ASR pipeline</h2><p><img src="/images/paper_figs/figure_2.png" srcset="/img/loading.gif" lazyload></p>
-<p>系统设计重点在于统一模型架构与高性能部署。</p>
-<h2 id="实验"><a href="#实验" class="headerlink" title="实验"></a>实验</h2><p><img src="/images/paper_figs/figure_3.png" srcset="/img/loading.gif" lazyload></p>
-<p>论文展示了系统在多种语音识别任务上的性能表现。</p>
+                <h1 id="FireRedASR2S-系统解读"><a href="#FireRedASR2S-系统解读" class="headerlink" title="FireRedASR2S 系统解读"></a>FireRedASR2S 系统解读</h1><p>论文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2603.10420">https://arxiv.org/abs/2603.10420</a>  ｜  代码：<a target="_blank" rel="noopener" href="https://github.com/FireRedTeam/FireRedASR2S">https://github.com/FireRedTeam/FireRedASR2S</a></p>
+<h2 id="亮点速览"><a href="#亮点速览" class="headerlink" title="亮点速览"></a>亮点速览</h2><ul>
+<li><strong>一体化流水线</strong>：ASR + VAD + LID + 标点预测四件套，统一设计，覆盖流式&#x2F;离线、唱歌、中英文及多方言。  </li>
+<li><strong>双 ASR 模型</strong>：FireRedASR2-LLM（8B+ 参数）面向高精度，FireRedASR2-AED（1B+）面向高效部署。  </li>
+<li><strong>高指标</strong>：Mandarin 公共集 CER ~2.9%，19 个方言&#x2F;口音 CER ~11.6%，VAD 在 FLEURS-VAD-102 上 F1 97.6%、AUC 99.6%。  </li>
+<li><strong>轻量 VAD</strong>：0.6M 参数 DFSMN，支持 streaming &#x2F; non-streaming &#x2F; multi-label。  </li>
+<li><strong>覆盖 100+ 语言的 LID</strong>：FLEURS 82 语言准确率 97.18%，优于 Whisper&#x2F;SpeechBrain。  </li>
+<li><strong>标点模块</strong>：BERT 风格，中文&#x2F;英文多域平均 F1 78.9%。</li>
+</ul>
+<h2 id="系统架构"><a href="#系统架构" class="headerlink" title="系统架构"></a>系统架构</h2><p><img src="/images/paper_figs/firered_page1.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li><strong>前端</strong>：FireRedVAD 负责切分，FireRedLID 负责语种&#x2F;方言识别并路由。  </li>
+<li><strong>核心 ASR</strong>：FireRedASR2-LLM（基于大模型）与 FireRedASR2-AED（轻量 AED）可按场景切换。  </li>
+<li><strong>后处理</strong>：FireRedPunc 还原标点与格式，输出可直接落地业务。</li>
+</ul>
+<h2 id="模块与关键技巧"><a href="#模块与关键技巧" class="headerlink" title="模块与关键技巧"></a>模块与关键技巧</h2><ul>
+<li><strong>FireRedASR2-LLM</strong>：更高精度，支持唱歌、代码混说；强化方言覆盖。  </li>
+<li><strong>FireRedASR2-AED</strong>：1B 级，推理成本低，适合线上大规模并发。  </li>
+<li><strong>VAD</strong>：DFSMN 结构，提供多标签（语音&#x2F;音乐&#x2F;静音）模式。  </li>
+<li><strong>LID</strong>：编码器-解码器方案，100+ 语言 &amp; 20+ 方言。  </li>
+<li><strong>Punc</strong>：BERT 风格，兼容中英文场景。</li>
+</ul>
+<h2 id="实验与指标"><a href="#实验与指标" class="headerlink" title="实验与指标"></a>实验与指标</h2><ul>
+<li><strong>ASR</strong>：相比 FireRedASR 提升显著；公开对比优于 Doubao-ASR、Qwen3-ASR、Fun-ASR。  </li>
+<li><strong>VAD</strong>：FLEURS-VAD-102 F1 97.57%、AUC-ROC 99.60%，领先 Silero-VAD &#x2F; TEN-VAD &#x2F; FunASR-VAD &#x2F; WebRTC-VAD。  </li>
+<li><strong>LID</strong>：FLEURS 82 语言准确率 97.18%，优于 Whisper &#x2F; SpeechBrain。  </li>
+<li><strong>Punc</strong>：多域平均 F1 78.9%，高于 FunASR-Punc（62.8%）。</li>
+</ul>
+<h2 id="部署与开源"><a href="#部署与开源" class="headerlink" title="部署与开源"></a>部署与开源</h2><ul>
+<li>模型与代码已开放：<a target="_blank" rel="noopener" href="https://github.com/FireRedTeam/FireRedASR2S">https://github.com/FireRedTeam/FireRedASR2S</a>  </li>
+<li>全链路方案，可按精度&#x2F;性能切换 ASR 版本并混合部署。</li>
+</ul>
+<h2 id="个人点评"><a href="#个人点评" class="headerlink" title="个人点评"></a>个人点评</h2><ul>
+<li>将 VAD&#x2F;LID&#x2F;Punc&#x2F;ASR 统一打包，落地友好；轻量 VAD + 大&#x2F;小双 ASR 便于按场景路由。  </li>
+<li>亮点在多方言、唱歌与流式&#x2F;离线的覆盖，但仍依赖较大规模模型；推理成本与硬件需求需要结合业务评估。  </li>
+<li>若要进一步上线，建议补充长语音鲁棒性（噪声&#x2F;重口音）与端侧性能数据。</li>
+</ul>
 
                 
               </div>
@@ -358,6 +390,10 @@
       
         <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
       
+        <a href="/tags/LID/" class="print-no-link">#LID</a>
+      
+        <a href="/tags/VAD/" class="print-no-link">#VAD</a>
+      
     </div>
   
 </div>
@@ -387,7 +423,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>更新于</div>
-          <div>2026年3月19日</div>
+          <div>2026年3月20日</div>
         </div>
       
       

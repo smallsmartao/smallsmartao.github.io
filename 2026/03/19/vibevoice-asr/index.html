@@ -19,22 +19,23 @@
   <meta name="author" content="Ao Zhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="VibeVoice‑ASR 技术解读论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2601.18184 模型架构 VibeVoice 提出统一语音模型框架，将语音编码、表示学习与文本生成整合到统一 Transformer 架构。 训练流程 训练分为大规模语音预训练与 ASR 微调两个阶段。 实验结果 实验表明该模型在多个语音识别 benchmark 上具有竞争力。">
+    <meta name="description" content="VibeVoice-ASR 技术解读论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2601.18184 亮点速览 长语音单次生成：支持最长 ~60 分钟音频，避免传统分段带来的上下文割裂。   三合一任务：ASR + 说话人分离 + 时间戳统一到单一生成任务，无需多级流水线。   多语种与中英混说：原生支持 50+ 语言，自动语言识别，无需显式设置。   上下文注入：提示式（prompt-ba">
 <meta property="og:type" content="article">
 <meta property="og:title" content="VibeVoice-ASR Technical Report">
 <meta property="og:url" content="https://smallsmartao.github.io/2026/03/19/vibevoice-asr/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="VibeVoice‑ASR 技术解读论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2601.18184 模型架构 VibeVoice 提出统一语音模型框架，将语音编码、表示学习与文本生成整合到统一 Transformer 架构。 训练流程 训练分为大规模语音预训练与 ASR 微调两个阶段。 实验结果 实验表明该模型在多个语音识别 benchmark 上具有竞争力。">
+<meta property="og:description" content="VibeVoice-ASR 技术解读论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2601.18184 亮点速览 长语音单次生成：支持最长 ~60 分钟音频，避免传统分段带来的上下文割裂。   三合一任务：ASR + 说话人分离 + 时间戳统一到单一生成任务，无需多级流水线。   多语种与中英混说：原生支持 50+ 语言，自动语言识别，无需显式设置。   上下文注入：提示式（prompt-ba">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice.png">
-<meta property="article:published_time" content="2026-03-18T16:00:00.000Z">
-<meta property="article:modified_time" content="2026-03-19T15:45:05.746Z">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_f1cbfno6.png">
+<meta property="article:published_time" content="2026-03-19T15:45:00.000Z">
+<meta property="article:modified_time" content="2026-03-20T01:58:32.568Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
+<meta property="article:tag" content="Diarization">
 <meta property="article:tag" content="LLM">
 <meta property="article:tag" content="论文解读">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice.png">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_f1cbfno6.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
@@ -233,8 +234,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-03-19 00:00" pubdate>
-          2026年3月19日 凌晨
+        <time datetime="2026-03-19 23:45" pubdate>
+          2026年3月19日 晚上
         </time>
       </span>
     
@@ -245,7 +246,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          99 字
+          602 字
         
       </span>
     
@@ -256,7 +257,7 @@
         
         
         
-          1 分钟
+          6 分钟
         
       </span>
     
@@ -307,7 +308,7 @@
               <p id="updated-time" class="note note-info" style="">
                 
                   
-                    本文最后更新于 2026年3月19日 晚上
+                    本文最后更新于 2026年3月20日 上午
                   
                 
               </p>
@@ -315,13 +316,36 @@
             
               <div class="markdown-body">
                 
-                <h1 id="VibeVoice‑ASR-技术解读"><a href="#VibeVoice‑ASR-技术解读" class="headerlink" title="VibeVoice‑ASR 技术解读"></a>VibeVoice‑ASR 技术解读</h1><p>论文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2601.18184">https://arxiv.org/abs/2601.18184</a></p>
-<h2 id="模型架构"><a href="#模型架构" class="headerlink" title="模型架构"></a>模型架构</h2><p><img src="/images/paper_figs/figure_1.png" srcset="/img/loading.gif" lazyload></p>
-<p>VibeVoice 提出统一语音模型框架，将语音编码、表示学习与文本生成整合到统一 Transformer 架构。</p>
-<h2 id="训练流程"><a href="#训练流程" class="headerlink" title="训练流程"></a>训练流程</h2><p><img src="/images/paper_figs/figure_2.png" srcset="/img/loading.gif" lazyload></p>
-<p>训练分为大规模语音预训练与 ASR 微调两个阶段。</p>
-<h2 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h2><p><img src="/images/paper_figs/figure_3.png" srcset="/img/loading.gif" lazyload></p>
-<p>实验表明该模型在多个语音识别 benchmark 上具有竞争力。</p>
+                <h1 id="VibeVoice-ASR-技术解读"><a href="#VibeVoice-ASR-技术解读" class="headerlink" title="VibeVoice-ASR 技术解读"></a>VibeVoice-ASR 技术解读</h1><p>论文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2601.18184">https://arxiv.org/abs/2601.18184</a></p>
+<h2 id="亮点速览"><a href="#亮点速览" class="headerlink" title="亮点速览"></a>亮点速览</h2><ul>
+<li><strong>长语音单次生成</strong>：支持最长 ~60 分钟音频，避免传统分段带来的上下文割裂。  </li>
+<li><strong>三合一任务</strong>：ASR + 说话人分离 + 时间戳统一到单一生成任务，无需多级流水线。  </li>
+<li><strong>多语种与中英混说</strong>：原生支持 50+ 语言，自动语言识别，无需显式设置。  </li>
+<li><strong>上下文注入</strong>：提示式（prompt-based）外部知识注入，提升领域术语与多音字判别。  </li>
+<li><strong>大模型加持</strong>：基于 VibeVoice 框架，长上下文建模与生成质量相对传统 ASR 更优。</li>
+</ul>
+<h2 id="方法与架构"><a href="#方法与架构" class="headerlink" title="方法与架构"></a>方法与架构</h2><p><img src="/images/paper_figs/vibevoice_page1.png" srcset="/img/loading.gif" lazyload></p>
+<ul>
+<li><strong>统一建模</strong>：把文本、说话人标签、时间戳视作同一序列的生成目标，减少模块间误差累积。  </li>
+<li><strong>长上下文</strong>：单次处理长达 60 分钟音频，避免切块重组带来的错位与标签对齐问题。  </li>
+<li><strong>多语种自适应</strong>：无需设定语种，模型输出自动带语言标签并处理中英混说。  </li>
+<li><strong>Prompt 注入</strong>：通过额外上下文提示，将专有词汇、人物&#x2F;地名等信息融入解码过程。</li>
+</ul>
+<h2 id="训练与推理要点"><a href="#训练与推理要点" class="headerlink" title="训练与推理要点"></a>训练与推理要点</h2><ul>
+<li><strong>训练数据</strong>：覆盖多语种长对话、会议、播客；强调多说话人、多语言混说。  </li>
+<li><strong>解码</strong>：单通道生成，内含说话人标签与时间戳，减少后处理复杂度。  </li>
+<li><strong>鲁棒性</strong>：设计上对长上下文与多说话人场景友好，但对极端噪声的表现需结合实际评测。</li>
+</ul>
+<h2 id="实验概览"><a href="#实验概览" class="headerlink" title="实验概览"></a>实验概览</h2><ul>
+<li>报告强调在长对话（会议&#x2F;播客）下，相比传统分段流水线，VibeVoice-ASR 在上下文连续性与说话人归属上更一致。  </li>
+<li>支持 50+ 语言与 code-switching，自动语言识别，无需手动切换。  </li>
+<li>具体基准与数值在报告中限量呈现，整体定位为“通用长语音理解”框架。</li>
+</ul>
+<h2 id="个人点评"><a href="#个人点评" class="headerlink" title="个人点评"></a>个人点评</h2><ul>
+<li>优点：把 ASR&#x2F;分离&#x2F;时间戳统一生成，简化了后处理，对长场景更友好；prompt 注入是实用亮点。  </li>
+<li>风险：单次 60 分钟解码对显存&#x2F;延迟要求较高，实际部署需评估硬件与缓存策略；报告公开的量化指标有限。  </li>
+<li>建议：补充公开基准（如 AMI&#x2F;LibriCSS&#x2F;Meetings）与噪声、重口音场景的对比，便于复现与对标。</li>
+</ul>
 
                 
               </div>
@@ -361,6 +385,8 @@
       
         <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
       
+        <a href="/tags/Diarization/" class="print-no-link">#Diarization</a>
+      
     </div>
   
 </div>
@@ -390,7 +416,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>更新于</div>
-          <div>2026年3月19日</div>
+          <div>2026年3月20日</div>
         </div>
       
       
