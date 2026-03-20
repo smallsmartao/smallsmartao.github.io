@@ -28,7 +28,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice_8c37e152.png">
 <meta property="article:published_time" content="2026-03-19T15:45:00.000Z">
-<meta property="article:modified_time" content="2026-03-20T02:45:30.750Z">
+<meta property="article:modified_time" content="2026-03-20T02:49:38.498Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="Diarization">
@@ -246,7 +246,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          970 字
+          742 字
         
       </span>
     
@@ -257,7 +257,7 @@
         
         
         
-          9 分钟
+          7 分钟
         
       </span>
     
@@ -387,16 +387,6 @@
 <li>Rich Transcription 输出直接含说话人与时间戳，减少后处理。</li>
 </ul>
 <p><img src="/images/paper_figs/vibevoice_fig3.png" srcset="/img/loading.gif" lazyload alt="训练数据分布示意"></p>
-<h2 id="六、局限与思考"><a href="#六、局限与思考" class="headerlink" title="六、局限与思考"></a>六、局限与思考</h2><ul>
-<li><strong>资源开销</strong>：单次 60 分钟解码，显存&#x2F;延迟成本高；需要分布式或高显存部署。  </li>
-<li><strong>公开指标有限</strong>：报告中数值有限，需更多公开基准（AMI&#x2F;LibriCSS&#x2F;real meeting）验证。  </li>
-<li><strong>领域适配</strong>：专有名词依赖 prompt 注入或领域微调；噪声&#x2F;强混响场景需额外评估。</li>
-</ul>
-<h2 id="七、个人点评"><a href="#七、个人点评" class="headerlink" title="七、个人点评"></a>七、个人点评</h2><ul>
-<li>亮点：把 ASR&#x2F;分离&#x2F;时间戳统一成“序列生成”，减少流水线误差；长上下文 + prompt 注入对会议&#x2F;播客很实用。  </li>
-<li>风险：长序列解码对算力敏感，端侧&#x2F;低延迟场景难直接落地；缺少公开 benchmark 的全面对照。  </li>
-<li>建议：结合自有长语音语料做 SFT，提示模板固定化；上线前评估极端噪声&#x2F;重口音，并考虑 30&#x2F;60 分钟分片滚动窗口作为平衡方案。</li>
-</ul>
 
                 
               </div>
