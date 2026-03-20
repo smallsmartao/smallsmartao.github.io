@@ -19,16 +19,16 @@
   <meta name="author" content="Ao Zhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="FireRedASR2S 系统解读论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.10420  ｜  代码：https:&#x2F;&#x2F;github.com&#x2F;FireRedTeam&#x2F;FireRedASR2S 亮点速览 一体化流水线：ASR + VAD + LID + 标点预测四件套，统一设计，覆盖流式&#x2F;离线、唱歌、中英文及多方言。   双 ASR 模型：FireRedASR2-LLM（8">
+    <meta name="description" content="FireRedASR2S 系统解读 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.10420   代码：https:&#x2F;&#x2F;github.com&#x2F;FireRedTeam&#x2F;FireRedASR2S   作者：Super Intelligence Team, Xiaohongshu  一、背景与动机实际落地 ASR 需要 VAD&#x2F;LID&#x2F;标点的全链路，而常见做法是拼装多套">
 <meta property="og:type" content="article">
 <meta property="og:title" content="FireRedASR2S: Industrial‑Grade All‑in‑One ASR">
 <meta property="og:url" content="https://smallsmartao.github.io/2026/03/19/fireredasr2s/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="FireRedASR2S 系统解读论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.10420  ｜  代码：https:&#x2F;&#x2F;github.com&#x2F;FireRedTeam&#x2F;FireRedASR2S 亮点速览 一体化流水线：ASR + VAD + LID + 标点预测四件套，统一设计，覆盖流式&#x2F;离线、唱歌、中英文及多方言。   双 ASR 模型：FireRedASR2-LLM（8">
+<meta property="og:description" content="FireRedASR2S 系统解读 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.10420   代码：https:&#x2F;&#x2F;github.com&#x2F;FireRedTeam&#x2F;FireRedASR2S   作者：Super Intelligence Team, Xiaohongshu  一、背景与动机实际落地 ASR 需要 VAD&#x2F;LID&#x2F;标点的全链路，而常见做法是拼装多套">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_hbrpoig8.png">
 <meta property="article:published_time" content="2026-03-19T15:45:00.000Z">
-<meta property="article:modified_time" content="2026-03-20T01:58:21.794Z">
+<meta property="article:modified_time" content="2026-03-20T02:08:53.769Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="LID">
@@ -246,7 +246,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          541 字
+          719 字
         
       </span>
     
@@ -257,7 +257,7 @@
         
         
         
-          5 分钟
+          6 分钟
         
       </span>
     
@@ -316,42 +316,47 @@
             
               <div class="markdown-body">
                 
-                <h1 id="FireRedASR2S-系统解读"><a href="#FireRedASR2S-系统解读" class="headerlink" title="FireRedASR2S 系统解读"></a>FireRedASR2S 系统解读</h1><p>论文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2603.10420">https://arxiv.org/abs/2603.10420</a>  ｜  代码：<a target="_blank" rel="noopener" href="https://github.com/FireRedTeam/FireRedASR2S">https://github.com/FireRedTeam/FireRedASR2S</a></p>
-<h2 id="亮点速览"><a href="#亮点速览" class="headerlink" title="亮点速览"></a>亮点速览</h2><ul>
-<li><strong>一体化流水线</strong>：ASR + VAD + LID + 标点预测四件套，统一设计，覆盖流式&#x2F;离线、唱歌、中英文及多方言。  </li>
-<li><strong>双 ASR 模型</strong>：FireRedASR2-LLM（8B+ 参数）面向高精度，FireRedASR2-AED（1B+）面向高效部署。  </li>
-<li><strong>高指标</strong>：Mandarin 公共集 CER ~2.9%，19 个方言&#x2F;口音 CER ~11.6%，VAD 在 FLEURS-VAD-102 上 F1 97.6%、AUC 99.6%。  </li>
-<li><strong>轻量 VAD</strong>：0.6M 参数 DFSMN，支持 streaming &#x2F; non-streaming &#x2F; multi-label。  </li>
-<li><strong>覆盖 100+ 语言的 LID</strong>：FLEURS 82 语言准确率 97.18%，优于 Whisper&#x2F;SpeechBrain。  </li>
-<li><strong>标点模块</strong>：BERT 风格，中文&#x2F;英文多域平均 F1 78.9%。</li>
+                <h1 id="FireRedASR2S-系统解读"><a href="#FireRedASR2S-系统解读" class="headerlink" title="FireRedASR2S 系统解读"></a>FireRedASR2S 系统解读</h1><ul>
+<li>论文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2603.10420">https://arxiv.org/abs/2603.10420</a>  </li>
+<li>代码：<a target="_blank" rel="noopener" href="https://github.com/FireRedTeam/FireRedASR2S">https://github.com/FireRedTeam/FireRedASR2S</a>  </li>
+<li>作者：Super Intelligence Team, Xiaohongshu</li>
 </ul>
-<h2 id="系统架构"><a href="#系统架构" class="headerlink" title="系统架构"></a>系统架构</h2><p><img src="/images/paper_figs/firered_page1.png" srcset="/img/loading.gif" lazyload></p>
+<h2 id="一、背景与动机"><a href="#一、背景与动机" class="headerlink" title="一、背景与动机"></a>一、背景与动机</h2><p>实际落地 ASR 需要 VAD&#x2F;LID&#x2F;标点的全链路，而常见做法是拼装多套工具，接口不一致且误差传递严重。FireRedASR2S 试图提供一套 <strong>开源的工业级统一流水线</strong>：从音频到带标点、时间戳、语言标签的可落地文本。</p>
+<h2 id="二、核心贡献"><a href="#二、核心贡献" class="headerlink" title="二、核心贡献"></a>二、核心贡献</h2><ul>
+<li><strong>一体化四模块</strong>：FireRedASR2（ASR）+ FireRedVAD + FireRedLID + FireRedPunc，统一接口、可拆分部署。  </li>
+<li><strong>双 ASR 形态</strong>：FireRedASR2-LLM（8B+，高精度）与 FireRedASR2-AED（1B+，高效）。  </li>
+<li><strong>大规模训练</strong>：~200k 小时多域、多语言、多方言标注数据，提升方言覆盖。  </li>
+<li><strong>超轻 VAD</strong>：0.6M DFSMN，支持 streaming &#x2F; non-streaming &#x2F; multi-label。  </li>
+<li><strong>广覆盖 LID</strong>：100+ 语言、20+ 方言，层次化两 token 解码。  </li>
+<li><strong>标点</strong>：BERT&#x2F;LERT 初始化，支持中英多域。</li>
+</ul>
+<h2 id="三、系统概览"><a href="#三、系统概览" class="headerlink" title="三、系统概览"></a>三、系统概览</h2><p><img src="/images/paper_figs/firered_fig_overview.png" srcset="/img/loading.gif" lazyload alt="流水线总览"></p>
 <ul>
-<li><strong>前端</strong>：FireRedVAD 负责切分，FireRedLID 负责语种&#x2F;方言识别并路由。  </li>
-<li><strong>核心 ASR</strong>：FireRedASR2-LLM（基于大模型）与 FireRedASR2-AED（轻量 AED）可按场景切换。  </li>
-<li><strong>后处理</strong>：FireRedPunc 还原标点与格式，输出可直接落地业务。</li>
+<li>顺序：VAD → LID → ASR → 标点 → 输出结构化转写（含时间戳&#x2F;置信度&#x2F;语言标签）。  </li>
+<li>模块化：每个组件可独立服务，也可默认串联输出。</li>
 </ul>
-<h2 id="模块与关键技巧"><a href="#模块与关键技巧" class="headerlink" title="模块与关键技巧"></a>模块与关键技巧</h2><ul>
-<li><strong>FireRedASR2-LLM</strong>：更高精度，支持唱歌、代码混说；强化方言覆盖。  </li>
-<li><strong>FireRedASR2-AED</strong>：1B 级，推理成本低，适合线上大规模并发。  </li>
-<li><strong>VAD</strong>：DFSMN 结构，提供多标签（语音&#x2F;音乐&#x2F;静音）模式。  </li>
-<li><strong>LID</strong>：编码器-解码器方案，100+ 语言 &amp; 20+ 方言。  </li>
-<li><strong>Punc</strong>：BERT 风格，兼容中英文场景。</li>
+<h2 id="四、模块要点"><a href="#四、模块要点" class="headerlink" title="四、模块要点"></a>四、模块要点</h2><p><img src="/images/paper_figs/firered_fig_components.png" srcset="/img/loading.gif" lazyload alt="模块设计"></p>
+<ul>
+<li><strong>ASR</strong>：在 FireRedASR 基础上小改架构，扩充监督数据，主打方言&#x2F;口音覆盖；LLM 版追求精度，AED 版追求延迟和成本。  </li>
+<li><strong>VAD</strong>：人标声学事件数据训练（非强制对齐伪标），鲁棒于音乐&#x2F;静音&#x2F;多语种。  </li>
+<li><strong>LID</strong>：编码器-解码器架构，层次化预测语言与方言标签，沿用 ASR 编码器初始化。  </li>
+<li><strong>Punc</strong>：BERT 风格，中英多域，补标点与格式。</li>
 </ul>
-<h2 id="实验与指标"><a href="#实验与指标" class="headerlink" title="实验与指标"></a>实验与指标</h2><ul>
-<li><strong>ASR</strong>：相比 FireRedASR 提升显著；公开对比优于 Doubao-ASR、Qwen3-ASR、Fun-ASR。  </li>
-<li><strong>VAD</strong>：FLEURS-VAD-102 F1 97.57%、AUC-ROC 99.60%，领先 Silero-VAD &#x2F; TEN-VAD &#x2F; FunASR-VAD &#x2F; WebRTC-VAD。  </li>
-<li><strong>LID</strong>：FLEURS 82 语言准确率 97.18%，优于 Whisper &#x2F; SpeechBrain。  </li>
-<li><strong>Punc</strong>：多域平均 F1 78.9%，高于 FunASR-Punc（62.8%）。</li>
+<h2 id="五、训练与数据"><a href="#五、训练与数据" class="headerlink" title="五、训练与数据"></a>五、训练与数据</h2><ul>
+<li><strong>数据规模</strong>：约 20 万小时，多域、多语言、多方言，包含唱歌与代码混说。  </li>
+<li><strong>VAD 数据</strong>：数千小时人工标注的声学事件，提升多场景切分鲁棒性。  </li>
+<li><strong>初始化与迁移</strong>：LID&#x2F;Punc 继承 ASR 或 LERT 初始化，统一表示空间，减少冷启动成本。</li>
 </ul>
-<h2 id="部署与开源"><a href="#部署与开源" class="headerlink" title="部署与开源"></a>部署与开源</h2><ul>
-<li>模型与代码已开放：<a target="_blank" rel="noopener" href="https://github.com/FireRedTeam/FireRedASR2S">https://github.com/FireRedTeam/FireRedASR2S</a>  </li>
-<li>全链路方案，可按精度&#x2F;性能切换 ASR 版本并混合部署。</li>
+<h2 id="六、实验结果（摘要）"><a href="#六、实验结果（摘要）" class="headerlink" title="六、实验结果（摘要）"></a>六、实验结果（摘要）</h2><ul>
+<li><strong>ASR</strong>：FireRedASR2-LLM 在 4 个中文公开集 CER ≈ <strong>2.89%</strong>，19 个方言&#x2F;口音 CER ≈ <strong>11.55%</strong>，优于 Doubao-ASR &#x2F; Qwen3-ASR &#x2F; Fun-ASR。  </li>
+<li><strong>VAD</strong>：FLEURS-VAD-102 上 F1 <strong>97.57%</strong>、AUC-ROC <strong>99.60%</strong>，领先 Silero-VAD &#x2F; TEN-VAD &#x2F; FunASR-VAD &#x2F; WebRTC-VAD。  </li>
+<li><strong>LID</strong>：FLEURS（82 语言）准确率 <strong>97.18%</strong>，优于 Whisper &#x2F; SpeechBrain。  </li>
+<li><strong>Punc</strong>：中英多域平均 F1 <strong>78.9%</strong>，高于 FunASR-Punc（62.8%）。</li>
 </ul>
-<h2 id="个人点评"><a href="#个人点评" class="headerlink" title="个人点评"></a>个人点评</h2><ul>
-<li>将 VAD&#x2F;LID&#x2F;Punc&#x2F;ASR 统一打包，落地友好；轻量 VAD + 大&#x2F;小双 ASR 便于按场景路由。  </li>
-<li>亮点在多方言、唱歌与流式&#x2F;离线的覆盖，但仍依赖较大规模模型；推理成本与硬件需求需要结合业务评估。  </li>
-<li>若要进一步上线，建议补充长语音鲁棒性（噪声&#x2F;重口音）与端侧性能数据。</li>
+<h2 id="七、点评与落地建议"><a href="#七、点评与落地建议" class="headerlink" title="七、点评与落地建议"></a>七、点评与落地建议</h2><ul>
+<li>优点：全链路开源、一体化接口，模块可拆分；双 ASR 形态便于按性能&#x2F;成本切换；VAD 数据是人标而非伪标，对复杂声场更稳。  </li>
+<li>注意：8B LLM 版硬件开销较大，方言覆盖虽强但仍需结合业务语料验证；标点和 LID 在特殊领域可能需再微调。  </li>
+<li>上线建议：根据延迟&#x2F;算力选择 LLM 版或 AED 版，结合自有方言&#x2F;垂直语料做轻量 SFT；保持 VAD&#x2F;LID&#x2F;标点与 ASR 的版本对齐，减少接口漂移。</li>
 </ul>
 
                 
