@@ -19,16 +19,16 @@
   <meta name="author" content="Ao Zhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="FireRedASR2S 系统解读 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.10420   代码：https:&#x2F;&#x2F;github.com&#x2F;FireRedTeam&#x2F;FireRedASR2S   作者：Super Intelligence Team, Xiaohongshu  一、背景与动机实际落地 ASR 需要 VAD&#x2F;LID&#x2F;标点的全链路，而常见做法是拼装多套">
+    <meta name="description" content="FireRedASR2S 系统解读 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.10420   代码：https:&#x2F;&#x2F;github.com&#x2F;FireRedTeam&#x2F;FireRedASR2S   作者：Super Intelligence Team, Xiaohongshu  系统与贡献（译）FireRedASR2S 是一个工业级的一体化 ASR 系统，将 ASR、VAD、LID、标">
 <meta property="og:type" content="article">
 <meta property="og:title" content="FireRedASR2S: Industrial‑Grade All‑in‑One ASR">
 <meta property="og:url" content="https://smallsmartao.github.io/2026/03/19/fireredasr2s/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="FireRedASR2S 系统解读 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.10420   代码：https:&#x2F;&#x2F;github.com&#x2F;FireRedTeam&#x2F;FireRedASR2S   作者：Super Intelligence Team, Xiaohongshu  一、背景与动机实际落地 ASR 需要 VAD&#x2F;LID&#x2F;标点的全链路，而常见做法是拼装多套">
+<meta property="og:description" content="FireRedASR2S 系统解读 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.10420   代码：https:&#x2F;&#x2F;github.com&#x2F;FireRedTeam&#x2F;FireRedASR2S   作者：Super Intelligence Team, Xiaohongshu  系统与贡献（译）FireRedASR2S 是一个工业级的一体化 ASR 系统，将 ASR、VAD、LID、标">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_firered_822ee463.png">
 <meta property="article:published_time" content="2026-03-19T15:45:00.000Z">
-<meta property="article:modified_time" content="2026-03-20T02:51:10.105Z">
+<meta property="article:modified_time" content="2026-03-20T03:21:54.759Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="LID">
@@ -246,7 +246,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          896 字
+          837 字
         
       </span>
     
@@ -257,7 +257,7 @@
         
         
         
-          8 分钟
+          7 分钟
         
       </span>
     
@@ -321,27 +321,22 @@
 <li>代码：<a target="_blank" rel="noopener" href="https://github.com/FireRedTeam/FireRedASR2S">https://github.com/FireRedTeam/FireRedASR2S</a>  </li>
 <li>作者：Super Intelligence Team, Xiaohongshu</li>
 </ul>
-<h2 id="一、背景与动机"><a href="#一、背景与动机" class="headerlink" title="一、背景与动机"></a>一、背景与动机</h2><p>实际落地 ASR 需要 VAD&#x2F;LID&#x2F;标点的全链路，而常见做法是拼装多套工具，接口不一致且误差传递严重。FireRedASR2S 试图提供一套 <strong>开源的工业级统一流水线</strong>：从音频到带标点、时间戳、语言标签的可落地文本。</p>
-<h2 id="二、核心贡献"><a href="#二、核心贡献" class="headerlink" title="二、核心贡献"></a>二、核心贡献</h2><ul>
-<li><strong>一体化四模块</strong>：FireRedASR2（ASR）+ FireRedVAD + FireRedLID + FireRedPunc，统一接口、可拆分部署。  </li>
-<li><strong>双 ASR 形态</strong>：FireRedASR2-LLM（8B+，高精度）与 FireRedASR2-AED（1B+，高效）。  </li>
-<li><strong>大规模训练</strong>：~200k 小时多域、多语言、多方言标注数据，提升方言覆盖。  </li>
-<li><strong>超轻 VAD</strong>：0.6M DFSMN，支持 streaming &#x2F; non-streaming &#x2F; multi-label。  </li>
-<li><strong>广覆盖 LID</strong>：100+ 语言、20+ 方言，层次化两 token 解码。  </li>
-<li><strong>标点</strong>：BERT&#x2F;LERT 初始化，支持中英多域。</li>
+<h2 id="系统与贡献（译）"><a href="#系统与贡献（译）" class="headerlink" title="系统与贡献（译）"></a>系统与贡献（译）</h2><p>FireRedASR2S 是一个工业级的一体化 ASR 系统，将 ASR、VAD、LID、标点预测统一为开源流水线。相较上一代 FireRedASR，FireRedASR2 以最小架构改动换取更高精度与更广泛的方言覆盖。主要贡献：</p>
+<ol>
+<li>开源的一体化 ASR 管线，接口统一、模块可拆分；  </li>
+<li>通过扩大到约 20 万小时的有监督训练，提升识别精度与方言覆盖；  </li>
+<li>FireRedVAD 依赖人工标注的声学事件，提供鲁棒切分；  </li>
+<li>FireRedLID 支持 100+ 语言和 20+ 方言的层次化预测；  </li>
+<li>FireRedPunc 在中英多域标点预测上取得较好成绩。</li>
+</ol>
+<h2 id="系统概览"><a href="#系统概览" class="headerlink" title="系统概览"></a>系统概览</h2><p><img src="/images/paper_figs/firered_fig_overview.png" srcset="/img/loading.gif" lazyload alt="流水线总览"><br>音频依次经过 FireRedVAD（切分）、FireRedLID（语言&#x2F;方言标签）、FireRedASR2（识别）、FireRedPunc（标点），产出包含时间戳、置信度和语言标签的结构化转写。模块可单独部署，也可按默认顺序串联。</p>
+<h2 id="模块与方法（译）"><a href="#模块与方法（译）" class="headerlink" title="模块与方法（译）"></a>模块与方法（译）</h2><p><img src="/images/paper_figs/firered_fig_components.png" srcset="/img/loading.gif" lazyload alt="模块设计"><br>FireRedASR2 在上一代 FireRedASR 框架上做最小改动，提供 FireRedASR2-LLM（8B+）和 FireRedASR2-AED（1B+），覆盖中文、方言、英文、code-switch 与唱歌，输出带时间戳、置信度、语言标签的转写。FireRedVAD 基于 DFSMN（0.6M 参数），支持流式、非流式和多标签（语音&#x2F;音乐&#x2F;静音），训练数据为人工标注声学事件。FireRedLID 采用 Encoder-Decoder，编码器从 FireRedASR2-AED 初始化，解码器用两个 token 层次化解码 100+ 语言与 20+ 方言&#x2F;口音。FireRedPunc 使用 BERT 风格编码器，从 LERT 初始化，在大规模中英多域语料上训练，为 ASR 输出补标点。</p>
+<h2 id="训练与数据（译）"><a href="#训练与数据（译）" class="headerlink" title="训练与数据（译）"></a>训练与数据（译）</h2><ul>
+<li>监督语音规模约 200k 小时，相比 FireRedASR 放大并拓展域&#x2F;语言&#x2F;方言多样性。  </li>
+<li>VAD 训练集为人工标注声学事件，包含 streaming、non-streaming、multi-label 三类监督，避免伪标噪声。  </li>
+<li>LID&#x2F;Punc 复用 ASR 编码器或 LERT 初始化，保持模块间表示空间一致，便于组合部署。</li>
 </ul>
-<h2 id="三、系统概览"><a href="#三、系统概览" class="headerlink" title="三、系统概览"></a>三、系统概览</h2><p><img src="/images/paper_figs/firered_fig_overview.png" srcset="/img/loading.gif" lazyload alt="流水线总览"></p>
-<ul>
-<li>顺序：VAD → LID → ASR → 标点 → 输出结构化转写（含时间戳&#x2F;置信度&#x2F;语言标签）。  </li>
-<li>模块化：每个组件可独立服务，也可默认串联输出。</li>
-</ul>
-<h2 id="四、方法细节"><a href="#四、方法细节" class="headerlink" title="四、方法细节"></a>四、方法细节</h2><p><img src="/images/paper_figs/firered_fig_components.png" srcset="/img/loading.gif" lazyload alt="模块设计"><br>FireRedASR2S 将四个模块串成一条流水线：FireRedASR2 负责识别，FireRedVAD 做切分，FireRedLID 产出语言&#x2F;方言标签，FireRedPunc 还原标点。FireRedASR2 在上一代 FireRedASR 的框架上做最小改动，分别给出 LLM（8B+）和 AED（1B+）两版，覆盖中文、方言、英文、code-switch 与唱歌，并输出时间戳、置信度、语言标签。FireRedVAD 基于 DFSMN（0.6M 参数），支持流式、非流式和多标签（语音&#x2F;音乐&#x2F;静音）模式，训练数据来自人工标注的声学事件。FireRedLID 采用 Encoder-Decoder，编码器从 FireRedASR2-AED 初始化，解码器用两个 token 层次化解码 100+ 语言和 20+ 方言&#x2F;口音。FireRedPunc 使用 BERT 风格编码器，从 LERT 初始化，在大规模中英多域语料上训练，为 ASR 输出补标点。</p>
-<h2 id="五、训练与数据"><a href="#五、训练与数据" class="headerlink" title="五、训练与数据"></a>五、训练与数据</h2><ul>
-<li>监督语音规模约 200k 小时，相比 FireRedASR 显著放大并拓展域&#x2F;语言&#x2F;方言多样性。  </li>
-<li>VAD 训练集是人工标注的声学事件，非强制对齐伪标；提供 streaming、non-streaming、multi-label 三类 supervision。  </li>
-<li>LID&#x2F;Punc 直接复用 ASR 编码器或 LERT 初始化，保持模块间表示空间一致，便于组合部署。</li>
-</ul>
-<h2 id="六、实验结果"><a href="#六、实验结果" class="headerlink" title="六、实验结果"></a>六、实验结果</h2><p><strong>ASR（表 1&#x2F;5）</strong></p>
+<h2 id="实验结果（表格来自论文-HTML）"><a href="#实验结果（表格来自论文-HTML）" class="headerlink" title="实验结果（表格来自论文 HTML）"></a>实验结果（表格来自论文 HTML）</h2><p><strong>ASR（表 1&#x2F;5）</strong></p>
 <table>
 <thead>
 <tr>
