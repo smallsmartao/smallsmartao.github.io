@@ -22,15 +22,16 @@
     <meta name="description" content="How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.19195   PDF：https:&#x2F;&#x2F;arxiv.org&#x2F;pdf&#x2F;2603.19195   作者：Kehan Lu, Fu Yan, et al.（Nat">
 <meta property="og:type" content="article">
 <meta property="og:title" content="How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation">
-<meta property="og:url" content="https://smallsmartao.github.io/2026/03/20/akb-auditory-llm/index.html">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/03/21/akb-auditory-llm/index.html">
 <meta property="og:site_name" content="聪明的小奥">
 <meta property="og:description" content="How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.19195   PDF：https:&#x2F;&#x2F;arxiv.org&#x2F;pdf&#x2F;2603.19195   作者：Kehan Lu, Fu Yan, et al.（Nat">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_akb_6fd1933b.png">
-<meta property="article:published_time" content="2026-03-20T03:25:00.000Z">
-<meta property="article:modified_time" content="2026-03-20T03:25:49.355Z">
+<meta property="article:published_time" content="2026-03-21T04:10:00.000Z">
+<meta property="article:modified_time" content="2026-03-21T04:07:59.089Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="Audio">
+<meta property="article:tag" content="LALM">
 <meta property="article:tag" content="LLM">
 <meta property="article:tag" content="论文解读">
 <meta name="twitter:card" content="summary_large_image">
@@ -233,8 +234,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-03-20 11:25" pubdate>
-          2026年3月20日 上午
+        <time datetime="2026-03-21 12:10" pubdate>
+          2026年3月21日 中午
         </time>
       </span>
     
@@ -245,7 +246,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          923 字
+          1.2k 字
         
       </span>
     
@@ -256,7 +257,7 @@
         
         
         
-          8 分钟
+          11 分钟
         
       </span>
     
@@ -307,7 +308,7 @@
               <p id="updated-time" class="note note-info" style="">
                 
                   
-                    本文最后更新于 2026年3月20日 上午
+                    本文最后更新于 2026年3月21日 中午
                   
                 
               </p>
@@ -320,19 +321,29 @@
 <li>PDF：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2603.19195">https://arxiv.org/pdf/2603.19195</a>  </li>
 <li>作者：Kehan Lu, Fu Yan, et al.（National Taiwan University &#x2F; NVIDIA &#x2F; Academia Sinica）</li>
 </ul>
-<h2 id="背景与目标（译）"><a href="#背景与目标（译）" class="headerlink" title="背景与目标（译）"></a>背景与目标（译）</h2><p>研究探讨：文本预训练的 LLM 内含多少“听觉知识”，以及这种知识如何影响下游音频语言模型（LALM）。作者在两个纯文本设定和一个音频设定下比较不同 LLM：</p>
+<h2 id="摘要（译）"><a href="#摘要（译）" class="headerlink" title="摘要（译）"></a>摘要（译）</h2><p>探究文本预训练的 LLM 自身包含的“听觉知识”在多大程度上影响下游音频语言模型（LALM）。作者对 12 个开源与 5 个专有 LLM 在三个设定下做系统评估：</p>
 <ol>
-<li>直接 probing：在 AKB-2000 基准上测试听觉知识的广度与深度；  </li>
-<li>级联评测：LLM 对音频描述（由 audio captioner 提供的文本）进行推理；  </li>
-<li>音频设定：将各 LLM 与音频编码器联合微调成 LALM，观察音频端表现。结论指出不同 LLM 家族的听觉知识差异明显，且文本结果与音频表现高度相关。</li>
+<li>在 AKB-2000 基准上直接 probing 听觉知识；</li>
+<li>级联评测：音频经 captioner 转文本后由 LLM 推理；</li>
+<li>音频设定：每个 LLM 搭配音频编码器微调为 LALM。结果显示不同家族差异显著，文本结果与音频表现高度相关，音系类任务普遍偏弱，简单级联方案在部分任务能匹配或超越端到端 LALM，当前瓶颈主要在音频编码器。</li>
 </ol>
-<h2 id="评测与设置（译）"><a href="#评测与设置（译）" class="headerlink" title="评测与设置（译）"></a>评测与设置（译）</h2><p><img src="/images/paper_figs/akb_fig1.png" srcset="/img/loading.gif" lazyload alt="示意图"></p>
-<ul>
-<li>AKB-2000：覆盖 Sound、Paralinguistic、Phonetic、Music、Quality、Technical 六大类的听觉知识问答基准。  </li>
-<li>级联设置：使用多种 audio captioner（Whisper &#x2F; Omni &#x2F; Gemini 等）将音频转文本，再由目标 LLM 推理。  </li>
-<li>音频设定：为每个 LLM 配置音频编码器，微调成为 LALM，比对 Published Systems 与作者复现的 fine-tuned LALM。</li>
+<h2 id="核心贡献（译）"><a href="#核心贡献（译）" class="headerlink" title="核心贡献（译）"></a>核心贡献（译）</h2><ul>
+<li>提供 12 个开源 LLM 的听觉知识全景评估，为选择 LALM 骨干提供可操作依据。</li>
+<li>发布 AKB-2000：覆盖 Music、Sound、Paralinguistic、Phonetic、Audio Quality、Technical 六大类、48 子类的 2000 条问答基准。</li>
+<li>在统一框架下给出文本、级联、音频三种评测并公开代码与模型。</li>
 </ul>
-<h2 id="基准子类得分（AKB-2000-子类）"><a href="#基准子类得分（AKB-2000-子类）" class="headerlink" title="基准子类得分（AKB-2000 子类）"></a>基准子类得分（AKB-2000 子类）</h2><table>
+<h2 id="评估设计（译）"><a href="#评估设计（译）" class="headerlink" title="评估设计（译）"></a>评估设计（译）</h2><p><img src="/images/paper_figs/akb_fig1.png" srcset="/img/loading.gif" lazyload alt="评估流程示意"></p>
+<ul>
+<li><strong>直接听觉知识评测</strong>：在 AKB-2000 上直接问答，衡量 LLM 文本层的听觉知识广度&#x2F;深度。</li>
+<li><strong>级联评测</strong>：音频 → captioner → 文本描述 → LLM 回答原题，观察文本推理对音频任务的迁移。</li>
+<li><strong>音频设定（LALM）</strong>：为每个 LLM 配置音频编码器，按 DeSTA 自蒸馏框架微调，直接以音频输入测试。</li>
+</ul>
+<h2 id="基准与设置（译）"><a href="#基准与设置（译）" class="headerlink" title="基准与设置（译）"></a>基准与设置（译）</h2><ul>
+<li><strong>AKB-2000</strong>：6 类、48 子类听觉知识问答，涵盖声学、韵律、语音学、音乐、音质与技术知识。</li>
+<li><strong>级联 captioner</strong>：Whisper &#x2F; Omni &#x2F; Gemini 等，将音频转详细文本描述后再由 LLM 回答。</li>
+<li><strong>音频微调</strong>：同策略微调各 LLM 成 LALM，对比 Published systems 与作者复现。</li>
+</ul>
+<h2 id="子类表现（AKB-2000-子类）"><a href="#子类表现（AKB-2000-子类）" class="headerlink" title="子类表现（AKB-2000 子类）"></a>子类表现（AKB-2000 子类）</h2><table>
 <thead>
 <tr>
 <th>Subcategory</th>
@@ -564,7 +575,7 @@
 <td>57.85</td>
 </tr>
 </tbody></table>
-<h2 id="级联设置：caption-→-LLM-推理（表-2）"><a href="#级联设置：caption-→-LLM-推理（表-2）" class="headerlink" title="级联设置：caption → LLM 推理（表 2）"></a>级联设置：caption → LLM 推理（表 2）</h2><table>
+<h2 id="级联设定：caption-→-LLM-推理（表-2）"><a href="#级联设定：caption-→-LLM-推理（表-2）" class="headerlink" title="级联设定：caption → LLM 推理（表 2）"></a>级联设定：caption → LLM 推理（表 2）</h2><table>
 <thead>
 <tr>
 <th>Model</th>
@@ -885,6 +896,12 @@
 </tr>
 </tbody></table>
 <p><img src="/images/paper_figs/akb_fig2.png" srcset="/img/loading.gif" lazyload alt="实验示意"><br><img src="/images/paper_figs/akb_fig3.png" srcset="/img/loading.gif" lazyload alt="结果示意"><br><img src="/images/paper_figs/akb_fig4.png" srcset="/img/loading.gif" lazyload alt="更多结果示意"></p>
+<h2 id="结论（译）"><a href="#结论（译）" class="headerlink" title="结论（译）"></a>结论（译）</h2><ul>
+<li>不同 LLM 家族的听觉知识差异显著；在相同微调策略下，骨干差异可带来 &gt;10% 绝对差距。</li>
+<li>文本评测与音频表现正相关，可作为轻量“选模”指标。</li>
+<li>语音学（phonological）任务是共同短板。</li>
+<li>简单 caption→LLM 级联在部分任务可匹配&#x2F;超越端到端 LALM，瓶颈主要在音频编码器，LLM 的听觉推理仍有潜力未被充分利用。</li>
+</ul>
 
                 
               </div>
@@ -924,6 +941,8 @@
       
         <a href="/tags/Audio/" class="print-no-link">#Audio</a>
       
+        <a href="/tags/LALM/" class="print-no-link">#LALM</a>
+      
     </div>
   
 </div>
@@ -935,7 +954,7 @@
   <div class="license-box my-3">
     <div class="license-title">
       <div>How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation</div>
-      <div>https://smallsmartao.github.io/2026/03/20/akb-auditory-llm/</div>
+      <div>https://smallsmartao.github.io/2026/03/21/akb-auditory-llm/</div>
     </div>
     <div class="license-meta">
       
@@ -947,13 +966,13 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2026年3月20日</div>
+          <div>2026年3月21日</div>
         </div>
       
       
         <div class="license-meta-item license-meta-date">
           <div>更新于</div>
-          <div>2026年3月20日</div>
+          <div>2026年3月21日</div>
         </div>
       
       
