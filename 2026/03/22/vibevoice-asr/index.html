@@ -28,7 +28,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice_20260322_final.png">
 <meta property="article:published_time" content="2026-03-22T07:45:00.000Z">
-<meta property="article:modified_time" content="2026-03-22T07:36:17.231Z">
+<meta property="article:modified_time" content="2026-03-22T07:39:54.307Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="Diarization">
@@ -247,7 +247,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.2k 字
+          1.5k 字
         
       </span>
     
@@ -258,7 +258,7 @@
         
         
         
-          10 分钟
+          13 分钟
         
       </span>
     
@@ -334,6 +334,12 @@
 <h2 id="2-模块技术拆解"><a href="#2-模块技术拆解" class="headerlink" title="2. 模块技术拆解"></a>2. 模块技术拆解</h2><h3 id="2-1-极低帧率分词器与长上下文建模"><a href="#2-1-极低帧率分词器与长上下文建模" class="headerlink" title="2.1 极低帧率分词器与长上下文建模"></a>2.1 极低帧率分词器与长上下文建模</h3><p>为了将 60 分钟的音频塞进大语言模型（LLM）的上下文窗口，VIBEVOICE-ASR 采用了一个<strong>超低帧率分词器（~7.5Hz）</strong>。<br>通过这种高压缩比，一小时的音频能够被压缩到现代 LLM 能够轻松消化的序列长度。这使得模型可以同时关注整个 60 分钟会话的全局上下文，从而保持语义连贯性和持续的说话人追踪。</p>
 <h3 id="2-2-丰富的结构化转写生成（Rich-Transcription）"><a href="#2-2-丰富的结构化转写生成（Rich-Transcription）" class="headerlink" title="2.2 丰富的结构化转写生成（Rich Transcription）"></a>2.2 丰富的结构化转写生成（Rich Transcription）</h3><p>系统将长音频理解重构为一个端到端的生成任务。它不仅输出纯文本，而是输出一种将“说话人（Who）”、“时间戳（When）”和“内容（What）”显式交织在一起的结构化数据流。这从根本上消除了后期模块间对齐的误差。</p>
 <h3 id="2-3-基于-Prompt-的上下文注入（Context-Injection）"><a href="#2-3-基于-Prompt-的上下文注入（Context-Injection）" class="headerlink" title="2.3 基于 Prompt 的上下文注入（Context Injection）"></a>2.3 基于 Prompt 的上下文注入（Context Injection）</h3><p>系统不仅支持超过 50 种语言且无需显式设定语种（自带支持 code-switching 的能力），还引入了一种基于 Prompt 的上下文注入机制。<br>用户可以通过文本 Prompt 提供定制化的上下文信息（如特定领域的热词表、专有名词、背景描述等）。实验表明，该机制显著提升了系统对领域特定术语的识别准确率和多音字的消歧能力。</p>
+<h3 id="2-4-面向超长上下文的数据构造策略"><a href="#2-4-面向超长上下文的数据构造策略" class="headerlink" title="2.4 面向超长上下文的数据构造策略"></a>2.4 面向超长上下文的数据构造策略</h3><p>由于真实世界中缺乏大量带有高质量结构化标注（包含准确时间戳和干净上下文）的长音频数据，VIBEVOICE-ASR 团队在 SFT（监督微调）阶段引入了精心设计的数据合成与长文本修复管线：</p>
+<ol>
+<li><strong>上下文感知合成管线</strong>：利用 GPT-5 生成包含特定实体和中英混说的对话脚本及关联的热词&#x2F;背景提示词，然后用 VibeVoice 合成多说话人高保真音频。这为模型的 Context Injection 能力提供了关键的指令微调数据。</li>
+<li><strong>长音频全局语义修复（Transcription Restoration）</strong>：将预训练语料中超过 50 分钟的长音频（原本是通过级联管线切分生成的，存在语义断层）交给大语言模型进行重写和合并（”Global Semantic Rectification”），以提供全局一致的长文本监督信号。</li>
+<li><strong>显式非语音标注</strong>：使用 GPT-4o-Audio 对长音频中的非语音片段自动打标（如 <code>[Music]</code>, <code>[Silence]</code>, <code>[Noise]</code>），直接教导模型在空白或底噪处闭嘴，有效抑制了 LLM 常见的语音幻觉（Hallucination）。</li>
+</ol>
 <hr>
 <h2 id="3-核心实验与评测"><a href="#3-核心实验与评测" class="headerlink" title="3. 核心实验与评测"></a>3. 核心实验与评测</h2><p>论文在多个公开长音频评测集上对系统的说话人错误率（DER）和时间约束排列词错误率（tcpWER）进行了验证，并与基线系统（WhisperX 管线以及 Emilia）进行了对比。</p>
 <h3 id="数据流管线对比（DER-与-WER）"><a href="#数据流管线对比（DER-与-WER）" class="headerlink" title="数据流管线对比（DER 与 WER）"></a>数据流管线对比（DER 与 WER）</h3><p>如下表所示，相比于基于 WhisperX 的强力级联管线方案，VIBEVOICE-ASR 的数据流管线在多组评估集上均实现了更低的说话人错误率（DER）与词错误率（WER）。</p>
