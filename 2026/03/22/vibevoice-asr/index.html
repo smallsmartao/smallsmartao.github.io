@@ -19,23 +19,23 @@
   <meta name="author" content="Ao Zhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="VibeVoice-ASR 技术解读 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2601.18184   作者：Microsoft Research  背景与目标（译）报告提出 VibeVoice-ASR，一个面向长语音的通用理解框架，旨在解决传统分段流水线在长录音（会议、播客等）中的上下文割裂与多说话人复杂性。系统支持最长 60 分钟音频，单次生成同时完成识别、说话人分离与时间戳标注，原">
+    <meta name="description" content="VibeVoice-ASR Technical Report 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2601.18184 PDF：https:&#x2F;&#x2F;arxiv.org&#x2F;pdf&#x2F;2601.18184 作者：Microsoft Research  摘要（直译整理）本文提出 VibeVoice-ASR，用于长语音的统一识别与理解。系统可在单次生成中同时输出识别文本、说话人标识和时间戳，目标是替">
 <meta property="og:type" content="article">
 <meta property="og:title" content="VibeVoice-ASR Technical Report">
-<meta property="og:url" content="https://smallsmartao.github.io/2026/03/19/vibevoice-asr/index.html">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/03/22/vibevoice-asr/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="VibeVoice-ASR 技术解读 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2601.18184   作者：Microsoft Research  背景与目标（译）报告提出 VibeVoice-ASR，一个面向长语音的通用理解框架，旨在解决传统分段流水线在长录音（会议、播客等）中的上下文割裂与多说话人复杂性。系统支持最长 60 分钟音频，单次生成同时完成识别、说话人分离与时间戳标注，原">
+<meta property="og:description" content="VibeVoice-ASR Technical Report 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2601.18184 PDF：https:&#x2F;&#x2F;arxiv.org&#x2F;pdf&#x2F;2601.18184 作者：Microsoft Research  摘要（直译整理）本文提出 VibeVoice-ASR，用于长语音的统一识别与理解。系统可在单次生成中同时输出识别文本、说话人标识和时间戳，目标是替">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice_8c37e152.png">
-<meta property="article:published_time" content="2026-03-19T15:45:00.000Z">
-<meta property="article:modified_time" content="2026-03-20T03:22:13.700Z">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice_20260322_a1.png">
+<meta property="article:published_time" content="2026-03-22T04:25:00.000Z">
+<meta property="article:modified_time" content="2026-03-22T04:22:09.866Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="Diarization">
 <meta property="article:tag" content="LLM">
 <meta property="article:tag" content="论文解读">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice_8c37e152.png">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_vibevoice_20260322_a1.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
@@ -234,8 +234,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-03-19 23:45" pubdate>
-          2026年3月19日 晚上
+        <time datetime="2026-03-22 12:25" pubdate>
+          2026年3月22日 中午
         </time>
       </span>
     
@@ -246,7 +246,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          618 字
+          657 字
         
       </span>
     
@@ -308,7 +308,7 @@
               <p id="updated-time" class="note note-info" style="">
                 
                   
-                    本文最后更新于 2026年3月20日 上午
+                    本文最后更新于 2026年3月22日 中午
                   
                 
               </p>
@@ -316,20 +316,60 @@
             
               <div class="markdown-body">
                 
-                <h1 id="VibeVoice-ASR-技术解读"><a href="#VibeVoice-ASR-技术解读" class="headerlink" title="VibeVoice-ASR 技术解读"></a>VibeVoice-ASR 技术解读</h1><ul>
-<li>论文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2601.18184">https://arxiv.org/abs/2601.18184</a>  </li>
+                <h1 id="VibeVoice-ASR-Technical-Report"><a href="#VibeVoice-ASR-Technical-Report" class="headerlink" title="VibeVoice-ASR Technical Report"></a>VibeVoice-ASR Technical Report</h1><ul>
+<li>论文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2601.18184">https://arxiv.org/abs/2601.18184</a></li>
+<li>PDF：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2601.18184">https://arxiv.org/pdf/2601.18184</a></li>
 <li>作者：Microsoft Research</li>
 </ul>
-<h2 id="背景与目标（译）"><a href="#背景与目标（译）" class="headerlink" title="背景与目标（译）"></a>背景与目标（译）</h2><p>报告提出 VibeVoice-ASR，一个面向长语音的通用理解框架，旨在解决传统分段流水线在长录音（会议、播客等）中的上下文割裂与多说话人复杂性。系统支持最长 60 分钟音频，单次生成同时完成识别、说话人分离与时间戳标注，原生支持 50+ 语言和中英混说，并可通过提示注入上下文。</p>
-<h2 id="方法（译）"><a href="#方法（译）" class="headerlink" title="方法（译）"></a>方法（译）</h2><p><img src="/images/paper_figs/vibevoice_fig2.png" srcset="/img/loading.gif" lazyload alt="整体框架"><br>论文将长语音理解表述为语言建模任务：模型输入是预训练声学&#x2F;语义编码器输出的连续音频嵌入，可选文本提示（术语&#x2F;背景）直接前置；decoder-only LLM（Qwen2.5 系）在单一通道上自回归生成目标序列。与只输出文本的传统 ASR 不同，VibeVoice-ASR 生成 Rich Transcription 序列，显式交织说话人身份（Who）、时间边界（When）和内容（What）。训练用的说话人标签由 vblinkp（WeSpeaker）声纹提取、HDBSCAN 聚类并用 0.67 余弦阈值合并得到，时间戳来自 ASR 对齐并按标点切分，以匹配生成序列粒度。</p>
-<h2 id="训练与数据（译）"><a href="#训练与数据（译）" class="headerlink" title="训练与数据（译）"></a>训练与数据（译）</h2><ul>
-<li>预训练：大量伪标长语音，覆盖会议&#x2F;播客等长场景，建模长上下文与跨说话人依赖。  </li>
-<li>上下文合成管线：GPT-5 生成含实体&#x2F;技术词&#x2F;跨语对话脚本与对应上下文提示；VibeVoice 引擎合成多说话人中英及 code-switch 音频；闭环 ASR 过滤高 WER 样本，得到 ~6k 小时合成数据。  </li>
-<li>长语音转写修复：&gt;50 分钟录音的分段转写交给 GPT-5 重写拼合，缓解切块割裂，补齐非语音间隔。  </li>
-<li>SFT：高质量对话&#x2F;会议（MLC-SLM、Fisher 等）+ Muse 音乐数据，校准说话人&#x2F;对齐；输入长度 curriculum 从 8k → 65k。  </li>
-<li>说话人标注：vblinkp 声纹（1.5s 窗 &#x2F; 0.75s hop）+ HDBSCAN 聚类 + 0.67 余弦阈值合并，得到干净标签。</li>
+<h2 id="摘要（直译整理）"><a href="#摘要（直译整理）" class="headerlink" title="摘要（直译整理）"></a>摘要（直译整理）</h2><p>本文提出 VibeVoice-ASR，用于长语音的统一识别与理解。系统可在单次生成中同时输出识别文本、说话人标识和时间戳，目标是替代“分段 ASR + 独立 diarization + 对齐”的多模块流水线，以减少长音频场景中的上下文割裂。论文报告该系统支持最长约 60 分钟音频、50+ 语言与中英混说，并支持通过文本提示注入领域上下文。</p>
+<h2 id="任务定义与输出形式"><a href="#任务定义与输出形式" class="headerlink" title="任务定义与输出形式"></a>任务定义与输出形式</h2><p>作者将长语音理解建模为自回归语言建模任务：</p>
+<ul>
+<li>输入：音频编码器输出的连续表示 + 可选文本提示</li>
+<li>输出：Rich Transcription 序列，统一编码<ul>
+<li><strong>Who</strong>：说话人身份</li>
+<li><strong>When</strong>：时间边界</li>
+<li><strong>What</strong>：转写内容</li>
 </ul>
-<h2 id="实验结果（表格来自论文）"><a href="#实验结果（表格来自论文）" class="headerlink" title="实验结果（表格来自论文）"></a>实验结果（表格来自论文）</h2><table>
+</li>
+</ul>
+<p>与传统 ASR 只输出文本不同，VibeVoice-ASR 的目标序列显式携带说话人与时间结构。</p>
+<p><img src="/images/paper_figs/vibevoice_fig2.png" srcset="/img/loading.gif" lazyload alt="整体框架"></p>
+<h2 id="方法细节（直译整理）"><a href="#方法细节（直译整理）" class="headerlink" title="方法细节（直译整理）"></a>方法细节（直译整理）</h2><ol>
+<li><p><strong>主干结构</strong></p>
+<ul>
+<li>使用 decoder-only LLM（Qwen2.5 系）作为生成核心。</li>
+<li>音频表示由预训练声学&#x2F;语义编码器提供。</li>
+</ul>
+</li>
+<li><p><strong>说话人标签构建</strong></p>
+<ul>
+<li>声纹提取：vblinkp（WeSpeaker）</li>
+<li>聚类：HDBSCAN</li>
+<li>合并：余弦阈值 0.67</li>
+</ul>
+</li>
+<li><p><strong>时间戳构建</strong></p>
+<ul>
+<li>先做 ASR 对齐</li>
+<li>再按标点切分，匹配生成序列粒度</li>
+</ul>
+</li>
+</ol>
+<h2 id="训练数据与训练流程（直译整理）"><a href="#训练数据与训练流程（直译整理）" class="headerlink" title="训练数据与训练流程（直译整理）"></a>训练数据与训练流程（直译整理）</h2><ul>
+<li><strong>预训练语料</strong>：大规模长语音伪标数据（会议、播客等），用于学习长上下文依赖。</li>
+<li><strong>上下文合成管线</strong>：<ul>
+<li>GPT-5 生成脚本与上下文提示</li>
+<li>VibeVoice 引擎合成多说话人中英与 code-switch 音频</li>
+<li>通过闭环 ASR 过滤高 WER 样本</li>
+<li>最终保留约 6k 小时合成数据</li>
+</ul>
+</li>
+<li><strong>长语音转写修复</strong>：对 &gt;50 分钟录音的分段转写进行重写拼合，减少切块边界错误。</li>
+<li><strong>SFT 数据</strong>：MLC-SLM、Fisher 等高质量对话&#x2F;会议语料 + Muse 音乐数据。</li>
+<li><strong>长度课程学习</strong>：输入长度从 8k 逐步增加到 65k。</li>
+</ul>
+<p><img src="/images/paper_figs/vibevoice_fig3.png" srcset="/img/loading.gif" lazyload alt="训练数据分布示意"></p>
+<h2 id="实验结果（论文表格转录）"><a href="#实验结果（论文表格转录）" class="headerlink" title="实验结果（论文表格转录）"></a>实验结果（论文表格转录）</h2><table>
 <thead>
 <tr>
 <th>Dataset</th>
@@ -368,11 +408,11 @@
 <td>25.34 &#x2F; 30.82</td>
 </tr>
 </tbody></table>
-<ul>
-<li>支持 50+ 语言，自动语言识别，中英混说无需手动切换。  </li>
-<li>输出的 Rich Transcription 序列直接包含说话人和时间戳。</li>
+<h2 id="论文结论（直译整理）"><a href="#论文结论（直译整理）" class="headerlink" title="论文结论（直译整理）"></a>论文结论（直译整理）</h2><ul>
+<li>将识别、说话人、时间戳统一到单一生成框架可以覆盖长音频场景。</li>
+<li>在报告的数据集上，VibeVoice-ASR 在 WER 与 DER 的组合表现上具备竞争力。</li>
+<li>系统支持多语言与 code-switch，并支持上下文提示注入。</li>
 </ul>
-<p><img src="/images/paper_figs/vibevoice_fig3.png" srcset="/img/loading.gif" lazyload alt="训练数据分布示意"></p>
 
                 
               </div>
@@ -425,7 +465,7 @@
   <div class="license-box my-3">
     <div class="license-title">
       <div>VibeVoice-ASR Technical Report</div>
-      <div>https://smallsmartao.github.io/2026/03/19/vibevoice-asr/</div>
+      <div>https://smallsmartao.github.io/2026/03/22/vibevoice-asr/</div>
     </div>
     <div class="license-meta">
       
@@ -437,13 +477,13 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2026年3月19日</div>
+          <div>2026年3月22日</div>
         </div>
       
       
         <div class="license-meta-item license-meta-date">
           <div>更新于</div>
-          <div>2026年3月20日</div>
+          <div>2026年3月22日</div>
         </div>
       
       
@@ -474,18 +514,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/03/21/akb-auditory-llm/" title="How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/03/19/fireredasr2s/" title="FireRedASR2S: Industrial‑Grade All‑in‑One ASR">
-                        <span class="hidden-mobile">FireRedASR2S: Industrial‑Grade All‑in‑One ASR</span>
+                      <a href="/2026/03/22/fireredasr2s/" title="FireRedASR2S: Industrial-Grade All-in-One ASR">
+                        <span class="hidden-mobile">FireRedASR2S: Industrial-Grade All-in-One ASR</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

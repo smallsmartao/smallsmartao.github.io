@@ -19,29 +19,29 @@
   <meta name="author" content="Ao Zhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="FireRedASR2S 系统解读 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.10420   代码：https:&#x2F;&#x2F;github.com&#x2F;FireRedTeam&#x2F;FireRedASR2S   作者：Super Intelligence Team, Xiaohongshu  系统与贡献（译）FireRedASR2S 是一个工业级的一体化 ASR 系统，将 ASR、VAD、LID、标">
+    <meta name="description" content="How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.19195 PDF：https:&#x2F;&#x2F;arxiv.org&#x2F;pdf&#x2F;2603.19195 作者：Kehan Lu, Fu Yan, et al.（NTU &amp;#x">
 <meta property="og:type" content="article">
-<meta property="og:title" content="FireRedASR2S: Industrial‑Grade All‑in‑One ASR">
-<meta property="og:url" content="https://smallsmartao.github.io/2026/03/19/fireredasr2s/index.html">
+<meta property="og:title" content="How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/03/22/akb-auditory-llm/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="FireRedASR2S 系统解读 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.10420   代码：https:&#x2F;&#x2F;github.com&#x2F;FireRedTeam&#x2F;FireRedASR2S   作者：Super Intelligence Team, Xiaohongshu  系统与贡献（译）FireRedASR2S 是一个工业级的一体化 ASR 系统，将 ASR、VAD、LID、标">
+<meta property="og:description" content="How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation 论文：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.19195 PDF：https:&#x2F;&#x2F;arxiv.org&#x2F;pdf&#x2F;2603.19195 作者：Kehan Lu, Fu Yan, et al.（NTU &amp;#x">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_firered_822ee463.png">
-<meta property="article:published_time" content="2026-03-19T15:45:00.000Z">
-<meta property="article:modified_time" content="2026-03-20T03:21:54.759Z">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_akb_20260322_c3.png">
+<meta property="article:published_time" content="2026-03-22T04:25:00.000Z">
+<meta property="article:modified_time" content="2026-03-22T04:22:09.866Z">
 <meta property="article:author" content="Ao Zhang">
-<meta property="article:tag" content="ASR">
-<meta property="article:tag" content="LID">
-<meta property="article:tag" content="VAD">
+<meta property="article:tag" content="Audio">
+<meta property="article:tag" content="LALM">
+<meta property="article:tag" content="LLM">
 <meta property="article:tag" content="论文解读">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_firered_822ee463.png">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_akb_20260322_c3.png">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>FireRedASR2S: Industrial‑Grade All‑in‑One ASR - 聪明的小奥</title>
+  <title>How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation - 聪明的小奥</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -218,7 +218,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="FireRedASR2S: Industrial‑Grade All‑in‑One ASR"></span>
+            <span id="subtitle" data-typed-text="How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation"></span>
           
         </div>
 
@@ -234,8 +234,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-03-19 23:45" pubdate>
-          2026年3月19日 晚上
+        <time datetime="2026-03-22 12:25" pubdate>
+          2026年3月22日 中午
         </time>
       </span>
     
@@ -246,7 +246,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          837 字
+          621 字
         
       </span>
     
@@ -257,7 +257,7 @@
         
         
         
-          7 分钟
+          6 分钟
         
       </span>
     
@@ -303,12 +303,12 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">FireRedASR2S: Industrial‑Grade All‑in‑One ASR</h1>
+            <h1 id="seo-header">How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation</h1>
             
               <p id="updated-time" class="note note-info" style="">
                 
                   
-                    本文最后更新于 2026年3月20日 上午
+                    本文最后更新于 2026年3月22日 中午
                   
                 
               </p>
@@ -316,386 +316,155 @@
             
               <div class="markdown-body">
                 
-                <h1 id="FireRedASR2S-系统解读"><a href="#FireRedASR2S-系统解读" class="headerlink" title="FireRedASR2S 系统解读"></a>FireRedASR2S 系统解读</h1><ul>
-<li>论文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2603.10420">https://arxiv.org/abs/2603.10420</a>  </li>
-<li>代码：<a target="_blank" rel="noopener" href="https://github.com/FireRedTeam/FireRedASR2S">https://github.com/FireRedTeam/FireRedASR2S</a>  </li>
-<li>作者：Super Intelligence Team, Xiaohongshu</li>
+                <h1 id="How-Auditory-Knowledge-in-LLM-Backbones-Shapes-Audio-Language-Models-A-Holistic-Evaluation"><a href="#How-Auditory-Knowledge-in-LLM-Backbones-Shapes-Audio-Language-Models-A-Holistic-Evaluation" class="headerlink" title="How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation"></a>How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation</h1><ul>
+<li>论文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2603.19195">https://arxiv.org/abs/2603.19195</a></li>
+<li>PDF：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2603.19195">https://arxiv.org/pdf/2603.19195</a></li>
+<li>作者：Kehan Lu, Fu Yan, et al.（NTU &#x2F; NVIDIA &#x2F; Academia Sinica）</li>
 </ul>
-<h2 id="系统与贡献（译）"><a href="#系统与贡献（译）" class="headerlink" title="系统与贡献（译）"></a>系统与贡献（译）</h2><p>FireRedASR2S 是一个工业级的一体化 ASR 系统，将 ASR、VAD、LID、标点预测统一为开源流水线。相较上一代 FireRedASR，FireRedASR2 以最小架构改动换取更高精度与更广泛的方言覆盖。主要贡献：</p>
+<h2 id="摘要（直译整理）"><a href="#摘要（直译整理）" class="headerlink" title="摘要（直译整理）"></a>摘要（直译整理）</h2><p>论文研究“LLM 文本预训练中已有的听觉知识”对下游音频语言模型（LALM）能力的影响。作者在统一框架下比较 12 个开源 LLM 与 5 个专有 LLM，并设置三种评测：</p>
 <ol>
-<li>开源的一体化 ASR 管线，接口统一、模块可拆分；  </li>
-<li>通过扩大到约 20 万小时的有监督训练，提升识别精度与方言覆盖；  </li>
-<li>FireRedVAD 依赖人工标注的声学事件，提供鲁棒切分；  </li>
-<li>FireRedLID 支持 100+ 语言和 20+ 方言的层次化预测；  </li>
-<li>FireRedPunc 在中英多域标点预测上取得较好成绩。</li>
+<li><strong>文本设定</strong>：在 AKB-2000 上直接 probing 听觉知识；</li>
+<li><strong>级联设定</strong>：音频先由 captioner 转文本，再由 LLM 推理；</li>
+<li><strong>音频设定</strong>：给各 LLM 接入音频编码器并微调成 LALM。</li>
 </ol>
-<h2 id="系统概览"><a href="#系统概览" class="headerlink" title="系统概览"></a>系统概览</h2><p><img src="/images/paper_figs/firered_fig_overview.png" srcset="/img/loading.gif" lazyload alt="流水线总览"><br>音频依次经过 FireRedVAD（切分）、FireRedLID（语言&#x2F;方言标签）、FireRedASR2（识别）、FireRedPunc（标点），产出包含时间戳、置信度和语言标签的结构化转写。模块可单独部署，也可按默认顺序串联。</p>
-<h2 id="模块与方法（译）"><a href="#模块与方法（译）" class="headerlink" title="模块与方法（译）"></a>模块与方法（译）</h2><p><img src="/images/paper_figs/firered_fig_components.png" srcset="/img/loading.gif" lazyload alt="模块设计"><br>FireRedASR2 在上一代 FireRedASR 框架上做最小改动，提供 FireRedASR2-LLM（8B+）和 FireRedASR2-AED（1B+），覆盖中文、方言、英文、code-switch 与唱歌，输出带时间戳、置信度、语言标签的转写。FireRedVAD 基于 DFSMN（0.6M 参数），支持流式、非流式和多标签（语音&#x2F;音乐&#x2F;静音），训练数据为人工标注声学事件。FireRedLID 采用 Encoder-Decoder，编码器从 FireRedASR2-AED 初始化，解码器用两个 token 层次化解码 100+ 语言与 20+ 方言&#x2F;口音。FireRedPunc 使用 BERT 风格编码器，从 LERT 初始化，在大规模中英多域语料上训练，为 ASR 输出补标点。</p>
-<h2 id="训练与数据（译）"><a href="#训练与数据（译）" class="headerlink" title="训练与数据（译）"></a>训练与数据（译）</h2><ul>
-<li>监督语音规模约 200k 小时，相比 FireRedASR 放大并拓展域&#x2F;语言&#x2F;方言多样性。  </li>
-<li>VAD 训练集为人工标注声学事件，包含 streaming、non-streaming、multi-label 三类监督，避免伪标噪声。  </li>
-<li>LID&#x2F;Punc 复用 ASR 编码器或 LERT 初始化，保持模块间表示空间一致，便于组合部署。</li>
+<p>论文报告：不同骨干差异显著；文本听觉知识与音频任务表现存在相关性；语音学相关子任务普遍较弱；在部分任务中，caption→LLM 级联可接近或超过端到端 LALM。</p>
+<h2 id="基准与评测框架"><a href="#基准与评测框架" class="headerlink" title="基准与评测框架"></a>基准与评测框架</h2><p><img src="/images/paper_figs/akb_fig1.png" srcset="/img/loading.gif" lazyload alt="评估流程示意"></p>
+<h3 id="AKB-2000"><a href="#AKB-2000" class="headerlink" title="AKB-2000"></a>AKB-2000</h3><ul>
+<li>规模：2000 条问答</li>
+<li>覆盖：6 大类、48 子类<ul>
+<li>Music</li>
+<li>Sound</li>
+<li>Paralinguistic</li>
+<li>Phonetic</li>
+<li>Audio Quality</li>
+<li>Technical</li>
 </ul>
-<h2 id="实验结果（表格来自论文-HTML）"><a href="#实验结果（表格来自论文-HTML）" class="headerlink" title="实验结果（表格来自论文 HTML）"></a>实验结果（表格来自论文 HTML）</h2><p><strong>ASR（表 1&#x2F;5）</strong></p>
-<table>
+</li>
+</ul>
+<h3 id="三种评测设置"><a href="#三种评测设置" class="headerlink" title="三种评测设置"></a>三种评测设置</h3><ul>
+<li><strong>文本设定</strong>：仅考察 LLM 文本层面的听觉知识。</li>
+<li><strong>级联设定</strong>：评估 caption 质量 + LLM 推理的组合效果。</li>
+<li><strong>音频设定</strong>：统一微调策略下比较不同 LLM 骨干在 LALM 中的上限。</li>
+</ul>
+<h2 id="子类难度（论文示例）"><a href="#子类难度（论文示例）" class="headerlink" title="子类难度（论文示例）"></a>子类难度（论文示例）</h2><table>
 <thead>
 <tr>
-<th>Test set &#x2F; Model</th>
-<th>FRASR2-LLM</th>
-<th>FRASR2-AED</th>
-<th>Doubao-ASR</th>
-<th>Qwen3-ASR</th>
-<th>Fun-ASR</th>
-<th>Fun-Nano</th>
+<th>Subcategory</th>
+<th>Avg.</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>Avg-Mandarin-4</td>
-<td>2.89</td>
-<td>3.05</td>
-<td>3.69</td>
-<td>3.76</td>
-<td>4.16</td>
-<td>4.55</td>
+<td>Phonetics &amp; Phonology</td>
+<td>60.2</td>
 </tr>
 <tr>
-<td>Avg-Dialect-19</td>
-<td>11.55</td>
-<td>11.67</td>
-<td>15.39</td>
-<td>11.85</td>
-<td>12.76</td>
-<td>15.07</td>
+<td>Stress &amp; Emphasis</td>
+<td>58.3</td>
 </tr>
 <tr>
-<td>Avg-All-24</td>
-<td>9.67</td>
-<td>9.80</td>
-<td>12.98</td>
-<td>10.12</td>
-<td>10.92</td>
-<td>12.81</td>
+<td>Music Theory</td>
+<td>52.9</td>
 </tr>
 <tr>
-<td>aishell1</td>
-<td>0.64</td>
-<td>0.57</td>
-<td>1.52</td>
-<td>1.48</td>
-<td>1.64</td>
-<td>1.96</td>
+<td>Syllable &amp; Stress</td>
+<td>49.1</td>
 </tr>
 <tr>
-<td>aishell2</td>
-<td>2.15</td>
-<td>2.51</td>
-<td>2.77</td>
-<td>2.71</td>
-<td>2.38</td>
-<td>3.02</td>
-</tr>
-<tr>
-<td>ws-net</td>
-<td>4.44</td>
-<td>4.57</td>
-<td>5.73</td>
-<td>4.97</td>
-<td>6.85</td>
-<td>6.93</td>
-</tr>
-<tr>
-<td>ws-meeting</td>
-<td>4.32</td>
-<td>4.53</td>
-<td>4.74</td>
-<td>5.88</td>
-<td>5.78</td>
-<td>6.29</td>
-</tr>
-<tr>
-<td>kespeech</td>
-<td>3.08</td>
-<td>3.60</td>
-<td>5.38</td>
-<td>5.10</td>
-<td>5.36</td>
-<td>7.66</td>
-</tr>
-<tr>
-<td>ws-yue-short</td>
-<td>5.14</td>
-<td>5.15</td>
-<td>10.51</td>
-<td>5.82</td>
-<td>7.34</td>
-<td>8.82</td>
-</tr>
-<tr>
-<td>ws-yue-long</td>
-<td>8.71</td>
-<td>8.54</td>
-<td>11.39</td>
-<td>8.85</td>
-<td>10.14</td>
-<td>11.36</td>
-</tr>
-<tr>
-<td>ws-chuan-easy</td>
-<td>10.90</td>
-<td>10.60</td>
-<td>11.33</td>
-<td>11.99</td>
-<td>12.46</td>
-<td>14.05</td>
-</tr>
-<tr>
-<td>ws-chuan-hard</td>
-<td>20.71</td>
-<td>21.35</td>
-<td>20.77</td>
-<td>21.63</td>
-<td>22.49</td>
-<td>25.32</td>
-</tr>
-<tr>
-<td>md-heavy</td>
-<td>7.42</td>
-<td>7.43</td>
-<td>7.69</td>
-<td>8.02</td>
-<td>9.13</td>
-<td>9.97</td>
-</tr>
-<tr>
-<td>md-yue-conv</td>
-<td>12.23</td>
-<td>11.66</td>
-<td>26.25</td>
-<td>9.76</td>
-<td>33.71</td>
-<td>15.68</td>
-</tr>
-<tr>
-<td>md-yue-daily</td>
-<td>3.61</td>
-<td>3.35</td>
-<td>12.82</td>
-<td>3.66</td>
-<td>2.69</td>
-<td>5.67</td>
-</tr>
-<tr>
-<td>md-yue-vehicle</td>
-<td>4.50</td>
-<td>4.83</td>
-<td>8.66</td>
-<td>4.28</td>
-<td>6.00</td>
-<td>7.04</td>
-</tr>
-<tr>
-<td>md-chuan-conv</td>
-<td>13.18</td>
-<td>13.07</td>
-<td>11.77</td>
-<td>14.35</td>
-<td>14.01</td>
-<td>17.11</td>
-</tr>
-<tr>
-<td>md-chuan-daily</td>
-<td>4.90</td>
-<td>5.17</td>
-<td>3.90</td>
-<td>4.93</td>
-<td>3.98</td>
-<td>5.95</td>
-</tr>
-<tr>
-<td>md-shanghai-conv</td>
-<td>28.70</td>
-<td>27.02</td>
-<td>45.15</td>
-<td>29.77</td>
-<td>25.49</td>
-<td>37.08</td>
-</tr>
-<tr>
-<td>md-shanghai-daily</td>
-<td>24.94</td>
-<td>24.18</td>
-<td>44.06</td>
-<td>23.93</td>
-<td>12.55</td>
-<td>28.77</td>
-</tr>
-<tr>
-<td>md-wu</td>
-<td>7.15</td>
-<td>7.14</td>
-<td>7.70</td>
-<td>7.57</td>
-<td>10.63</td>
-<td>10.56</td>
-</tr>
-<tr>
-<td>md-zheng-conv</td>
-<td>10.20</td>
-<td>10.65</td>
-<td>9.83</td>
-<td>9.55</td>
-<td>10.85</td>
-<td>13.09</td>
-</tr>
-<tr>
-<td>md-zheng-daily</td>
-<td>5.80</td>
-<td>6.26</td>
-<td>5.77</td>
-<td>5.88</td>
-<td>6.29</td>
-<td>8.18</td>
-</tr>
-<tr>
-<td>md-wuhan</td>
-<td>9.60</td>
-<td>10.81</td>
-<td>9.94</td>
-<td>10.22</td>
-<td>4.34</td>
-<td>8.70</td>
-</tr>
-<tr>
-<td>md-tianjin</td>
-<td>15.45</td>
-<td>15.30</td>
-<td>15.79</td>
-<td>16.16</td>
-<td>19.27</td>
-<td>22.03</td>
-</tr>
-<tr>
-<td>md-changsha</td>
-<td>23.18</td>
-<td>25.64</td>
-<td>23.76</td>
-<td>23.70</td>
-<td>25.66</td>
-<td>29.23</td>
-</tr>
-<tr>
-<td>opencpop (唱歌)</td>
-<td>1.12</td>
-<td>1.17</td>
-<td>4.36</td>
-<td>2.57</td>
-<td>3.05</td>
-<td>2.95</td>
+<td>Rhyme</td>
+<td>48.7</td>
 </tr>
 </tbody></table>
-<p><strong>VAD（表 2）</strong></p>
-<table>
+<h2 id="文本设定结果（AKB-2000）"><a href="#文本设定结果（AKB-2000）" class="headerlink" title="文本设定结果（AKB-2000）"></a>文本设定结果（AKB-2000）</h2><ul>
+<li>专有模型整体分数最高。</li>
+<li>开源模型中，不同系列差距明显；同系列不同规模也存在波动。</li>
+<li>语音学（Phonetic）相关维度相对更难。</li>
+</ul>
+<p>（完整数据可见原论文表格，本文不做二次推断）</p>
+<h2 id="级联设定结果（caption-→-LLM）"><a href="#级联设定结果（caption-→-LLM）" class="headerlink" title="级联设定结果（caption → LLM）"></a>级联设定结果（caption → LLM）</h2><ul>
+<li>当 caption 质量较高时，后端 LLM 的推理能力可较稳定迁移到音频问答。</li>
+<li>若统一使用高质量 caption，再替换不同 LLM，结果仍呈现与文本设定相似的排序趋势。</li>
+</ul>
+<h2 id="音频设定结果（LALM）"><a href="#音频设定结果（LALM）" class="headerlink" title="音频设定结果（LALM）"></a>音频设定结果（LALM）</h2><table>
 <thead>
 <tr>
-<th>Metric &#x2F; Model</th>
-<th>FireRedVAD</th>
-<th>Silero-VAD</th>
-<th>TEN-VAD</th>
-<th>FunASR-VAD</th>
-<th>WebRTC-VAD</th>
+<th>Model</th>
+<th>MMAU (Audio)</th>
+<th>MMAR (Audio)</th>
 </tr>
 </thead>
 <tbody><tr>
-<td>AUC-ROC (%)</td>
-<td>99.60</td>
-<td>97.99</td>
-<td>97.81</td>
-<td>–</td>
-<td>–</td>
+<td>Gemini-2.5-Pro (Audio)</td>
+<td>71.60</td>
+<td>74.70</td>
 </tr>
 <tr>
-<td>F1 (%)</td>
-<td>97.57</td>
-<td>95.95</td>
-<td>95.19</td>
-<td>90.91</td>
-<td>52.30</td>
+<td>Audio Flamingo 3</td>
+<td>73.30</td>
+<td>58.60</td>
 </tr>
 <tr>
-<td>FAR (%)</td>
-<td>2.69</td>
-<td>9.41</td>
-<td>15.47</td>
-<td>44.03</td>
-<td>2.83</td>
+<td>Qwen2.5-Omni</td>
+<td>71.50</td>
+<td>56.70</td>
 </tr>
 <tr>
-<td>MR (%)</td>
-<td>3.62</td>
-<td>3.95</td>
-<td>2.95</td>
-<td>0.42</td>
-<td>64.15</td>
+<td>DeSTA2.5-Audio</td>
+<td>66.00</td>
+<td>50.80</td>
+</tr>
+<tr>
+<td>Phi-4-mm</td>
+<td>65.70</td>
+<td>40.20</td>
+</tr>
+<tr>
+<td>Qwen3-14B（fine-tuned）</td>
+<td>66.20</td>
+<td>52.90</td>
+</tr>
+<tr>
+<td>Qwen3-8B（fine-tuned）</td>
+<td>61.70</td>
+<td>53.00</td>
+</tr>
+<tr>
+<td>Qwen3-4B（fine-tuned）</td>
+<td>62.90</td>
+<td>49.20</td>
+</tr>
+<tr>
+<td>Qwen2.5-7B（fine-tuned）</td>
+<td>66.60</td>
+<td>47.30</td>
+</tr>
+<tr>
+<td>Llama-3.1-8B（fine-tuned）</td>
+<td>56.40</td>
+<td>47.70</td>
+</tr>
+<tr>
+<td>OLMo-3-7B（fine-tuned）</td>
+<td>56.90</td>
+<td>44.90</td>
+</tr>
+<tr>
+<td>Phi-4-14B（fine-tuned）</td>
+<td>61.10</td>
+<td>52.50</td>
+</tr>
+<tr>
+<td>Phi-4-mini-4B（fine-tuned）</td>
+<td>61.00</td>
+<td>44.20</td>
 </tr>
 </tbody></table>
-<p><strong>LID（表 3）</strong></p>
-<table>
-<thead>
-<tr>
-<th>Test set &#x2F; Model</th>
-<th>FireRedLID</th>
-<th>Whisper</th>
-<th>SpeechBrain</th>
-<th>Dolphin</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>FLEURS test</td>
-<td>97.18</td>
-<td>79.41</td>
-<td>92.91</td>
-<td>–</td>
-</tr>
-<tr>
-<td>CommonVoice test</td>
-<td>92.07</td>
-<td>80.81</td>
-<td>78.75</td>
-<td>–</td>
-</tr>
-<tr>
-<td>Chinese dialects</td>
-<td>88.47</td>
-<td>–</td>
-<td>–</td>
-<td>69.01</td>
-</tr>
-</tbody></table>
-<p><strong>标点（表 4）</strong></p>
-<table>
-<thead>
-<tr>
-<th>Test set &#x2F; Model</th>
-<th>FireRedPunc</th>
-<th>FunASR-Punc</th>
-</tr>
-</thead>
-<tbody><tr>
-<td>Multi-domain Chinese (P&#x2F;R&#x2F;F1)</td>
-<td>82.84 &#x2F; 83.08 &#x2F; 82.96</td>
-<td>77.27 &#x2F; 74.03 &#x2F; 75.62</td>
-</tr>
-<tr>
-<td>Multi-domain English (P&#x2F;R&#x2F;F1)</td>
-<td>78.40 &#x2F; 71.57 &#x2F; 74.83</td>
-<td>55.79 &#x2F; 45.15 &#x2F; 49.91</td>
-</tr>
-<tr>
-<td>Average F1</td>
-<td>78.90</td>
-<td>62.77</td>
-</tr>
-</tbody></table>
+<p><img src="/images/paper_figs/akb_fig2.png" srcset="/img/loading.gif" lazyload alt="实验示意"><br><img src="/images/paper_figs/akb_fig3.png" srcset="/img/loading.gif" lazyload alt="结果示意"><br><img src="/images/paper_figs/akb_fig4.png" srcset="/img/loading.gif" lazyload alt="更多结果示意"></p>
+<h2 id="论文结论（直译整理）"><a href="#论文结论（直译整理）" class="headerlink" title="论文结论（直译整理）"></a>论文结论（直译整理）</h2><ul>
+<li>LLM 骨干中的“听觉知识储备”会影响 LALM 下游表现。</li>
+<li>文本设定可作为轻量选模参考，与音频设定存在相关性。</li>
+<li>语音学相关能力是多模型共性短板。</li>
+<li>在当前实验设置下，音频编码器仍是关键瓶颈之一。</li>
+</ul>
 
                 
               </div>
@@ -729,13 +498,13 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
       
         <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
       
-        <a href="/tags/LID/" class="print-no-link">#LID</a>
+        <a href="/tags/Audio/" class="print-no-link">#Audio</a>
       
-        <a href="/tags/VAD/" class="print-no-link">#VAD</a>
+        <a href="/tags/LALM/" class="print-no-link">#LALM</a>
       
     </div>
   
@@ -747,8 +516,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>FireRedASR2S: Industrial‑Grade All‑in‑One ASR</div>
-      <div>https://smallsmartao.github.io/2026/03/19/fireredasr2s/</div>
+      <div>How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation</div>
+      <div>https://smallsmartao.github.io/2026/03/22/akb-auditory-llm/</div>
     </div>
     <div class="license-meta">
       
@@ -760,13 +529,13 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2026年3月19日</div>
+          <div>2026年3月22日</div>
         </div>
       
       
         <div class="license-meta-item license-meta-date">
           <div>更新于</div>
-          <div>2026年3月20日</div>
+          <div>2026年3月22日</div>
         </div>
       
       
@@ -797,9 +566,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/03/19/vibevoice-asr/" title="VibeVoice-ASR Technical Report">
+                      <a href="/2026/03/22/fireredasr2s/" title="FireRedASR2S: Industrial-Grade All-in-One ASR">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">VibeVoice-ASR Technical Report</span>
+                        <span class="hidden-mobile">FireRedASR2S: Industrial-Grade All-in-One ASR</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
