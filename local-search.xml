@@ -4,6 +4,70 @@
   
   
   <entry>
+    <title>Distilling Conversations: Abstract Compression of Conversational Audio Context for LLM-based ASR</title>
+    <link href="/2026/03/30/distilling-conversations-abstract-compression/"/>
+    <url>/2026/03/30/distilling-conversations-abstract-compression/</url>
+    
+    <content type="html"><![CDATA[<h1 id="Distilling-Conversations-Abstract-Compression-of-Conversational-Audio-Context-for-LLM-based-ASR"><a href="#Distilling-Conversations-Abstract-Compression-of-Conversational-Audio-Context-for-LLM-based-ASR" class="headerlink" title="Distilling Conversations: Abstract Compression of Conversational Audio Context for LLM-based ASR"></a>Distilling Conversations: Abstract Compression of Conversational Audio Context for LLM-based ASR</h1><ul><li>论文链接：<a href="https://arxiv.org/abs/2603.26246">https://arxiv.org/abs/2603.26246</a></li></ul><h2 id="1-核心贡献"><a href="#1-核心贡献" class="headerlink" title="1. 核心贡献"></a>1. 核心贡献</h2><p>提出一种“抽象压缩”技术，利用固定数量的潜在 token 替换历史多轮音频，以压缩 LLM-based ASR 的对话上下文。</p><h2 id="2-为什么值得看"><a href="#2-为什么值得看" class="headerlink" title="2. 为什么值得看"></a>2. 为什么值得看</h2><p>LLM-ASR 中长上下文处理成本高昂，本文的方法能在大幅降低显存和计算成本的同时，保持对话历史带来的识别性能提升（尤其在实体词识别上），非常具有工程应用价值。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>论文解读</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>LLM</tag>
+      
+      <tag>ASR</tag>
+      
+      <tag>论文解读</tag>
+      
+      <tag>Context Compression</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Sommelier: Scalable Open Multi-turn Audio Pre-processing for Full-duplex Speech Language Models</title>
+    <link href="/2026/03/30/sommelier-scalable-open-multi-turn-audio/"/>
+    <url>/2026/03/30/sommelier-scalable-open-multi-turn-audio/</url>
+    
+    <content type="html"><![CDATA[<h1 id="Sommelier-Scalable-Open-Multi-turn-Audio-Pre-processing-for-Full-duplex-Speech-Language-Models"><a href="#Sommelier-Scalable-Open-Multi-turn-Audio-Pre-processing-for-Full-duplex-Speech-Language-Models" class="headerlink" title="Sommelier: Scalable Open Multi-turn Audio Pre-processing for Full-duplex Speech Language Models"></a>Sommelier: Scalable Open Multi-turn Audio Pre-processing for Full-duplex Speech Language Models</h1><ul><li>论文链接：<a href="https://arxiv.org/abs/2603.25750">https://arxiv.org/abs/2603.25750</a></li></ul><h2 id="1-核心贡献"><a href="#1-核心贡献" class="headerlink" title="1. 核心贡献"></a>1. 核心贡献</h2><p>本文提出了一个用于全双工语音大模型（SLM）的开源、可扩展多轮音频数据预处理流水线——Sommelier。</p><h2 id="2-为什么值得看"><a href="#2-为什么值得看" class="headerlink" title="2. 为什么值得看"></a>2. 为什么值得看</h2><p>当前大模型正在从文本向语音（SLM）演进，全双工（同时收发）交互需要高质量的多轮多说话人数据。本文解决重叠语音、回声等处理难题，对于构建自然的 Audio-LLM 对话系统具有很高的参考价值。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>论文解读</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>LLM</tag>
+      
+      <tag>ASR</tag>
+      
+      <tag>论文解读</tag>
+      
+      <tag>Audio</tag>
+      
+      <tag>SLM</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>世界冲煮冠军杜嘉宁：爱乐压极简家庭冲煮配方 (实操参数)</title>
     <link href="/2026/03/22/dujianing-aeropress/"/>
     <url>/2026/03/22/dujianing-aeropress/</url>
