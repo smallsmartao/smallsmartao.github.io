@@ -19,21 +19,22 @@
   <meta name="author" content="Ao Zhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Sommelier: Scalable Open Multi-turn Audio Pre-processing for Full-duplex Speech Language Models 论文链接：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.25750 开源代码与数据：即将开源  随着大模型从文本（Text-LLMs）向语音（Speech Language Models, SLMs）">
+    <meta name="description" content="Sommelier: Scalable Open Multi-turn Audio Pre-processing for Full-duplex Speech Language Models 论文链接：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.25750  在构建类似 Moshi 或基于全双工（Full-duplex）的语音语言大模型（SLM）时，业界普遍面临一个巨大的瓶颈：极度缺乏高">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Sommelier: Scalable Open Multi-turn Audio Pre-processing for Full-duplex Speech Language Models">
 <meta property="og:url" content="https://smallsmartao.github.io/2026/04/01/sommelier-scalable-open-multi-turn-audio/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="Sommelier: Scalable Open Multi-turn Audio Pre-processing for Full-duplex Speech Language Models 论文链接：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.25750 开源代码与数据：即将开源  随着大模型从文本（Text-LLMs）向语音（Speech Language Models, SLMs）">
+<meta property="og:description" content="Sommelier: Scalable Open Multi-turn Audio Pre-processing for Full-duplex Speech Language Models 论文链接：https:&#x2F;&#x2F;arxiv.org&#x2F;abs&#x2F;2603.25750  在构建类似 Moshi 或基于全双工（Full-duplex）的语音语言大模型（SLM）时，业界普遍面临一个巨大的瓶颈：极度缺乏高">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_sommelier_new.jpg">
-<meta property="article:published_time" content="2026-04-01T02:45:00.000Z">
-<meta property="article:modified_time" content="2026-04-01T02:58:29.296Z">
+<meta property="article:published_time" content="2026-04-01T05:55:00.000Z">
+<meta property="article:modified_time" content="2026-04-01T05:51:41.702Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="Audio">
 <meta property="article:tag" content="LLM">
 <meta property="article:tag" content="SLM">
+<meta property="article:tag" content="数据处理">
 <meta property="article:tag" content="论文解读">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_sommelier_new.jpg">
@@ -235,8 +236,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-04-01 10:45" pubdate>
-          2026年4月1日 上午
+        <time datetime="2026-04-01 13:55" pubdate>
+          2026年4月1日 下午
         </time>
       </span>
     
@@ -247,7 +248,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.7k 字
+          1.9k 字
         
       </span>
     
@@ -258,7 +259,7 @@
         
         
         
-          15 分钟
+          16 分钟
         
       </span>
     
@@ -309,7 +310,7 @@
               <p id="updated-time" class="note note-info" style="">
                 
                   
-                    本文最后更新于 2026年4月1日 上午
+                    本文最后更新于 2026年4月1日 下午
                   
                 
               </p>
@@ -319,42 +320,59 @@
                 
                 <h1 id="Sommelier-Scalable-Open-Multi-turn-Audio-Pre-processing-for-Full-duplex-Speech-Language-Models"><a href="#Sommelier-Scalable-Open-Multi-turn-Audio-Pre-processing-for-Full-duplex-Speech-Language-Models" class="headerlink" title="Sommelier: Scalable Open Multi-turn Audio Pre-processing for Full-duplex Speech Language Models"></a>Sommelier: Scalable Open Multi-turn Audio Pre-processing for Full-duplex Speech Language Models</h1><ul>
 <li><strong>论文链接</strong>：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2603.25750">https://arxiv.org/abs/2603.25750</a></li>
-<li><strong>开源代码与数据</strong>：即将开源</li>
 </ul>
-<p>随着大模型从文本（Text-LLMs）向语音（Speech Language Models, SLMs）的演进，实现自然、流畅、可打断的**全双工（Full-duplex）**人机交互成为了核心目标。然而，当前开源社区极度缺乏高质量、多轮、多说话人的音频对话数据。自然对话中充满了语音重叠（Overlap）、背景回应（Back-channeling，如“嗯”、“啊”）、环境噪音等复杂现象，传统的数据处理管线往往难以应对，导致严重的 ASR 幻觉和话者分离错误。</p>
-<p>为了解决这一痛点，本文提出了 <strong>Sommelier</strong>——一个开源、可扩展的多轮音频数据预处理流水线，专门用于从野生播客、会议记录中提取高质量的全双工训练数据。</p>
-<h2 id="1-核心痛点与现有方法的局限性"><a href="#1-核心痛点与现有方法的局限性" class="headerlink" title="1. 核心痛点与现有方法的局限性"></a>1. 核心痛点与现有方法的局限性</h2><p>在构建全双工语音模型时，数据准备面临以下挑战：</p>
+<p>在构建类似 Moshi 或基于全双工（Full-duplex）的语音语言大模型（SLM）时，业界普遍面临一个巨大的瓶颈：<strong>极度缺乏高质量、包含真实重叠（Overlap）和背景反馈（Back-channeling）的多轮对话数据</strong>。真实世界的对话音频中充斥着噪音、音乐、长时间沉默以及不可避免的抢话（Overlapping speech），这些因素导致传统的“VAD + Diarization + ASR”管线错误率极高。</p>
+<p>为了打破这一僵局，本文提出了 <strong>Sommelier</strong>：一个开源、高鲁棒性、可横向扩展的全双工语音大模型预处理管线。本文不仅详细拆解了该管线的设计，还给出了如何在高吞吐量的工业场景下解决 ASR 幻觉（Hallucinations）和话者分离（Diarization）失效的工程化解法。</p>
+<hr>
+<h2 id="1-核心痛点与问题定义"><a href="#1-核心痛点与问题定义" class="headerlink" title="1. 核心痛点与问题定义"></a>1. 核心痛点与问题定义</h2><p>在自然的人机对话或人人对话中，对话并非严格的“轮流发言（Turn-taking）”。根据统计，日常对话中包含大量以下复杂情况：</p>
 <ol>
-<li><strong>真实对话的复杂性</strong>：自然对话不是对讲机式的“你一句我一句”，而是存在大量的<strong>重叠（Overlap）</strong>。研究表明，超过30%的自然对话包含重叠。</li>
-<li><strong>话者分离（Diarization）失效</strong>：现有的主流 Diarization 系统（如 Pyannote）在处理重叠语音时表现糟糕，经常将两个人的声音归给一个人，或者遗漏背景声。</li>
-<li><strong>ASR 幻觉严重</strong>：当重叠音频直接输入给 ASR（如 Whisper）时，ASR 倾向于只转录声音较大的一方，甚至产生完全无关的幻觉文本。</li>
-<li><strong>人工标注成本极高</strong>：对多轮对话进行逐字级、毫秒级的时间戳对齐需要极其昂贵的人工成本，无法实现规模化。</li>
+<li><strong>重叠（Overlapping Speech）</strong>：两人或多人同时说话。传统 Diarization 系统在处理这种情况时，通常会漏掉声音较小的一方，或者将混合语音错误地归结为单人。</li>
+<li><strong>ASR 幻觉（ASR Hallucinations）</strong>：当输入包含背景噪音、音乐或不可理解的重叠语音时，主流 ASR（如 Whisper）极易产生与音频完全无关的幻觉文本。</li>
+<li><strong>数据清洗的时间成本</strong>：面对 Web 级别的海量播客、会议录音，人工标注微秒级时间戳是不现实的，而自动处理管线又必须兼顾吞吐量（Throughput）和处理精度。</li>
 </ol>
-<h2 id="2-Sommelier-预处理流水线架构详析"><a href="#2-Sommelier-预处理流水线架构详析" class="headerlink" title="2. Sommelier 预处理流水线架构详析"></a>2. Sommelier 预处理流水线架构详析</h2><p>为了解决上述问题，Sommelier 设计了一个包含五个核心模块的级联处理架构，将粗糙的野生音频转化为高精度的模型训练数据。</p>
+<hr>
+<h2 id="2-Sommelier-核心方法架构-Methodology"><a href="#2-Sommelier-核心方法架构-Methodology" class="headerlink" title="2. Sommelier 核心方法架构 (Methodology)"></a>2. Sommelier 核心方法架构 (Methodology)</h2><p>Sommelier 摒弃了传统的串行处理逻辑，设计了一套包含 <strong>Audio Standardization（音频标准化）、VAD 过滤、Ensemble ASR（集成识别过滤）与 Overlap Separation（重叠解耦）</strong> 的多级过滤与分离架构。</p>
 <p><img src="/images/paper_figs/sommelier/pipeline.png" srcset="/img/loading.gif" lazyload alt="Sommelier Pipeline"></p>
-<h3 id="2-1-语音增强与去混响（Speech-Enhancement-Dereverberation）"><a href="#2-1-语音增强与去混响（Speech-Enhancement-Dereverberation）" class="headerlink" title="2.1 语音增强与去混响（Speech Enhancement &amp; Dereverberation）"></a>2.1 语音增强与去混响（Speech Enhancement &amp; Dereverberation）</h3><p>流水线的第一步是“净化”音频。Sommelier 采用了 SOTA 的盲源分离与语音增强模型（如基于 TF-GridNet 或类似架构的增强模型），对原始输入的播客或会议音频进行处理。这一步旨在过滤掉背景噪音、音乐和室内混响，为后续模块提供干净的语音信号，显著降低了后续特征提取的难度。</p>
-<h3 id="2-2-语音重叠检测（Overlap-Detection）"><a href="#2-2-语音重叠检测（Overlap-Detection）" class="headerlink" title="2.2 语音重叠检测（Overlap Detection）"></a>2.2 语音重叠检测（Overlap Detection）</h3><p>这是 Sommelier 的关键创新点之一。有别于传统只依赖 VAD（Voice Activity Detection）的方法，Sommelier 训练了一个专门的<strong>重叠检测模型</strong>。该模型能够以极高的时间分辨率（帧级别）扫描音频序列，一旦检测到有两个或以上的声音特征同时存在，就会打上 Overlap 标签，并将该片段裁剪出来送入下一个分离模块。</p>
-<h3 id="2-3-盲源分离（Blind-Source-Separation-BSS）"><a href="#2-3-盲源分离（Blind-Source-Separation-BSS）" class="headerlink" title="2.3 盲源分离（Blind Source Separation, BSS）"></a>2.3 盲源分离（Blind Source Separation, BSS）</h3><p>对于被标记为重叠的音频片段，Sommelier 调用盲源分离模型（如 SepFormer 或 MossFormer）将其解耦。</p>
+<h3 id="2-1-Audio-Standardization-与基础过滤-Audio-Standardization-VAD"><a href="#2-1-Audio-Standardization-与基础过滤-Audio-Standardization-VAD" class="headerlink" title="2.1 Audio Standardization 与基础过滤 (Audio Standardization &amp; VAD)"></a>2.1 Audio Standardization 与基础过滤 (Audio Standardization &amp; VAD)</h3><p>首先，野生音频（In-the-wild audio）需要进行统一格式化。</p>
 <ul>
-<li><strong>输入</strong>：一段混合了 A 和 B 声音的单声道或双声道音频。</li>
-<li><strong>输出</strong>：多条独立的音频流（Track A, Track B），每条流中只包含一个纯净的说话人声音。<br>这一步彻底解决了传统 Diarization 在重叠区域的痛点，确保每个人说的话都能被独立转录。</li>
+<li><strong>重采样与降混音</strong>：所有音频统一转换为单声道（Mono），并重采样至 16kHz 或 24kHz（取决于下游模型）。</li>
+<li><strong>VAD 与长静音裁剪</strong>：使用 VAD（Voice Activity Detection，如 Silero VAD）精确定位包含语音的片段。丢弃超过特定阈值（如 2 秒以上）的长静音。</li>
+<li><strong>BGM 过滤（背景音乐检测）</strong>：引入专门的背景音乐检测分类器，剔除含有强烈音乐干扰的音频片段，因为音乐是诱发 ASR 幻觉的重灾区。为了适应工业吞吐，这一步通常只处理切分后的小于 5 分钟的 Chunk。</li>
 </ul>
-<h3 id="2-4-自动语音识别与大规模语言模型纠错（ASR-LLM-Correction）"><a href="#2-4-自动语音识别与大规模语言模型纠错（ASR-LLM-Correction）" class="headerlink" title="2.4 自动语音识别与大规模语言模型纠错（ASR &amp; LLM Correction）"></a>2.4 自动语音识别与大规模语言模型纠错（ASR &amp; LLM Correction）</h3><ul>
-<li><strong>ASR 转录</strong>：分离出的独立音频流被送入 Whisper 等高精度 ASR 模型中进行文本转录。</li>
-<li><strong>LLM 语义纠错</strong>：由于盲源分离偶尔会引入音频伪影（Artifacts），导致 ASR 产生特定模式的拼写错误。Sommelier 巧妙地引入了 Text-LLM，结合上下文语义对 ASR 的转录结果进行二次校验和纠错，进一步提升了文本标注的准确性。</li>
+<h3 id="2-2-Speaker-Diarization-与重叠提取-Speaker-Diarization"><a href="#2-2-Speaker-Diarization-与重叠提取-Speaker-Diarization" class="headerlink" title="2.2 Speaker Diarization 与重叠提取 (Speaker Diarization)"></a>2.2 Speaker Diarization 与重叠提取 (Speaker Diarization)</h3><p>接下来对干净的语音块进行话者分离。</p>
+<ul>
+<li><strong>聚类与时间戳提取</strong>：Sommelier 采用基于神经网络的 Diarization 方案（如 Pyannote），提取出每个说话人的时间轴（Track）。</li>
+<li><strong>重叠段定位</strong>：系统的核心并不完全信任 Diarization 对于重叠段的聚类结果。相反，只要 VAD&#x2F;Diarization 识别出特定时间窗口内有多于一个声源特征激活，就会打上 <strong>Overlap 标记</strong>，并将该混合音频送入下一个核心模块：盲源分离。</li>
 </ul>
-<h3 id="2-5-强制对齐（Forced-Alignment）"><a href="#2-5-强制对齐（Forced-Alignment）" class="headerlink" title="2.5 强制对齐（Forced Alignment）"></a>2.5 强制对齐（Forced Alignment）</h3><p>转录文本确定后，流水线使用强制对齐工具（如 Montreal Forced Aligner, MFA）将文本中的每一个单词（甚至音素）精确映射回原始音频的时间轴上。这一步为全双工 SLM 提供了极其关键的<strong>微秒级时间戳信息</strong>，使其在训练时能够学习到何时该打断、何时该倾听。</p>
-<h2 id="3-实验结果与评估"><a href="#3-实验结果与评估" class="headerlink" title="3. 实验结果与评估"></a>3. 实验结果与评估</h2><h3 id="3-1-词错误率（WER）对比实验"><a href="#3-1-词错误率（WER）对比实验" class="headerlink" title="3.1 词错误率（WER）对比实验"></a>3.1 词错误率（WER）对比实验</h3><p>作者在一个包含大量重叠和背景声的内部多轮对话测试集上，将 Sommelier 与现有的标准处理管线（Standard VAD + Diarization + ASR）进行了严格对比。<br>实验结果（如原图所示）表明，Sommelier 在各种复杂的重叠场景（如同时抢话、背景应答等）中，显著降低了整体的词错误率（WER）。其分离后的单通道 ASR 准确率接近于理想情况下的无噪音单人朗读水平。</p>
-<p><img src="/images/paper_figs/sommelier/wer_comparison.png" srcset="/img/loading.gif" lazyload alt="WER Comparison"></p>
-<h3 id="3-2-大规模数据集构建分布"><a href="#3-2-大规模数据集构建分布" class="headerlink" title="3.2 大规模数据集构建分布"></a>3.2 大规模数据集构建分布</h3><p>利用该流水线，研究团队处理了数千小时的开源播客数据，构建了一个包含丰富多模态交互行为的大型数据集。图表显示，数据集中不仅包含了标准的交替对话（Turn-taking），还保留了大量极具价值的重叠（Overlap）和背景反馈（Back-channeling）分布，这为全双工模型的拟真度提供了数据基础。</p>
-<p><img src="/images/paper_figs/sommelier/dataset_composition.png" srcset="/img/loading.gif" lazyload alt="Dataset Composition"></p>
-<h2 id="4-局限性与未来工作"><a href="#4-局限性与未来工作" class="headerlink" title="4. 局限性与未来工作"></a>4. 局限性与未来工作</h2><p>尽管架构设计完备且效果显著，Sommelier 也在论文末尾探讨了其工程和算法上的局限性：</p>
+<h3 id="2-3-语音重叠解耦-Overlap-Speech-Separation"><a href="#2-3-语音重叠解耦-Overlap-Speech-Separation" class="headerlink" title="2.3 语音重叠解耦 (Overlap Speech Separation)"></a>2.3 语音重叠解耦 (Overlap Speech Separation)</h3><p>当两人的声音混合在单声道中时：<br>$$S_{mix}(t) &#x3D; S_1(t) + S_2(t) + N(t)$$<br>直接送入 ASR 会导致较弱的信号 $S_2(t)$ 被忽略。Sommelier 采用了盲源分离（BSS，如基于 TF-GridNet 或 SepFormer 的模型）。</p>
+<ul>
+<li><strong>输入</strong>：一段被标记为 Overlap 的单声道混合音频 $S_{mix}$。</li>
+<li><strong>输出</strong>：将其解耦为两路或多路纯净的独立音频流 $S_1’$ 和 $S_2’$。<br>这一步极其关键，它彻底解开了多说话人同时抢话时的缠绕，使得每个人说的话能够被后续 ASR 独立识别，从而完美保留了 Full-duplex 模型训练中所需的“打断（Interruption）”与“回应（Backchanneling）”样本。</li>
+</ul>
+<h3 id="2-4-集成-ASR-幻觉过滤与对齐-Ensemble-ASR-Hallucination-Filtering"><a href="#2-4-集成-ASR-幻觉过滤与对齐-Ensemble-ASR-Hallucination-Filtering" class="headerlink" title="2.4 集成 ASR 幻觉过滤与对齐 (Ensemble ASR &amp; Hallucination Filtering)"></a>2.4 集成 ASR 幻觉过滤与对齐 (Ensemble ASR &amp; Hallucination Filtering)</h3><p>盲源分离虽然解决了重叠，但也容易引入“分离伪影（Artifacts）”，导致 ASR 出现特定的拼写错误或幻觉。为了过滤掉这些脏数据，Sommelier 设计了严密的 <strong>Ensemble ASR（集成识别）和 N-gram 过滤策略</strong>。</p>
 <ol>
-<li><strong>多模型级联带来的推理延迟与计算成本</strong>：该流水线包含语音增强、重叠检测、源分离、ASR、LLM 纠错和强制对齐六大深度学习模块。这种重度级联架构导致数据处理的吞吐量较低，需要大量的 GPU 算力支持。</li>
-<li><strong>源分离模型的鲁棒性边界</strong>：当前的 BSS 模型在处理两人重叠时表现优异，但当场景升级为三人或更多人同时说话的极端会议场景时，分离质量会断崖式下降，引入严重的音频伪影。</li>
-<li><strong>语言扩展性</strong>：目前由于强制对齐（MFA）和特定 LLM 纠错模板的限制，流水线主要针对英语进行了深度优化。向多语种（如中、日、韩）扩展时，需要重新适配各语种的声学对齐模型。</li>
+<li><strong>多模型比对 (Paralleled Model Ensembling)</strong>：<br>将分离出来的单路音频同时送入多个不同的 ASR 模型（例如 Whisper-large-v3, Canary, 甚至基于 CTC 的模型）。<br>如果两个模型输出的文本计算出的 <strong>字错误率（WER）或编辑距离</strong> 大于设定阈值，说明该音频片段大概率存在严重的背景噪音或分离伪影导致了模型幻觉。系统会直接**丢弃（Discard）**该片段。</li>
+<li><strong>N-gram&#x2F;Heuristic 过滤</strong>：<br>检查输出文本是否包含 ASR 常见的幻觉重复模式（例如某段话重复输出 5 次以上相同单词，这在 Whisper 中极为常见）。若存在，触发阈值过滤。</li>
+<li><strong>强制对齐 (Forced Alignment)</strong>：<br>保留下来的高质量文本转录，通过 MFA (Montreal Forced Aligner) 等工具重新将单词对齐回时间轴，生成高精度的时间戳（Timestamps），作为最终训练 SLM 的标签。</li>
 </ol>
-<p>总体而言，Sommelier 是通向真正的全双工 Audio-LLM 的一块重要基石，它通过系统化的工程设计，为音频数据的数据清洗和精细化标注提供了一套极其有价值的参考范式。</p>
+<hr>
+<h2 id="3-实验验证与数据分布分析-Evaluation"><a href="#3-实验验证与数据分布分析-Evaluation" class="headerlink" title="3. 实验验证与数据分布分析 (Evaluation)"></a>3. 实验验证与数据分布分析 (Evaluation)</h2><h3 id="3-1-词错误率（WER）的显著下降"><a href="#3-1-词错误率（WER）的显著下降" class="headerlink" title="3.1 词错误率（WER）的显著下降"></a>3.1 词错误率（WER）的显著下降</h3><p>作者选取了多个真实场景的测试集。下表的 WER 对比清楚地展示了 Sommelier 管线带来的质变。</p>
+<ul>
+<li>在包含大量重叠和回声的对话集上，Baseline（单纯的 VAD+ASR）因为吞音和幻觉，WER 居高不下。</li>
+<li>加入 <strong>Overlap Separation (分离)</strong> 模块后，WER 大幅下降。</li>
+<li>再叠加 <strong>Ensemble ASR Filtering (集成过滤)</strong> 剔除伪影样本后，留下的高质量样本对齐精度达到了极高水平，这证明了管线的有效性和鲁棒性。</li>
+</ul>
+<p><img src="/images/paper_figs/sommelier/wer_comparison.png" srcset="/img/loading.gif" lazyload alt="WER Comparison"></p>
+<h3 id="3-2-罕见多轮交互行为的保留"><a href="#3-2-罕见多轮交互行为的保留" class="headerlink" title="3.2 罕见多轮交互行为的保留"></a>3.2 罕见多轮交互行为的保留</h3><p>相比于常规数据集，基于 Sommelier 清洗出的海量播客数据集，其数据分布（Dataset Composition）有了本质的区别。<br>如下图所示，数据集中不仅包含了普通的轮替对话（Turn-taking），还保留了极高比例的重叠（Overlap）、背景回应（Backchanneling）以及极短时间差的打断（Interruption）。这些“脏数据”在经过 Sommelier 的净化后变成了极为宝贵的“高质量多模态交互语料”。</p>
+<p><img src="/images/paper_figs/sommelier/dataset_composition.png" srcset="/img/loading.gif" lazyload alt="Dataset Composition"></p>
+<hr>
+<h2 id="4-总结与局限性-Limitations-Future-Work"><a href="#4-总结与局限性-Limitations-Future-Work" class="headerlink" title="4. 总结与局限性 (Limitations &amp; Future Work)"></a>4. 总结与局限性 (Limitations &amp; Future Work)</h2><p><strong>核心贡献</strong>：<br>Sommelier 是目前开源社区中最具实操性、专为“全双工（Full-duplex）”语音大模型定制的数据预处理管线。它通过系统级的工程设计（标准化、分离解耦、集成过滤），极大地降低了真实对话音频的标注门槛。</p>
+<p><strong>局限性</strong>：</p>
+<ol>
+<li><strong>重型计算开销</strong>：该管线集成了 BSS 盲源分离模型、多个大型 ASR 模型（用于 Ensemble 过滤）以及 MFA 对齐模块。这种“暴力”的级联架构导致整体数据处理的吞吐量较低，需要庞大的 GPU 算力集群支撑，不适合轻量级的小作坊使用。</li>
+<li><strong>分离上限</strong>：目前的 BSS 模块在处理两人重叠（2-speaker overlap）时效果良好，但在超过三人同时抢话的极端场景中，分离出的音轨依然不可用。</li>
+</ol>
+<p>随着开源全双工 SLM 时代的到来，拥有海量、干净、带有精确时间戳的 Overlap 训练数据将成为各个大厂的核心壁垒，而 Sommelier 无疑为我们提供了构建这种壁垒的黄金操作手册。</p>
 
                 
               </div>
@@ -397,6 +415,8 @@
         <a href="/tags/Audio/" class="print-no-link">#Audio</a>
       
         <a href="/tags/SLM/" class="print-no-link">#SLM</a>
+      
+        <a href="/tags/%E6%95%B0%E6%8D%AE%E5%A4%84%E7%90%86/" class="print-no-link">#数据处理</a>
       
     </div>
   
@@ -458,18 +478,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/04/01/distilling-conversations-abstract-compression/" title="Distilling Conversations: Abstract Compression of Conversational Audio Context for LLM-based ASR">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Distilling Conversations: Abstract Compression of Conversational Audio Context for LLM-based ASR</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/04/01/zge-trading-strategy-329/" title="【Z哥交易解析】多头区间策略：如何从机会中做选择，为何不建议追高 (3.29)">
-                        <span class="hidden-mobile">【Z哥交易解析】多头区间策略：如何从机会中做选择，为何不建议追高 (3.29)</span>
+                      <a href="/2026/04/01/distilling-conversations-abstract-compression/" title="Distilling Conversations: Abstract Compression of Conversational Audio Context for LLM-based ASR">
+                        <span class="hidden-mobile">Distilling Conversations: Abstract Compression of Conversational Audio Context for LLM-based ASR</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
