@@ -1,0 +1,1138 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/mao.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息标题：CLAR: CIF-Localized Alignment for Retrieval-Augmented Speech LLM-Based Contextual ASR作者：Shangkun Huang, Huan Shen, Wei Zou, Yunzhang Chen（BRVoice Team, Bairong, Inc.）arXiv：2603.25460发表时间：2026年">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CLAR: CIF-Localized Alignment for Retrieval-Augmented Speech LLM-Based Contextual ASR">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/04/02/clar-cif-localized-alignment-retrieval-augmented-speech-llm-contextual-asr/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息标题：CLAR: CIF-Localized Alignment for Retrieval-Augmented Speech LLM-Based Contextual ASR作者：Shangkun Huang, Huan Shen, Wei Zou, Yunzhang Chen（BRVoice Team, Bairong, Inc.）arXiv：2603.25460发表时间：2026年">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_smallao__--ar_169_--stylize_400_--niji_7_1ac1612a-33b2-4dbc-82be-c10196083f69_1.png">
+<meta property="article:published_time" content="2026-04-02T03:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-02T03:09:51.273Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="CIF">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="上下文ASR">
+<meta property="article:tag" content="检索增强">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_smallao__--ar_169_--stylize_400_--niji_7_1ac1612a-33b2-4dbc-82be-c10196083f69_1.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>CLAR: CIF-Localized Alignment for Retrieval-Augmented Speech LLM-Based Contextual ASR - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/cover.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CLAR: CIF-Localized Alignment for Retrieval-Augmented Speech LLM-Based Contextual ASR"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-04-02 11:00" pubdate>
+          2026年4月2日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          32 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CLAR: CIF-Localized Alignment for Retrieval-Augmented Speech LLM-Based Contextual ASR</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年4月2日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p><strong>论文信息</strong><br>标题：CLAR: CIF-Localized Alignment for Retrieval-Augmented Speech LLM-Based Contextual ASR<br>作者：Shangkun Huang, Huan Shen, Wei Zou, Yunzhang Chen（BRVoice Team, Bairong, Inc.）<br>arXiv：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2603.25460">2603.25460</a><br>发表时间：2026年3月26日</p>
+</blockquote>
+<hr>
+<h2 id="一、研究背景与问题定义"><a href="#一、研究背景与问题定义" class="headerlink" title="一、研究背景与问题定义"></a>一、研究背景与问题定义</h2><p>Speech LLM 近年来在通用领域 ASR 上取得了显著进展，但在<strong>命名实体和长尾词汇</strong>的识别上仍面临系统性瓶颈。这一问题的根源在于：LLM 内部的语言模型先验过于强势，在端到端解码时往往压倒微弱的声学证据，将稀有词汇替换为更高频的常见词，甚至产生幻觉（hallucination）。这对信息检索、问答系统、对话系统等下游应用的鲁棒性造成了实质性破坏。</p>
+<p>为此，学界提出了上下文偏置（contextual biasing）与检索增强生成（RAG）两类方向。通过向模型注入热词候选列表或少量样本示例，可在一定程度上改善低频词汇的识别效果。但其有效性高度依赖候选列表的精确性，且随列表规模增大，性能往往下降。</p>
+<p>更根本的问题在于<strong>前端检索器的定位能力</strong>：在无时间戳弱监督条件下，如何从完整语句的语音中稳定、准确地定位热词片段？现有方法存在两个关键瓶颈：</p>
+<ol>
+<li><p><strong>表示粒度不匹配导致特征”稀释”（Representation Dilution）</strong>：传统双塔检索器对语音进行全局池化，将不定长语音压缩为单一的话语级向量。在完整语句中，短实体（通常仅持续几百毫秒）的声学线索极易被背景噪声或无关内容平均掉，在以 TTS 合成数据训练时这一问题更为突出。</p>
+</li>
+<li><p><strong>弱监督导致对齐偏移（Alignment Deviation）</strong>：缺乏显式时间约束时，无约束软匹配范式捕获的是全局语义共现而非严格的时间对应关系，导致注意力焦点漂移、局部聚合错位（attention drift）。</p>
+</li>
+</ol>
+<p>本文提出 <strong>CLAR</strong>（CIF-Localized Alignment for Retrieval-Augmented），针对上述两个瓶颈设计了一套基于 CIF 单调对齐的局部热词检索框架，并将其无缝集成到 Speech LLM 的提示驱动解码流程中。</p>
+<hr>
+<h2 id="二、方法详解"><a href="#二、方法详解" class="headerlink" title="二、方法详解"></a>二、方法详解</h2><h3 id="2-1-整体框架（Overall-Framework）"><a href="#2-1-整体框架（Overall-Framework）" class="headerlink" title="2.1 整体框架（Overall Framework）"></a>2.1 整体框架（Overall Framework）</h3><p>CLAR 的整体架构如 Figure 1 所示，包含两个组件：</p>
+<ol>
+<li><strong>CLAR 检索器</strong>：基于双编码器的 CLAP 风格检索器，集成 CIF 对齐机制，对完整语音中的热词候选进行精细化打分，输出 Top-K 候选列表。</li>
+<li><strong>Speech LLM 解码器</strong>：接收 CLAR 检索出的热词候选，以自然语言提示的形式作为上下文偏置，驱动 LLM 进行自回归转录。</li>
+</ol>
+<p><img src="/images/paper_figs/clar_paper_page1.png" srcset="/img/loading.gif" lazyload alt="CLAR整体框架：检索增强上下文ASR流程"></p>
+<p>整个流程可以概括为：语音输入 → CLAR 检索热词候选 → Top-K 候选作为提示注入 → Speech LLM 上下文感知解码。CLAR 仅在推理前端工作，不参与 Speech LLM 的参数更新，也不需要浅层融合或格子重评分。</p>
+<h3 id="2-2-CLAP-风格双编码器与-CIF-单调对齐"><a href="#2-2-CLAP-风格双编码器与-CIF-单调对齐" class="headerlink" title="2.2 CLAP 风格双编码器与 CIF 单调对齐"></a>2.2 CLAP 风格双编码器与 CIF 单调对齐</h3><h4 id="双编码器架构"><a href="#双编码器架构" class="headerlink" title="双编码器架构"></a>双编码器架构</h4><p>CLAR 检索器沿用 CLAP 框架，采用双塔设计：</p>
+<ul>
+<li><p><strong>语音编码器</strong>：实例化为 Paraformer 编码器，基于自注意力的非自回归建模架构。输入为对数梅尔滤波器组特征 $\mathbf{X} \in \mathbb{R}^{T_0 \times F}$，输出帧级隐表示 $\mathbf{H} &#x3D; [h_1, \ldots, h_T] \in \mathbb{R}^{T \times D_{\text{enc}}}$，其中 $T$ 为下采样后的帧数，$D_{\text{enc}}$ 为编码器隐层维度。</p>
+</li>
+<li><p><strong>文本编码器</strong>：初始化自 Chinese-RoBERTa-wwm-ext，通过有效 token 位置的掩码均值池化获取句级嵌入。</p>
+</li>
+</ul>
+<p>两个模态分别通过独立的投影层映射到共享嵌入空间 $\mathbb{R}^D$：</p>
+<p>$$<br>a_t &#x3D; \frac{f_a(h_t)}{|f_a(h_t)|_2}, \quad e_j &#x3D; \frac{f_t(z_j)}{|f_t(z_j)|_2}<br>\tag{1}<br>$$</p>
+<p>其中 $z_j$ 为第 $j$ 个候选的文本编码器池化输出，$a_t, e_j \in \mathbb{R}^D$ 均经过 $\ell_2$ 归一化。投影层 $f_a(\cdot)$ 和 $f_t(\cdot)$ 各为两层带 ReLU 激活的前馈网络。</p>
+<h4 id="CIF-单调对齐"><a href="#CIF-单调对齐" class="headerlink" title="CIF 单调对齐"></a>CIF 单调对齐</h4><p>CLAR 的核心模块是 <strong>CIF 预测器</strong>（Continuous Integrate-and-Fire），作用于编码器输出 $\mathbf{H}$，生成帧级权重序列 $\alpha &#x3D; [\alpha_1, \ldots, \alpha_T]$，其中 $\alpha_t \in (0, 1)$：</p>
+<p>$$<br>\alpha_t &#x3D; \sigma!\left(\text{Linear}!\left(\text{ReLU}!\left(\text{LayerNorm}!\left(\text{Conv1d}(\mathbf{H})\right)\right)\right)_t\right)<br>\tag{2}<br>$$</p>
+<p>CIF 通过累计计数器 $C_t &#x3D; C_{t-1} + \alpha_t$ 积累权重。当 $C_t \geq \theta$（默认 $\theta &#x3D; 1.0$）时触发一次”发射”（fire event），定义一个单调声学边界，余量由 $C_t \leftarrow C_t - \theta$ 携带至下一帧。帧 $t$ 对应的 token 索引为：</p>
+<p>$$<br>\text{tok}(t) &#x3D; 1 + \sum_{j&#x3D;1}^{t-1} \mathbf{1}[C_j \geq \theta]<br>\tag{3}<br>$$</p>
+<p>这一映射是非递减的，从而为下游语音-文本匹配提供长度感知的局部窗口。</p>
+<p><strong>训练阶段的 CIF 约束</strong>：采用缩放策略，将预测权重序列 $\alpha$ 乘以标量使得 $\sum_t \alpha_t$ 与真实 token 长度对齐，以教师强制约束稳定对齐学习。CIF 相关参数从 Paraformer 对应组件初始化。</p>
+<p><img src="/images/paper_figs/clar_fig2_retriever_p1.png" srcset="/img/loading.gif" lazyload alt="CLAR检索器架构：双编码器、CIF单调对齐与长度感知局部匹配"></p>
+<h3 id="2-3-CIF-局部化热词检索（CIF-Localized-Hotword-Retrieval）"><a href="#2-3-CIF-局部化热词检索（CIF-Localized-Hotword-Retrieval）" class="headerlink" title="2.3 CIF 局部化热词检索（CIF-Localized Hotword Retrieval）"></a>2.3 CIF 局部化热词检索（CIF-Localized Hotword Retrieval）</h3><p>本节是 CLAR 的核心贡献：利用 token 级对齐实现细粒度可变长度跨模态匹配。</p>
+<h4 id="跨模态相似度矩阵"><a href="#跨模态相似度矩阵" class="headerlink" title="跨模态相似度矩阵"></a>跨模态相似度矩阵</h4><p>给定语音话语的投影归一化帧级嵌入 $\mathbf{A} &#x3D; [a_1, \ldots, a_T] \in \mathbb{R}^{T \times D}$，以及包含 $N$ 个预计算文本嵌入的热词词库 $\mathbf{E} &#x3D; [e_1, \ldots, e_N] \in \mathbb{R}^{N \times D}$，帧级跨模态相似度矩阵计算为：</p>
+<p>$$<br>\mathbf{S} &#x3D; \tau \cdot \mathbf{A}\mathbf{E}^\top \in \mathbb{R}^{T \times N}<br>\tag{4}<br>$$</p>
+<p>其中 $\tau$ 为可学习的对数尺度参数（逆温度），控制相似度分布的锐度。</p>
+<h4 id="Token-Span-均值切片聚合"><a href="#Token-Span-均值切片聚合" class="headerlink" title="Token Span 均值切片聚合"></a>Token Span 均值切片聚合</h4><p>关键创新在于相似度矩阵 $\mathbf{S}$ 的聚合方式。与全局池化不同，本方法利用 CIF 预测的 token 边界进行局部滑动窗口聚合：</p>
+<p>CIF 对齐将 token 索引 $k$ 映射到声学帧区间 $[b_k, e_k]$（分别为首帧与末帧）。CIF 预测器以与文本编码器分词粒度相同的粒度输出声学 token。对于文本 token 长度为 $L$ 的候选热词，在 CIF 发射的 token 序列上滑动宽度为 $L$ 的声学窗口。对窗口位置 $s \in {0, 1, \ldots, K - L}$（$K$ 为 CIF 发射的总 token 数），对应声学区间为 $[b_s, e_{s+L-1}]$，第 $j$ 个候选在窗口位置 $s$ 的均值切片得分为：</p>
+<p>$$<br>\text{score}<em>j(s) &#x3D; \frac{1}{e</em>{s+L-1} - b_s + 1} \sum_{t&#x3D;b_s}^{e_{s+L-1}} S_{t,j}<br>\tag{5}<br>$$</p>
+<p>候选 $j$ 的最终检索得分取所有有效窗口位置的最大值：</p>
+<p>$$<br>\hat{r}_j &#x3D; \max_s \text{score}_j(s)<br>\tag{6}<br>$$</p>
+<p>这一设计有两大优势：</p>
+<ul>
+<li><strong>支持可变长度匹配</strong>：将每个候选与长度成比例的窗口对齐，自然处理不同长度的热词。</li>
+<li><strong>保留显著局部线索</strong>：避免全局池化的稀释效应；同时使用前缀和窗口计分与按长度分批的候选批处理，保证实际计算效率。</li>
+</ul>
+<p>完整推理流程见 Algorithm 1（原文第2页）。</p>
+<h3 id="2-4-训练目标与检索增强解码"><a href="#2-4-训练目标与检索增强解码" class="headerlink" title="2.4 训练目标与检索增强解码"></a>2.4 训练目标与检索增强解码</h3><h4 id="多粒度训练目标"><a href="#多粒度训练目标" class="headerlink" title="多粒度训练目标"></a>多粒度训练目标</h4><p>CLAR 检索器采用多级对比学习框架，总损失为三项之和：</p>
+<p>$$<br>\mathcal{L} &#x3D; \mathcal{L}<em>{\text{local}} + \mathcal{L}</em>{\text{global}} + \mathcal{L}_{\text{cif}}<br>\tag{7}<br>$$</p>
+<p><strong>局部热词级对比损失 $\mathcal{L}_{\text{local}}$</strong>：在热词跨度级别提供细粒度监督。对每个样本，CIF 推导的 token 对齐识别出被标注热词所在的帧，对这些帧的嵌入做均值池化，得到热词级语音嵌入，然后与对应热词文本嵌入进行对称交叉熵对比：</p>
+<p>$$<br>\mathcal{L}<em>{\text{local}} &#x3D; \frac{1}{2}(\mathcal{L}</em>{a \to t} + \mathcal{L}_{t \to a})<br>\tag{8}<br>$$</p>
+<p>其中：<br>$$<br>\mathcal{L}<em>{a \to t} &#x3D; -\frac{1}{B}\sum_i \sum_j y</em>{ij} \log \frac{\exp(\tau, a_i^\top e_j)}{\sum_{j’} \exp(\tau, a_i^\top e_{j’})}<br>$$</p>
+<p>$\mathcal{L}<em>{t \to a}$ 对称定义，$y</em>{ij}$ 为由样本身份推导的软目标。</p>
+<p><strong>全局句级对比损失 $\mathcal{L}_{\text{global}}$</strong>：将话语级语音嵌入（对有效编码器帧做掩码均值池化）与句级文本嵌入对齐，以保留全局语义。引入全局目标的作用是融合完整话语级语义上下文，进一步提升局部特征的判别力。</p>
+<p><strong>CIF 数量约束 $\mathcal{L}_{\text{cif}}$</strong>：通过最小化预测 token 计数 $\sum_t \alpha_t$ 与真实文本长度之间的 L1 距离，规范对齐，稳定训练时的 CIF 边界。</p>
+<h4 id="检索增强解码"><a href="#检索增强解码" class="headerlink" title="检索增强解码"></a>检索增强解码</h4><p>推理时，训练好的 CLAR 检索器处理输入语音，生成帧级嵌入与 CIF 对齐，对热词词库中所有候选执行局部均值切片聚合打分，将 Top-K 候选拼接为文本提示，作为动态上下文偏置前置于 Speech LLM 指令。Speech LLM 对 SFT 基座进行 LoRA 微调后，在音频输入和增强提示共同条件下进行自回归解码。</p>
+<p>CLAR 仅作为推理前端的偏置策略，<strong>不需要</strong>进一步参数更新、浅层融合或格子重评分，且通过自然语言提示接口注入上下文信息，可跨提示条件型 Speech LLM 灵活迁移。</p>
+<hr>
+<h2 id="三、实验"><a href="#三、实验" class="headerlink" title="三、实验"></a>三、实验</h2><h3 id="3-1-数据集与评估指标"><a href="#3-1-数据集与评估指标" class="headerlink" title="3.1 数据集与评估指标"></a>3.1 数据集与评估指标</h3><p>实验采用如下数据集配置：</p>
+<ul>
+<li><strong>Speech LLM 训练</strong>：AISHELL-1</li>
+<li><strong>CLAR 检索器训练</strong>：AISHELL-2（排除包含 AISHELL-1-NE 热词的训练话语）</li>
+<li><strong>热词集</strong>：AISHELL-1-NE（400个测试热词，600个开发热词）</li>
+<li><strong>测试集</strong>：Test-AISHELL-1-NE（808条话语，400个热词，226个R1热词）</li>
+<li><strong>开发集</strong>：Dev-AISHELL-1-NE（1334条话语，600个热词，371个R1热词）</li>
+</ul>
+<p>其中 <strong>R1 热词</strong>定义为基础 ASR 模型召回率低于 40% 的热词，代表更难的长尾场景（测试集 N&#x3D;226，开发集 N&#x3D;371）。</p>
+<p>评估指标包含：</p>
+<ul>
+<li><strong>CER</strong>（Character Error Rate）：全局字符错误率</li>
+<li><strong>B-WER</strong>（Biased-Word Error Rate）：偏置词错误率，衡量热词识别准确性</li>
+<li><strong>U-CER</strong>（Character Error Rate on Non-bias Words）：非偏置词字符错误率，衡量热词注入对普通词汇的干扰</li>
+<li><strong>Top-1&#x2F;5&#x2F;10 Recall 及 F1</strong>：热词检索性能</li>
+</ul>
+<h3 id="3-2-实验配置"><a href="#3-2-实验配置" class="headerlink" title="3.2 实验配置"></a>3.2 实验配置</h3><ul>
+<li><strong>Speech LLM 基座</strong>：Step-Audio2-mini</li>
+<li><strong>热词模拟</strong>：推理时随机采样 5-10 条转录词条作为热词，每个热词为随机3-6字符 n-gram</li>
+<li><strong>Speech LLM LoRA 微调</strong>：r&#x3D;16, alpha&#x3D;16, target&#x3D;all linear, dropout&#x3D;0.1, bias&#x3D;none；4张 NVIDIA H20 GPU，batch size&#x3D;32，2000步，AdamW，峰值学习率 2e-6，warmup ratio&#x3D;0.1，BF16 混精度</li>
+<li><strong>CLAR 训练</strong>：音频&#x2F;文本编码器分别初始化自 Paraformer（iic&#x2F;speech_paraformer-large）和 Chinese-RoBERTa-wwm-ext（hfl&#x2F;chinese-roberta-wwm-ext）；4张 H20 GPU，batch size&#x3D;256，AdamW，学习率 5×10⁻⁴；两阶段训练：<ul>
+<li>阶段一：CIF 预训练 30 个 epoch，全局&#x2F;局部损失权重固定为 0，仅优化 CIF 损失</li>
+<li>阶段二：从阶段一初始化，联合训练 60 个 epoch，优化音频编码器、文本编码器和 CIF 模块</li>
+</ul>
+</li>
+</ul>
+<h3 id="3-3-结果与分析"><a href="#3-3-结果与分析" class="headerlink" title="3.3 结果与分析"></a>3.3 结果与分析</h3><h4 id="3-3-1-热词检索性能"><a href="#3-3-1-热词检索性能" class="headerlink" title="3.3.1 热词检索性能"></a>3.3.1 热词检索性能</h4><p><strong>损失项消融实验</strong>（Table 1）验证了各训练目标的贡献：</p>
+<table>
+<thead>
+<tr>
+<th align="center">Loss Terms</th>
+<th align="center">Test R@1</th>
+<th align="center">Test R@5</th>
+<th align="center">Test R@10</th>
+<th align="center">Dev R@1</th>
+<th align="center">Dev R@5</th>
+<th align="center">Dev R@10</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">$\mathcal{L}_{\text{global}}$ only</td>
+<td align="center">33.29</td>
+<td align="center">54.70</td>
+<td align="center">62.62</td>
+<td align="center">29.99</td>
+<td align="center">47.53</td>
+<td align="center">58.85</td>
+</tr>
+<tr>
+<td align="center">$\mathcal{L}<em>{\text{local}}$ + $\mathcal{L}</em>{\text{cif}}$</td>
+<td align="center">96.29</td>
+<td align="center">98.89</td>
+<td align="center">99.38</td>
+<td align="center">95.43</td>
+<td align="center">98.88</td>
+<td align="center">99.25</td>
+</tr>
+<tr>
+<td align="center">$\mathcal{L}<em>{\text{global}}$ + $\mathcal{L}</em>{\text{local}}$ + $\mathcal{L}_{\text{cif}}$</td>
+<td align="center"><strong>97.03</strong></td>
+<td align="center"><strong>99.75</strong></td>
+<td align="center"><strong>99.75</strong></td>
+<td align="center"><strong>95.73</strong></td>
+<td align="center"><strong>98.88</strong></td>
+<td align="center"><strong>99.48</strong></td>
+</tr>
+</tbody></table>
+<p>关键发现：</p>
+<ul>
+<li>单独使用全局对比损失 $\mathcal{L}_{\text{global}}$，测试集 R@1 仅 33.29%，开发集 29.99%，说明全局池化无法捕获短实体局部线索。</li>
+<li>加入局部对比损失与 CIF 数量约束后，R@1 跃升至 96.29%&#x2F;95.43%，R@5 达 98.89%&#x2F;98.88%，证明 CIF 驱动的细粒度单调对齐有效缓解了弱监督软匹配中的注意力漂移。</li>
+<li>全三项损失组合取得最优，表明全局目标进一步补充了话语级语义上下文，提升局部特征的判别力。</li>
+</ul>
+<p><strong>与基线方法的 F1 对比</strong>（Table 2）：</p>
+<table>
+<thead>
+<tr>
+<th align="center">方法</th>
+<th align="center">Test F1 (%)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">SeACo-Paraformer</td>
+<td align="center">96.00</td>
+</tr>
+<tr>
+<td align="center">GLCLAP</td>
+<td align="center">96.96</td>
+</tr>
+<tr>
+<td align="center"><strong>CLAR（本文）</strong></td>
+<td align="center"><strong>97.03</strong></td>
+</tr>
+</tbody></table>
+<p>CLAR 以 97.03% F1 达到最优，略超 GLCLAP（96.96%）。值得注意的是，<strong>CLAR 的训练数据量比 GLCLAP 少约一个数量级</strong>，却仍表现更好，体现了 CIF 局部化对齐的数据效率优势。</p>
+<p><strong>案例分析</strong>（Figure 3）定性支持了上述结论：局部语音-文本相似度高度集中于目标热词区域（虚线框），非目标候选相似度保持低水平，与短实体定位改善和注意力漂移减少一致。</p>
+<p><img src="/images/paper_figs/clar_fig3_casestudy_p1.png" srcset="/img/loading.gif" lazyload alt="热词局部化相似度图案例分析"></p>
+<h4 id="3-3-2-上下文-ASR-结果"><a href="#3-3-2-上下文-ASR-结果" class="headerlink" title="3.3.2 上下文 ASR 结果"></a>3.3.2 上下文 ASR 结果</h4><p><strong>干扰项列表规模的影响</strong>（Table 3）：将 CLAR 检索出的热词候选作为提示注入后，与多种基线进行对比：</p>
+<table>
+<thead>
+<tr>
+<th align="center">设置</th>
+<th align="center">CER ↓</th>
+<th align="center">B-WER ↓</th>
+<th align="center">U-CER ↓</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center"><strong>Test-AISHELL-1-NE</strong></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">Vanilla Step-Audio2-mini</td>
+<td align="center">1.86</td>
+<td align="center">12.92</td>
+<td align="center">0.80</td>
+</tr>
+<tr>
+<td align="center">NA（无偏置列表）</td>
+<td align="center">1.82</td>
+<td align="center">13.03</td>
+<td align="center">0.76</td>
+</tr>
+<tr>
+<td align="center">GT（Oracle热词列表）</td>
+<td align="center">0.82</td>
+<td align="center">2.34</td>
+<td align="center">0.78</td>
+</tr>
+<tr>
+<td align="center">CLAR N&#x3D;226（R1子集）</td>
+<td align="center">1.36</td>
+<td align="center">5.97</td>
+<td align="center">1.03</td>
+</tr>
+<tr>
+<td align="center">CLAR N&#x3D;400（全集）</td>
+<td align="center"><strong>0.92</strong></td>
+<td align="center"><strong>2.78</strong></td>
+<td align="center">0.83</td>
+</tr>
+<tr>
+<td align="center"><strong>Dev-AISHELL-1-NE</strong></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">Vanilla Step-Audio2-mini</td>
+<td align="center">1.76</td>
+<td align="center">13.09</td>
+<td align="center">0.74</td>
+</tr>
+<tr>
+<td align="center">NA（无偏置列表）</td>
+<td align="center">1.80</td>
+<td align="center">13.09</td>
+<td align="center">0.75</td>
+</tr>
+<tr>
+<td align="center">GT（Oracle热词列表）</td>
+<td align="center">0.71</td>
+<td align="center">1.79</td>
+<td align="center">0.70</td>
+</tr>
+<tr>
+<td align="center">CLAR N&#x3D;371（R1子集）</td>
+<td align="center">1.29</td>
+<td align="center">6.29</td>
+<td align="center">1.01</td>
+</tr>
+<tr>
+<td align="center">CLAR N&#x3D;600（全集）</td>
+<td align="center"><strong>0.87</strong></td>
+<td align="center"><strong>3.17</strong></td>
+<td align="center">0.75</td>
+</tr>
+</tbody></table>
+<p>主要结论：</p>
+<ul>
+<li>使用完整候选池（N&#x3D;400&#x2F;600）时，CLAR 带来最大幅度提升：测试集 CER 从 1.86% 降至 0.92%，B-WER 从 12.92% 降至 2.78%，接近 Oracle 上界（CER&#x3D;0.82%，B-WER&#x3D;2.34%）。</li>
+<li>U-CER 保持低位（0.83%&#x2F;0.75%），说明热词注入对非偏置词汇几乎无干扰。</li>
+<li>在更难的 R1 子集上，U-CER 略有上升（1.03%&#x2F;1.01% vs. NA 的 0.76%&#x2F;0.75%），表明假阳性热词偶尔会对非偏置词解码产生扰动，是未来值得关注的方向。</li>
+</ul>
+<p><strong>与基线上下文 ASR 系统的整体对比</strong>（Table 4）：</p>
+<table>
+<thead>
+<tr>
+<th align="center">模型</th>
+<th align="center">CER ↓</th>
+<th align="center">B-WER ↓</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">SeACo-Paraformer</td>
+<td align="center">2.20</td>
+<td align="center">6.71</td>
+</tr>
+<tr>
+<td align="center">CFL</td>
+<td align="center">1.51</td>
+<td align="center">6.03</td>
+</tr>
+<tr>
+<td align="center">PAC</td>
+<td align="center">1.13</td>
+<td align="center">3.07</td>
+</tr>
+<tr>
+<td align="center"><strong>CLAR（本文）</strong></td>
+<td align="center"><strong>0.92</strong></td>
+<td align="center"><strong>2.78</strong></td>
+</tr>
+</tbody></table>
+<p>CLAR 以 0.92% CER 和 2.78% B-WER 达到最优，超越所有基线，达到当前最优水平（SOTA）。结果进一步证实，高精度局部检索能有效对抗过强的语言模型先验，减少命名实体替换和幻觉，提升整体识别准确率。</p>
+<hr>
+<h2 id="四、结论与展望"><a href="#四、结论与展望" class="headerlink" title="四、结论与展望"></a>四、结论与展望</h2><p>本文提出 CLAR，一种基于 CIF 局部化对齐的双编码器检索器，用于 Speech LLM 驱动的检索增强上下文 ASR。其核心贡献在于：</p>
+<ol>
+<li><p><strong>无时间戳的 token 级单调对齐</strong>：利用 CIF 机制在弱监督条件下学习单调对齐，无需人工标注时间戳，为短实体声学线索提供精确定位锚点。</p>
+</li>
+<li><p><strong>长度感知局部化匹配</strong>：通过 CIF 预测的 token 边界驱动可变长度滑动窗口均值切片聚合，有效抑制全局池化引起的特征稀释与注意力漂移。</p>
+</li>
+<li><p><strong>多粒度训练目标</strong>：将全局对比损失、局部对比损失和 CIF 数量约束联合优化，实现全局语义与细粒度检索精度的协同提升。</p>
+</li>
+<li><p><strong>轻量级即插即用</strong>：CLAR 以自然语言提示接口注入上下文信息，无需修改 Speech LLM 参数、浅层融合或格子重评分，可跨不同提示条件型 Speech LLM 灵活迁移。</p>
+</li>
+</ol>
+<p>未来工作将向更大规模多语言场景扩展，以及探索与 Speech LLM 更紧密的集成方式。</p>
+<hr>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ul>
+<li>[CIF] Dong &amp; Xu, “CIF: Continuous Integrate-and-Fire for End-to-End Speech Recognition,” ICASSP 2020</li>
+<li>[CLAP] Elizalde et al., “Natural Language Supervision for General-Purpose Audio Representations,” ICASSP 2024</li>
+<li>[Paraformer] Gao et al., “Paraformer: Fast and Accurate Parallel Transformer for Non-autoregressive End-to-End Speech Recognition,” Interspeech 2022</li>
+<li>[SeACo-Paraformer] Shi et al., “SeACo-Paraformer,” ICASSP 2024</li>
+<li>[GLCLAP] Kong et al., “GLCLAP: A Novel Contrastive Learning Pre-trained Model for Contextual Biasing in ASR,” Interspeech 2025</li>
+<li>[PAC] Fu et al., “PAC: Pronunciation-Aware Contextualized LLM-Based ASR,” arXiv 2025</li>
+<li>[Step-Audio2] Wu et al., “Step-Audio 2 Technical Report,” arXiv 2025</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/CIF/" class="print-no-link">#CIF</a>
+      
+        <a href="/tags/%E6%A3%80%E7%B4%A2%E5%A2%9E%E5%BC%BA/" class="print-no-link">#检索增强</a>
+      
+        <a href="/tags/%E4%B8%8A%E4%B8%8B%E6%96%87ASR/" class="print-no-link">#上下文ASR</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CLAR: CIF-Localized Alignment for Retrieval-Augmented Speech LLM-Based Contextual ASR</div>
+      <div>https://smallsmartao.github.io/2026/04/02/clar-cif-localized-alignment-retrieval-augmented-speech-llm-contextual-asr/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年4月2日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年4月2日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/04/02/2604.00610-cot-asr/" title="Speech LLMs are Contextual Reasoning Transcribers">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Speech LLMs are Contextual Reasoning Transcribers</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/04/02/uni-asr-2603.11123/" title="Uni-ASR: Unified LLM-Based Architecture for Non-Streaming and Streaming Automatic Speech Recognition">
+                        <span class="hidden-mobile">Uni-ASR: Unified LLM-Based Architecture for Non-Streaming and Streaming Automatic Speech Recognition</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

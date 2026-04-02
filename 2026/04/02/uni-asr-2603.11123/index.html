@@ -1,0 +1,1276 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/mao.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息  标题：Uni-ASR: Unified LLM-Based Architecture for Non-Streaming and Streaming Automatic Speech Recognition 作者：Yinfeng Xia, Jian Tang, Junfeng Hou, Gaopeng Xu, Haitao Yao（阿里巴巴 Qwen 应用事业部 &amp; 通义 A">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Uni-ASR: Unified LLM-Based Architecture for Non-Streaming and Streaming Automatic Speech Recognition">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/04/02/uni-asr-2603.11123/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息  标题：Uni-ASR: Unified LLM-Based Architecture for Non-Streaming and Streaming Automatic Speech Recognition 作者：Yinfeng Xia, Jian Tang, Junfeng Hou, Gaopeng Xu, Haitao Yao（阿里巴巴 Qwen 应用事业部 &amp; 通义 A">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_uni_asr_2603.11123.png">
+<meta property="article:published_time" content="2026-04-02T03:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-02T03:08:48.781Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="Streaming">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_uni_asr_2603.11123.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Uni-ASR: Unified LLM-Based Architecture for Non-Streaming and Streaming Automatic Speech Recognition - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/cover.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Uni-ASR: Unified LLM-Based Architecture for Non-Streaming and Streaming Automatic Speech Recognition"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-04-02 11:00" pubdate>
+          2026年4月2日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          34 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Uni-ASR: Unified LLM-Based Architecture for Non-Streaming and Streaming Automatic Speech Recognition</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年4月2日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p><strong>论文信息</strong></p>
+<ul>
+<li>标题：Uni-ASR: Unified LLM-Based Architecture for Non-Streaming and Streaming Automatic Speech Recognition</li>
+<li>作者：Yinfeng Xia, Jian Tang, Junfeng Hou, Gaopeng Xu, Haitao Yao（阿里巴巴 Qwen 应用事业部 &amp; 通义 AI 实验室）</li>
+<li>arXiv：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2603.11123">2603.11123</a></li>
+</ul>
+</blockquote>
+<hr>
+<h2 id="1-背景与问题"><a href="#1-背景与问题" class="headerlink" title="1. 背景与问题"></a>1. 背景与问题</h2><h3 id="1-1-LLM-based-ASR-的崛起"><a href="#1-1-LLM-based-ASR-的崛起" class="headerlink" title="1.1 LLM-based ASR 的崛起"></a>1.1 LLM-based ASR 的崛起</h3><p>近年来，语音识别（ASR）的技术路线正经历一场以大语言模型（LLM）为核心的范式转移。从 Whisper 以 1.5B 参数、68 万小时数据验证 Encoder-Decoder（AED）框架的规模化效果，到 Seed-ASR、FireRedASR、Fun-ASR、Qwen3-ASR、Index-ASR 等系统将 LLM 深度融合进识别解码链路，LLM-based ASR 已在语义消歧、上下文连贯性与转录流畅度等维度显著超越传统 AED。</p>
+<p>然而，这类系统在<strong>低延迟流式场景</strong>（如实时字幕）中的部署依然是一个尚未完全解决的工程难题。</p>
+<h3 id="1-2-现有流式方案的两类范式及其局限"><a href="#1-2-现有流式方案的两类范式及其局限" class="headerlink" title="1.2 现有流式方案的两类范式及其局限"></a>1.2 现有流式方案的两类范式及其局限</h3><p><strong>范式一：为非流式模型构造流式解码流水线</strong></p>
+<p>代表策略包括 hold-n、wait-k 和 local agreement。这些策略的核心思路是：不对模型架构或训练做任何修改，仅在推理阶段选择性地发出部分假设，从而抑制 chunk 边界处声学歧义导致的错误传播。</p>
+<p>但这类方案存在两类内生缺陷：</p>
+<ol>
+<li><strong>计算冗余</strong>：每次增量推理都需要从头重新初始化解码过程，导致大量重复计算；</li>
+<li><strong>延迟不可预测</strong>：假设选择过程本身会引入不规则的延迟峰值。</li>
+</ol>
+<p><strong>范式二：原生流式 ASR 模型</strong></p>
+<p>代表性工作包括：</p>
+<ul>
+<li><strong>Transducer-Llama</strong>：将 LLM 集成进 Factorized Transducer 框架作为 non-blank 预测器，但将 LLM 仅用作辅助组件，语音-语言模态融合深度不足，制约了端到端协同优化；</li>
+<li><strong>SpeechLLM-XL &#x2F; Speech ReaLLM</strong>：将语音-文本序列分段用于流式训练，但实验验证仅限于小型语言模型，可扩展性未经充分验证；</li>
+<li><strong>MoCha-ASR</strong>：采用单调 chunk-wise 注意力与 read-write 策略网络和 MinLT loss，端到端优化，但流式推理流水线复杂度显著提升。</li>
+</ul>
+<p><strong>核心矛盾</strong>：现有方案无法在一个统一架构中，同时保持非流式的高识别精度与流式场景的低延迟，且大多引入了架构修改或独立模型分支，增加了部署成本。</p>
+<hr>
+<h2 id="2-Uni-ASR-方法"><a href="#2-Uni-ASR-方法" class="headerlink" title="2. Uni-ASR 方法"></a>2. Uni-ASR 方法</h2><p>Uni-ASR 的核心目标是：<strong>用单一模型、不改变架构，同时支持非流式与流式语音识别，并通过联合训练范式 + 上下文感知训练 + Fallback 解码策略，在不引入额外延迟的前提下提升流式识别精度。</strong></p>
+<h3 id="2-1-模型架构"><a href="#2-1-模型架构" class="headerlink" title="2.1 模型架构"></a>2.1 模型架构</h3><p>Uni-ASR 遵循主流 LLM-based ASR 的三组件架构范式（与 Seed-ASR、FireRedASR、Fun-ASR、Qwen3-ASR、Index-ASR 相同），由以下三部分构成：</p>
+<ol>
+<li><strong>Audio Encoder</strong>：采用 Conformer 架构，从输入语音中提取高层语音表征。为保证流式模式下的严格因果性，Conformer block 中的标准深度可分离卷积被替换为<strong>因果卷积</strong>（causal convolution）。</li>
+<li><strong>Audio Adapter</strong>：由两个线性层和中间 ReLU 激活构成，将语音表征映射到与 LLM 兼容的 embedding 空间。</li>
+<li><strong>LLM Decoder</strong>：基于预训练的 <strong>Qwen3-1.7B</strong> 语言模型，以自回归方式生成转录文本，条件输入为编码器输出的语音表征以及用户提供的文本提示。</li>
+</ol>
+<p><img src="/images/paper_figs/uni_asr_fig1_architecture.png" srcset="/img/loading.gif" lazyload alt="图1：Uni-ASR 模型架构总览"></p>
+<h3 id="2-2-联合训练范式与专用解码策略"><a href="#2-2-联合训练范式与专用解码策略" class="headerlink" title="2.2 联合训练范式与专用解码策略"></a>2.2 联合训练范式与专用解码策略</h3><p>Uni-ASR 提出了一套<strong>集成训练-解码框架</strong>，核心是统一的联合训练范式配合专用解码策略，在单一端到端架构内无缝支持非流式和流式推理，无需维护独立的模型分支。</p>
+<h4 id="2-2-1-非流式范式（Non-Streaming-Paradigm）"><a href="#2-2-1-非流式范式（Non-Streaming-Paradigm）" class="headerlink" title="2.2.1 非流式范式（Non-Streaming Paradigm）"></a>2.2.1 非流式范式（Non-Streaming Paradigm）</h4><p>在非流式 ASR 中，模型一次性接收完整语音输入并生成转录。训练采用 teacher-forced 自回归框架：</p>
+<ul>
+<li><strong>输入序列</strong>：将语音表征、起始标记 <code>&lt;sos&gt;</code> 和真实文本 token 按时间顺序拼接</li>
+<li><strong>目标序列</strong>：将真实文本 token 前移一位，末尾追加结束标记 <code>&lt;eos&gt;</code></li>
+<li><strong>损失计算</strong>：交叉熵损失仅计算在目标文本 token 上，语音部分不参与损失</li>
+</ul>
+<p>形式化表示（设语音表征序列为 $E_{1..n}$，文本 token 序列为 $y_{1..T}$）：</p>
+<p>$$<br>\text{Input} &#x3D; [E_1, \ldots, E_n, \texttt{<sos>}, y_1, \ldots, y_T]<br>$$</p>
+<p>$$<br>\text{Target} &#x3D; [\underbrace{-,\ldots,-}_{\text{no loss on speech}}, y_1, y_2, \ldots, y_T, \texttt{<eos>}]<br>$$</p>
+<p>$$<br>\mathcal{L}<em>{NS} &#x3D; -\sum</em>{t&#x3D;1}^{T} \log P(y_t \mid E_{1..n}, y_{1..t-1})<br>$$</p>
+<p><strong>推理流程</strong>：在 prefill 阶段将完整语音表征一次性输入 LLM；在 decode 阶段逐 token 自回归生成，直到遇到 <code>&lt;eos&gt;</code> 停止。</p>
+<p><img src="/images/paper_figs/uni_asr_fig2a_offline_train.png" srcset="/img/loading.gif" lazyload alt="图2(a)：非流式训练范式"></p>
+<h4 id="2-2-2-标准流式范式（Standard-Streaming-Paradigm）"><a href="#2-2-2-标准流式范式（Standard-Streaming-Paradigm）" class="headerlink" title="2.2.2 标准流式范式（Standard Streaming Paradigm）"></a>2.2.2 标准流式范式（Standard Streaming Paradigm）</h4><p>流式场景下，输入语音被切分为固定长度的 chunk。核心思路是将流式训练转化为<strong>多轮连续非流式训练实例</strong>：每个语音 chunk 被视为一个独立的识别任务，同时携带从先前片段传递来的上下文记忆。</p>
+<p>具体操作步骤：</p>
+<ol>
+<li>使用外部强制对齐工具（forced alignment）对 chunk 对应的转录文本进行对齐与分割；</li>
+<li>按照预定义的 <strong>N:M 比例</strong>（实际配置为 <strong>2:1 的语音-文本 token 比例</strong>）将语音 token 与文本 token <strong>交错排列</strong>；</li>
+<li>每段内未占用的文本位置填充 <code>&lt;pad&gt;</code> token。</li>
+</ol>
+<p>训练时构造交错语音-文本输入序列，与目标转录配对，实现端到端训练。</p>
+<p><strong>流式推理</strong>：语音输入以 chunk 为单位增量到达，prefill–decode 循环迭代执行直至完整语音收到。该流程被建模为一个<strong>多轮对话范式</strong>，在非流式推理框架内实现。关键机制是：</p>
+<ul>
+<li>prefill 和 decode 阶段产生的 <strong>KV cache 跨 chunk 增量累积</strong></li>
+<li>先前 chunk 的 cache <strong>严格不可变</strong>，在后续处理中被高效复用</li>
+</ul>
+<p>该机制在保证完整上下文连续性的同时，彻底消除了跨 chunk 的冗余计算。</p>
+<p><img src="/images/paper_figs/uni_asr_fig2b_online_train.png" srcset="/img/loading.gif" lazyload alt="图2(b)：标准流式训练范式"></p>
+<h3 id="2-3-上下文感知训练范式与-Latest-Token-Fallback-解码策略"><a href="#2-3-上下文感知训练范式与-Latest-Token-Fallback-解码策略" class="headerlink" title="2.3 上下文感知训练范式与 Latest-Token Fallback 解码策略"></a>2.3 上下文感知训练范式与 Latest-Token Fallback 解码策略</h3><h4 id="2-3-1-问题定位：训练-推理不一致性"><a href="#2-3-1-问题定位：训练-推理不一致性" class="headerlink" title="2.3.1 问题定位：训练-推理不一致性"></a>2.3.1 问题定位：训练-推理不一致性</h4><p>在流式 ASR 中，识别输出在 chunk 边界处特别容易出现歧义，原因是<strong>上下文信息不足</strong>。现有方法如 Future-aware Transformer（FaT）和 Delayed Streams Modeling（DSM）通过 look-ahead 机制丰富上下文建模来缓解此问题，但这些方法会引入不可忽视的额外延迟。</p>
+<p>Uni-ASR 的方案不引入额外延迟。具体地，基于 hold-n 策略，提出 <strong>Latest-Token Fallback 解码策略</strong>：</p>
+<blockquote>
+<p>每个语音 chunk 的最后一个文本 token <strong>暂时发出</strong>（以保证低延迟），并在处理下一个 chunk 时<strong>重新解码</strong>该 token。</p>
+</blockquote>
+<p>这一策略产生了一个新的训练-推理不一致问题：后续 chunk 解码步骤的<strong>第一个文本 token 来自前一个 chunk</strong>，这在标准训练中完全没有被建模。</p>
+<h4 id="2-3-2-上下文感知流式训练范式（CS-Training-Paradigm）"><a href="#2-3-2-上下文感知流式训练范式（CS-Training-Paradigm）" class="headerlink" title="2.3.2 上下文感知流式训练范式（CS Training Paradigm）"></a>2.3.2 上下文感知流式训练范式（CS Training Paradigm）</h4><p>为弥合上述 gap，引入<strong>上下文感知流式（Context-aware Streaming，CS）训练范式</strong>，通过对序列的两处针对性修改，使训练动态与推理行为对齐：</p>
+<p><strong>(i) 输入序列修改</strong>：将每个交错语音-文本段的<strong>最后一个文本 token</strong> 替换为 <code>&lt;pad&gt;</code></p>
+<p><strong>(ii) 目标序列修改</strong>：从每个文本段中<strong>省略 <code>&lt;eos&gt;</code> 标记</strong></p>
+<p>这一设计有两重意图：</p>
+<ol>
+<li><strong>防止与 SS 训练范式混淆</strong>，保持训练信号的独立性；</li>
+<li><strong>通过在训练中刻意遮蔽最后一个文本 token</strong>，迫使模型学会识别跨 chunk 的上下文不连续性，并学会补全缺失的文本 token。</li>
+</ol>
+<p>因此，在推理时，当增量解码遇到缺失的文本 token 时，模型会从指定上下文边界触发重解码（re-decoding）。</p>
+<p><img src="/images/paper_figs/uni_asr_fig2c_context_aware_train.png" srcset="/img/loading.gif" lazyload alt="图2(c)：上下文感知流式训练范式"></p>
+<h4 id="2-3-3-流式推理中的-Fallback-解码流程"><a href="#2-3-3-流式推理中的-Fallback-解码流程" class="headerlink" title="2.3.3 流式推理中的 Fallback 解码流程"></a>2.3.3 流式推理中的 Fallback 解码流程</h4><p>在基于 Latest-Token Fallback 策略的流式推理中，当收到新的语音 chunk 时：</p>
+<ol>
+<li>LLM <strong>丢弃</strong>前一解码轮次产生的 KV cache；</li>
+<li>将输出序列中的最后一个文本 token <strong>替换为 <code>&lt;pad&gt;</code></strong>，重置输出序列；</li>
+<li>将修订后的序列与当前语音表征拼接，作为 prefill 阶段的输入；</li>
+<li>触发<strong>上下文感知的缺失 token 重生成</strong>。</li>
+</ol>
+<p>整个操作严格在当前推理窗口内进行，计算开销可忽略不计，同时严格满足延迟约束。</p>
+<hr>
+<h2 id="3-实验设置"><a href="#3-实验设置" class="headerlink" title="3. 实验设置"></a>3. 实验设置</h2><h3 id="3-1-数据处理"><a href="#3-1-数据处理" class="headerlink" title="3.1 数据处理"></a>3.1 数据处理</h3><p>Uni-ASR 严格在<strong>中英文双语语料</strong>上训练（不包含其他语言）。训练数据来源包括：</p>
+<ul>
+<li><strong>开源 ASR 数据集</strong>：AISHELL-1、AISHELL-2、WeNetSpeech、FLEURS、LibriSpeech、GigaSpeech</li>
+<li><strong>内部标注语音数据</strong></li>
+</ul>
+<p>混合语料显著丰富了语内多样性（方言口音、说话风格、领域变化）和声学变异性，从而增强了模型在真实场景下的鲁棒性。</p>
+<p><strong>文本预处理</strong>：所有文本标签经过文本归一化（大小写标准化、去标点、数字转文字），以满足流式训练范式的约束。</p>
+<p><strong>字符对齐</strong>：通过 <strong>MMS FA</strong>（Meta 的多语言强制对齐工具）获得字符级对齐，聚合至 subword token 级别以支持 BPE 分词。对于中文文本，通过遮蔽多字符 BPE token 强制执行字符级切分，确保每个汉字在编码和对齐过程中被一致地视为独立语言单元。</p>
+<h3 id="3-2-Audio-Encoder-的训练"><a href="#3-2-Audio-Encoder-的训练" class="headerlink" title="3.2 Audio Encoder 的训练"></a>3.2 Audio Encoder 的训练</h3><p>以 <strong>FireRedASR-AED</strong> 的预训练权重初始化一个联合 CTC&#x2F;AED ASR 模型，在 <strong>WeNet</strong> 框架内训练。</p>
+<p>编码器在训练期间同时使用<strong>全注意力</strong>和<strong>动态 chunk 注意力</strong>，构建统一的非流式与流式语音处理框架。为保证流式模式下的严格因果性，Conformer block 中的深度可分离卷积被替换为<strong>因果卷积</strong>。</p>
+<h3 id="3-3-监督微调（SFT）"><a href="#3-3-监督微调（SFT）" class="headerlink" title="3.3 监督微调（SFT）"></a>3.3 监督微调（SFT）</h3><p>整个 SFT 阶段分为 <strong>5 个顺序阶段</strong>，按训练范式分为两大类：<strong>非流式 SFT（阶段 1-4）</strong> 和 <strong>联合 SFT（阶段 5）</strong>。</p>
+<p>所有 SFT 阶段中，音频编码器始终同时使用全注意力和动态 chunk 注意力，保证整个训练过程中编码器对两种处理模式的兼容性。</p>
+<table>
+<thead>
+<tr>
+<th>SFT 阶段</th>
+<th align="center">Audio Encoder</th>
+<th align="center">Adapter</th>
+<th align="center">LLM</th>
+<th>训练范式</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td align="center">🔒 冻结</td>
+<td align="center">✏️ 训练</td>
+<td align="center">🔒 冻结</td>
+<td>NS</td>
+</tr>
+<tr>
+<td>2</td>
+<td align="center">✏️ 训练</td>
+<td align="center">✏️ 训练</td>
+<td align="center">🔒 冻结</td>
+<td>NS</td>
+</tr>
+<tr>
+<td>3</td>
+<td align="center">🔒 冻结</td>
+<td align="center">🔒 冻结</td>
+<td align="center">✏️ 训练</td>
+<td>NS</td>
+</tr>
+<tr>
+<td>4</td>
+<td align="center">✏️ 训练</td>
+<td align="center">✏️ 训练</td>
+<td align="center">✏️ 训练</td>
+<td>NS</td>
+</tr>
+<tr>
+<td>5</td>
+<td align="center">✏️ 训练</td>
+<td align="center">✏️ 训练</td>
+<td align="center">✏️ 训练</td>
+<td>NS &#x2F; SS &#x2F; CS</td>
+</tr>
+</tbody></table>
+<p><strong>非流式 SFT（阶段 1-4）</strong>：每阶段的训练方法与主流 LLM-based ASR 框架的成熟实践保持一致（参见 Fun-ASR 技术报告），逐步解冻各模块以稳定训练。</p>
+<p><strong>联合 SFT（阶段 5）</strong>：在非流式 SFT 基础上，实现三种训练范式的统一联合训练：</p>
+<ul>
+<li><strong>NS（非流式）</strong>、<strong>SS（标准流式）</strong>、<strong>CS（上下文感知流式）</strong>，以 <strong>1:1:1 的比例均匀采样</strong>。</li>
+<li>关键约束：SS 和 CS 范式仅在使用<strong>动态 chunk 注意力机制</strong>的训练步骤中激活，确保架构能力与训练动态的精确对齐。</li>
+</ul>
+<hr>
+<h2 id="4-实验结果"><a href="#4-实验结果" class="headerlink" title="4. 实验结果"></a>4. 实验结果</h2><h3 id="4-1-识别结果"><a href="#4-1-识别结果" class="headerlink" title="4.1 识别结果"></a>4.1 识别结果</h3><p>在 AISHELL、LibriSpeech、FLEURS 和 WeNetSpeech 四个主流公开基准上，对 Uni-ASR 进行了全面评测，对比指标为中文字符错误率（CER）和英文词错误率（WER）。</p>
+<p><strong>Table 2：开源数据集上 ASR 性能对比（↓ 越低越好）</strong></p>
+<table>
+<thead>
+<tr>
+<th>测试集</th>
+<th align="center">GLM-ASR-nano</th>
+<th align="center">Whisper-large-v2</th>
+<th align="center">Seed-ASR</th>
+<th align="center">FireRedASR-AED</th>
+<th align="center">Fun-ASR-nano</th>
+<th align="center">Qwen3-ASR-1.7B</th>
+<th align="center">Uni-ASR</th>
+<th align="center">Uni-ASR‡</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AISHELL-1</td>
+<td align="center">1.81</td>
+<td align="center">-</td>
+<td align="center">0.68</td>
+<td align="center"><strong>0.55</strong></td>
+<td align="center">1.80</td>
+<td align="center">-</td>
+<td align="center">1.44</td>
+<td align="center">2.15</td>
+</tr>
+<tr>
+<td>AISHELL-2</td>
+<td align="center">-</td>
+<td align="center">-</td>
+<td align="center">2.27</td>
+<td align="center">2.52</td>
+<td align="center">2.75</td>
+<td align="center">2.71</td>
+<td align="center">2.60</td>
+<td align="center">3.25</td>
+</tr>
+<tr>
+<td>LibriSpeech test-clean</td>
+<td align="center">2.00</td>
+<td align="center">2.5</td>
+<td align="center"><strong>1.58</strong></td>
+<td align="center">1.93</td>
+<td align="center">1.76</td>
+<td align="center">1.63</td>
+<td align="center">1.93</td>
+<td align="center">2.44</td>
+</tr>
+<tr>
+<td>LibriSpeech test-other</td>
+<td align="center">4.19</td>
+<td align="center">4.9</td>
+<td align="center"><strong>2.84</strong></td>
+<td align="center">4.44</td>
+<td align="center">4.33</td>
+<td align="center">3.38</td>
+<td align="center">4.11</td>
+<td align="center">5.71</td>
+</tr>
+<tr>
+<td>FLEURS zh</td>
+<td align="center">-</td>
+<td align="center">14.7</td>
+<td align="center">-</td>
+<td align="center">-</td>
+<td align="center">2.56</td>
+<td align="center"><strong>2.41</strong></td>
+<td align="center">2.57</td>
+<td align="center">3.43</td>
+</tr>
+<tr>
+<td>FLEURS en</td>
+<td align="center">-</td>
+<td align="center">4.2</td>
+<td align="center">3.43</td>
+<td align="center">-</td>
+<td align="center">5.96</td>
+<td align="center"><strong>3.35</strong></td>
+<td align="center">4.44</td>
+<td align="center">6.24</td>
+</tr>
+<tr>
+<td>WeNetSpeech Test Meeting</td>
+<td align="center">6.73</td>
+<td align="center">-</td>
+<td align="center">5.69</td>
+<td align="center"><strong>4.76</strong></td>
+<td align="center">6.60</td>
+<td align="center">5.88</td>
+<td align="center">6.32</td>
+<td align="center">8.04</td>
+</tr>
+<tr>
+<td>WeNetSpeech Test Net</td>
+<td align="center">-</td>
+<td align="center">-</td>
+<td align="center">4.66</td>
+<td align="center">4.88</td>
+<td align="center">6.01</td>
+<td align="center">4.97</td>
+<td align="center">5.78</td>
+<td align="center"><strong>6.44</strong></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>‡：chunk 长度 1000 ms 的流式识别结果；beam search 宽度为 3</p>
+</blockquote>
+<p><strong>分析</strong>：Uni-ASR 在非流式模式下达到与 SOTA 方案竞争的精度（在 1.7B 参数级别与 Qwen3-ASR-1.7B 相当），流式模式（‡）在保持极低计算代价的同时，WER&#x2F;CER 相对非流式模式有合理的小幅退化，展现了统一架构的优势。</p>
+<h3 id="4-2-与原生流式框架的对比"><a href="#4-2-与原生流式框架的对比" class="headerlink" title="4.2 与原生流式框架的对比"></a>4.2 与原生流式框架的对比</h3><p><strong>Table 3：流式 ASR 性能对比（AISHELL: CER，LibriSpeech: WER，格式：test-clean | test-other）</strong></p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th align="center">Chunk 长度</th>
+<th align="center">AISHELL</th>
+<th align="center">LibriSpeech</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Speech ReaLLM</td>
+<td align="center">1920 ms</td>
+<td align="center">-</td>
+<td align="center">3.0 &#x2F; 7.4</td>
+</tr>
+<tr>
+<td>SpeechLLM-XL</td>
+<td align="center">1280 ms</td>
+<td align="center">-</td>
+<td align="center">2.7 &#x2F; 6.7</td>
+</tr>
+<tr>
+<td>MoCha-ASR</td>
+<td align="center">-</td>
+<td align="center">5.1 &#x2F; 5.5</td>
+<td align="center">-</td>
+</tr>
+<tr>
+<td>Qwen3-ASR-1.7B</td>
+<td align="center">1000 ms</td>
+<td align="center">-</td>
+<td align="center">1.95 &#x2F; 4.51</td>
+</tr>
+<tr>
+<td><strong>Uni-ASR</strong></td>
+<td align="center"><strong>1000 ms</strong></td>
+<td align="center"><strong>2.15 &#x2F; 3.25</strong></td>
+<td align="center"><strong>2.44 &#x2F; 5.71</strong></td>
+</tr>
+</tbody></table>
+<p><strong>分析</strong>：在未使用任何额外流式专用解码技术的情况下，Uni-ASR 显著超越 Speech ReaLLM、SpeechLLM-XL 和 MoCha-ASR。值得注意的是，Qwen3-ASR-1.7B 在流式 LibriSpeech 上取得了最低 WER，但其方案依赖<strong>迭代重复的非流式解码 pass</strong>，计算开销远高于原生流式架构；而 Uni-ASR 是真正原生流式的，推理效率更高。</p>
+<hr>
+<h2 id="5-消融实验"><a href="#5-消融实验" class="headerlink" title="5. 消融实验"></a>5. 消融实验</h2><h3 id="5-1-Chunk-长度对流式性能的影响"><a href="#5-1-Chunk-长度对流式性能的影响" class="headerlink" title="5.1 Chunk 长度对流式性能的影响"></a>5.1 Chunk 长度对流式性能的影响</h3><p>流式识别存在一个基本的<strong>延迟-精度权衡</strong>：更短的 chunk 降低延迟，但因上下文不足导致更多边界切分误差，性能会显著下降。</p>
+<p><strong>Table 4：不同 chunk 长度和解码方法下的流式性能消融（AISHELL CER &#x2F; LibriSpeech WER，格式：AISHELL-1 | AISHELL-2，Avg 为所有指标均值）</strong></p>
+<table>
+<thead>
+<tr>
+<th align="center">Chunk 长度</th>
+<th align="center">解码方法</th>
+<th align="center">AISHELL-1 &#x2F; AISHELL-2</th>
+<th align="center">LibriSpeech clean &#x2F; other</th>
+<th align="center">Avg</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">1000 ms</td>
+<td align="center">Greedy</td>
+<td align="center">2.46 &#x2F; 3.54</td>
+<td align="center">2.74 &#x2F; 6.65</td>
+<td align="center">3.85</td>
+</tr>
+<tr>
+<td align="center">1000 ms</td>
+<td align="center">Greedy†</td>
+<td align="center">2.14 &#x2F; 3.28</td>
+<td align="center">2.40 &#x2F; 5.82</td>
+<td align="center">3.41</td>
+</tr>
+<tr>
+<td align="center">1000 ms</td>
+<td align="center">Beam</td>
+<td align="center">2.15 &#x2F; 3.25</td>
+<td align="center">2.44 &#x2F; 5.71</td>
+<td align="center">3.39</td>
+</tr>
+<tr>
+<td align="center">1000 ms</td>
+<td align="center">Beam†</td>
+<td align="center"><strong>1.91 &#x2F; 3.04</strong></td>
+<td align="center"><strong>2.22 &#x2F; 5.30</strong></td>
+<td align="center"><strong>3.12</strong></td>
+</tr>
+<tr>
+<td align="center">640 ms</td>
+<td align="center">Greedy</td>
+<td align="center">2.63 &#x2F; 3.92</td>
+<td align="center">2.99 &#x2F; 7.32</td>
+<td align="center">4.22</td>
+</tr>
+<tr>
+<td align="center">640 ms</td>
+<td align="center">Greedy†</td>
+<td align="center">2.36 &#x2F; 3.35</td>
+<td align="center">2.52 &#x2F; 6.37</td>
+<td align="center">3.65</td>
+</tr>
+<tr>
+<td align="center">640 ms</td>
+<td align="center">Beam</td>
+<td align="center">2.35 &#x2F; 3.61</td>
+<td align="center">2.66 &#x2F; 6.31</td>
+<td align="center">3.73</td>
+</tr>
+<tr>
+<td align="center">640 ms</td>
+<td align="center">Beam†</td>
+<td align="center"><strong>2.09 &#x2F; 3.10</strong></td>
+<td align="center"><strong>2.32 &#x2F; 5.68</strong></td>
+<td align="center"><strong>3.30</strong></td>
+</tr>
+<tr>
+<td align="center">320 ms</td>
+<td align="center">Greedy</td>
+<td align="center">3.31 &#x2F; 4.51</td>
+<td align="center">3.67 &#x2F; 9.22</td>
+<td align="center">5.18</td>
+</tr>
+<tr>
+<td align="center">320 ms</td>
+<td align="center">Greedy†</td>
+<td align="center">2.61 &#x2F; 3.75</td>
+<td align="center">2.75 &#x2F; 7.50</td>
+<td align="center">4.15</td>
+</tr>
+<tr>
+<td align="center">320 ms</td>
+<td align="center">Beam</td>
+<td align="center">2.90 &#x2F; 4.11</td>
+<td align="center">3.21 &#x2F; 7.71</td>
+<td align="center">4.48</td>
+</tr>
+<tr>
+<td align="center">320 ms</td>
+<td align="center">Beam†</td>
+<td align="center"><strong>2.38 &#x2F; 3.52</strong></td>
+<td align="center"><strong>2.55 &#x2F; 6.61</strong></td>
+<td align="center"><strong>3.77</strong></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>†：启用 Latest-Token Fallback 解码策略；Beam 宽度为 3</p>
+</blockquote>
+<p><strong>量化分析——Chunk 长度影响（Beam Search 基准）</strong>：</p>
+<ul>
+<li>1000 ms → 640 ms：平均 WER 相对增加 <strong>+10.02%</strong>（3.39 → 3.73）</li>
+<li>1000 ms → 320 ms：平均 WER 相对增加 <strong>+32.15%</strong>（3.39 → 4.48）</li>
+</ul>
+<p>较短 chunk 导致的显著性能退化，主要来源于数据碎片化伪影和边界转录错误。</p>
+<h3 id="5-2-Latest-Token-Fallback-解码策略的效果"><a href="#5-2-Latest-Token-Fallback-解码策略的效果" class="headerlink" title="5.2 Latest-Token Fallback 解码策略的效果"></a>5.2 Latest-Token Fallback 解码策略的效果</h3><p>Fallback 策略在所有 chunk 长度下均带来一致性的性能增益，且<strong>chunk 越短，增益越显著</strong>：</p>
+<ul>
+<li><strong>1000 ms</strong>：Greedy† vs Greedy，平均 WER 相对下降 <strong>11.43%</strong>（3.85 → 3.41）</li>
+<li><strong>640 ms</strong>：Greedy† vs Greedy，平均 WER 相对下降 <strong>13.50%</strong>（4.22 → 3.65）</li>
+<li><strong>320 ms</strong>：Greedy† vs Greedy，平均 WER 相对下降 <strong>19.88%</strong>（5.18 → 4.15）</li>
+</ul>
+<p>值得注意的是，在相同 chunk 长度下，<strong>Greedy†（Greedy + Fallback）在性能上持平甚至超越标准 Beam Search</strong>（1000 ms：Greedy† Avg&#x3D;3.41 vs Beam Avg&#x3D;3.39），而 Greedy† 的计算成本远低于 Beam Search。这表明 Fallback 策略不仅提升了精度，还在推理效率上具有实际价值。</p>
+<hr>
+<h2 id="6-结论"><a href="#6-结论" class="headerlink" title="6. 结论"></a>6. 结论</h2><p>Uni-ASR 提出了一套统一的 LLM-based ASR 框架，核心贡献可归纳为三点：</p>
+<ol>
+<li><p><strong>联合训练范式（NS + SS + CS，1:1:1 均匀采样）</strong>：以单一模型同时支持非流式与流式推理，无需任何架构修改，非流式精度与 SOTA 方案竞争，流式性能显著超越同类原生流式框架；</p>
+</li>
+<li><p><strong>上下文感知流式训练范式（CS）</strong>：通过对输入序列（遮蔽最后文本 token）和目标序列（省略 <code>&lt;eos&gt;</code>）的针对性修改，将 Fallback 解码行为直接内化到学习目标中，从根本上弥合训练-推理 gap；</p>
+</li>
+<li><p><strong>Latest-Token Fallback 解码策略</strong>：在不引入额外延迟的前提下，通过对上一 chunk 最后 token 的延迟纠错，实现跨 chunk 的上下文补全，在所有 chunk 长度下一致提升流式识别精度。</p>
+</li>
+</ol>
+<p>从工程实践角度，Uni-ASR 最大的价值在于<strong>单模型统一部署</strong>：同一套权重，通过不同的推理配置（全注意力 vs 动态 chunk 注意力，非流式解码 vs Fallback 流式解码），即可满足对精度要求高的离线场景和对延迟敏感的实时场景，显著降低了生产环境中的模型维护成本。</p>
+<hr>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<li>Radford et al., “Robust speech recognition via large-scale weak supervision,” ICML 2023 (Whisper)</li>
+<li>Mu et al., “Efficient scaling for LLM-based ASR,” arXiv:2508.04096</li>
+<li>Bai et al., “Seed-ASR,” arXiv:2407.04675</li>
+<li>Xu et al., “FireRedASR,” arXiv:2501.14350</li>
+<li>An et al., “Fun-ASR technical report,” arXiv:2509.12508</li>
+<li>Shi et al., “Qwen3-ASR technical report,” arXiv:2601.21337</li>
+<li>Song et al., “Index-ASR technical report,” arXiv:2601.00890</li>
+<li>Liu et al., “Low-latency S2S speech recognition,” arXiv:2005.11185</li>
+<li>Deng et al., “Transducer-Llama,” ICASSP 2025</li>
+<li>Jia et al., “SpeechLLM-XL,” ICASSP 2025</li>
+<li>Seide et al., “Speech ReaLLM,” arXiv:2406.09569</li>
+<li>Wan et al., “MoCha-ASR,” arXiv:2601.22779</li>
+<li>Gulati et al., “Conformer,” arXiv:2005.08100</li>
+<li>Yang et al., “Qwen3 technical report,” arXiv:2505.09388</li>
+<li>Du et al., “CosyVoice 2,” arXiv:2412.10117</li>
+<li>Yang et al., “FaT,” INTERSPEECH 2024</li>
+<li>Zeghidour et al., “DSM,” arXiv:2509.08753</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/Streaming/" class="print-no-link">#Streaming</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Uni-ASR: Unified LLM-Based Architecture for Non-Streaming and Streaming Automatic Speech Recognition</div>
+      <div>https://smallsmartao.github.io/2026/04/02/uni-asr-2603.11123/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年4月2日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年4月2日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/04/02/clar-cif-localized-alignment-retrieval-augmented-speech-llm-contextual-asr/" title="CLAR: CIF-Localized Alignment for Retrieval-Augmented Speech LLM-Based Contextual ASR">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CLAR: CIF-Localized Alignment for Retrieval-Augmented Speech LLM-Based Contextual ASR</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/04/01/sommelier-scalable-open-multi-turn-audio/" title="Sommelier: Scalable Open Multi-turn Audio Pre-processing for Full-duplex Speech Language Models">
+                        <span class="hidden-mobile">Sommelier: Scalable Open Multi-turn Audio Pre-processing for Full-duplex Speech Language Models</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
