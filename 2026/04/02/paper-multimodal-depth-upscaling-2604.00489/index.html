@@ -1,0 +1,1225 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/mao.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文标题： Adapting Text LLMs to Speech via Multimodal Depth Up-Scaling作者： Kazuki Yano, Jun Suzuki, Shinji Watanabe（Tohoku University &#x2F; Carnegie Mellon University）arXiv： 2604.00489发表于： 2026年4月   1. 引">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Adapting Text LLMs to Speech via Multimodal Depth Up-Scaling">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/04/02/paper-multimodal-depth-upscaling-2604.00489/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文标题： Adapting Text LLMs to Speech via Multimodal Depth Up-Scaling作者： Kazuki Yano, Jun Suzuki, Shinji Watanabe（Tohoku University &#x2F; Carnegie Mellon University）arXiv： 2604.00489发表于： 2026年4月   1. 引">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_smallao_girl_labeling_books_--ar_169_--niji_7_df2afad8-68a2-43ea-bde9-5030f59b0f11_2.png">
+<meta property="article:published_time" content="2026-04-02T03:30:00.000Z">
+<meta property="article:modified_time" content="2026-04-02T03:11:39.199Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="Continual Pre-training">
+<meta property="article:tag" content="Depth Up-Scaling">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="Speech LM">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_smallao_girl_labeling_books_--ar_169_--niji_7_df2afad8-68a2-43ea-bde9-5030f59b0f11_2.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Adapting Text LLMs to Speech via Multimodal Depth Up-Scaling - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/cover.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Adapting Text LLMs to Speech via Multimodal Depth Up-Scaling"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-04-02 11:30" pubdate>
+          2026年4月2日 中午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          32 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Adapting Text LLMs to Speech via Multimodal Depth Up-Scaling</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年4月2日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p><strong>论文标题：</strong> Adapting Text LLMs to Speech via Multimodal Depth Up-Scaling<br><strong>作者：</strong> Kazuki Yano, Jun Suzuki, Shinji Watanabe（Tohoku University &#x2F; Carnegie Mellon University）<br><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2604.00489">2604.00489</a><br><strong>发表于：</strong> 2026年4月</p>
+</blockquote>
+<hr>
+<h2 id="1-引言：问题背景与研究动机"><a href="#1-引言：问题背景与研究动机" class="headerlink" title="1. 引言：问题背景与研究动机"></a>1. 引言：问题背景与研究动机</h2><p>预训练大语言模型（LLM）在大规模文本语料上积累了强大的语言理解与生成能力。将这些能力扩展到语音领域，催生了语音语言模型（Speech Language Model，Speech LM）这一研究方向。一种自然的做法是：在预训练的文本 LLM 基础上，通过持续预训练（Continual Pre-training，CPT）将语音数据的语音能力注入 LLM，使其既能处理语音（如自动语音识别，ASR），又保留原本的文本能力。</p>
+<p>然而，这一做法面临一个核心挑战——<strong>灾难性遗忘（Catastrophic Forgetting）</strong>：在语音数据上持续训练，往往会严重破坏 LLM 原本在文本任务上的表现，从而削弱”在预训练 LLM 上构建语音模型”的初衷。</p>
+<p>现有的缓解策略主要有两类：</p>
+<ol>
+<li><p><strong>文本数据回放（Text Data Replay）</strong>：在语音训练阶段同时混入文本数据，以维持对文本任务的记忆。但这要求获取预训练文本数据，而大多数开源 LLM 并未公开其预训练数据，使得忠实回放在实践中难以实现；即便可以回放，也会成比例地增加训练成本。</p>
+</li>
+<li><p><strong>参数高效微调（Parameter-Efficient Fine-Tuning，PEFT）</strong>，尤其是 LoRA：通过将权重更新约束在低秩子空间内来减少遗忘，在语音 LM 中被广泛采用。然而，本文实验表明，对于较小的基础模型，LoRA 提供的容量不足以充分学习新的语音模态。</p>
+</li>
+</ol>
+<p>本文提出 <strong>多模态深度扩缩（Multimodal Depth Up-scaling）</strong>，将深度扩缩（Depth Up-scaling）这一 LLM 持续预训练策略扩展到跨模态适配场景：<strong>在冻结文本 LLM 的全部原始层的同时，插入新的 transformer 层，只训练新增层</strong>。由于原始权重从不被修改，推理时可直接移除新增层，精确还原预训练模型。</p>
+<hr>
+<h2 id="2-相关工作"><a href="#2-相关工作" class="headerlink" title="2. 相关工作"></a>2. 相关工作</h2><h3 id="2-1-语音语言模型与灾难性遗忘"><a href="#2-1-语音语言模型与灾难性遗忘" class="headerlink" title="2.1 语音语言模型与灾难性遗忘"></a>2.1 语音语言模型与灾难性遗忘</h3><p>将文本 LLM 适配为语音 LM 的主流路线有两条：一是将语音编码器与 LLM 连接（如 SALMONN、Qwen2-Audio）；二是使用离散语音 token，令 LLM 直接对其建模（如 OpusLM）。两条路线均存在 CPT 后文本能力退化的问题。已有研究通过文本回放或参数高效方法（如 LoRA）缓解该问题，也有研究在更广泛的持续语音学习框架下探索经验回放。</p>
+<h3 id="2-2-深度扩缩（Depth-Up-scaling）"><a href="#2-2-深度扩缩（Depth-Up-scaling）" class="headerlink" title="2.2 深度扩缩（Depth Up-scaling）"></a>2.2 深度扩缩（Depth Up-scaling）</h3><p>深度扩缩通过插入新 transformer 层来扩展模型容量，LLaMA Pro、SOLAR 等工作均在文本域应用了这一思想。近期工作进一步通过可学习预测（LESA）和最优传输（Progressive Depth Up-scaling）改进层初始化策略。然而，<strong>将深度扩缩用于多模态语音适配</strong>此前未被探索。</p>
+<p>本文系统研究新增层的<strong>位置策略</strong>与<strong>架构选择</strong>对 ASR 性能和文本任务保留能力的影响。</p>
+<hr>
+<h2 id="3-方法"><a href="#3-方法" class="headerlink" title="3. 方法"></a>3. 方法</h2><h3 id="3-1-词表扩展（Vocabulary-Expansion）"><a href="#3-1-词表扩展（Vocabulary-Expansion）" class="headerlink" title="3.1 词表扩展（Vocabulary Expansion）"></a>3.1 词表扩展（Vocabulary Expansion）</h3><p>为使 LLM 处理语音输入，首先对预训练 LLM 的 tokenizer 词表进行扩展，加入语音 token。遵循 OpusLM 的做法，通过结合语义 token 与声学 token 将语音转换为离散 token 序列，并将这些语音 token 追加到原始文本词表之后。对应地，嵌入层（embedding layer）随之扩容，并与新增层一起参与训练；原始嵌入权重保持冻结。</p>
+<h3 id="3-2-深度扩缩（Depth-Up-scaling）"><a href="#3-2-深度扩缩（Depth-Up-scaling）" class="headerlink" title="3.2 深度扩缩（Depth Up-scaling）"></a>3.2 深度扩缩（Depth Up-scaling）</h3><p>设预训练模型原有 $n$ 层 ${f_i}<em>{i&#x3D;1}^n$，我们额外插入 $m$ 个新 transformer 层 ${g_j}</em>{j&#x3D;1}^m$（如图1所示）。训练期间，所有原始层 ${f_i}$ 均被冻结，只有新增层 ${g_j}$ 参与梯度更新。</p>
+<p>**函数保持初始化（Function Preserving Initialization）**是深度扩缩成功的关键属性：扩展后的模型在训练开始时应与原始模型行为完全一致，以避免新增层立即扰乱预训练表征、导致训练不稳定。每个新增层 $g_j$ 执行：</p>
+<p>$$H &#x3D; X + \text{MHSA}(\text{LN}(X)) \tag{1}$$</p>
+<p>$$Y &#x3D; H + \text{FFN}(\text{LN}(H)) \tag{2}$$</p>
+<p>其中 $X, Y \in \mathbb{R}^{T \times d}$ 分别为输入和输出，$T$ 为序列长度，$d$ 为隐藏维度，LN 为层归一化。遵循先前工作，对 MHSA 和 FFN 的<strong>输出投影矩阵采用零初始化</strong>，使得初始化时两者输出均为零。由于残差连接和无偏置项的设计，初始化时 $Y &#x3D; X$，即每个新增层为恒等函数，训练过程中逐步学习语音适配。</p>
+<p><strong>层位置策略</strong>对性能有重要影响，本文评估五种策略（每个新增层 $g_j$ 初始化为对应原始层 $f_i$ 的副本，并置于其后，形成 $g_j \circ f_i$ 的组合）：</p>
+<ul>
+<li><strong>INTERLEAVED</strong>：将新增层均匀分布于全部原始层中</li>
+<li><strong>BOTTOM</strong>：将新增层集中于网络下半部分</li>
+<li><strong>MIDDLE</strong>：将新增层集中于网络中间部分</li>
+<li><strong>TOP</strong>：将新增层集中于网络上半部分</li>
+<li><strong>SANDWICH</strong>：将新增层置于网络底部和顶部各四分之一处</li>
+</ul>
+<h3 id="3-3-新增层架构：E-Branchformer"><a href="#3-3-新增层架构：E-Branchformer" class="headerlink" title="3.3 新增层架构：E-Branchformer"></a>3.3 新增层架构：E-Branchformer</h3><p>先前深度扩缩工作均使用与原始层相同的标准 transformer 层作为新增层。本文进一步考虑将专为语音识别设计的 <strong>E-Branchformer</strong> 用作新增层架构。</p>
+<p>与标准 transformer 层顺序执行自注意力和前馈网络不同，E-Branchformer 通过<strong>两条并行分支</strong>处理输入并经合并模块（merge module）融合：</p>
+<ul>
+<li><strong>全局提取分支（Global Extractor）</strong>：通过多头自注意力（MHSA）捕获长程依赖关系：</li>
+</ul>
+<p>$$H_G &#x3D; \text{MHSA}(\text{LN}(X)) \in \mathbb{R}^{T \times d} \tag{3}$$</p>
+<ul>
+<li><strong>局部提取分支（Local Extractor）</strong>：通过卷积空间门控单元（CSGU）和门控 MLP（cgMLP）捕获局部模式：</li>
+</ul>
+<p>$$H_L &#x3D; \text{cgMLP}(\text{LN}(X)) \in \mathbb{R}^{T \times d} \tag{4}$$</p>
+<p><strong>合并模块</strong>通过拼接、深度可分离卷积（DwConv）进行空间精炼，再投影回 $d$ 维：</p>
+<p>$$H_{\text{Merge}} &#x3D; (H_C + \text{DwConv}(H_C)) W_{\text{Merge}} \in \mathbb{R}^{T \times d} \tag{5}$$</p>
+<p>其中 $H_C &#x3D; \text{Concat}(H_G, H_L) \in \mathbb{R}^{T \times 2d}$，$W_{\text{Merge}} \in \mathbb{R}^{2d \times d}$ 为线性投影矩阵。合并输出 $H_{\text{Merge}}$ 经残差连接后通过 FFN（同公式2）。</p>
+<p>由于 cgMLP 分支专为声学处理设计，<strong>仅对语音 token 启用 cgMLP 和合并模块</strong>；文本 token 绕过这两个组件，只使用 MHSA 输出。</p>
+<p><strong>E-Branchformer 的函数保持初始化</strong>：标准 transformer 层可独立零初始化 MHSA 和 FFN 的输出投影，但 E-Branchformer 的两个分支共享一个合并投影 $W_{\text{Merge}}$，无法直接套用。本文采用如下初始化方案：</p>
+<p>$$W_{\text{Merge}} &#x3D; \begin{bmatrix} I \ 0 \end{bmatrix}$$</p>
+<p>其中 $I \in \mathbb{R}^{d \times d}$ 为单位矩阵，$0 \in \mathbb{R}^{d \times d}$ 为零矩阵；同时设 $W_O &#x3D; 0$，深度可分离卷积的输出投影也置零。初始化时：$H_G &#x3D; 0$（因为 $W_O &#x3D; 0$），因此 $H_C W_{\text{Merge}} &#x3D; [0, H_L] \cdot [I; 0] &#x3D; 0$，层退化为恒等映射 $Y &#x3D; X$，满足函数保持性质。</p>
+<h3 id="3-4-推理时层丢弃（Layer-Dropping-at-Inference）"><a href="#3-4-推理时层丢弃（Layer-Dropping-at-Inference）" class="headerlink" title="3.4 推理时层丢弃（Layer Dropping at Inference）"></a>3.4 推理时层丢弃（Layer Dropping at Inference）</h3><p>冻结全部原始层的直接好处是：推理时可简单移除新增层，类似随机深度（Stochastic Depth）或层 Dropout，<strong>精确还原预训练模型</strong>，从设计上保证文本任务零退化。当需要语音能力时使用完整模型；仅需文本能力时则丢弃新增层。</p>
+<p><img src="/images/paper_figs/2604.00489_fig1.png" srcset="/img/loading.gif" lazyload alt="图1：多模态深度扩缩架构示意图"></p>
+<p><em>图1：多模态深度扩缩策略。可训练的 E-Branchformer 块与冻结的 transformer 块交替排列，在保留预训练文本表征的同时获取语音能力。</em></p>
+<hr>
+<h2 id="4-实验"><a href="#4-实验" class="headerlink" title="4. 实验"></a>4. 实验</h2><h3 id="4-1-实验设置"><a href="#4-1-实验设置" class="headerlink" title="4.1 实验设置"></a>4.1 实验设置</h3><p><strong>数据</strong>：使用 OWSM v3.2 套件的英语 ASR 子集进行训练，共约 <strong>48k 小时</strong>数据。训练期间仅使用 ASR 任务数据，<strong>不混入任何文本数据</strong>，以便在无文本回放辅助的情况下孤立评估深度扩缩对文本能力保留的效果。</p>
+<p><strong>基础模型</strong>：采用 <strong>SmolLM2</strong> 系列，规模分别为 360M（32层）和 1.7B（24层），均在最多 11T 文本 token 上预训练。</p>
+<p><strong>深度扩缩配置</strong>：新增层数量为原始层数的 25%——360M 模型新增 $m&#x3D;8$ 层（$n&#x3D;32$，新增 0.20B 参数，总计 0.51B），1.7B 模型新增 $m&#x3D;6$ 层（$n&#x3D;24$，新增 0.66B 参数，总计 2.27B）。新增层与原始模型隐藏维度相同。</p>
+<p><strong>基线方法</strong>：</p>
+<ul>
+<li><strong>全量微调（Full Fine-tuning）</strong>：更新原始模型全部参数，不新增层</li>
+<li><strong>LoRA</strong>：仅训练低秩适配器，预训练权重冻结。LoRA 秩 $r$ 设置为与深度扩缩可训练参数量匹配（360M 对应 $r&#x3D;144$，1.7B 对应 $r&#x3D;356$，分别产生 0.20B 和 0.66B 可训练参数），这是对 LoRA 较为有利的设置。</li>
+</ul>
+<p><strong>训练</strong>：AdamW 优化器，峰值学习率 $1 \times 10^{-4}$，25k 步预热后线性衰减至 $2 \times 10^{-5}$，最大上下文长度 8192 token。</p>
+<p><strong>评估</strong>：</p>
+<ul>
+<li><strong>ASR</strong>：在 LibriSpeech test-clean 和 test-other 上报告词错误率（WER，越低越好）</li>
+<li><strong>文本能力</strong>：评估 8 个基准——ARC-Easy、ARC-Challenge、BoolQ、HellaSwag、OpenBookQA、PIQA、WinoGrande、MMLU，报告平均准确率（Avg）及相对预训练模型的变化量（$\Delta$）</li>
+</ul>
+<h3 id="4-2-主要实验结果"><a href="#4-2-主要实验结果" class="headerlink" title="4.2 主要实验结果"></a>4.2 主要实验结果</h3><p><strong>表1：SmolLM2-360M 和 SmolLM2-1.7B 主要结果</strong></p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>方法</th>
+<th>位置策略</th>
+<th>可训练参数</th>
+<th>WER clean ↓</th>
+<th>WER other ↓</th>
+<th>文本 Avg ↑</th>
+<th>$\Delta$</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>360M</strong></td>
+<td>预训练基线</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+<td>56.8</td>
+<td>0.0</td>
+</tr>
+<tr>
+<td></td>
+<td><em>全量微调</em></td>
+<td>–</td>
+<td>360M</td>
+<td>2.7</td>
+<td>6.0</td>
+<td>34.6</td>
+<td>-22.2</td>
+</tr>
+<tr>
+<td></td>
+<td>LoRA</td>
+<td>–</td>
+<td>200M</td>
+<td>11.3</td>
+<td>17.3</td>
+<td>34.9</td>
+<td>-22.0</td>
+</tr>
+<tr>
+<td></td>
+<td>深度扩缩</td>
+<td>INTERLEAVED</td>
+<td>200M</td>
+<td><strong>3.1</strong></td>
+<td><strong>6.7</strong></td>
+<td><strong>54.9</strong></td>
+<td><strong>-1.9</strong></td>
+</tr>
+<tr>
+<td></td>
+<td>深度扩缩</td>
+<td>SANDWICH</td>
+<td>200M</td>
+<td>3.3</td>
+<td>7.0</td>
+<td>53.1</td>
+<td>-3.8</td>
+</tr>
+<tr>
+<td></td>
+<td>深度扩缩</td>
+<td>TOP</td>
+<td>200M</td>
+<td>3.5</td>
+<td>7.5</td>
+<td>55.9</td>
+<td>-0.9</td>
+</tr>
+<tr>
+<td></td>
+<td>深度扩缩</td>
+<td>MIDDLE</td>
+<td>200M</td>
+<td>3.5</td>
+<td>7.6</td>
+<td>52.9</td>
+<td>-3.9</td>
+</tr>
+<tr>
+<td></td>
+<td>深度扩缩</td>
+<td>BOTTOM</td>
+<td>200M</td>
+<td>3.4</td>
+<td>7.4</td>
+<td>51.0</td>
+<td>-5.8</td>
+</tr>
+<tr>
+<td><strong>1.7B</strong></td>
+<td>预训练基线</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+<td>–</td>
+<td>69.0</td>
+<td>0.0</td>
+</tr>
+<tr>
+<td></td>
+<td><em>全量微调</em></td>
+<td>–</td>
+<td>1.87B</td>
+<td>2.3</td>
+<td>5.6</td>
+<td>36.5</td>
+<td>-32.6</td>
+</tr>
+<tr>
+<td></td>
+<td>LoRA</td>
+<td>–</td>
+<td>0.66B</td>
+<td>3.2</td>
+<td>7.1</td>
+<td>33.4</td>
+<td>-35.7</td>
+</tr>
+<tr>
+<td></td>
+<td>深度扩缩</td>
+<td>INTERLEAVED</td>
+<td>0.66B</td>
+<td><strong>2.4</strong></td>
+<td><strong>5.5</strong></td>
+<td>60.8</td>
+<td>-8.3</td>
+</tr>
+<tr>
+<td></td>
+<td>深度扩缩</td>
+<td>SANDWICH</td>
+<td>0.66B</td>
+<td>2.5</td>
+<td>5.7</td>
+<td>61.0</td>
+<td>-8.0</td>
+</tr>
+<tr>
+<td></td>
+<td>深度扩缩</td>
+<td>TOP</td>
+<td>0.66B</td>
+<td>2.9</td>
+<td>6.3</td>
+<td><strong>66.4</strong></td>
+<td><strong>-2.7</strong></td>
+</tr>
+<tr>
+<td></td>
+<td>深度扩缩</td>
+<td>MIDDLE</td>
+<td>0.66B</td>
+<td>3.0</td>
+<td>6.4</td>
+<td>59.4</td>
+<td>-9.6</td>
+</tr>
+<tr>
+<td></td>
+<td>深度扩缩</td>
+<td>BOTTOM</td>
+<td>0.66B</td>
+<td>2.9</td>
+<td>6.3</td>
+<td>58.5</td>
+<td>-10.5</td>
+</tr>
+</tbody></table>
+<p><em>注：斜体为全量微调；加粗为深度扩缩中最优值。深度扩缩结果为保留新增层推理时的数据；丢弃新增层可精确恢复预训练性能（$\Delta&#x3D;0.0$）。</em></p>
+<p><strong>核心发现：</strong></p>
+<p><strong>ASR 性能方面</strong>，深度扩缩（INTERLEAVED）达到与全量微调相当的 WER，大幅优于 LoRA。LoRA 在较小的 360M 模型上表现尤为糟糕（WER clean&#x3D;11.3），说明当基础模型容量有限时，低秩适配能力不足以学习新模态。在 1.7B 模型上，INTERLEAVED 深度扩缩在 test-other 上甚至以 5.5% 超过全量微调（5.6%）。</p>
+<p><strong>文本能力保留方面</strong>，全量微调和 LoRA 均造成严重退化（约 -22 至 -35 个百分点），而所有深度扩缩变体的退化均远小于此。在 1.7B 模型上，INTERLEAVED 深度扩缩仅造成 -8.3 的退化，而全量微调高达 -32.6。</p>
+<p><strong>位置策略权衡</strong>：ASR 与文本保留能力之间存在明确的排序反转——INTERLEAVED 在 ASR 上最优但文本退化相对较多，TOP 文本保留最好但 WER 更高。将新增层分布于整个网络赋予其更强的表征适配能力，但也对原始计算路径影响更大。</p>
+<h3 id="4-3-新增层架构对比"><a href="#4-3-新增层架构对比" class="headerlink" title="4.3 新增层架构对比"></a>4.3 新增层架构对比</h3><p><strong>表2：新增层架构与函数保持初始化的影响（INTERLEAVED 位置策略）</strong></p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>新增层类型</th>
+<th>可训练参数</th>
+<th>WER clean ↓</th>
+<th>WER other ↓</th>
+<th>文本 Avg ↑</th>
+<th>$\Delta$</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>360M</strong></td>
+<td><em>全量微调</em></td>
+<td>360M</td>
+<td>2.7</td>
+<td>6.0</td>
+<td>34.6</td>
+<td>-22.2</td>
+</tr>
+<tr>
+<td></td>
+<td>标准 Transformer</td>
+<td>200M</td>
+<td>3.1</td>
+<td>6.7</td>
+<td>54.9</td>
+<td>-1.9</td>
+</tr>
+<tr>
+<td></td>
+<td>E-Branchformer</td>
+<td>220M</td>
+<td><strong>2.9</strong></td>
+<td><strong>6.2</strong></td>
+<td>54.6</td>
+<td>-2.2</td>
+</tr>
+<tr>
+<td><strong>1.7B</strong></td>
+<td><em>全量微调</em></td>
+<td>1.87B</td>
+<td>2.3</td>
+<td>5.6</td>
+<td>36.5</td>
+<td>-32.6</td>
+</tr>
+<tr>
+<td></td>
+<td>标准 Transformer</td>
+<td>0.66B</td>
+<td>2.4</td>
+<td>5.5</td>
+<td>60.8</td>
+<td>-8.3</td>
+</tr>
+<tr>
+<td></td>
+<td>E-Branchformer</td>
+<td>0.75B</td>
+<td><strong>2.3</strong></td>
+<td><strong>5.3</strong></td>
+<td><strong>62.3</strong></td>
+<td><strong>-6.8</strong></td>
+</tr>
+</tbody></table>
+<p><strong>E-Branchformer 初始化对比（SmolLM2-1.7B）</strong></p>
+<table>
+<thead>
+<tr>
+<th>初始化方式</th>
+<th>可训练参数</th>
+<th>WER clean ↓</th>
+<th>WER other ↓</th>
+<th>文本 Avg ↑</th>
+<th>$\Delta$</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>随机初始化 $W_{\text{Merge}}$</td>
+<td>0.75B</td>
+<td>2.5</td>
+<td>5.5</td>
+<td>62.1</td>
+<td>-7.0</td>
+</tr>
+<tr>
+<td>函数保持初始化</td>
+<td>0.75B</td>
+<td><strong>2.3</strong></td>
+<td><strong>5.3</strong></td>
+<td><strong>62.3</strong></td>
+<td><strong>-6.8</strong></td>
+</tr>
+</tbody></table>
+<p><strong>核心发现：</strong></p>
+<p>E-Branchformer 在两个模型规模上均优于标准 transformer 层的 WER。在 1.7B 模型上，E-Branchformer 新增层匹配甚至超越全量微调的 ASR 性能（clean: 2.3 vs 2.3，other: 5.3 vs 5.6），同时文本退化仅为 -6.8，相比全量微调的 -32.6 <strong>减少超过 75%</strong>，且可训练参数减少 60%（0.75B vs 1.87B）。</p>
+<p>两种架构的文本保留能力相当，说明替换为 E-Branchformer 不以牺牲文本性能为代价。E-Branchformer 中 cgMLP 的卷积分支有助于捕获局部声学模式，与自注意力的全局上下文建模形成互补。</p>
+<p>函数保持初始化相比随机初始化一致性地取得更好结果，验证了 $[I; 0]$ 恒等映射初始化策略的有效性。</p>
+<h3 id="4-4-定性分析：保留的语言能力"><a href="#4-4-定性分析：保留的语言能力" class="headerlink" title="4.4 定性分析：保留的语言能力"></a>4.4 定性分析：保留的语言能力</h3><p>如前所述，移除新增层可完全还原预训练模型。本节进一步考察：当以语音输入为条件时，模型是否保留基础 LLM 的文本指令跟随能力——这是一种无需级联 pipeline 的端到端能力。</p>
+<p>实验在 SmolLM2-1.7B（INTERLEAVED, E-Branchformer）上进行，通过在语音输入前附加自然语言指令及少量上下文示例，要求模型直接从语音条件提示生成目标文本。输入语音内容为：”A cold, lucid indifference reigned in his soul.”</p>
+<p><strong>表3：零样本提示任务输出对比（SmolLM2-1.7B）</strong></p>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>提示</th>
+<th>深度扩缩输出</th>
+<th>全量微调输出</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>英法翻译</td>
+<td>Translate the sentence into French</td>
+<td>Une indifférence froide, claire, régnait dans l’âme.</td>
+<td>in in in in in in …</td>
+</tr>
+<tr>
+<td>文本简化</td>
+<td>Rewrite into simple, modern English</td>
+<td>A chilly indifference pervaded his soul.</td>
+<td>in in in in in in …</td>
+</tr>
+<tr>
+<td>摘要生成</td>
+<td>Summarize in one clear sentence</td>
+<td>The man was indifferent to everything.</td>
+<td>in in in in in in …</td>
+</tr>
+</tbody></table>
+<p>全量微调完全失败，反复产生退化性输出（重复 token）。相比之下，<strong>多模态深度扩缩在仅用 ASR 数据、无任何文本回放训练的情况下</strong>，在三项任务上均产生了语义连贯、任务适配的输出，与表1中保留的文本能力定量结果一致。</p>
+<hr>
+<h2 id="5-结论与展望"><a href="#5-结论与展望" class="headerlink" title="5. 结论与展望"></a>5. 结论与展望</h2><p>本文提出<strong>多模态深度扩缩</strong>：在冻结文本 LLM 全部层的同时插入新 transformer 层，推理时可丢弃新增层以精确还原预训练性能。在 SmolLM2-360M 和 SmolLM2-1.7B 上的实验表明：</p>
+<ul>
+<li><strong>深度扩缩实现了与全量微调相当的 ASR 性能</strong>，同时文本能力保留远优于全量微调和 LoRA</li>
+<li><strong>E-Branchformer 新增层</strong>进一步提升 ASR：在 1.7B 模型上匹配&#x2F;超越全量微调，文本退化减少超过 75%，可训练参数减少 60%</li>
+<li><strong>零样本指令跟随能力</strong>得以保留，全量微调则完全丧失此能力</li>
+<li>深度扩缩与文本数据回放<strong>正交</strong>，两者可结合使用</li>
+</ul>
+<p>未来工作包括将该方法扩展到其他语音任务（如语音翻译、语音问答）和多语言场景。</p>
+<hr>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Brown et al., “Language models are few-shot learners,” NeurIPS 2020<br>[2] Grattafiori et al., “The LLaMA 3 herd of models,” arXiv:2407.21783, 2024<br>[3] Tang et al., “SALMONN: Towards generic hearing abilities for large language models,” ICLR 2024<br>[4] Chu et al., “Qwen2-Audio technical report,” arXiv:2407.10759, 2024<br>[5] Tian et al., “OpusLM: A Family of Open Unified Speech Language Models,” Interspeech 2025<br>[9] Hu et al., “LoRA: Low-rank adaptation of large language models,” ICLR 2022<br>[13] Wu et al., “LLaMA Pro: Progressive LLaMA with block expansion,” ACL 2024<br>[16] allal et al., “SmolLM2: When smol goes big,” COLM 2025<br>[17] Tian et al., “On the Effects of Heterogeneous Data Sources on Speech-to-Text Foundation Models,” Interspeech 2024<br>[18] Kim et al., “E-Branchformer: Branchformer with enhanced merging for speech recognition,” SLT 2023  </p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/Speech-LM/" class="print-no-link">#Speech LM</a>
+      
+        <a href="/tags/Continual-Pre-training/" class="print-no-link">#Continual Pre-training</a>
+      
+        <a href="/tags/Depth-Up-Scaling/" class="print-no-link">#Depth Up-Scaling</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Adapting Text LLMs to Speech via Multimodal Depth Up-Scaling</div>
+      <div>https://smallsmartao.github.io/2026/04/02/paper-multimodal-depth-upscaling-2604.00489/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年4月2日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年4月2日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/04/02/2604.00610-cot-asr/" title="Speech LLMs are Contextual Reasoning Transcribers">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Speech LLMs are Contextual Reasoning Transcribers</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/04/02/clar-cif-localized-alignment-retrieval-augmented-speech-llm-contextual-asr/" title="CLAR: CIF-Localized Alignment for Retrieval-Augmented Speech LLM-Based Contextual ASR">
+                        <span class="hidden-mobile">CLAR: CIF-Localized Alignment for Retrieval-Augmented Speech LLM-Based Contextual ASR</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
