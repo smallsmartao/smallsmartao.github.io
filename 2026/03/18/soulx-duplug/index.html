@@ -330,6 +330,7 @@
 <p>这对于构建更自然、更智能的语音助手至关重要。</p>
 <p><img src="/images/mj/paper_p1_0.png" srcset="/img/loading.gif" lazyload alt="全双工系统概览"></p>
 <h3 id="现有方法的问题"><a href="#现有方法的问题" class="headerlink" title="现有方法的问题"></a>现有方法的问题</h3><p>当前全双工系统主要分为两类：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -338,7 +339,8 @@
 <th>问题</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>端到端模型</td>
 <td>Freeze-Omni, MinMo</td>
 <td>轮次策略与语言建模紧耦合，数据稀缺，部署成本高</td>
@@ -348,7 +350,9 @@
 <td>FireRedChat, Easy Turn</td>
 <td>VAD缺乏语义理解，ASR和轮次检测存在延迟</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><img src="/images/mj/paper_p2_0.png" srcset="/img/loading.gif" lazyload alt="全双工对话系统研究概览"></p>
 <p><strong>SoulX-Duplug</strong> 提出了第三种方案：一个即插即用的流式状态预测模块，可以在不修改原有对话模型的情况下，为半双工系统赋予全双工能力。</p>
 <h2 id="二、核心贡献"><a href="#二、核心贡献" class="headerlink" title="二、核心贡献"></a>二、核心贡献</h2><ol>
@@ -366,6 +370,7 @@
 <li>推理时：轻量级 ASR 模型通过教师强制提供文本指导</li>
 </ul>
 <h3 id="3-2-状态-Token-设计"><a href="#3-2-状态-Token-设计" class="headerlink" title="3.2 状态 Token 设计"></a>3.2 状态 Token 设计</h3><p>SoulX-Duplug 定义了 5 种状态 Token 来建模双工交互：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -374,7 +379,8 @@
 <th>场景</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td><code>&lt;eos&gt;</code></td>
 <td>无语义内容</td>
 <td>静音或噪音</td>
@@ -399,16 +405,16 @@
 <td>用户停顿但未说完</td>
 <td>用户在思考，AI应等待</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs gherkin">用户说：<span class="hljs-string">&quot;今天天气真...&quot;</span><br>          │<br>          ▼<br>       <span class="hljs-variable">&lt;speech&gt;</span> ──► 用户开始说话<br><br>用户说：<span class="hljs-string">&quot;...好啊，我想出去走走&quot;</span><br>          │<br>          ▼<br>       <span class="hljs-variable">&lt;take_turn&gt;</span> ──► 用户说完，AI可以回复<br></code></pre></td></tr></table></figure>
-
 <h3 id="3-3-语音输入建模"><a href="#3-3-语音输入建模" class="headerlink" title="3.3 语音输入建模"></a>3.3 语音输入建模</h3><ul>
 <li><strong>语音编码器</strong>：使用 GLM-4-Voice tokenizer，以 12.5 Hz 提取音频 Token</li>
 <li><strong>块大小</strong>：12 个音频帧（160ms 目标窗口 + 960ms 左上下文 + 40ms 右上下文）</li>
 <li><strong>总感受野</strong>：1160ms，每步提取 15 个 Token</li>
 </ul>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 音频处理示例</span><br>audio_tokens = speech_encoder(audio_input)  <span class="hljs-comment"># 12.5 Hz 采样</span><br><span class="hljs-comment"># 每个 chunk: 15 个 token, 160ms 音频</span><br></code></pre></td></tr></table></figure>
-
 <h3 id="3-4-文本引导的状态预测"><a href="#3-4-文本引导的状态预测" class="headerlink" title="3.4 文本引导的状态预测"></a>3.4 文本引导的状态预测</h3><p>这是 SoulX 的核心创新点：</p>
 <p><strong>传统方式的问题</strong>：</p>
 <ul>
@@ -423,8 +429,8 @@
 </ul>
 <p><img src="/images/mj/paper_p5_0.png" srcset="/img/loading.gif" lazyload alt="流式推理示例"></p>
 <figure class="highlight nestedtext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs nestedtext"><span class="hljs-attribute">传统 VAD</span><span class="hljs-punctuation">:</span> <span class="hljs-string"> 音频特征 ──► 能量检测 ──► 有/无语音</span><br><br><span class="hljs-attribute">SoulX-Duplug</span><span class="hljs-punctuation">:</span> <span class="hljs-string"> 音频特征 + ASR文本 ──► 语义理解 ──► 状态判断</span><br>                                              ↑<br>                                         （关键区别）<br></code></pre></td></tr></table></figure>
-
-<h2 id="四、实验结果"><a href="#四、实验结果" class="headerlink" title="四、实验结果"></a>四、实验结果</h2><h3 id="4-1-与现有方法对比"><a href="#4-1-与现有方法对比" class="headerlink" title="4.1 与现有方法对比"></a>4.1 与现有方法对比</h3><table>
+<h2 id="四、实验结果"><a href="#四、实验结果" class="headerlink" title="四、实验结果"></a>四、实验结果</h2><h3 id="4-1-与现有方法对比"><a href="#4-1-与现有方法对比" class="headerlink" title="4.1 与现有方法对比"></a>4.1 与现有方法对比</h3><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>模型</th>
@@ -434,7 +440,8 @@
 <th>语言</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Easy Turn</td>
 <td>✗</td>
 <td>✓</td>
@@ -469,7 +476,9 @@
 <td><strong>✓</strong></td>
 <td><strong>中英</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>SoulX-Duplug 是首个同时满足这四个条件的模块！</p>
 <p><img src="/images/mj/paper_p3_0.png" srcset="/img/loading.gif" lazyload alt="三种全双工系统对比"></p>
 <h3 id="4-2-延迟性能"><a href="#4-2-延迟性能" class="headerlink" title="4.2 延迟性能"></a>4.2 延迟性能</h3><ul>
@@ -487,11 +496,8 @@
 <li>增加中文测试集，实现<strong>双语覆盖</strong></li>
 </ul>
 <figure class="highlight autoit"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs autoit">SoulX-Duplug-<span class="hljs-built_in">Eval</span><br>├── 状态级：Easy Turn（扩展中英）<br>│   └── 评估对话状态预测<br>└── 系统级：Full-Duplex-Bench（扩展中英）<br>    └── 评估端到端对话系统<br></code></pre></td></tr></table></figure>
-
 <h2 id="六、代码示例"><a href="#六、代码示例" class="headerlink" title="六、代码示例"></a>六、代码示例</h2><h3 id="6-1-模型使用"><a href="#6-1-模型使用" class="headerlink" title="6.1 模型使用"></a>6.1 模型使用</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> torch<br><span class="hljs-keyword">from</span> soulx_duplug <span class="hljs-keyword">import</span> SoulXDuplug<br><br><span class="hljs-comment"># 加载模型</span><br>model = SoulXDuplug.from_pretrained(<span class="hljs-string">&quot;soulai/SoulX-Duplug&quot;</span>)<br><br><span class="hljs-comment"># 流式推理</span><br>audio_chunk = get_audio_chunk()  <span class="hljs-comment"># 获取实时音频</span><br><br><span class="hljs-comment"># 前向传播</span><br><span class="hljs-keyword">with</span> torch.no_grad():<br>    output = model(<br>        audio_tokens=audio_chunk,<br>        text_tokens=text_tokens,  <span class="hljs-comment"># ASR 输出的文本</span><br>    )<br><br><span class="hljs-comment"># 解析状态</span><br>state = output.state  <span class="hljs-comment"># &lt;take_turn&gt;, &lt;hold&gt;, ...</span><br></code></pre></td></tr></table></figure>
-
 <h3 id="6-2-构建全双工对话系统"><a href="#6-2-构建全双工对话系统" class="headerlink" title="6.2 构建全双工对话系统"></a>6.2 构建全双工对话系统</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">from</span> soulx_duplug <span class="hljs-keyword">import</span> SoulXDuplug<br><span class="hljs-keyword">from</span> llm <span class="hljs-keyword">import</span> VoiceLLM<br><br><span class="hljs-comment"># 组件</span><br>duplex_module = SoulXDuplug.from_pretrained(<span class="hljs-string">&quot;soulai/SoulX-Duplug&quot;</span>)<br>llm = VoiceLLM.from_pretrained(<span class="hljs-string">&quot;YOUR_VOICE_LLM&quot;</span>)<br><br><span class="hljs-comment"># 全双工交互循环</span><br><span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:<br>    audio = microphone.stream_read()<br>    <br>    <span class="hljs-comment"># SoulX-Duplug 预测状态</span><br>    state = duplex_module.predict(audio)<br>    <br>    <span class="hljs-keyword">if</span> state == <span class="hljs-string">&quot;&lt;take_turn&gt;&quot;</span>:<br>        <span class="hljs-comment"># 用户说完，开始生成回复</span><br>        response = llm.generate()<br>        <span class="hljs-keyword">await</span> speak(response)<br>    <span class="hljs-keyword">elif</span> state == <span class="hljs-string">&quot;&lt;hold&gt;&quot;</span>:<br>        <span class="hljs-comment"># 用户未说完，继续监听</span><br>        <span class="hljs-keyword">continue</span><br>    <span class="hljs-keyword">elif</span> state == <span class="hljs-string">&quot;&lt;interrupt&gt;&quot;</span>:<br>        <span class="hljs-comment"># 用户打断，停止生成</span><br>        llm.stop()<br></code></pre></td></tr></table></figure>
-
 <h2 id="七、总结"><a href="#七、总结" class="headerlink" title="七、总结"></a>七、总结</h2><p>SoulX-Duplug 为全双工语音对话提供了一个新的思路：</p>
 <ol>
 <li><strong>即插即用</strong>：不需要修改原有的对话模型</li>

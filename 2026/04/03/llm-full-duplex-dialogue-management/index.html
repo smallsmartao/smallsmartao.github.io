@@ -19,12 +19,12 @@
   <meta name="author" content="Ao Zhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="论文信息  标题：LLM-Enhanced Dialogue Management for Full-Duplex Spoken Dialogue Systems arXiv：2502.14145 作者：Hao Zhang, Weiwei Li, Rilin Chen, Vinay Kothapally, Meng Yu, Dong Yu（Tencent AI Lab） 会议&#x2F;时间：2">
+    <meta name="description" content="论文信息  标题：LLM-Enhanced Dialogue Management for Full-Duplex Spoken Dialogue Systems arXiv：2502.14145 作者：Hao Zhang, Weiwei Li, Rilin Chen, Vinay Kothapally, Meng Yu, Dong Yu（Tencent AI Lab） 会议&#x2F;时间：2025 年">
 <meta property="og:type" content="article">
 <meta property="og:title" content="LLM-Enhanced Dialogue Management for Full-Duplex Spoken Dialogue Systems">
 <meta property="og:url" content="https://smallsmartao.github.io/2026/04/03/llm-full-duplex-dialogue-management/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="论文信息  标题：LLM-Enhanced Dialogue Management for Full-Duplex Spoken Dialogue Systems arXiv：2502.14145 作者：Hao Zhang, Weiwei Li, Rilin Chen, Vinay Kothapally, Meng Yu, Dong Yu（Tencent AI Lab） 会议&#x2F;时间：2">
+<meta property="og:description" content="论文信息  标题：LLM-Enhanced Dialogue Management for Full-Duplex Spoken Dialogue Systems arXiv：2502.14145 作者：Hao Zhang, Weiwei Li, Rilin Chen, Vinay Kothapally, Meng Yu, Dong Yu（Tencent AI Lab） 会议&#x2F;时间：2025 年">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_full_duplex_dm.png">
 <meta property="article:published_time" content="2026-04-03T07:00:00.000Z">
@@ -323,7 +323,7 @@
 <li>标题：LLM-Enhanced Dialogue Management for Full-Duplex Spoken Dialogue Systems</li>
 <li>arXiv：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2502.14145">2502.14145</a></li>
 <li>作者：Hao Zhang, Weiwei Li, Rilin Chen, Vinay Kothapally, Meng Yu, Dong Yu（Tencent AI Lab）</li>
-<li>会议&#x2F;时间：2025 年 2 月（arXiv v2）</li>
+<li>会议/时间：2025 年 2 月（arXiv v2）</li>
 </ul>
 </blockquote>
 <hr>
@@ -353,7 +353,8 @@
 <li><strong>TTS（Text-to-Speech）</strong>：将 CDE 生成的文本合成为语音输出。</li>
 </ol>
 <p>整个流程中，前四个模块以<strong>短时间间隔</strong>（short intervals）持续运行，保证实时响应能力；CDE 则按需激活，节省算力。</p>
-<h3 id="2-2-声学-VAD-与语义-VAD-的分工"><a href="#2-2-声学-VAD-与语义-VAD-的分工" class="headerlink" title="2.2 声学 VAD 与语义 VAD 的分工"></a>2.2 声学 VAD 与语义 VAD 的分工</h3><table>
+<h3 id="2-2-声学-VAD-与语义-VAD-的分工"><a href="#2-2-声学-VAD-与语义-VAD-的分工" class="headerlink" title="2.2 声学 VAD 与语义 VAD 的分工"></a>2.2 声学 VAD 与语义 VAD 的分工</h3><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>模块</th>
@@ -362,11 +363,12 @@
 <th>局限</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>声学 VAD</td>
 <td>声学特征（能量、频谱等）</td>
-<td>区分目标说话人与背景噪声&#x2F;干扰</td>
-<td>无法理解语义，对停顿&#x2F;犹豫无能为力</td>
+<td>区分目标说话人与背景噪声/干扰</td>
+<td>无法理解语义，对停顿/犹豫无能为力</td>
 </tr>
 <tr>
 <td>语义 VAD</td>
@@ -374,10 +376,13 @@
 <td>语义完整性判断、打断意图分析</td>
 <td>依赖 ASR 质量，对纯声学干扰不敏感</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>两者互补：声学 VAD 先过滤掉非目标说话人的干扰，语义 VAD 再在文本层面做精细的意图与状态分析。</p>
 <hr>
 <h2 id="3-语义-VAD-模块详解"><a href="#3-语义-VAD-模块详解" class="headerlink" title="3. 语义 VAD 模块详解"></a>3. 语义 VAD 模块详解</h2><h3 id="3-1-四种控制-Token"><a href="#3-1-四种控制-Token" class="headerlink" title="3.1 四种控制 Token"></a>3.1 四种控制 Token</h3><p>语义 VAD 的输出是四个<strong>控制 token</strong>，每个 token 对应一种对话管理动作（论文 Figure 1(b)）：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -387,31 +392,42 @@
 <th>触发场景</th>
 </tr>
 </thead>
-<tbody><tr>
-<td><code>&lt;|C-L|&gt;</code></td>
+<tbody>
+<tr>
+<td>`&lt;\</td>
+<td>C-L\</td>
+<td>&gt;`</td>
 <td>Continue-Listening</td>
 <td>继续倾听</td>
 <td>用户查询未完成（含停顿、犹豫）</td>
 </tr>
 <tr>
-<td><code>&lt;|S-S|&gt;</code></td>
+<td>`&lt;\</td>
+<td>S-S\</td>
+<td>&gt;`</td>
 <td>Start-Speaking</td>
 <td>开始说话</td>
 <td>用户查询已完成，激活 CDE 生成回复</td>
 </tr>
 <tr>
-<td><code>&lt;|S-L|&gt;</code></td>
+<td>`&lt;\</td>
+<td>S-L\</td>
+<td>&gt;`</td>
 <td>Start-Listening</td>
 <td>开始倾听</td>
 <td>真实打断（Real INT），系统停止说话</td>
 </tr>
 <tr>
-<td><code>&lt;|C-S|&gt;</code></td>
+<td>`&lt;\</td>
+<td>C-S\</td>
+<td>&gt;`</td>
 <td>Continue-Speaking</td>
 <td>继续说话</td>
 <td>非故意打断（Fake INT），系统继续输出</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>这四个 token 覆盖了全双工对话的两个核心任务：</p>
 <p><strong>任务一：用户状态检测（User State Detection）</strong></p>
 <ul>
@@ -463,6 +479,7 @@
 <li><strong>自定义指令</strong>：指定轮数、话题和说话风格。</li>
 </ul>
 <h3 id="4-2-四阶段数据处理"><a href="#4-2-四阶段数据处理" class="headerlink" title="4.2 四阶段数据处理"></a>4.2 四阶段数据处理</h3><p>生成的原始数据经过四个阶段处理：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -471,7 +488,8 @@
 <th>说明</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>数据生成</td>
 <td>用 20,000 条 prompt 调用 Yuanbao API</td>
 <td>直接生成全双工对话</td>
@@ -491,8 +509,11 @@
 <td>修改用户查询末尾标点以匹配 ASR 输出特征</td>
 <td>提升实际应用中的鲁棒性</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>最终数据集包含 <strong>11,990 段对话，80,338 轮次</strong>，覆盖多种交互场景。各场景分布（论文 Figure 1(e)）：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -500,7 +521,8 @@
 <th>占比</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Normal（正常 QA）</td>
 <td>47%</td>
 </tr>
@@ -516,16 +538,20 @@
 <td>Fake INT（虚假打断）</td>
 <td>13%</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>值得注意的是，作者发现当某类极端场景（如真实打断或不完整查询）占比超过 50% 时，模型会产生过拟合，导致其他场景性能下降。这验证了<strong>均衡训练数据分布</strong>的必要性。此外，为防止微调降低基础模型的通用能力，训练集中同时混入了无打断的普通对话样本。</p>
-<h3 id="4-3-微调设置"><a href="#4-3-微调设置" class="headerlink" title="4.3 微调设置"></a>4.3 微调设置</h3><table>
+<h3 id="4-3-微调设置"><a href="#4-3-微调设置" class="headerlink" title="4.3 微调设置"></a>4.3 微调设置</h3><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>参数</th>
 <th>取值</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>基础模型</td>
 <td>Hunyuan 0.5B-dense-8k</td>
 </tr>
@@ -553,23 +579,37 @@
 <td>训练语言</td>
 <td>中文（初始版本）</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <hr>
-<h2 id="5-实验结果"><a href="#5-实验结果" class="headerlink" title="5. 实验结果"></a>5. 实验结果</h2><h3 id="5-1-测试集构建"><a href="#5-1-测试集构建" class="headerlink" title="5.1 测试集构建"></a>5.1 测试集构建</h3><p>由于目前不存在公开的全双工 SDS benchmark，作者针对四种交互场景各生成 <strong>1,000 条测试样本</strong>（共 4,000 条），生成流程与训练数据相同但话题&#x2F;风格池独立重建，确保测试集不与训练集重叠。</p>
+<h2 id="5-实验结果"><a href="#5-实验结果" class="headerlink" title="5. 实验结果"></a>5. 实验结果</h2><h3 id="5-1-测试集构建"><a href="#5-1-测试集构建" class="headerlink" title="5.1 测试集构建"></a>5.1 测试集构建</h3><p>由于目前不存在公开的全双工 SDS benchmark，作者针对四种交互场景各生成 <strong>1,000 条测试样本</strong>（共 4,000 条），生成流程与训练数据相同但话题/风格池独立重建，确保测试集不与训练集重叠。</p>
 <h3 id="5-2-主实验：控制-Token-预测精度"><a href="#5-2-主实验：控制-Token-预测精度" class="headerlink" title="5.2 主实验：控制 Token 预测精度"></a>5.2 主实验：控制 Token 预测精度</h3><p>下表为语义 VAD 在四类控制 token 上的混淆矩阵（论文 Table 1）：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
 <th>GT \ Est</th>
-<th><code>&lt;|C-L|&gt;</code></th>
-<th><code>&lt;|S-S|&gt;</code></th>
-<th><code>&lt;|S-L|&gt;</code></th>
-<th><code>&lt;|C-S|&gt;</code></th>
+<th>`&lt;\</th>
+<th>C-L\</th>
+<th>&gt;`</th>
+<th>`&lt;\</th>
+<th>S-S\</th>
+<th>&gt;`</th>
+<th>`&lt;\</th>
+<th>S-L\</th>
+<th>&gt;`</th>
+<th>`&lt;\</th>
+<th>C-S\</th>
+<th>&gt;`</th>
 <th>Recall</th>
 </tr>
 </thead>
-<tbody><tr>
-<td><code>&lt;|C-L|&gt;</code></td>
+<tbody>
+<tr>
+<td>`&lt;\</td>
+<td>C-L\</td>
+<td>&gt;`</td>
 <td><strong>926</strong></td>
 <td>74</td>
 <td>0</td>
@@ -577,7 +617,9 @@
 <td>0.926</td>
 </tr>
 <tr>
-<td><code>&lt;|S-S|&gt;</code></td>
+<td>`&lt;\</td>
+<td>S-S\</td>
+<td>&gt;`</td>
 <td>11</td>
 <td><strong>989</strong></td>
 <td>0</td>
@@ -585,7 +627,9 @@
 <td>0.989</td>
 </tr>
 <tr>
-<td><code>&lt;|S-L|&gt;</code></td>
+<td>`&lt;\</td>
+<td>S-L\</td>
+<td>&gt;`</td>
 <td>1</td>
 <td>0</td>
 <td><strong>999</strong></td>
@@ -593,7 +637,9 @@
 <td>0.999</td>
 </tr>
 <tr>
-<td><code>&lt;|C-S|&gt;</code></td>
+<td>`&lt;\</td>
+<td>C-S\</td>
+<td>&gt;`</td>
 <td>0</td>
 <td>0</td>
 <td>0</td>
@@ -616,7 +662,9 @@
 <td>1.000</td>
 <td>—</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><strong>总体准确率：97.85%</strong></p>
 <p><strong>关键观察：</strong></p>
 <ul>
@@ -625,6 +673,7 @@
 <li><strong>主要错误来源</strong>：<code>&lt;|C-L|&gt;</code> 有 74 条被误判为 <code>&lt;|S-S|&gt;</code>（过早触发响应），<code>&lt;|S-S|&gt;</code> 有 11 条被误判为 <code>&lt;|C-L|&gt;</code>（响应延迟）。</li>
 </ul>
 <h3 id="5-3-与现有方法的横向对比"><a href="#5-3-与现有方法的横向对比" class="headerlink" title="5.3 与现有方法的横向对比"></a>5.3 与现有方法的横向对比</h3><p>论文 Table 2 对比了三种方法（注：DuplexConv 和 RTTL-DG 的数据直接引用自原论文，测试集不同，仅供参考）：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -641,7 +690,8 @@
 <th>SemanticVAD F1</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>用户状态检测</td>
 <td>Continue-Listening</td>
 <td>—</td>
@@ -693,31 +743,39 @@
 <td>1.00</td>
 <td><strong>1.00</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <blockquote>
 <p>注：由于三篇工作测试集不同，数值不可直接比较，但均显示 SemanticVAD 在各项指标上具有竞争力，特别是在 Start-Listening（真实打断检测）和 Continue-Listening 的 F1 上有显著提升。</p>
 </blockquote>
-<p>SemanticVAD 超越对比方法的根本原因在于：<strong>基于 LLM 的语义理解</strong>可以捕捉上下文意图，而 DuplexConv 和 RTTL-DG 依赖声学&#x2F;浅层语言特征，在语义歧义场景下更容易出错。</p>
+<p>SemanticVAD 超越对比方法的根本原因在于：<strong>基于 LLM 的语义理解</strong>可以捕捉上下文意图，而 DuplexConv 和 RTTL-DG 依赖声学/浅层语言特征，在语义歧义场景下更容易出错。</p>
 <h3 id="5-4-真实录音测试"><a href="#5-4-真实录音测试" class="headerlink" title="5.4 真实录音测试"></a>5.4 真实录音测试</h3><p>为评估系统在实际条件下的表现，作者使用内部用户与半双工 SDS 交互的真实录音（包含自然停顿和犹豫）进行测试，聚焦于<strong>用户状态检测</strong>（<code>&lt;|C-L|&gt;</code> vs <code>&lt;|S-S|&gt;</code>）。</p>
 <p>比较了纯声学 VAD（使用固定静音阈值判断查询完成）与声学 VAD + 语义 VAD 的组合效果（论文 Table 3）：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
 <th>声学 VAD 阈值</th>
 <th>场景</th>
-<th>GT <code>&lt;|C-L|&gt;</code></th>
-<th>GT <code>&lt;|S-S|&gt;</code></th>
+<th>GT `&lt;\</th>
+<th>C-L\</th>
+<th>&gt;`</th>
+<th>GT `&lt;\</th>
+<th>S-S\</th>
+<th>&gt;`</th>
 <th>精确率</th>
 <th>召回率</th>
 <th>F1</th>
 <th>总体准确率</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>300 ms</td>
 <td>仅声学 VAD</td>
-<td>0&#x2F;532</td>
-<td>0&#x2F;1008</td>
+<td>0/532</td>
+<td>0/1008</td>
 <td>—</td>
 <td>—</td>
 <td>—</td>
@@ -725,7 +783,9 @@
 </tr>
 <tr>
 <td>300 ms + 语义</td>
-<td><code>&lt;|C-L|&gt;</code></td>
+<td>`&lt;\</td>
+<td>C-L\</td>
+<td>&gt;`</td>
 <td>495</td>
 <td>37</td>
 <td>0.887</td>
@@ -735,7 +795,9 @@
 </tr>
 <tr>
 <td>300 ms + 语义</td>
-<td><code>&lt;|S-S|&gt;</code></td>
+<td>`&lt;\</td>
+<td>S-S\</td>
+<td>&gt;`</td>
 <td>63</td>
 <td>945</td>
 <td>0.962</td>
@@ -745,7 +807,9 @@
 </tr>
 <tr>
 <td>500 ms + 语义</td>
-<td><code>&lt;|C-L|&gt;</code></td>
+<td>`&lt;\</td>
+<td>C-L\</td>
+<td>&gt;`</td>
 <td>307</td>
 <td>17</td>
 <td>0.892</td>
@@ -755,7 +819,9 @@
 </tr>
 <tr>
 <td>500 ms + 语义</td>
-<td><code>&lt;|S-S|&gt;</code></td>
+<td>`&lt;\</td>
+<td>S-S\</td>
+<td>&gt;`</td>
 <td>37</td>
 <td>1041</td>
 <td>0.984</td>
@@ -765,7 +831,9 @@
 </tr>
 <tr>
 <td>800 ms + 语义</td>
-<td><code>&lt;|C-L|&gt;</code></td>
+<td>`&lt;\</td>
+<td>C-L\</td>
+<td>&gt;`</td>
 <td>218</td>
 <td>10</td>
 <td>0.861</td>
@@ -775,7 +843,9 @@
 </tr>
 <tr>
 <td>800 ms + 语义</td>
-<td><code>&lt;|S-S|&gt;</code></td>
+<td>`&lt;\</td>
+<td>S-S\</td>
+<td>&gt;`</td>
 <td>35</td>
 <td>1056</td>
 <td>0.991</td>
@@ -785,7 +855,9 @@
 </tr>
 <tr>
 <td>1800 ms + 语义</td>
-<td><code>&lt;|C-L|&gt;</code></td>
+<td>`&lt;\</td>
+<td>C-L\</td>
+<td>&gt;`</td>
 <td>128</td>
 <td>4</td>
 <td>0.800</td>
@@ -795,15 +867,18 @@
 </tr>
 <tr>
 <td>1800 ms + 语义</td>
-<td><code>&lt;|S-S|&gt;</code></td>
+<td>`&lt;\</td>
+<td>S-S\</td>
+<td>&gt;`</td>
 <td>32</td>
 <td>1076</td>
 <td>0.996</td>
 <td>0.971</td>
 <td>0.983</td>
-<td></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><strong>关键发现：</strong></p>
 <ul>
 <li>纯声学 VAD（任意阈值）由于只能依靠静音时长判断，<strong>无法预测 <code>&lt;|C-L|&gt;</code></strong>，即完全不具备”用户说到一半”的感知能力。</li>
@@ -817,19 +892,21 @@
 <h3 id="6-2-为何用合成数据而非真实标注数据？"><a href="#6-2-为何用合成数据而非真实标注数据？" class="headerlink" title="6.2 为何用合成数据而非真实标注数据？"></a>6.2 为何用合成数据而非真实标注数据？</h3><p>全双工对话数据需要细粒度的<strong>时序交叉标注</strong>（记录系统说话时用户何时插入、插入意图如何），这类数据在现实中极难收集和标注。合成数据的优势是：可按需控制场景分布（Real INT、Fake INT、Incomplete Q 的比例），并保证控制 token 的标注精确无歧义。代价是领域覆盖的多样性依赖话题池和 prompt 设计的质量。</p>
 <h3 id="6-3-为何采用-Instruction-Tuning-而非端到端训练？"><a href="#6-3-为何采用-Instruction-Tuning-而非端到端训练？" class="headerlink" title="6.3 为何采用 Instruction Tuning 而非端到端训练？"></a>6.3 为何采用 Instruction Tuning 而非端到端训练？</h3><p>作者明确指出，目标不是让 DM 学会回答问题，而是让它”遵循结构化规则、在各种全双工场景中采取正确动作”。Instruction Tuning 范式正好契合这一目标：用少量高质量的指令数据微调，模型可以快速习得决策规则，同时保留基础语言理解能力。这也是为什么 60% 的数据保留率已足够——质量比数量更重要。</p>
 <hr>
-<h2 id="7-与现有方法的对比总结"><a href="#7-与现有方法的对比总结" class="headerlink" title="7. 与现有方法的对比总结"></a>7. 与现有方法的对比总结</h2><table>
+<h2 id="7-与现有方法的对比总结"><a href="#7-与现有方法的对比总结" class="headerlink" title="7. 与现有方法的对比总结"></a>7. 与现有方法的对比总结</h2><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>方法</th>
 <th>DM 类型</th>
 <th>语义理解</th>
 <th>计算开销</th>
-<th>DM&#x2F;CDE 解耦</th>
+<th>DM/CDE 解耦</th>
 <th>假打断处理</th>
-<th>停顿&#x2F;犹豫处理</th>
+<th>停顿/犹豫处理</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>DuplexConv</td>
 <td>多模态分类器</td>
 <td>有限</td>
@@ -883,7 +960,9 @@
 <td><strong>完整支持</strong></td>
 <td><strong>完整支持</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <hr>
 <h2 id="8-结论与展望"><a href="#8-结论与展望" class="headerlink" title="8. 结论与展望"></a>8. 结论与展望</h2><p>本文提出了一种基于轻量级 LLM 的<strong>语义 VAD 对话管理器</strong>，通过预测四种控制 token（<code>&lt;|C-L|&gt;</code>、<code>&lt;|S-S|&gt;</code>、<code>&lt;|S-L|&gt;</code>、<code>&lt;|C-S|&gt;</code>）实现全双工语音对话系统的实时轮换管理。主要贡献包括：</p>
 <ol>
@@ -901,8 +980,7 @@
 </ul>
 <p>全双工 SDS 的终极目标是复现人类对话的自然流动感——本文的语义 VAD 方案在计算效率与交互质量之间找到了一个务实的平衡点，为下一代语音助手的架构设计提供了有价值的参考。</p>
 <hr>
-<p><strong>引用格式：</strong></p>
-<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">Zhang</span>, H., Li, W., Chen, R., Kothapally, V., Yu, M., &amp; Yu, D. (<span class="hljs-number">2025</span>).<br><span class="hljs-attribute">LLM</span>-Enhanced Dialogue Management for Full-Duplex Spoken Dialogue Systems.<br><span class="hljs-attribute">arXiv</span> preprint arXiv:<span class="hljs-number">2502</span>.<span class="hljs-number">14145</span>.<br></code></pre></td></tr></table></figure>
+<p><strong>引用格式：</strong><br><figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">Zhang</span>, H., Li, W., Chen, R., Kothapally, V., Yu, M., &amp; Yu, D. (<span class="hljs-number">2025</span>).<br><span class="hljs-attribute">LLM</span>-Enhanced Dialogue Management for Full-Duplex Spoken Dialogue Systems.<br><span class="hljs-attribute">arXiv</span> preprint arXiv:<span class="hljs-number">2502</span>.<span class="hljs-number">14145</span>.<br></code></pre></td></tr></table></figure></p>
 
                 
               </div>
@@ -1016,8 +1094,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/04/03/speech-llm-realtime-reasoning-survey/" title="Think While You Speak: A Survey of Real-Time Reasoning in Speech LLMs">
-                        <span class="hidden-mobile">Think While You Speak: A Survey of Real-Time Reasoning in Speech LLMs</span>
+                      <a href="/2026/04/03/longcat-next/" title="LongCat-Next: Lexicalizing Modalities as Discrete Tokens">
+                        <span class="hidden-mobile">LongCat-Next: Lexicalizing Modalities as Discrete Tokens</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

@@ -19,12 +19,12 @@
   <meta name="author" content="Ao Zhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="论文标题： Adapting Text LLMs to Speech via Multimodal Depth Up-Scaling作者： Kazuki Yano, Jun Suzuki, Shinji Watanabe（Tohoku University &#x2F; Carnegie Mellon University）arXiv： 2604.00489发表于： 2026年4月   1. 引">
+    <meta name="description" content="论文标题： Adapting Text LLMs to Speech via Multimodal Depth Up-Scaling作者： Kazuki Yano, Jun Suzuki, Shinji Watanabe（Tohoku University &#x2F; Carnegie Mellon University）arXiv： 2604.00489发表于： 2026年4月   1. 引言：问题背">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Adapting Text LLMs to Speech via Multimodal Depth Up-Scaling">
 <meta property="og:url" content="https://smallsmartao.github.io/2026/04/02/paper-multimodal-depth-upscaling-2604.00489/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="论文标题： Adapting Text LLMs to Speech via Multimodal Depth Up-Scaling作者： Kazuki Yano, Jun Suzuki, Shinji Watanabe（Tohoku University &#x2F; Carnegie Mellon University）arXiv： 2604.00489发表于： 2026年4月   1. 引">
+<meta property="og:description" content="论文标题： Adapting Text LLMs to Speech via Multimodal Depth Up-Scaling作者： Kazuki Yano, Jun Suzuki, Shinji Watanabe（Tohoku University &#x2F; Carnegie Mellon University）arXiv： 2604.00489发表于： 2026年4月   1. 引言：问题背">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_custom_2.png">
 <meta property="article:published_time" content="2026-04-02T03:30:00.000Z">
@@ -259,7 +259,7 @@
         
         
         
-          32 分钟
+          31 分钟
         
       </span>
     
@@ -319,7 +319,7 @@
               <div class="markdown-body">
                 
                 <blockquote>
-<p><strong>论文标题：</strong> Adapting Text LLMs to Speech via Multimodal Depth Up-Scaling<br><strong>作者：</strong> Kazuki Yano, Jun Suzuki, Shinji Watanabe（Tohoku University &#x2F; Carnegie Mellon University）<br><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2604.00489">2604.00489</a><br><strong>发表于：</strong> 2026年4月</p>
+<p><strong>论文标题：</strong> Adapting Text LLMs to Speech via Multimodal Depth Up-Scaling<br><strong>作者：</strong> Kazuki Yano, Jun Suzuki, Shinji Watanabe（Tohoku University / Carnegie Mellon University）<br><strong>arXiv：</strong> <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2604.00489">2604.00489</a><br><strong>发表于：</strong> 2026年4月</p>
 </blockquote>
 <hr>
 <h2 id="1-引言：问题背景与研究动机"><a href="#1-引言：问题背景与研究动机" class="headerlink" title="1. 引言：问题背景与研究动机"></a>1. 引言：问题背景与研究动机</h2><p>预训练大语言模型（LLM）在大规模文本语料上积累了强大的语言理解与生成能力。将这些能力扩展到语音领域，催生了语音语言模型（Speech Language Model，Speech LM）这一研究方向。一种自然的做法是：在预训练的文本 LLM 基础上，通过持续预训练（Continual Pre-training，CPT）将语音数据的语音能力注入 LLM，使其既能处理语音（如自动语音识别，ASR），又保留原本的文本能力。</p>
@@ -338,11 +338,9 @@
 <p>本文系统研究新增层的<strong>位置策略</strong>与<strong>架构选择</strong>对 ASR 性能和文本任务保留能力的影响。</p>
 <hr>
 <h2 id="3-方法"><a href="#3-方法" class="headerlink" title="3. 方法"></a>3. 方法</h2><h3 id="3-1-词表扩展（Vocabulary-Expansion）"><a href="#3-1-词表扩展（Vocabulary-Expansion）" class="headerlink" title="3.1 词表扩展（Vocabulary Expansion）"></a>3.1 词表扩展（Vocabulary Expansion）</h3><p>为使 LLM 处理语音输入，首先对预训练 LLM 的 tokenizer 词表进行扩展，加入语音 token。遵循 OpusLM 的做法，通过结合语义 token 与声学 token 将语音转换为离散 token 序列，并将这些语音 token 追加到原始文本词表之后。对应地，嵌入层（embedding layer）随之扩容，并与新增层一起参与训练；原始嵌入权重保持冻结。</p>
-<h3 id="3-2-深度扩缩（Depth-Up-scaling）"><a href="#3-2-深度扩缩（Depth-Up-scaling）" class="headerlink" title="3.2 深度扩缩（Depth Up-scaling）"></a>3.2 深度扩缩（Depth Up-scaling）</h3><p>设预训练模型原有 $n$ 层 ${f_i}<em>{i&#x3D;1}^n$，我们额外插入 $m$ 个新 transformer 层 ${g_j}</em>{j&#x3D;1}^m$（如图1所示）。训练期间，所有原始层 ${f_i}$ 均被冻结，只有新增层 ${g_j}$ 参与梯度更新。</p>
-<p>**函数保持初始化（Function Preserving Initialization）**是深度扩缩成功的关键属性：扩展后的模型在训练开始时应与原始模型行为完全一致，以避免新增层立即扰乱预训练表征、导致训练不稳定。每个新增层 $g_j$ 执行：</p>
-<p>$$H &#x3D; X + \text{MHSA}(\text{LN}(X)) \tag{1}$$</p>
-<p>$$Y &#x3D; H + \text{FFN}(\text{LN}(H)) \tag{2}$$</p>
-<p>其中 $X, Y \in \mathbb{R}^{T \times d}$ 分别为输入和输出，$T$ 为序列长度，$d$ 为隐藏维度，LN 为层归一化。遵循先前工作，对 MHSA 和 FFN 的<strong>输出投影矩阵采用零初始化</strong>，使得初始化时两者输出均为零。由于残差连接和无偏置项的设计，初始化时 $Y &#x3D; X$，即每个新增层为恒等函数，训练过程中逐步学习语音适配。</p>
+<h3 id="3-2-深度扩缩（Depth-Up-scaling）"><a href="#3-2-深度扩缩（Depth-Up-scaling）" class="headerlink" title="3.2 深度扩缩（Depth Up-scaling）"></a>3.2 深度扩缩（Depth Up-scaling）</h3><p>设预训练模型原有 $n$ 层 ${f_i}_{i=1}^n$，我们额外插入 $m$ 个新 transformer 层 ${g_j}_{j=1}^m$（如图1所示）。训练期间，所有原始层 ${f_i}$ 均被冻结，只有新增层 ${g_j}$ 参与梯度更新。</p>
+<p><strong>函数保持初始化（Function Preserving Initialization）</strong>是深度扩缩成功的关键属性：扩展后的模型在训练开始时应与原始模型行为完全一致，以避免新增层立即扰乱预训练表征、导致训练不稳定。每个新增层 $g_j$ 执行：</p>
+<script type="math/tex; mode=display">H = X + \text{MHSA}(\text{LN}(X)) \tag{1}</script><script type="math/tex; mode=display">Y = H + \text{FFN}(\text{LN}(H)) \tag{2}</script><p>其中 $X, Y \in \mathbb{R}^{T \times d}$ 分别为输入和输出，$T$ 为序列长度，$d$ 为隐藏维度，LN 为层归一化。遵循先前工作，对 MHSA 和 FFN 的<strong>输出投影矩阵采用零初始化</strong>，使得初始化时两者输出均为零。由于残差连接和无偏置项的设计，初始化时 $Y = X$，即每个新增层为恒等函数，训练过程中逐步学习语音适配。</p>
 <p><strong>层位置策略</strong>对性能有重要影响，本文评估五种策略（每个新增层 $g_j$ 初始化为对应原始层 $f_i$ 的副本，并置于其后，形成 $g_j \circ f_i$ 的组合）：</p>
 <ul>
 <li><strong>INTERLEAVED</strong>：将新增层均匀分布于全部原始层中</li>
@@ -356,29 +354,25 @@
 <ul>
 <li><strong>全局提取分支（Global Extractor）</strong>：通过多头自注意力（MHSA）捕获长程依赖关系：</li>
 </ul>
-<p>$$H_G &#x3D; \text{MHSA}(\text{LN}(X)) \in \mathbb{R}^{T \times d} \tag{3}$$</p>
-<ul>
+<script type="math/tex; mode=display">H_G = \text{MHSA}(\text{LN}(X)) \in \mathbb{R}^{T \times d} \tag{3}</script><ul>
 <li><strong>局部提取分支（Local Extractor）</strong>：通过卷积空间门控单元（CSGU）和门控 MLP（cgMLP）捕获局部模式：</li>
 </ul>
-<p>$$H_L &#x3D; \text{cgMLP}(\text{LN}(X)) \in \mathbb{R}^{T \times d} \tag{4}$$</p>
-<p><strong>合并模块</strong>通过拼接、深度可分离卷积（DwConv）进行空间精炼，再投影回 $d$ 维：</p>
-<p>$$H_{\text{Merge}} &#x3D; (H_C + \text{DwConv}(H_C)) W_{\text{Merge}} \in \mathbb{R}^{T \times d} \tag{5}$$</p>
-<p>其中 $H_C &#x3D; \text{Concat}(H_G, H_L) \in \mathbb{R}^{T \times 2d}$，$W_{\text{Merge}} \in \mathbb{R}^{2d \times d}$ 为线性投影矩阵。合并输出 $H_{\text{Merge}}$ 经残差连接后通过 FFN（同公式2）。</p>
+<script type="math/tex; mode=display">H_L = \text{cgMLP}(\text{LN}(X)) \in \mathbb{R}^{T \times d} \tag{4}</script><p><strong>合并模块</strong>通过拼接、深度可分离卷积（DwConv）进行空间精炼，再投影回 $d$ 维：</p>
+<script type="math/tex; mode=display">H_{\text{Merge}} = (H_C + \text{DwConv}(H_C)) W_{\text{Merge}} \in \mathbb{R}^{T \times d} \tag{5}</script><p>其中 $H_C = \text{Concat}(H_G, H_L) \in \mathbb{R}^{T \times 2d}$，$W_{\text{Merge}} \in \mathbb{R}^{2d \times d}$ 为线性投影矩阵。合并输出 $H_{\text{Merge}}$ 经残差连接后通过 FFN（同公式2）。</p>
 <p>由于 cgMLP 分支专为声学处理设计，<strong>仅对语音 token 启用 cgMLP 和合并模块</strong>；文本 token 绕过这两个组件，只使用 MHSA 输出。</p>
 <p><strong>E-Branchformer 的函数保持初始化</strong>：标准 transformer 层可独立零初始化 MHSA 和 FFN 的输出投影，但 E-Branchformer 的两个分支共享一个合并投影 $W_{\text{Merge}}$，无法直接套用。本文采用如下初始化方案：</p>
-<p>$$W_{\text{Merge}} &#x3D; \begin{bmatrix} I \ 0 \end{bmatrix}$$</p>
-<p>其中 $I \in \mathbb{R}^{d \times d}$ 为单位矩阵，$0 \in \mathbb{R}^{d \times d}$ 为零矩阵；同时设 $W_O &#x3D; 0$，深度可分离卷积的输出投影也置零。初始化时：$H_G &#x3D; 0$（因为 $W_O &#x3D; 0$），因此 $H_C W_{\text{Merge}} &#x3D; [0, H_L] \cdot [I; 0] &#x3D; 0$，层退化为恒等映射 $Y &#x3D; X$，满足函数保持性质。</p>
+<script type="math/tex; mode=display">W_{\text{Merge}} = \begin{bmatrix} I \\ 0 \end{bmatrix}</script><p>其中 $I \in \mathbb{R}^{d \times d}$ 为单位矩阵，$0 \in \mathbb{R}^{d \times d}$ 为零矩阵；同时设 $W_O = 0$，深度可分离卷积的输出投影也置零。初始化时：$H_G = 0$（因为 $W_O = 0$），因此 $H_C W_{\text{Merge}} = [0, H_L] \cdot [I; 0] = 0$，层退化为恒等映射 $Y = X$，满足函数保持性质。</p>
 <h3 id="3-4-推理时层丢弃（Layer-Dropping-at-Inference）"><a href="#3-4-推理时层丢弃（Layer-Dropping-at-Inference）" class="headerlink" title="3.4 推理时层丢弃（Layer Dropping at Inference）"></a>3.4 推理时层丢弃（Layer Dropping at Inference）</h3><p>冻结全部原始层的直接好处是：推理时可简单移除新增层，类似随机深度（Stochastic Depth）或层 Dropout，<strong>精确还原预训练模型</strong>，从设计上保证文本任务零退化。当需要语音能力时使用完整模型；仅需文本能力时则丢弃新增层。</p>
 <p><img src="/images/paper_figs/2604.00489_fig1.png" srcset="/img/loading.gif" lazyload alt="图1：多模态深度扩缩架构示意图"></p>
 <p><em>图1：多模态深度扩缩策略。可训练的 E-Branchformer 块与冻结的 transformer 块交替排列，在保留预训练文本表征的同时获取语音能力。</em></p>
 <hr>
 <h2 id="4-实验"><a href="#4-实验" class="headerlink" title="4. 实验"></a>4. 实验</h2><h3 id="4-1-实验设置"><a href="#4-1-实验设置" class="headerlink" title="4.1 实验设置"></a>4.1 实验设置</h3><p><strong>数据</strong>：使用 OWSM v3.2 套件的英语 ASR 子集进行训练，共约 <strong>48k 小时</strong>数据。训练期间仅使用 ASR 任务数据，<strong>不混入任何文本数据</strong>，以便在无文本回放辅助的情况下孤立评估深度扩缩对文本能力保留的效果。</p>
 <p><strong>基础模型</strong>：采用 <strong>SmolLM2</strong> 系列，规模分别为 360M（32层）和 1.7B（24层），均在最多 11T 文本 token 上预训练。</p>
-<p><strong>深度扩缩配置</strong>：新增层数量为原始层数的 25%——360M 模型新增 $m&#x3D;8$ 层（$n&#x3D;32$，新增 0.20B 参数，总计 0.51B），1.7B 模型新增 $m&#x3D;6$ 层（$n&#x3D;24$，新增 0.66B 参数，总计 2.27B）。新增层与原始模型隐藏维度相同。</p>
+<p><strong>深度扩缩配置</strong>：新增层数量为原始层数的 25%——360M 模型新增 $m=8$ 层（$n=32$，新增 0.20B 参数，总计 0.51B），1.7B 模型新增 $m=6$ 层（$n=24$，新增 0.66B 参数，总计 2.27B）。新增层与原始模型隐藏维度相同。</p>
 <p><strong>基线方法</strong>：</p>
 <ul>
 <li><strong>全量微调（Full Fine-tuning）</strong>：更新原始模型全部参数，不新增层</li>
-<li><strong>LoRA</strong>：仅训练低秩适配器，预训练权重冻结。LoRA 秩 $r$ 设置为与深度扩缩可训练参数量匹配（360M 对应 $r&#x3D;144$，1.7B 对应 $r&#x3D;356$，分别产生 0.20B 和 0.66B 可训练参数），这是对 LoRA 较为有利的设置。</li>
+<li><strong>LoRA</strong>：仅训练低秩适配器，预训练权重冻结。LoRA 秩 $r$ 设置为与深度扩缩可训练参数量匹配（360M 对应 $r=144$，1.7B 对应 $r=356$，分别产生 0.20B 和 0.66B 可训练参数），这是对 LoRA 较为有利的设置。</li>
 </ul>
 <p><strong>训练</strong>：AdamW 优化器，峰值学习率 $1 \times 10^{-4}$，25k 步预热后线性衰减至 $2 \times 10^{-5}$，最大上下文长度 8192 token。</p>
 <p><strong>评估</strong>：</p>
@@ -387,6 +381,7 @@
 <li><strong>文本能力</strong>：评估 8 个基准——ARC-Easy、ARC-Challenge、BoolQ、HellaSwag、OpenBookQA、PIQA、WinoGrande、MMLU，报告平均准确率（Avg）及相对预训练模型的变化量（$\Delta$）</li>
 </ul>
 <h3 id="4-2-主要实验结果"><a href="#4-2-主要实验结果" class="headerlink" title="4.2 主要实验结果"></a>4.2 主要实验结果</h3><p><strong>表1：SmolLM2-360M 和 SmolLM2-1.7B 主要结果</strong></p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -400,7 +395,8 @@
 <th>$\Delta$</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td><strong>360M</strong></td>
 <td>预训练基线</td>
 <td>–</td>
@@ -560,13 +556,16 @@
 <td>58.5</td>
 <td>-10.5</td>
 </tr>
-</tbody></table>
-<p><em>注：斜体为全量微调；加粗为深度扩缩中最优值。深度扩缩结果为保留新增层推理时的数据；丢弃新增层可精确恢复预训练性能（$\Delta&#x3D;0.0$）。</em></p>
+</tbody>
+</table>
+</div>
+<p><em>注：斜体为全量微调；加粗为深度扩缩中最优值。深度扩缩结果为保留新增层推理时的数据；丢弃新增层可精确恢复预训练性能（$\Delta=0.0$）。</em></p>
 <p><strong>核心发现：</strong></p>
-<p><strong>ASR 性能方面</strong>，深度扩缩（INTERLEAVED）达到与全量微调相当的 WER，大幅优于 LoRA。LoRA 在较小的 360M 模型上表现尤为糟糕（WER clean&#x3D;11.3），说明当基础模型容量有限时，低秩适配能力不足以学习新模态。在 1.7B 模型上，INTERLEAVED 深度扩缩在 test-other 上甚至以 5.5% 超过全量微调（5.6%）。</p>
+<p><strong>ASR 性能方面</strong>，深度扩缩（INTERLEAVED）达到与全量微调相当的 WER，大幅优于 LoRA。LoRA 在较小的 360M 模型上表现尤为糟糕（WER clean=11.3），说明当基础模型容量有限时，低秩适配能力不足以学习新模态。在 1.7B 模型上，INTERLEAVED 深度扩缩在 test-other 上甚至以 5.5% 超过全量微调（5.6%）。</p>
 <p><strong>文本能力保留方面</strong>，全量微调和 LoRA 均造成严重退化（约 -22 至 -35 个百分点），而所有深度扩缩变体的退化均远小于此。在 1.7B 模型上，INTERLEAVED 深度扩缩仅造成 -8.3 的退化，而全量微调高达 -32.6。</p>
 <p><strong>位置策略权衡</strong>：ASR 与文本保留能力之间存在明确的排序反转——INTERLEAVED 在 ASR 上最优但文本退化相对较多，TOP 文本保留最好但 WER 更高。将新增层分布于整个网络赋予其更强的表征适配能力，但也对原始计算路径影响更大。</p>
 <h3 id="4-3-新增层架构对比"><a href="#4-3-新增层架构对比" class="headerlink" title="4.3 新增层架构对比"></a>4.3 新增层架构对比</h3><p><strong>表2：新增层架构与函数保持初始化的影响（INTERLEAVED 位置策略）</strong></p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -579,7 +578,8 @@
 <th>$\Delta$</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td><strong>360M</strong></td>
 <td><em>全量微调</em></td>
 <td>360M</td>
@@ -633,8 +633,11 @@
 <td><strong>62.3</strong></td>
 <td><strong>-6.8</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><strong>E-Branchformer 初始化对比（SmolLM2-1.7B）</strong></p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -646,7 +649,8 @@
 <th>$\Delta$</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>随机初始化 $W_{\text{Merge}}$</td>
 <td>0.75B</td>
 <td>2.5</td>
@@ -662,7 +666,9 @@
 <td><strong>62.3</strong></td>
 <td><strong>-6.8</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><strong>核心发现：</strong></p>
 <p>E-Branchformer 在两个模型规模上均优于标准 transformer 层的 WER。在 1.7B 模型上，E-Branchformer 新增层匹配甚至超越全量微调的 ASR 性能（clean: 2.3 vs 2.3，other: 5.3 vs 5.6），同时文本退化仅为 -6.8，相比全量微调的 -32.6 <strong>减少超过 75%</strong>，且可训练参数减少 60%（0.75B vs 1.87B）。</p>
 <p>两种架构的文本保留能力相当，说明替换为 E-Branchformer 不以牺牲文本性能为代价。E-Branchformer 中 cgMLP 的卷积分支有助于捕获局部声学模式，与自注意力的全局上下文建模形成互补。</p>
@@ -670,6 +676,7 @@
 <h3 id="4-4-定性分析：保留的语言能力"><a href="#4-4-定性分析：保留的语言能力" class="headerlink" title="4.4 定性分析：保留的语言能力"></a>4.4 定性分析：保留的语言能力</h3><p>如前所述，移除新增层可完全还原预训练模型。本节进一步考察：当以语音输入为条件时，模型是否保留基础 LLM 的文本指令跟随能力——这是一种无需级联 pipeline 的端到端能力。</p>
 <p>实验在 SmolLM2-1.7B（INTERLEAVED, E-Branchformer）上进行，通过在语音输入前附加自然语言指令及少量上下文示例，要求模型直接从语音条件提示生成目标文本。输入语音内容为：”A cold, lucid indifference reigned in his soul.”</p>
 <p><strong>表3：零样本提示任务输出对比（SmolLM2-1.7B）</strong></p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -679,7 +686,8 @@
 <th>全量微调输出</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>英法翻译</td>
 <td>Translate the sentence into French</td>
 <td>Une indifférence froide, claire, régnait dans l’âme.</td>
@@ -697,13 +705,15 @@
 <td>The man was indifferent to everything.</td>
 <td>in in in in in in …</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>全量微调完全失败，反复产生退化性输出（重复 token）。相比之下，<strong>多模态深度扩缩在仅用 ASR 数据、无任何文本回放训练的情况下</strong>，在三项任务上均产生了语义连贯、任务适配的输出，与表1中保留的文本能力定量结果一致。</p>
 <hr>
 <h2 id="5-结论与展望"><a href="#5-结论与展望" class="headerlink" title="5. 结论与展望"></a>5. 结论与展望</h2><p>本文提出<strong>多模态深度扩缩</strong>：在冻结文本 LLM 全部层的同时插入新 transformer 层，推理时可丢弃新增层以精确还原预训练性能。在 SmolLM2-360M 和 SmolLM2-1.7B 上的实验表明：</p>
 <ul>
 <li><strong>深度扩缩实现了与全量微调相当的 ASR 性能</strong>，同时文本能力保留远优于全量微调和 LoRA</li>
-<li><strong>E-Branchformer 新增层</strong>进一步提升 ASR：在 1.7B 模型上匹配&#x2F;超越全量微调，文本退化减少超过 75%，可训练参数减少 60%</li>
+<li><strong>E-Branchformer 新增层</strong>进一步提升 ASR：在 1.7B 模型上匹配/超越全量微调，文本退化减少超过 75%，可训练参数减少 60%</li>
 <li><strong>零样本指令跟随能力</strong>得以保留，全量微调则完全丧失此能力</li>
 <li>深度扩缩与文本数据回放<strong>正交</strong>，两者可结合使用</li>
 </ul>
@@ -743,9 +753,9 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
-      
         <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
       
         <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
       

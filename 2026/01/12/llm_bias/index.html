@@ -326,10 +326,10 @@
 <p>而LLM具备强大的上下文理解与推理能力，其建模的上下文窗口可覆盖数百甚至数千个token。在Bias任务中，LLM不仅能接收“热词列表”的引导，还能结合当前语音对应的文本上下文，判断热词是否符合语义逻辑——即便热词发音存在模糊性，也能通过上下文推理排除错误选项，同时避免非热词的误召回（如不会将普通词汇错误识别为热词）。反观WFST或早期的NN-Bias方法，其核心逻辑都是提升近似发音词汇的发射概率，本质上不具备上下文判断能力，因此工程实践中常见的优化手段是在WFST中加入前导词约束，以减少过度偏置带来的误报问题。</p>
 <h3 id="3-适配热词任务的技术工具迁移，提升方案灵活性"><a href="#3-适配热词任务的技术工具迁移，提升方案灵活性" class="headerlink" title="3. 适配热词任务的技术工具迁移，提升方案灵活性"></a>3. 适配热词任务的技术工具迁移，提升方案灵活性</h3><p>LLM生态中已发展出多种成熟的“外部信息融合”与“强化学习”技术，这些技术可直接迁移至Hot Word Bias任务，大幅提升方案的适配性与效果可控性。其中最具代表性的两类技术的应用逻辑如下：</p>
 <ul>
-<li><p>RAG：热词词表本质是一类结构化外部信息，传统方法需将热词硬编码到解码规则或词表中，不仅灵活性差，若要支持大词表还需投入大量优化工作。而基于RAG的思路，可将热词词表构建为检索库，在LLM解码过程中实时匹配上下文并调用热词信息，大幅提升适配效率。</p>
-</li>
-<li><p>RLHF&#x2F;GRPO：辅助loss曾是NN-Bias领域的研究热点，核心原因在于ASR的基础loss未针对热词任务优化，因此需额外增设辅助loss提升效果。而在LLM框架下，热词任务天然适配GRPO等强化学习方法：可直接将“热词正确召回”“无过度偏置误报”作为正向奖励信号，引导模型自主学习最优偏置策略。</p>
-</li>
+<li>RAG：热词词表本质是一类结构化外部信息，传统方法需将热词硬编码到解码规则或词表中，不仅灵活性差，若要支持大词表还需投入大量优化工作。而基于RAG的思路，可将热词词表构建为检索库，在LLM解码过程中实时匹配上下文并调用热词信息，大幅提升适配效率。</li>
+</ul>
+<ul>
+<li>RLHF/GRPO：辅助loss曾是NN-Bias领域的研究热点，核心原因在于ASR的基础loss未针对热词任务优化，因此需额外增设辅助loss提升效果。而在LLM框架下，热词任务天然适配GRPO等强化学习方法：可直接将“热词正确召回”“无过度偏置误报”作为正向奖励信号，引导模型自主学习最优偏置策略。</li>
 </ul>
 <h2 id="三、LLM-based-ASR领域的相关Bias工作现状"><a href="#三、LLM-based-ASR领域的相关Bias工作现状" class="headerlink" title="三、LLM based ASR领域的相关Bias工作现状"></a>三、LLM based ASR领域的相关Bias工作现状</h2><p>上文提到，LLM为Context Bias任务带来了新的可能性，本节将结合最新论文深入介绍这一方向的研究进展。</p>
 <h3 id="3-1-核心挑战：大词表热词偏置"><a href="#3-1-核心挑战：大词表热词偏置" class="headerlink" title="3.1 核心挑战：大词表热词偏置"></a>3.1 核心挑战：大词表热词偏置</h3><p>虽然 LLM-ASR 在各种任务上取得了显著进展，但<strong>大词表下的实体和热词上下文偏置</strong>仍然是一个核心挑战。这些词汇（如联系人列表、地点等）通常具有高语义或商业价值，但：</p>
@@ -381,7 +381,8 @@
 <li><p><strong>联合 Beam Search</strong>：在推理阶段联合解码上下文无关和上下文条件假设</p>
 </li>
 </ol>
-<h3 id="3-3-实验结果"><a href="#3-3-实验结果" class="headerlink" title="3.3 实验结果"></a>3.3 实验结果</h3><h4 id="热词检索性能"><a href="#热词检索性能" class="headerlink" title="热词检索性能"></a>热词检索性能</h4><table>
+<h3 id="3-3-实验结果"><a href="#3-3-实验结果" class="headerlink" title="3.3 实验结果"></a>3.3 实验结果</h3><h4 id="热词检索性能"><a href="#热词检索性能" class="headerlink" title="热词检索性能"></a>热词检索性能</h4><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>方法</th>
@@ -389,7 +390,8 @@
 <th>Recall@10 (Media)</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>GLCLAP</td>
 <td>42.37%</td>
 <td>43.58%</td>
@@ -404,8 +406,11 @@
 <td><strong>85.12%</strong></td>
 <td><strong>93.58%</strong></td>
 </tr>
-</tbody></table>
-<h4 id="ASR-性能"><a href="#ASR-性能" class="headerlink" title="ASR 性能"></a>ASR 性能</h4><table>
+</tbody>
+</table>
+</div>
+<h4 id="ASR-性能"><a href="#ASR-性能" class="headerlink" title="ASR 性能"></a>ASR 性能</h4><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>配置</th>
@@ -415,7 +420,8 @@
 <th>General SACC</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Base</td>
 <td>22.63%</td>
 <td>72.99%</td>
@@ -436,7 +442,9 @@
 <td><strong>11.24%</strong></td>
 <td><strong>78.16%</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><strong>关键发现</strong>：</p>
 <ul>
 <li>KER 大幅降低：Media 从 22.63% 降到 8.29%（相对降低 63%）</li>
@@ -484,9 +492,9 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/asr/" class="print-no-link">#asr</a>
-      
         <a href="/tags/LLM/" class="print-no-link">#LLM</a>
+      
+        <a href="/tags/asr/" class="print-no-link">#asr</a>
       
         <a href="/tags/bias/" class="print-no-link">#bias</a>
       

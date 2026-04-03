@@ -257,7 +257,7 @@
         
         
         
-          34 分钟
+          33 分钟
         
       </span>
     
@@ -338,7 +338,7 @@
 <p>代表性工作包括：</p>
 <ul>
 <li><strong>Transducer-Llama</strong>：将 LLM 集成进 Factorized Transducer 框架作为 non-blank 预测器，但将 LLM 仅用作辅助组件，语音-语言模态融合深度不足，制约了端到端协同优化；</li>
-<li><strong>SpeechLLM-XL &#x2F; Speech ReaLLM</strong>：将语音-文本序列分段用于流式训练，但实验验证仅限于小型语言模型，可扩展性未经充分验证；</li>
+<li><strong>SpeechLLM-XL / Speech ReaLLM</strong>：将语音-文本序列分段用于流式训练，但实验验证仅限于小型语言模型，可扩展性未经充分验证；</li>
 <li><strong>MoCha-ASR</strong>：采用单调 chunk-wise 注意力与 read-write 策略网络和 MinLT loss，端到端优化，但流式推理流水线复杂度显著提升。</li>
 </ul>
 <p><strong>核心矛盾</strong>：现有方案无法在一个统一架构中，同时保持非流式的高识别精度与流式场景的低延迟，且大多引入了架构修改或独立模型分支，增加了部署成本。</p>
@@ -359,10 +359,10 @@
 <li><strong>损失计算</strong>：交叉熵损失仅计算在目标文本 token 上，语音部分不参与损失</li>
 </ul>
 <p>形式化表示（设语音表征序列为 $E_{1..n}$，文本 token 序列为 $y_{1..T}$）：</p>
-<p>$$<br>\text{Input} &#x3D; [E_1, \ldots, E_n, \texttt{<sos>}, y_1, \ldots, y_T]<br>$$</p>
-<p>$$<br>\text{Target} &#x3D; [\underbrace{-,\ldots,-}_{\text{no loss on speech}}, y_1, y_2, \ldots, y_T, \texttt{<eos>}]<br>$$</p>
-<p>$$<br>\mathcal{L}<em>{NS} &#x3D; -\sum</em>{t&#x3D;1}^{T} \log P(y_t \mid E_{1..n}, y_{1..t-1})<br>$$</p>
-<p><strong>推理流程</strong>：在 prefill 阶段将完整语音表征一次性输入 LLM；在 decode 阶段逐 token 自回归生成，直到遇到 <code>&lt;eos&gt;</code> 停止。</p>
+<script type="math/tex; mode=display">
+\text{Input} = [E_1, \ldots, E_n, \texttt{<sos>}, y_1, \ldots, y_T]</script><script type="math/tex; mode=display">
+\text{Target} = [\underbrace{-,\ldots,-}_{\text{no loss on speech}}, y_1, y_2, \ldots, y_T, \texttt{<eos>}]</script><script type="math/tex; mode=display">
+\mathcal{L}_{NS} = -\sum_{t=1}^{T} \log P(y_t \mid E_{1..n}, y_{1..t-1})</script><p><strong>推理流程</strong>：在 prefill 阶段将完整语音表征一次性输入 LLM；在 decode 阶段逐 token 自回归生成，直到遇到 <code>&lt;eos&gt;</code> 停止。</p>
 <p><img src="/images/paper_figs/uni_asr_fig2a_offline_train.png" srcset="/img/loading.gif" lazyload alt="图2(a)：非流式训练范式"></p>
 <h4 id="2-2-2-标准流式范式（Standard-Streaming-Paradigm）"><a href="#2-2-2-标准流式范式（Standard-Streaming-Paradigm）" class="headerlink" title="2.2.2 标准流式范式（Standard Streaming Paradigm）"></a>2.2.2 标准流式范式（Standard Streaming Paradigm）</h4><p>流式场景下，输入语音被切分为固定长度的 chunk。核心思路是将流式训练转化为<strong>多轮连续非流式训练实例</strong>：每个语音 chunk 被视为一个独立的识别任务，同时携带从先前片段传递来的上下文记忆。</p>
 <p>具体操作步骤：</p>
@@ -412,56 +412,60 @@
 <p>混合语料显著丰富了语内多样性（方言口音、说话风格、领域变化）和声学变异性，从而增强了模型在真实场景下的鲁棒性。</p>
 <p><strong>文本预处理</strong>：所有文本标签经过文本归一化（大小写标准化、去标点、数字转文字），以满足流式训练范式的约束。</p>
 <p><strong>字符对齐</strong>：通过 <strong>MMS FA</strong>（Meta 的多语言强制对齐工具）获得字符级对齐，聚合至 subword token 级别以支持 BPE 分词。对于中文文本，通过遮蔽多字符 BPE token 强制执行字符级切分，确保每个汉字在编码和对齐过程中被一致地视为独立语言单元。</p>
-<h3 id="3-2-Audio-Encoder-的训练"><a href="#3-2-Audio-Encoder-的训练" class="headerlink" title="3.2 Audio Encoder 的训练"></a>3.2 Audio Encoder 的训练</h3><p>以 <strong>FireRedASR-AED</strong> 的预训练权重初始化一个联合 CTC&#x2F;AED ASR 模型，在 <strong>WeNet</strong> 框架内训练。</p>
+<h3 id="3-2-Audio-Encoder-的训练"><a href="#3-2-Audio-Encoder-的训练" class="headerlink" title="3.2 Audio Encoder 的训练"></a>3.2 Audio Encoder 的训练</h3><p>以 <strong>FireRedASR-AED</strong> 的预训练权重初始化一个联合 CTC/AED ASR 模型，在 <strong>WeNet</strong> 框架内训练。</p>
 <p>编码器在训练期间同时使用<strong>全注意力</strong>和<strong>动态 chunk 注意力</strong>，构建统一的非流式与流式语音处理框架。为保证流式模式下的严格因果性，Conformer block 中的深度可分离卷积被替换为<strong>因果卷积</strong>。</p>
 <h3 id="3-3-监督微调（SFT）"><a href="#3-3-监督微调（SFT）" class="headerlink" title="3.3 监督微调（SFT）"></a>3.3 监督微调（SFT）</h3><p>整个 SFT 阶段分为 <strong>5 个顺序阶段</strong>，按训练范式分为两大类：<strong>非流式 SFT（阶段 1-4）</strong> 和 <strong>联合 SFT（阶段 5）</strong>。</p>
 <p>所有 SFT 阶段中，音频编码器始终同时使用全注意力和动态 chunk 注意力，保证整个训练过程中编码器对两种处理模式的兼容性。</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
 <th>SFT 阶段</th>
-<th align="center">Audio Encoder</th>
-<th align="center">Adapter</th>
-<th align="center">LLM</th>
+<th style="text-align:center">Audio Encoder</th>
+<th style="text-align:center">Adapter</th>
+<th style="text-align:center">LLM</th>
 <th>训练范式</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>1</td>
-<td align="center">🔒 冻结</td>
-<td align="center">✏️ 训练</td>
-<td align="center">🔒 冻结</td>
+<td style="text-align:center">🔒 冻结</td>
+<td style="text-align:center">✏️ 训练</td>
+<td style="text-align:center">🔒 冻结</td>
 <td>NS</td>
 </tr>
 <tr>
 <td>2</td>
-<td align="center">✏️ 训练</td>
-<td align="center">✏️ 训练</td>
-<td align="center">🔒 冻结</td>
+<td style="text-align:center">✏️ 训练</td>
+<td style="text-align:center">✏️ 训练</td>
+<td style="text-align:center">🔒 冻结</td>
 <td>NS</td>
 </tr>
 <tr>
 <td>3</td>
-<td align="center">🔒 冻结</td>
-<td align="center">🔒 冻结</td>
-<td align="center">✏️ 训练</td>
+<td style="text-align:center">🔒 冻结</td>
+<td style="text-align:center">🔒 冻结</td>
+<td style="text-align:center">✏️ 训练</td>
 <td>NS</td>
 </tr>
 <tr>
 <td>4</td>
-<td align="center">✏️ 训练</td>
-<td align="center">✏️ 训练</td>
-<td align="center">✏️ 训练</td>
+<td style="text-align:center">✏️ 训练</td>
+<td style="text-align:center">✏️ 训练</td>
+<td style="text-align:center">✏️ 训练</td>
 <td>NS</td>
 </tr>
 <tr>
 <td>5</td>
-<td align="center">✏️ 训练</td>
-<td align="center">✏️ 训练</td>
-<td align="center">✏️ 训练</td>
-<td>NS &#x2F; SS &#x2F; CS</td>
+<td style="text-align:center">✏️ 训练</td>
+<td style="text-align:center">✏️ 训练</td>
+<td style="text-align:center">✏️ 训练</td>
+<td>NS / SS / CS</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><strong>非流式 SFT（阶段 1-4）</strong>：每阶段的训练方法与主流 LLM-based ASR 框架的成熟实践保持一致（参见 Fun-ASR 技术报告），逐步解冻各模块以稳定训练。</p>
 <p><strong>联合 SFT（阶段 5）</strong>：在非流式 SFT 基础上，实现三种训练范式的统一联合训练：</p>
 <ul>
@@ -471,253 +475,265 @@
 <hr>
 <h2 id="4-实验结果"><a href="#4-实验结果" class="headerlink" title="4. 实验结果"></a>4. 实验结果</h2><h3 id="4-1-识别结果"><a href="#4-1-识别结果" class="headerlink" title="4.1 识别结果"></a>4.1 识别结果</h3><p>在 AISHELL、LibriSpeech、FLEURS 和 WeNetSpeech 四个主流公开基准上，对 Uni-ASR 进行了全面评测，对比指标为中文字符错误率（CER）和英文词错误率（WER）。</p>
 <p><strong>Table 2：开源数据集上 ASR 性能对比（↓ 越低越好）</strong></p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
 <th>测试集</th>
-<th align="center">GLM-ASR-nano</th>
-<th align="center">Whisper-large-v2</th>
-<th align="center">Seed-ASR</th>
-<th align="center">FireRedASR-AED</th>
-<th align="center">Fun-ASR-nano</th>
-<th align="center">Qwen3-ASR-1.7B</th>
-<th align="center">Uni-ASR</th>
-<th align="center">Uni-ASR‡</th>
+<th style="text-align:center">GLM-ASR-nano</th>
+<th style="text-align:center">Whisper-large-v2</th>
+<th style="text-align:center">Seed-ASR</th>
+<th style="text-align:center">FireRedASR-AED</th>
+<th style="text-align:center">Fun-ASR-nano</th>
+<th style="text-align:center">Qwen3-ASR-1.7B</th>
+<th style="text-align:center">Uni-ASR</th>
+<th style="text-align:center">Uni-ASR‡</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>AISHELL-1</td>
-<td align="center">1.81</td>
-<td align="center">-</td>
-<td align="center">0.68</td>
-<td align="center"><strong>0.55</strong></td>
-<td align="center">1.80</td>
-<td align="center">-</td>
-<td align="center">1.44</td>
-<td align="center">2.15</td>
+<td style="text-align:center">1.81</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">0.68</td>
+<td style="text-align:center"><strong>0.55</strong></td>
+<td style="text-align:center">1.80</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">1.44</td>
+<td style="text-align:center">2.15</td>
 </tr>
 <tr>
 <td>AISHELL-2</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">2.27</td>
-<td align="center">2.52</td>
-<td align="center">2.75</td>
-<td align="center">2.71</td>
-<td align="center">2.60</td>
-<td align="center">3.25</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">2.27</td>
+<td style="text-align:center">2.52</td>
+<td style="text-align:center">2.75</td>
+<td style="text-align:center">2.71</td>
+<td style="text-align:center">2.60</td>
+<td style="text-align:center">3.25</td>
 </tr>
 <tr>
 <td>LibriSpeech test-clean</td>
-<td align="center">2.00</td>
-<td align="center">2.5</td>
-<td align="center"><strong>1.58</strong></td>
-<td align="center">1.93</td>
-<td align="center">1.76</td>
-<td align="center">1.63</td>
-<td align="center">1.93</td>
-<td align="center">2.44</td>
+<td style="text-align:center">2.00</td>
+<td style="text-align:center">2.5</td>
+<td style="text-align:center"><strong>1.58</strong></td>
+<td style="text-align:center">1.93</td>
+<td style="text-align:center">1.76</td>
+<td style="text-align:center">1.63</td>
+<td style="text-align:center">1.93</td>
+<td style="text-align:center">2.44</td>
 </tr>
 <tr>
 <td>LibriSpeech test-other</td>
-<td align="center">4.19</td>
-<td align="center">4.9</td>
-<td align="center"><strong>2.84</strong></td>
-<td align="center">4.44</td>
-<td align="center">4.33</td>
-<td align="center">3.38</td>
-<td align="center">4.11</td>
-<td align="center">5.71</td>
+<td style="text-align:center">4.19</td>
+<td style="text-align:center">4.9</td>
+<td style="text-align:center"><strong>2.84</strong></td>
+<td style="text-align:center">4.44</td>
+<td style="text-align:center">4.33</td>
+<td style="text-align:center">3.38</td>
+<td style="text-align:center">4.11</td>
+<td style="text-align:center">5.71</td>
 </tr>
 <tr>
 <td>FLEURS zh</td>
-<td align="center">-</td>
-<td align="center">14.7</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">2.56</td>
-<td align="center"><strong>2.41</strong></td>
-<td align="center">2.57</td>
-<td align="center">3.43</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">14.7</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">2.56</td>
+<td style="text-align:center"><strong>2.41</strong></td>
+<td style="text-align:center">2.57</td>
+<td style="text-align:center">3.43</td>
 </tr>
 <tr>
 <td>FLEURS en</td>
-<td align="center">-</td>
-<td align="center">4.2</td>
-<td align="center">3.43</td>
-<td align="center">-</td>
-<td align="center">5.96</td>
-<td align="center"><strong>3.35</strong></td>
-<td align="center">4.44</td>
-<td align="center">6.24</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">4.2</td>
+<td style="text-align:center">3.43</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">5.96</td>
+<td style="text-align:center"><strong>3.35</strong></td>
+<td style="text-align:center">4.44</td>
+<td style="text-align:center">6.24</td>
 </tr>
 <tr>
 <td>WeNetSpeech Test Meeting</td>
-<td align="center">6.73</td>
-<td align="center">-</td>
-<td align="center">5.69</td>
-<td align="center"><strong>4.76</strong></td>
-<td align="center">6.60</td>
-<td align="center">5.88</td>
-<td align="center">6.32</td>
-<td align="center">8.04</td>
+<td style="text-align:center">6.73</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">5.69</td>
+<td style="text-align:center"><strong>4.76</strong></td>
+<td style="text-align:center">6.60</td>
+<td style="text-align:center">5.88</td>
+<td style="text-align:center">6.32</td>
+<td style="text-align:center">8.04</td>
 </tr>
 <tr>
 <td>WeNetSpeech Test Net</td>
-<td align="center">-</td>
-<td align="center">-</td>
-<td align="center">4.66</td>
-<td align="center">4.88</td>
-<td align="center">6.01</td>
-<td align="center">4.97</td>
-<td align="center">5.78</td>
-<td align="center"><strong>6.44</strong></td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">4.66</td>
+<td style="text-align:center">4.88</td>
+<td style="text-align:center">6.01</td>
+<td style="text-align:center">4.97</td>
+<td style="text-align:center">5.78</td>
+<td style="text-align:center"><strong>6.44</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <blockquote>
 <p>‡：chunk 长度 1000 ms 的流式识别结果；beam search 宽度为 3</p>
 </blockquote>
-<p><strong>分析</strong>：Uni-ASR 在非流式模式下达到与 SOTA 方案竞争的精度（在 1.7B 参数级别与 Qwen3-ASR-1.7B 相当），流式模式（‡）在保持极低计算代价的同时，WER&#x2F;CER 相对非流式模式有合理的小幅退化，展现了统一架构的优势。</p>
+<p><strong>分析</strong>：Uni-ASR 在非流式模式下达到与 SOTA 方案竞争的精度（在 1.7B 参数级别与 Qwen3-ASR-1.7B 相当），流式模式（‡）在保持极低计算代价的同时，WER/CER 相对非流式模式有合理的小幅退化，展现了统一架构的优势。</p>
 <h3 id="4-2-与原生流式框架的对比"><a href="#4-2-与原生流式框架的对比" class="headerlink" title="4.2 与原生流式框架的对比"></a>4.2 与原生流式框架的对比</h3><p><strong>Table 3：流式 ASR 性能对比（AISHELL: CER，LibriSpeech: WER，格式：test-clean | test-other）</strong></p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
 <th>模型</th>
-<th align="center">Chunk 长度</th>
-<th align="center">AISHELL</th>
-<th align="center">LibriSpeech</th>
+<th style="text-align:center">Chunk 长度</th>
+<th style="text-align:center">AISHELL</th>
+<th style="text-align:center">LibriSpeech</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Speech ReaLLM</td>
-<td align="center">1920 ms</td>
-<td align="center">-</td>
-<td align="center">3.0 &#x2F; 7.4</td>
+<td style="text-align:center">1920 ms</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">3.0 / 7.4</td>
 </tr>
 <tr>
 <td>SpeechLLM-XL</td>
-<td align="center">1280 ms</td>
-<td align="center">-</td>
-<td align="center">2.7 &#x2F; 6.7</td>
+<td style="text-align:center">1280 ms</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">2.7 / 6.7</td>
 </tr>
 <tr>
 <td>MoCha-ASR</td>
-<td align="center">-</td>
-<td align="center">5.1 &#x2F; 5.5</td>
-<td align="center">-</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">5.1 / 5.5</td>
+<td style="text-align:center">-</td>
 </tr>
 <tr>
 <td>Qwen3-ASR-1.7B</td>
-<td align="center">1000 ms</td>
-<td align="center">-</td>
-<td align="center">1.95 &#x2F; 4.51</td>
+<td style="text-align:center">1000 ms</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">1.95 / 4.51</td>
 </tr>
 <tr>
 <td><strong>Uni-ASR</strong></td>
-<td align="center"><strong>1000 ms</strong></td>
-<td align="center"><strong>2.15 &#x2F; 3.25</strong></td>
-<td align="center"><strong>2.44 &#x2F; 5.71</strong></td>
+<td style="text-align:center"><strong>1000 ms</strong></td>
+<td style="text-align:center"><strong>2.15 / 3.25</strong></td>
+<td style="text-align:center"><strong>2.44 / 5.71</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><strong>分析</strong>：在未使用任何额外流式专用解码技术的情况下，Uni-ASR 显著超越 Speech ReaLLM、SpeechLLM-XL 和 MoCha-ASR。值得注意的是，Qwen3-ASR-1.7B 在流式 LibriSpeech 上取得了最低 WER，但其方案依赖<strong>迭代重复的非流式解码 pass</strong>，计算开销远高于原生流式架构；而 Uni-ASR 是真正原生流式的，推理效率更高。</p>
 <hr>
 <h2 id="5-消融实验"><a href="#5-消融实验" class="headerlink" title="5. 消融实验"></a>5. 消融实验</h2><h3 id="5-1-Chunk-长度对流式性能的影响"><a href="#5-1-Chunk-长度对流式性能的影响" class="headerlink" title="5.1 Chunk 长度对流式性能的影响"></a>5.1 Chunk 长度对流式性能的影响</h3><p>流式识别存在一个基本的<strong>延迟-精度权衡</strong>：更短的 chunk 降低延迟，但因上下文不足导致更多边界切分误差，性能会显著下降。</p>
-<p><strong>Table 4：不同 chunk 长度和解码方法下的流式性能消融（AISHELL CER &#x2F; LibriSpeech WER，格式：AISHELL-1 | AISHELL-2，Avg 为所有指标均值）</strong></p>
+<p><strong>Table 4：不同 chunk 长度和解码方法下的流式性能消融（AISHELL CER / LibriSpeech WER，格式：AISHELL-1 | AISHELL-2，Avg 为所有指标均值）</strong></p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
-<th align="center">Chunk 长度</th>
-<th align="center">解码方法</th>
-<th align="center">AISHELL-1 &#x2F; AISHELL-2</th>
-<th align="center">LibriSpeech clean &#x2F; other</th>
-<th align="center">Avg</th>
+<th style="text-align:center">Chunk 长度</th>
+<th style="text-align:center">解码方法</th>
+<th style="text-align:center">AISHELL-1 / AISHELL-2</th>
+<th style="text-align:center">LibriSpeech clean / other</th>
+<th style="text-align:center">Avg</th>
 </tr>
 </thead>
-<tbody><tr>
-<td align="center">1000 ms</td>
-<td align="center">Greedy</td>
-<td align="center">2.46 &#x2F; 3.54</td>
-<td align="center">2.74 &#x2F; 6.65</td>
-<td align="center">3.85</td>
+<tbody>
+<tr>
+<td style="text-align:center">1000 ms</td>
+<td style="text-align:center">Greedy</td>
+<td style="text-align:center">2.46 / 3.54</td>
+<td style="text-align:center">2.74 / 6.65</td>
+<td style="text-align:center">3.85</td>
 </tr>
 <tr>
-<td align="center">1000 ms</td>
-<td align="center">Greedy†</td>
-<td align="center">2.14 &#x2F; 3.28</td>
-<td align="center">2.40 &#x2F; 5.82</td>
-<td align="center">3.41</td>
+<td style="text-align:center">1000 ms</td>
+<td style="text-align:center">Greedy†</td>
+<td style="text-align:center">2.14 / 3.28</td>
+<td style="text-align:center">2.40 / 5.82</td>
+<td style="text-align:center">3.41</td>
 </tr>
 <tr>
-<td align="center">1000 ms</td>
-<td align="center">Beam</td>
-<td align="center">2.15 &#x2F; 3.25</td>
-<td align="center">2.44 &#x2F; 5.71</td>
-<td align="center">3.39</td>
+<td style="text-align:center">1000 ms</td>
+<td style="text-align:center">Beam</td>
+<td style="text-align:center">2.15 / 3.25</td>
+<td style="text-align:center">2.44 / 5.71</td>
+<td style="text-align:center">3.39</td>
 </tr>
 <tr>
-<td align="center">1000 ms</td>
-<td align="center">Beam†</td>
-<td align="center"><strong>1.91 &#x2F; 3.04</strong></td>
-<td align="center"><strong>2.22 &#x2F; 5.30</strong></td>
-<td align="center"><strong>3.12</strong></td>
+<td style="text-align:center">1000 ms</td>
+<td style="text-align:center">Beam†</td>
+<td style="text-align:center"><strong>1.91 / 3.04</strong></td>
+<td style="text-align:center"><strong>2.22 / 5.30</strong></td>
+<td style="text-align:center"><strong>3.12</strong></td>
 </tr>
 <tr>
-<td align="center">640 ms</td>
-<td align="center">Greedy</td>
-<td align="center">2.63 &#x2F; 3.92</td>
-<td align="center">2.99 &#x2F; 7.32</td>
-<td align="center">4.22</td>
+<td style="text-align:center">640 ms</td>
+<td style="text-align:center">Greedy</td>
+<td style="text-align:center">2.63 / 3.92</td>
+<td style="text-align:center">2.99 / 7.32</td>
+<td style="text-align:center">4.22</td>
 </tr>
 <tr>
-<td align="center">640 ms</td>
-<td align="center">Greedy†</td>
-<td align="center">2.36 &#x2F; 3.35</td>
-<td align="center">2.52 &#x2F; 6.37</td>
-<td align="center">3.65</td>
+<td style="text-align:center">640 ms</td>
+<td style="text-align:center">Greedy†</td>
+<td style="text-align:center">2.36 / 3.35</td>
+<td style="text-align:center">2.52 / 6.37</td>
+<td style="text-align:center">3.65</td>
 </tr>
 <tr>
-<td align="center">640 ms</td>
-<td align="center">Beam</td>
-<td align="center">2.35 &#x2F; 3.61</td>
-<td align="center">2.66 &#x2F; 6.31</td>
-<td align="center">3.73</td>
+<td style="text-align:center">640 ms</td>
+<td style="text-align:center">Beam</td>
+<td style="text-align:center">2.35 / 3.61</td>
+<td style="text-align:center">2.66 / 6.31</td>
+<td style="text-align:center">3.73</td>
 </tr>
 <tr>
-<td align="center">640 ms</td>
-<td align="center">Beam†</td>
-<td align="center"><strong>2.09 &#x2F; 3.10</strong></td>
-<td align="center"><strong>2.32 &#x2F; 5.68</strong></td>
-<td align="center"><strong>3.30</strong></td>
+<td style="text-align:center">640 ms</td>
+<td style="text-align:center">Beam†</td>
+<td style="text-align:center"><strong>2.09 / 3.10</strong></td>
+<td style="text-align:center"><strong>2.32 / 5.68</strong></td>
+<td style="text-align:center"><strong>3.30</strong></td>
 </tr>
 <tr>
-<td align="center">320 ms</td>
-<td align="center">Greedy</td>
-<td align="center">3.31 &#x2F; 4.51</td>
-<td align="center">3.67 &#x2F; 9.22</td>
-<td align="center">5.18</td>
+<td style="text-align:center">320 ms</td>
+<td style="text-align:center">Greedy</td>
+<td style="text-align:center">3.31 / 4.51</td>
+<td style="text-align:center">3.67 / 9.22</td>
+<td style="text-align:center">5.18</td>
 </tr>
 <tr>
-<td align="center">320 ms</td>
-<td align="center">Greedy†</td>
-<td align="center">2.61 &#x2F; 3.75</td>
-<td align="center">2.75 &#x2F; 7.50</td>
-<td align="center">4.15</td>
+<td style="text-align:center">320 ms</td>
+<td style="text-align:center">Greedy†</td>
+<td style="text-align:center">2.61 / 3.75</td>
+<td style="text-align:center">2.75 / 7.50</td>
+<td style="text-align:center">4.15</td>
 </tr>
 <tr>
-<td align="center">320 ms</td>
-<td align="center">Beam</td>
-<td align="center">2.90 &#x2F; 4.11</td>
-<td align="center">3.21 &#x2F; 7.71</td>
-<td align="center">4.48</td>
+<td style="text-align:center">320 ms</td>
+<td style="text-align:center">Beam</td>
+<td style="text-align:center">2.90 / 4.11</td>
+<td style="text-align:center">3.21 / 7.71</td>
+<td style="text-align:center">4.48</td>
 </tr>
 <tr>
-<td align="center">320 ms</td>
-<td align="center">Beam†</td>
-<td align="center"><strong>2.38 &#x2F; 3.52</strong></td>
-<td align="center"><strong>2.55 &#x2F; 6.61</strong></td>
-<td align="center"><strong>3.77</strong></td>
+<td style="text-align:center">320 ms</td>
+<td style="text-align:center">Beam†</td>
+<td style="text-align:center"><strong>2.38 / 3.52</strong></td>
+<td style="text-align:center"><strong>2.55 / 6.61</strong></td>
+<td style="text-align:center"><strong>3.77</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <blockquote>
 <p>†：启用 Latest-Token Fallback 解码策略；Beam 宽度为 3</p>
 </blockquote>
@@ -733,7 +749,7 @@
 <li><strong>640 ms</strong>：Greedy† vs Greedy，平均 WER 相对下降 <strong>13.50%</strong>（4.22 → 3.65）</li>
 <li><strong>320 ms</strong>：Greedy† vs Greedy，平均 WER 相对下降 <strong>19.88%</strong>（5.18 → 4.15）</li>
 </ul>
-<p>值得注意的是，在相同 chunk 长度下，<strong>Greedy†（Greedy + Fallback）在性能上持平甚至超越标准 Beam Search</strong>（1000 ms：Greedy† Avg&#x3D;3.41 vs Beam Avg&#x3D;3.39），而 Greedy† 的计算成本远低于 Beam Search。这表明 Fallback 策略不仅提升了精度，还在推理效率上具有实际价值。</p>
+<p>值得注意的是，在相同 chunk 长度下，<strong>Greedy†（Greedy + Fallback）在性能上持平甚至超越标准 Beam Search</strong>（1000 ms：Greedy† Avg=3.41 vs Beam Avg=3.39），而 Greedy† 的计算成本远低于 Beam Search。这表明 Fallback 策略不仅提升了精度，还在推理效率上具有实际价值。</p>
 <hr>
 <h2 id="6-结论"><a href="#6-结论" class="headerlink" title="6. 结论"></a>6. 结论</h2><p>Uni-ASR 提出了一套统一的 LLM-based ASR 框架，核心贡献可归纳为三点：</p>
 <ol>
@@ -798,9 +814,9 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
-      
         <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
       
         <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
       

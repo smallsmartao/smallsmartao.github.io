@@ -333,7 +333,7 @@
 <hr>
 <h2 id="2-Sommelier-核心方法架构-Methodology"><a href="#2-Sommelier-核心方法架构-Methodology" class="headerlink" title="2. Sommelier 核心方法架构 (Methodology)"></a>2. Sommelier 核心方法架构 (Methodology)</h2><p>Sommelier 摒弃了传统的串行处理逻辑，设计了一套包含 <strong>Audio Standardization（音频标准化）、VAD 过滤、Ensemble ASR（集成识别过滤）与 Overlap Separation（重叠解耦）</strong> 的多级过滤与分离架构。</p>
 <p><img src="/images/paper_figs/sommelier/pipeline.png" srcset="/img/loading.gif" lazyload alt="Sommelier Pipeline"></p>
-<h3 id="2-1-Audio-Standardization-与基础过滤-Audio-Standardization-VAD"><a href="#2-1-Audio-Standardization-与基础过滤-Audio-Standardization-VAD" class="headerlink" title="2.1 Audio Standardization 与基础过滤 (Audio Standardization &amp; VAD)"></a>2.1 Audio Standardization 与基础过滤 (Audio Standardization &amp; VAD)</h3><p>首先，野生音频（In-the-wild audio）需要进行统一格式化。</p>
+<h3 id="2-1-Audio-Standardization-与基础过滤-Audio-Standardization-amp-VAD"><a href="#2-1-Audio-Standardization-与基础过滤-Audio-Standardization-amp-VAD" class="headerlink" title="2.1 Audio Standardization 与基础过滤 (Audio Standardization &amp; VAD)"></a>2.1 Audio Standardization 与基础过滤 (Audio Standardization &amp; VAD)</h3><p>首先，野生音频（In-the-wild audio）需要进行统一格式化。</p>
 <ul>
 <li><strong>重采样与降混音</strong>：所有音频统一转换为单声道（Mono），并重采样至 16kHz 或 24kHz（取决于下游模型）。</li>
 <li><strong>VAD 与长静音裁剪</strong>：使用 VAD（Voice Activity Detection，如 Silero VAD）精确定位包含语音的片段。丢弃超过特定阈值（如 2 秒以上）的长静音。</li>
@@ -342,17 +342,18 @@
 <h3 id="2-2-Speaker-Diarization-与重叠提取-Speaker-Diarization"><a href="#2-2-Speaker-Diarization-与重叠提取-Speaker-Diarization" class="headerlink" title="2.2 Speaker Diarization 与重叠提取 (Speaker Diarization)"></a>2.2 Speaker Diarization 与重叠提取 (Speaker Diarization)</h3><p>接下来对干净的语音块进行话者分离。</p>
 <ul>
 <li><strong>聚类与时间戳提取</strong>：Sommelier 采用基于神经网络的 Diarization 方案（如 Pyannote），提取出每个说话人的时间轴（Track）。</li>
-<li><strong>重叠段定位</strong>：系统的核心并不完全信任 Diarization 对于重叠段的聚类结果。相反，只要 VAD&#x2F;Diarization 识别出特定时间窗口内有多于一个声源特征激活，就会打上 <strong>Overlap 标记</strong>，并将该混合音频送入下一个核心模块：盲源分离。</li>
+<li><strong>重叠段定位</strong>：系统的核心并不完全信任 Diarization 对于重叠段的聚类结果。相反，只要 VAD/Diarization 识别出特定时间窗口内有多于一个声源特征激活，就会打上 <strong>Overlap 标记</strong>，并将该混合音频送入下一个核心模块：盲源分离。</li>
 </ul>
-<h3 id="2-3-语音重叠解耦-Overlap-Speech-Separation"><a href="#2-3-语音重叠解耦-Overlap-Speech-Separation" class="headerlink" title="2.3 语音重叠解耦 (Overlap Speech Separation)"></a>2.3 语音重叠解耦 (Overlap Speech Separation)</h3><p>当两人的声音混合在单声道中时：<br>$$S_{mix}(t) &#x3D; S_1(t) + S_2(t) + N(t)$$<br>直接送入 ASR 会导致较弱的信号 $S_2(t)$ 被忽略。Sommelier 采用了盲源分离（BSS，如基于 TF-GridNet 或 SepFormer 的模型）。</p>
+<h3 id="2-3-语音重叠解耦-Overlap-Speech-Separation"><a href="#2-3-语音重叠解耦-Overlap-Speech-Separation" class="headerlink" title="2.3 语音重叠解耦 (Overlap Speech Separation)"></a>2.3 语音重叠解耦 (Overlap Speech Separation)</h3><p>当两人的声音混合在单声道中时：</p>
+<script type="math/tex; mode=display">S_{mix}(t) = S_1(t) + S_2(t) + N(t)</script><p>直接送入 ASR 会导致较弱的信号 $S_2(t)$ 被忽略。Sommelier 采用了盲源分离（BSS，如基于 TF-GridNet 或 SepFormer 的模型）。</p>
 <ul>
 <li><strong>输入</strong>：一段被标记为 Overlap 的单声道混合音频 $S_{mix}$。</li>
 <li><strong>输出</strong>：将其解耦为两路或多路纯净的独立音频流 $S_1’$ 和 $S_2’$。<br>这一步极其关键，它彻底解开了多说话人同时抢话时的缠绕，使得每个人说的话能够被后续 ASR 独立识别，从而完美保留了 Full-duplex 模型训练中所需的“打断（Interruption）”与“回应（Backchanneling）”样本。</li>
 </ul>
-<h3 id="2-4-集成-ASR-幻觉过滤与对齐-Ensemble-ASR-Hallucination-Filtering"><a href="#2-4-集成-ASR-幻觉过滤与对齐-Ensemble-ASR-Hallucination-Filtering" class="headerlink" title="2.4 集成 ASR 幻觉过滤与对齐 (Ensemble ASR &amp; Hallucination Filtering)"></a>2.4 集成 ASR 幻觉过滤与对齐 (Ensemble ASR &amp; Hallucination Filtering)</h3><p>盲源分离虽然解决了重叠，但也容易引入“分离伪影（Artifacts）”，导致 ASR 出现特定的拼写错误或幻觉。为了过滤掉这些脏数据，Sommelier 设计了严密的 <strong>Ensemble ASR（集成识别）和 N-gram 过滤策略</strong>。</p>
+<h3 id="2-4-集成-ASR-幻觉过滤与对齐-Ensemble-ASR-amp-Hallucination-Filtering"><a href="#2-4-集成-ASR-幻觉过滤与对齐-Ensemble-ASR-amp-Hallucination-Filtering" class="headerlink" title="2.4 集成 ASR 幻觉过滤与对齐 (Ensemble ASR &amp; Hallucination Filtering)"></a>2.4 集成 ASR 幻觉过滤与对齐 (Ensemble ASR &amp; Hallucination Filtering)</h3><p>盲源分离虽然解决了重叠，但也容易引入“分离伪影（Artifacts）”，导致 ASR 出现特定的拼写错误或幻觉。为了过滤掉这些脏数据，Sommelier 设计了严密的 <strong>Ensemble ASR（集成识别）和 N-gram 过滤策略</strong>。</p>
 <ol>
-<li><strong>多模型比对 (Paralleled Model Ensembling)</strong>：<br>将分离出来的单路音频同时送入多个不同的 ASR 模型（例如 Whisper-large-v3, Canary, 甚至基于 CTC 的模型）。<br>如果两个模型输出的文本计算出的 <strong>字错误率（WER）或编辑距离</strong> 大于设定阈值，说明该音频片段大概率存在严重的背景噪音或分离伪影导致了模型幻觉。系统会直接**丢弃（Discard）**该片段。</li>
-<li><strong>N-gram&#x2F;Heuristic 过滤</strong>：<br>检查输出文本是否包含 ASR 常见的幻觉重复模式（例如某段话重复输出 5 次以上相同单词，这在 Whisper 中极为常见）。若存在，触发阈值过滤。</li>
+<li><strong>多模型比对 (Paralleled Model Ensembling)</strong>：<br>将分离出来的单路音频同时送入多个不同的 ASR 模型（例如 Whisper-large-v3, Canary, 甚至基于 CTC 的模型）。<br>如果两个模型输出的文本计算出的 <strong>字错误率（WER）或编辑距离</strong> 大于设定阈值，说明该音频片段大概率存在严重的背景噪音或分离伪影导致了模型幻觉。系统会直接<strong>丢弃（Discard）</strong>该片段。</li>
+<li><strong>N-gram/Heuristic 过滤</strong>：<br>检查输出文本是否包含 ASR 常见的幻觉重复模式（例如某段话重复输出 5 次以上相同单词，这在 Whisper 中极为常见）。若存在，触发阈值过滤。</li>
 <li><strong>强制对齐 (Forced Alignment)</strong>：<br>保留下来的高质量文本转录，通过 MFA (Montreal Forced Aligner) 等工具重新将单词对齐回时间轴，生成高精度的时间戳（Timestamps），作为最终训练 SLM 的标签。</li>
 </ol>
 <hr>
@@ -366,7 +367,7 @@
 <h3 id="3-2-罕见多轮交互行为的保留"><a href="#3-2-罕见多轮交互行为的保留" class="headerlink" title="3.2 罕见多轮交互行为的保留"></a>3.2 罕见多轮交互行为的保留</h3><p>相比于常规数据集，基于 Sommelier 清洗出的海量播客数据集，其数据分布（Dataset Composition）有了本质的区别。<br>如下图所示，数据集中不仅包含了普通的轮替对话（Turn-taking），还保留了极高比例的重叠（Overlap）、背景回应（Backchanneling）以及极短时间差的打断（Interruption）。这些“脏数据”在经过 Sommelier 的净化后变成了极为宝贵的“高质量多模态交互语料”。</p>
 <p><img src="/images/paper_figs/sommelier/dataset_composition.png" srcset="/img/loading.gif" lazyload alt="Dataset Composition"></p>
 <hr>
-<h2 id="4-总结与局限性-Limitations-Future-Work"><a href="#4-总结与局限性-Limitations-Future-Work" class="headerlink" title="4. 总结与局限性 (Limitations &amp; Future Work)"></a>4. 总结与局限性 (Limitations &amp; Future Work)</h2><p><strong>核心贡献</strong>：<br>Sommelier 是目前开源社区中最具实操性、专为“全双工（Full-duplex）”语音大模型定制的数据预处理管线。它通过系统级的工程设计（标准化、分离解耦、集成过滤），极大地降低了真实对话音频的标注门槛。</p>
+<h2 id="4-总结与局限性-Limitations-amp-Future-Work"><a href="#4-总结与局限性-Limitations-amp-Future-Work" class="headerlink" title="4. 总结与局限性 (Limitations &amp; Future Work)"></a>4. 总结与局限性 (Limitations &amp; Future Work)</h2><p><strong>核心贡献</strong>：<br>Sommelier 是目前开源社区中最具实操性、专为“全双工（Full-duplex）”语音大模型定制的数据预处理管线。它通过系统级的工程设计（标准化、分离解耦、集成过滤），极大地降低了真实对话音频的标注门槛。</p>
 <p><strong>局限性</strong>：</p>
 <ol>
 <li><strong>重型计算开销</strong>：该管线集成了 BSS 盲源分离模型、多个大型 ASR 模型（用于 Ensemble 过滤）以及 MFA 对齐模块。这种“暴力”的级联架构导致整体数据处理的吞吐量较低，需要庞大的 GPU 算力集群支撑，不适合轻量级的小作坊使用。</li>
@@ -406,9 +407,9 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
-      
         <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
       
         <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
       

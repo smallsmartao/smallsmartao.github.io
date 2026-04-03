@@ -258,7 +258,7 @@
         
         
         
-          15 分钟
+          14 分钟
         
       </span>
     
@@ -344,7 +344,7 @@
 <ol>
 <li><strong>高质量对话与音乐基准</strong>：使用 MLC-SLM 与 Fisher 提供多说话人真实互动语料；同时独立混入合成音乐数据集（Muse），显式优化模型在包含音乐片段时的鲁棒性。</li>
 <li><strong>上下文感知合成管线（Context-Aware Synthetic Data）</strong>：<ul>
-<li>依赖真实数据很难训练 Prompt 注入能力。团队利用 <strong>GPT-5</strong> 生成包含专业实体、中英混说及热词&#x2F;背景提示的复杂剧本。</li>
+<li>依赖真实数据很难训练 Prompt 注入能力。团队利用 <strong>GPT-5</strong> 生成包含专业实体、中英混说及热词/背景提示的复杂剧本。</li>
 <li>使用 VIBEVOICE 引擎将剧本合成为高保真的多说话人音频，并利用闭环 ASR 过滤掉高 WER 样本，最终获得了约 6,000 小时的合成音频数据，极大增强了模型根据文本提示识别专有名词的能力。</li>
 </ul>
 </li>
@@ -358,42 +358,46 @@
 <hr>
 <h2 id="3-核心实验与评测"><a href="#3-核心实验与评测" class="headerlink" title="3. 核心实验与评测"></a>3. 核心实验与评测</h2><p>论文在多个公开长音频评测集上对系统的说话人错误率（DER）和时间约束排列词错误率（tcpWER）进行了验证，并与基线系统（WhisperX 管线以及 Emilia）进行了对比。</p>
 <h3 id="数据流管线对比（DER-与-WER）"><a href="#数据流管线对比（DER-与-WER）" class="headerlink" title="数据流管线对比（DER 与 WER）"></a>数据流管线对比（DER 与 WER）</h3><p>如下表所示，相比于基于 WhisperX 的强力级联管线方案，VIBEVOICE-ASR 的数据流管线在多组评估集上均实现了更低的说话人错误率（DER）与词错误率（WER）。</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
-<th align="left">模型</th>
-<th align="left">AISHELL4 (DER&#x2F;WER)</th>
-<th align="left">AMI-IHM (DER&#x2F;WER)</th>
-<th align="left">AMI-SDM (DER&#x2F;WER)</th>
-<th align="left">AliMeeting (DER&#x2F;WER)</th>
+<th style="text-align:left">模型</th>
+<th style="text-align:left">AISHELL4 (DER/WER)</th>
+<th style="text-align:left">AMI-IHM (DER/WER)</th>
+<th style="text-align:left">AMI-SDM (DER/WER)</th>
+<th style="text-align:left">AliMeeting (DER/WER)</th>
 </tr>
 </thead>
-<tbody><tr>
-<td align="left"><strong>WhisperX</strong></td>
-<td align="left">14.55 &#x2F; 29.69</td>
-<td align="left">18.27 &#x2F; 24.12</td>
-<td align="left">23.05 &#x2F; 39.65</td>
-<td align="left">35.53 &#x2F; 36.62</td>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>WhisperX</strong></td>
+<td style="text-align:left">14.55 / 29.69</td>
+<td style="text-align:left">18.27 / 24.12</td>
+<td style="text-align:left">23.05 / 39.65</td>
+<td style="text-align:left">35.53 / 36.62</td>
 </tr>
 <tr>
-<td align="left"><strong>Emilia</strong></td>
-<td align="left">16.58 &#x2F; 49.40</td>
-<td align="left">35.44 &#x2F; 47.85</td>
-<td align="left">46.55 &#x2F; 61.70</td>
-<td align="left">25.57 &#x2F; 54.27</td>
+<td style="text-align:left"><strong>Emilia</strong></td>
+<td style="text-align:left">16.58 / 49.40</td>
+<td style="text-align:left">35.44 / 47.85</td>
+<td style="text-align:left">46.55 / 61.70</td>
+<td style="text-align:left">25.57 / 54.27</td>
 </tr>
 <tr>
-<td align="left"><strong>VIBEVOICE-ASR (Ours)</strong></td>
-<td align="left"><strong>16.93 &#x2F; 18.99</strong></td>
-<td align="left"><strong>15.46 &#x2F; 23.22</strong></td>
-<td align="left"><strong>17.78 &#x2F; 28.40</strong></td>
-<td align="left"><strong>25.34 &#x2F; 30.82</strong></td>
+<td style="text-align:left"><strong>VIBEVOICE-ASR (Ours)</strong></td>
+<td style="text-align:left"><strong>16.93 / 18.99</strong></td>
+<td style="text-align:left"><strong>15.46 / 23.22</strong></td>
+<td style="text-align:left"><strong>17.78 / 28.40</strong></td>
+<td style="text-align:left"><strong>25.34 / 30.82</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><em>(注：指标越低越好。VIBEVOICE-ASR 在绝大多数多说话人复杂场景下的综合准确度大幅优于传统的级联流水线。)</em></p>
 <p><img src="/images/paper_figs/vibevoice_der_wer.png" srcset="/img/loading.gif" lazyload alt="多模型评测对比雷达图"></p>
 <hr>
-<h2 id="4-结论与启发"><a href="#4-结论与启发" class="headerlink" title="4. 结论与启发"></a>4. 结论与启发</h2><p>VIBEVOICE-ASR 通过大幅降低特征帧率与复用 LLM 的长文本建模能力，结合极其精巧的数据合成与长文本修复策略，成功证明了**一小时级音频单次推断（Single-Pass）**的可行性与优越性。</p>
+<h2 id="4-结论与启发"><a href="#4-结论与启发" class="headerlink" title="4. 结论与启发"></a>4. 结论与启发</h2><p>VIBEVOICE-ASR 通过大幅降低特征帧率与复用 LLM 的长文本建模能力，结合极其精巧的数据合成与长文本修复策略，成功证明了<strong>一小时级音频单次推断（Single-Pass）</strong>的可行性与优越性。</p>
 <p>对于工程实践而言，这意味着：</p>
 <ol>
 <li><strong>数据决定上限</strong>：利用 GPT-5 和语音合成引擎构建成对的带 Prompt 实体数据，以及修复长文本语义断层，是激活 LLM 零样本语境注入能力的最有效手段。</li>
@@ -433,9 +437,9 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
-      
         <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
       
         <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
       

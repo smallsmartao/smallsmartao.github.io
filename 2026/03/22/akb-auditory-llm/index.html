@@ -320,7 +320,7 @@
                 <h1 id="How-Auditory-Knowledge-in-LLM-Backbones-Shapes-Audio-Language-Models-A-Holistic-Evaluation"><a href="#How-Auditory-Knowledge-in-LLM-Backbones-Shapes-Audio-Language-Models-A-Holistic-Evaluation" class="headerlink" title="How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation"></a>How Auditory Knowledge in LLM Backbones Shapes Audio Language Models: A Holistic Evaluation</h1><ul>
 <li>论文链接：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2603.19195">https://arxiv.org/abs/2603.19195</a></li>
 <li>PDF：<a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2603.19195.pdf">https://arxiv.org/pdf/2603.19195.pdf</a></li>
-<li>作者团队：Kehan Lu, Fu Yan, et al.（NTU &#x2F; NVIDIA &#x2F; Academia Sinica）</li>
+<li>作者团队：Kehan Lu, Fu Yan, et al.（NTU / NVIDIA / Academia Sinica）</li>
 </ul>
 <h2 id="1-核心动机：大语言模型到底“懂不懂”声音？"><a href="#1-核心动机：大语言模型到底“懂不懂”声音？" class="headerlink" title="1. 核心动机：大语言模型到底“懂不懂”声音？"></a>1. 核心动机：大语言模型到底“懂不懂”声音？</h2><p>目前，大音频语言模型（Large Audio Language Models, LALMs）的主流范式是将一个音频编码器（Audio Encoder）对接到一个预训练的大语言模型（LLM）上，然后进行联合微调。由于人类在互联网文本中留下了大量关于听觉体验的描述（例如“小提琴听起来很温暖”、“警笛声随着靠近而变大”），业界普遍假设：<strong>即便只经过纯文本预训练，LLM 内部也已经内化了丰富的听觉世界知识（Auditory Knowledge）。</strong></p>
 <p>然而，这种文本内化的听觉知识到底有多少？它是否真的能决定下游多模态 LALM 的表现？<br>为了填补这一空白，本文提出了一个全方位的评估框架，通过控制变量法（仅更换 LLM backbone），在<strong>纯文本测试</strong>、<strong>级联测试</strong>和<strong>端到端音频测试</strong>三个维度上对 17 种主流 LLM（12个开源 + 5个闭源）进行了深度剖析。</p>
@@ -341,118 +341,126 @@
 </ul>
 <hr>
 <h2 id="3-核心实验与发现"><a href="#3-核心实验与发现" class="headerlink" title="3. 核心实验与发现"></a>3. 核心实验与发现</h2><h3 id="3-1-纯文本知识探测（AKB-2000）结果"><a href="#3-1-纯文本知识探测（AKB-2000）结果" class="headerlink" title="3.1 纯文本知识探测（AKB-2000）结果"></a>3.1 纯文本知识探测（AKB-2000）结果</h3><p>闭源模型统治榜单，但开源模型差距巨大。</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
-<th align="left">模型</th>
-<th align="left">平均准确率 (%)</th>
-<th align="left">Sound</th>
-<th align="left">Paralinguistic</th>
-<th align="left">Phonetic</th>
-<th align="left">Music</th>
-<th align="left">Quality</th>
-<th align="left">Technical</th>
+<th style="text-align:left">模型</th>
+<th style="text-align:left">平均准确率 (%)</th>
+<th style="text-align:left">Sound</th>
+<th style="text-align:left">Paralinguistic</th>
+<th style="text-align:left">Phonetic</th>
+<th style="text-align:left">Music</th>
+<th style="text-align:left">Quality</th>
+<th style="text-align:left">Technical</th>
 </tr>
 </thead>
-<tbody><tr>
-<td align="left"><strong>Gemini-2.5-Pro</strong></td>
-<td align="left"><strong>96.05</strong></td>
-<td align="left">96.37</td>
-<td align="left">96.46</td>
-<td align="left">94.93</td>
-<td align="left">95.76</td>
-<td align="left">97.45</td>
-<td align="left">95.35</td>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Gemini-2.5-Pro</strong></td>
+<td style="text-align:left"><strong>96.05</strong></td>
+<td style="text-align:left">96.37</td>
+<td style="text-align:left">96.46</td>
+<td style="text-align:left">94.93</td>
+<td style="text-align:left">95.76</td>
+<td style="text-align:left">97.45</td>
+<td style="text-align:left">95.35</td>
 </tr>
 <tr>
-<td align="left"><strong>Claude-Sonnet-4.5</strong></td>
-<td align="left"><strong>95.70</strong></td>
-<td align="left">95.16</td>
-<td align="left">96.97</td>
-<td align="left">91.71</td>
-<td align="left">96.01</td>
-<td align="left">95.41</td>
-<td align="left">96.22</td>
+<td style="text-align:left"><strong>Claude-Sonnet-4.5</strong></td>
+<td style="text-align:left"><strong>95.70</strong></td>
+<td style="text-align:left">95.16</td>
+<td style="text-align:left">96.97</td>
+<td style="text-align:left">91.71</td>
+<td style="text-align:left">96.01</td>
+<td style="text-align:left">95.41</td>
+<td style="text-align:left">96.22</td>
 </tr>
 <tr>
-<td align="left"><strong>Qwen3-14B</strong></td>
-<td align="left"><strong>85.05</strong></td>
-<td align="left">90.73</td>
-<td align="left">85.35</td>
-<td align="left">76.96</td>
-<td align="left">88.78</td>
-<td align="left">88.27</td>
-<td align="left">79.36</td>
+<td style="text-align:left"><strong>Qwen3-14B</strong></td>
+<td style="text-align:left"><strong>85.05</strong></td>
+<td style="text-align:left">90.73</td>
+<td style="text-align:left">85.35</td>
+<td style="text-align:left">76.96</td>
+<td style="text-align:left">88.78</td>
+<td style="text-align:left">88.27</td>
+<td style="text-align:left">79.36</td>
 </tr>
 <tr>
-<td align="left"><strong>Qwen3-8B</strong></td>
-<td align="left"><strong>78.95</strong></td>
-<td align="left">82.66</td>
-<td align="left">79.80</td>
-<td align="left">68.20</td>
-<td align="left">85.04</td>
-<td align="left">82.65</td>
-<td align="left">72.38</td>
+<td style="text-align:left"><strong>Qwen3-8B</strong></td>
+<td style="text-align:left"><strong>78.95</strong></td>
+<td style="text-align:left">82.66</td>
+<td style="text-align:left">79.80</td>
+<td style="text-align:left">68.20</td>
+<td style="text-align:left">85.04</td>
+<td style="text-align:left">82.65</td>
+<td style="text-align:left">72.38</td>
 </tr>
 <tr>
-<td align="left"><strong>Llama-3.1-8B</strong></td>
-<td align="left"><strong>69.80</strong></td>
-<td align="left">73.79</td>
-<td align="left">67.68</td>
-<td align="left">61.29</td>
-<td align="left">74.69</td>
-<td align="left">73.98</td>
-<td align="left">65.70</td>
+<td style="text-align:left"><strong>Llama-3.1-8B</strong></td>
+<td style="text-align:left"><strong>69.80</strong></td>
+<td style="text-align:left">73.79</td>
+<td style="text-align:left">67.68</td>
+<td style="text-align:left">61.29</td>
+<td style="text-align:left">74.69</td>
+<td style="text-align:left">73.98</td>
+<td style="text-align:left">65.70</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><em>发现：在所有分类中，<strong>语音学（Phonetic）</strong> 始终是所有大模型的集体软肋，因为大量基于 BPE 的分词器破坏了文本与发音之间的隐式联系。</em></p>
-<h3 id="3-2-级联与端到端音频结果（MMAU-MMAR）"><a href="#3-2-级联与端到端音频结果（MMAU-MMAR）" class="headerlink" title="3.2 级联与端到端音频结果（MMAU &amp; MMAR）"></a>3.2 级联与端到端音频结果（MMAU &amp; MMAR）</h3><p>当输入变为真实音频后，哪些模型依然坚挺？</p>
+<h3 id="3-2-级联与端到端音频结果（MMAU-amp-MMAR）"><a href="#3-2-级联与端到端音频结果（MMAU-amp-MMAR）" class="headerlink" title="3.2 级联与端到端音频结果（MMAU &amp; MMAR）"></a>3.2 级联与端到端音频结果（MMAU &amp; MMAR）</h3><p>当输入变为真实音频后，哪些模型依然坚挺？</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
-<th align="left">模型</th>
-<th align="left">MMAU (Cascade)</th>
-<th align="left">MMAR (Cascade)</th>
-<th align="left">MMAU (Audio)</th>
-<th align="left">MMAR (Audio)</th>
+<th style="text-align:left">模型</th>
+<th style="text-align:left">MMAU (Cascade)</th>
+<th style="text-align:left">MMAR (Cascade)</th>
+<th style="text-align:left">MMAU (Audio)</th>
+<th style="text-align:left">MMAR (Audio)</th>
 </tr>
 </thead>
-<tbody><tr>
-<td align="left"><strong>Qwen3-14B</strong></td>
-<td align="left">74.80</td>
-<td align="left">64.90</td>
-<td align="left"><strong>66.20</strong></td>
-<td align="left"><strong>52.90</strong></td>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Qwen3-14B</strong></td>
+<td style="text-align:left">74.80</td>
+<td style="text-align:left">64.90</td>
+<td style="text-align:left"><strong>66.20</strong></td>
+<td style="text-align:left"><strong>52.90</strong></td>
 </tr>
 <tr>
-<td align="left"><strong>Qwen2.5-7B</strong></td>
-<td align="left">73.10</td>
-<td align="left">56.60</td>
-<td align="left"><strong>66.60</strong></td>
-<td align="left">47.30</td>
+<td style="text-align:left"><strong>Qwen2.5-7B</strong></td>
+<td style="text-align:left">73.10</td>
+<td style="text-align:left">56.60</td>
+<td style="text-align:left"><strong>66.60</strong></td>
+<td style="text-align:left">47.30</td>
 </tr>
 <tr>
-<td align="left"><strong>Qwen3-8B</strong></td>
-<td align="left">68.20</td>
-<td align="left">59.80</td>
-<td align="left">61.70</td>
-<td align="left"><strong>53.00</strong></td>
+<td style="text-align:left"><strong>Qwen3-8B</strong></td>
+<td style="text-align:left">68.20</td>
+<td style="text-align:left">59.80</td>
+<td style="text-align:left">61.70</td>
+<td style="text-align:left"><strong>53.00</strong></td>
 </tr>
 <tr>
-<td align="left"><strong>Phi-4-14B</strong></td>
-<td align="left">70.10</td>
-<td align="left">60.10</td>
-<td align="left">61.10</td>
-<td align="left">52.50</td>
+<td style="text-align:left"><strong>Phi-4-14B</strong></td>
+<td style="text-align:left">70.10</td>
+<td style="text-align:left">60.10</td>
+<td style="text-align:left">61.10</td>
+<td style="text-align:left">52.50</td>
 </tr>
 <tr>
-<td align="left"><strong>Llama-3.1-8B</strong></td>
-<td align="left">60.70</td>
-<td align="left">45.40</td>
-<td align="left">56.40</td>
-<td align="left">47.70</td>
+<td style="text-align:left"><strong>Llama-3.1-8B</strong></td>
+<td style="text-align:left">60.70</td>
+<td style="text-align:left">45.40</td>
+<td style="text-align:left">56.40</td>
+<td style="text-align:left">47.70</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p><img src="/images/paper_figs/akb_heatmap.png" srcset="/img/loading.gif" lazyload alt="相关性热力图"></p>
 <p><em>热力图分析显示：AKB-2000（纯文本知识）与端到端 LALM（Audio-grounded）的表现具有极强的正相关性。</em></p>
 <hr>

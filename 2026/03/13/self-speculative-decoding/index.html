@@ -249,7 +249,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          883 字
+          878 字
         
       </span>
     
@@ -347,15 +347,14 @@
 <p><img src="/images/mj/ssd-flow.png" srcset="/img/loading.gif" lazyload alt="整体流程图"></p>
 <h3 id="2-2-关键技术"><a href="#2-2-关键技术" class="headerlink" title="2.2 关键技术"></a>2.2 关键技术</h3><p><strong>1. 帧级熵阈值 (Frame Entropy Threshold)</strong></p>
 <p>使用 CTC 输出分布的帧级熵作为置信度指标：</p>
-<p>$$\sum_{a \in \bar{Y}} -p(a|h_t) \log p(a|h_t) &lt; \tau_{CTC}$$</p>
-<p>熵低说明模型对当前帧的预测很确定，可以直接接受。</p>
+<script type="math/tex; mode=display">\sum_{a \in \bar{Y}} -p(a|h_t) \log p(a|h_t) < \tau_{CTC}</script><p>熵低说明模型对当前帧的预测很确定，可以直接接受。</p>
 <p><strong>2. Token 似然验证 (LLM Verification)</strong></p>
 <p>用 LLM 验证 CTC hypothesis：</p>
-<p>$$p(y_i|\hat{y}<em>{&lt;i}, g) &gt; \tau</em>{SLM}$$</p>
-<p>由于 LLM 是因果模型，所有 token 的验证可以在<strong>一次前向传播</strong>中并行完成。</p>
+<script type="math/tex; mode=display">p(y_i|\hat{y}_{<i}, g) > \tau_{SLM}</script><p>由于 LLM 是因果模型，所有 token 的验证可以在<strong>一次前向传播</strong>中并行完成。</p>
 <p><strong>3. 宽松接受准则 (Relaxed Acceptance Criterion)</strong></p>
 <p>验证失败时，不需要完全匹配，只需找到最长已验证前缀，然后从该前缀继续 AR 解码。这比传统的 speculative decoding 更灵活。</p>
-<h3 id="2-3-与之前工作的区别"><a href="#2-3-与之前工作的区别" class="headerlink" title="2.3 与之前工作的区别"></a>2.3 与之前工作的区别</h3><table>
+<h3 id="2-3-与之前工作的区别"><a href="#2-3-与之前工作的区别" class="headerlink" title="2.3 与之前工作的区别"></a>2.3 与之前工作的区别</h3><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>特性</th>
@@ -363,7 +362,8 @@
 <th>本文</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Draft Model</td>
 <td>单独训练的 TDT 解码器</td>
 <td>复用 CTC 编码器</td>
@@ -378,10 +378,13 @@
 <td>-</td>
 <td>帧级熵，可跳过 LLM 验证</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <h2 id="三、实验结果"><a href="#三、实验结果" class="headerlink" title="三、实验结果"></a>三、实验结果</h2><h3 id="3-1-运行时分析"><a href="#3-1-运行时分析" class="headerlink" title="3.1 运行时分析"></a>3.1 运行时分析</h3><p><img src="/images/mj/ssd-runtime.png" srcset="/img/loading.gif" lazyload alt="各阶段运行时间分布"></p>
 <h3 id="3-2-阈值影响"><a href="#3-2-阈值影响" class="headerlink" title="3.2 阈值影响"></a>3.2 阈值影响</h3><p><img src="/images/mj/ssd-threshold.png" srcset="/img/loading.gif" lazyload alt="阈值对 WER 和 RTFx 的影响"></p>
 <h3 id="3-3-主实验结果"><a href="#3-3-主实验结果" class="headerlink" title="3.3 主实验结果"></a>3.3 主实验结果</h3><p>在 <strong>HuggingFace Open ASR</strong> 基准上，使用 1B 参数 LLM + 440M 参数 CTC 编码器：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -391,7 +394,8 @@
 <th>相对 AR WER 变化</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Full AR</td>
 <td>5.75%</td>
 <td>564</td>
@@ -409,7 +413,9 @@
 <td>2491</td>
 <td>+12%</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>关键发现：</p>
 <ul>
 <li><strong>高精度模式</strong>：同时提升准确率（WER 降低）和吞吐量</li>
@@ -431,7 +437,7 @@
 <li><strong>CTC 编码器</strong>：440M 参数，16 层 Conformer</li>
 <li><strong>Projector</strong>：37M 参数，2 层 Query Transformer</li>
 <li><strong>LLM</strong>：Granite-4.0-nano (1B 参数)</li>
-<li><strong>LoRA</strong>：rank&#x3D;64</li>
+<li><strong>LoRA</strong>：rank=64</li>
 <li><strong>训练数据</strong>：90,000 小时多语言数据</li>
 </ul>
 <h2 id="五、总结"><a href="#五、总结" class="headerlink" title="五、总结"></a>五、总结</h2><p>本文提出了一种创新的自投机解码方法：</p>
@@ -485,9 +491,9 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
-      
         <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
       
         <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
       

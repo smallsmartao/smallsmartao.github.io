@@ -333,11 +333,11 @@
 <ol>
 <li><p><strong>FireRedASR2-LLM (8B+ 参数)</strong><br>采用 Encoder-Adapter-LLM 架构。借助大语言模型的强文本推理能力，主要用于追求极致的识别准确率。</p>
 </li>
-<li><p><strong>FireRedASR2-AED (1B+ 参数)</strong><br>采用 Conformer Encoder 与 Transformer Decoder 架构，兼顾性能与部署成本。<br><strong>时间戳对齐设计</strong>：为了输出稳定的 Token&#x2F;Word 级别时间戳，作者在 AED 模型训练完成后，冻结了 Encoder 和 Decoder 的参数，额外添加了一个轻量级的 CTC 分支进行后置训练（Post-hoc CTC）。这种设计保留了原始模型的识别精度，同时满足了工业界对时间戳的强需求。</p>
+<li><p><strong>FireRedASR2-AED (1B+ 参数)</strong><br>采用 Conformer Encoder 与 Transformer Decoder 架构，兼顾性能与部署成本。<br><strong>时间戳对齐设计</strong>：为了输出稳定的 Token/Word 级别时间戳，作者在 AED 模型训练完成后，冻结了 Encoder 和 Decoder 的参数，额外添加了一个轻量级的 CTC 分支进行后置训练（Post-hoc CTC）。这种设计保留了原始模型的识别精度，同时满足了工业界对时间戳的强需求。</p>
 </li>
 </ol>
 <h3 id="2-2-FireRedVAD：基于人工标注的高效声学事件检测"><a href="#2-2-FireRedVAD：基于人工标注的高效声学事件检测" class="headerlink" title="2.2 FireRedVAD：基于人工标注的高效声学事件检测"></a>2.2 FireRedVAD：基于人工标注的高效声学事件检测</h3><p>VAD 模块的准确性直接决定了系统对长音频的处理鲁棒性。目前许多 VAD 模型依赖 ASR 的强制对齐生成的伪标签进行训练，这在人声与音乐混叠等复杂场景下容易出现边界判定错误。</p>
-<p>FireRedVAD 采用了深度前馈序列记忆网络（DFSMN）架构，参数量仅约 0.6M。<br>核心特点在于，其训练数据使用了数千小时的人工标注声学事件（Acoustic Event）语料。该模块不仅支持传统的语音&#x2F;非语音二分类（流式与非流式），还支持多标签检测（同时输出 speech, singing, music 的概率）。</p>
+<p>FireRedVAD 采用了深度前馈序列记忆网络（DFSMN）架构，参数量仅约 0.6M。<br>核心特点在于，其训练数据使用了数千小时的人工标注声学事件（Acoustic Event）语料。该模块不仅支持传统的语音/非语音二分类（流式与非流式），还支持多标签检测（同时输出 speech, singing, music 的概率）。</p>
 <h3 id="2-3-FireRedLID：层级化语种与方言识别"><a href="#2-3-FireRedLID：层级化语种与方言识别" class="headerlink" title="2.3 FireRedLID：层级化语种与方言识别"></a>2.3 FireRedLID：层级化语种与方言识别</h3><p>LID 模块直接复用了 FireRedASR2-AED 的 Conformer Encoder 作为初始化权重以提取声学特征。</p>
 <p>由于需要支持 100+ 种语言以及 20+ 种中文方言，若将所有类别展平为一个联合标签空间，容易产生类别混淆。因此，模型采用了层级生成的策略，最大解码长度为 2：</p>
 <ol>
@@ -348,6 +348,7 @@
 <p><img src="/images/paper_figs/fireredasr_v2_architecture.png" srcset="/img/loading.gif" lazyload alt="模块架构细节"></p>
 <hr>
 <h2 id="3-核心实验与评测"><a href="#3-核心实验与评测" class="headerlink" title="3. 核心实验与评测"></a>3. 核心实验与评测</h2><h3 id="3-1-ASR-识别准确率评测"><a href="#3-1-ASR-识别准确率评测" class="headerlink" title="3.1 ASR 识别准确率评测"></a>3.1 ASR 识别准确率评测</h3><p>在包含 24 个公开测试集（覆盖普通话、方言、歌词等）的评测中，以 Character Error Rate (CER, %) 为指标（越低越好）。</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -359,7 +360,8 @@
 <th>Fun-ASR</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td><strong>Avg-All-24</strong></td>
 <td><strong>9.67</strong></td>
 <td>9.80</td>
@@ -391,8 +393,11 @@
 <td>2.57</td>
 <td>3.05</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <h3 id="3-2-VAD-评测-FLEURS-VAD-102"><a href="#3-2-VAD-评测-FLEURS-VAD-102" class="headerlink" title="3.2 VAD 评测 (FLEURS-VAD-102)"></a>3.2 VAD 评测 (FLEURS-VAD-102)</h3><p>基于 102 种语言的帧级别评测结果显示，参数量仅为 0.6M 的 FireRedVAD 表现突出：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -403,7 +408,8 @@
 <th>MR (%)</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td><strong>FireRedVAD</strong></td>
 <td><strong>99.60</strong></td>
 <td><strong>97.57</strong></td>
@@ -431,7 +437,9 @@
 <td>44.03</td>
 <td><strong>0.42</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>实验表明，FireRedVAD 在误报率 (FAR) 与漏报率 (MR) 之间取得了合理的平衡。</p>
 <h3 id="3-3-LID-与标点恢复评测"><a href="#3-3-LID-与标点恢复评测" class="headerlink" title="3.3 LID 与标点恢复评测"></a>3.3 LID 与标点恢复评测</h3><ul>
 <li><strong>LID</strong>：在 FLEURS (82 种语言) 评测集上，句子级准确率达 97.18%；在中文方言联合测试集上准确率达 88.47%。</li>
@@ -476,9 +484,9 @@
       
         <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
       
-        <a href="/tags/LID/" class="print-no-link">#LID</a>
-      
         <a href="/tags/VAD/" class="print-no-link">#VAD</a>
+      
+        <a href="/tags/LID/" class="print-no-link">#LID</a>
       
         <a href="/tags/%E5%BC%80%E6%BA%90/" class="print-no-link">#开源</a>
       

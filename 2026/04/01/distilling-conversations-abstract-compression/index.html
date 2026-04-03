@@ -330,25 +330,27 @@
 <li>第 $i$ 个话语的原始音频特征表示为 $A_i$。</li>
 <li>第 $i$ 个话语的文本转录表示为 $W_i$。</li>
 </ul>
-<p>在没有压缩的“原生多模态上下文”方法中，如果当前轮次是 $n$，模型 LLM 的条件输入为：<br>$$P(W_n | W_{1:n-1}, A_{1:n-1}, A_n)$$<br>这里的 $A_{1:n-1}$ 包含了前 $n-1$ 轮的<strong>全部全分辨率音频 token</strong>，序列长度极其庞大。</p>
+<p>在没有压缩的“原生多模态上下文”方法中，如果当前轮次是 $n$，模型 LLM 的条件输入为：</p>
+<script type="math/tex; mode=display">P(W_n | W_{1:n-1}, A_{1:n-1}, A_n)</script><p>这里的 $A_{1:n-1}$ 包含了前 $n-1$ 轮的<strong>全部全分辨率音频 token</strong>，序列长度极其庞大。</p>
 <h3 id="1-2-抽象压缩（Abstract-Compression）的目标"><a href="#1-2-抽象压缩（Abstract-Compression）的目标" class="headerlink" title="1.2 抽象压缩（Abstract Compression）的目标"></a>1.2 抽象压缩（Abstract Compression）的目标</h3><p>由于历史轮次的文本 $W_{1:n-1}$ 已经提供了极为紧凑且高效的词汇级信息（Lexical Context，这对解决专有名词极其重要），其实我们并不需要历史音频的每一帧细节。历史音频的真正价值在于提供<strong>韵律、情绪、发音特征和副语言信号</strong>。</p>
-<p>因此，Abstract Compression 的核心就是通过一个<strong>可学习的压缩模块（Distillation Module）</strong> $f_{	heta}$，将长序列 $A_i$ 映射为一个极短的隐式特征序列 $C_i$（例如长度固定为 $K&#x3D;4$ 或 $8$）：<br>$$C_i &#x3D; f_{	heta}(A_i)$$</p>
-<p>压缩后，LLM 的条件输入变为：<br>$$P(W_n | W_{1:n-1}, C_{1:n-1}, A_n)$$<br>通过这种方式，上下文音频的 token 数量被强制压缩了几个数量级，但依然保留了关键的声学和语用特征。</p>
+<p>因此，Abstract Compression 的核心就是通过一个<strong>可学习的压缩模块（Distillation Module）</strong> $f_{    heta}$，将长序列 $A_i$ 映射为一个极短的隐式特征序列 $C_i$（例如长度固定为 $K=4$ 或 $8$）：</p>
+<script type="math/tex; mode=display">C_i = f_{    heta}(A_i)</script><p>压缩后，LLM 的条件输入变为：</p>
+<script type="math/tex; mode=display">P(W_n | W_{1:n-1}, C_{1:n-1}, A_n)</script><p>通过这种方式，上下文音频的 token 数量被强制压缩了几个数量级，但依然保留了关键的声学和语用特征。</p>
 <hr>
-<h2 id="2-方法论详解：两阶段训练架构"><a href="#2-方法论详解：两阶段训练架构" class="headerlink" title="2. 方法论详解：两阶段训练架构"></a>2. 方法论详解：两阶段训练架构</h2><p>如何训练这个压缩模块 $f_{	heta}$，使其在极低的 token 容量（Bottleneck）下保留对 ASR 最有用的信息？论文提出了一种<strong>两阶段（Two-Stage）的知识蒸馏与微调架构</strong>。</p>
+<h2 id="2-方法论详解：两阶段训练架构"><a href="#2-方法论详解：两阶段训练架构" class="headerlink" title="2. 方法论详解：两阶段训练架构"></a>2. 方法论详解：两阶段训练架构</h2><p>如何训练这个压缩模块 $f_{    heta}$，使其在极低的 token 容量（Bottleneck）下保留对 ASR 最有用的信息？论文提出了一种<strong>两阶段（Two-Stage）的知识蒸馏与微调架构</strong>。</p>
 <p><img src="/images/paper_figs/distilling/Phi4-AbstractCompression.png" srcset="/img/loading.gif" lazyload alt="Abstract Compression Architecture"></p>
 <h3 id="2-1-阶段一：特征层面的蒸馏（Feature-Distillation）"><a href="#2-1-阶段一：特征层面的蒸馏（Feature-Distillation）" class="headerlink" title="2.1 阶段一：特征层面的蒸馏（Feature Distillation）"></a>2.1 阶段一：特征层面的蒸馏（Feature Distillation）</h3><p>在第一阶段，模型完全脱离下游的文本生成任务，专注于<strong>让压缩特征（Latent Tokens）尽可能多地重建全分辨率的音频特征</strong>。</p>
 <p>具体机制如下：</p>
 <ol>
-<li><strong>全分辨率编码</strong>：将历史音频 $A_i$ 通过 Whisper 编码器，得到高分辨率的音频特征表示 $Z_i \in \mathbb{R}^{T 	imes D}$（其中 $T$ 是长序列帧数，$D$ 是特征维度）。</li>
-<li><strong>抽象压缩模块 $f_{	heta}$</strong>：这是一个基于 Q-Former（Query Transformer）或简单注意力池化（Attention Pooling）的模块。它引入了 $K$ 个固定数量的 Query Token（例如 $K&#x3D;4$ 或 $8$）。这 $K$ 个 Query 通过 Cross-Attention 对长序列 $Z_i$ 进行查询和聚合，最终输出固定长度的压缩特征 $C_i \in \mathbb{R}^{K 	imes D}$。</li>
-<li><strong>重建与蒸馏损失</strong>：为了确保 $C_i$ 学到了有用的信息，模型使用一个浅层的 Decoder 网络，试图从 $C_i$ 重构出原始的 $Z_i$。这里的损失函数通常采用均方误差（MSE）或余弦相似度损失：<br>$$\mathcal{L}_{distill} &#x3D; \operatorname{MSE}(Decoder(C_i), Z_i)$$<br>这一步强迫那 $K$ 个可怜的 token 拼命“压缩”并“记住”整段音频中的全局声学风格、说话人声纹等高维特征。</li>
+<li><strong>全分辨率编码</strong>：将历史音频 $A_i$ 通过 Whisper 编码器，得到高分辨率的音频特征表示 $Z_i \in \mathbb{R}^{T     imes D}$（其中 $T$ 是长序列帧数，$D$ 是特征维度）。</li>
+<li><strong>抽象压缩模块 $f_{    heta}$</strong>：这是一个基于 Q-Former（Query Transformer）或简单注意力池化（Attention Pooling）的模块。它引入了 $K$ 个固定数量的 Query Token（例如 $K=4$ 或 $8$）。这 $K$ 个 Query 通过 Cross-Attention 对长序列 $Z_i$ 进行查询和聚合，最终输出固定长度的压缩特征 $C_i \in \mathbb{R}^{K     imes D}$。</li>
+<li><strong>重建与蒸馏损失</strong>：为了确保 $C_i$ 学到了有用的信息，模型使用一个浅层的 Decoder 网络，试图从 $C_i$ 重构出原始的 $Z_i$。这里的损失函数通常采用均方误差（MSE）或余弦相似度损失：<script type="math/tex; mode=display">\mathcal{L}_{distill} = \operatorname{MSE}(Decoder(C_i), Z_i)</script>这一步强迫那 $K$ 个可怜的 token 拼命“压缩”并“记住”整段音频中的全局声学风格、说话人声纹等高维特征。</li>
 </ol>
-<h3 id="2-2-阶段二：端到端的联合微调（End-to-End-ASR-Fine-tuning）"><a href="#2-2-阶段二：端到端的联合微调（End-to-End-ASR-Fine-tuning）" class="headerlink" title="2.2 阶段二：端到端的联合微调（End-to-End ASR Fine-tuning）"></a>2.2 阶段二：端到端的联合微调（End-to-End ASR Fine-tuning）</h3><p>经过第一阶段后，压缩模块 $f_{	heta}$ 已经具备了很好的信息提炼能力。接下来进入真实的多轮 ASR 任务。</p>
+<h3 id="2-2-阶段二：端到端的联合微调（End-to-End-ASR-Fine-tuning）"><a href="#2-2-阶段二：端到端的联合微调（End-to-End-ASR-Fine-tuning）" class="headerlink" title="2.2 阶段二：端到端的联合微调（End-to-End ASR Fine-tuning）"></a>2.2 阶段二：端到端的联合微调（End-to-End ASR Fine-tuning）</h3><p>经过第一阶段后，压缩模块 $f_{    heta}$ 已经具备了很好的信息提炼能力。接下来进入真实的多轮 ASR 任务。</p>
 <ol>
 <li>模型的主干是一个强大的 Text-LLM（如 Phi-3 或 LLaMA）。</li>
 <li><strong>输入拼装</strong>：对于前 $n-1$ 轮的每一轮，将显式文本 $W_i$ 的 token 和压缩后的音频 $C_i$ 交替拼装作为 Context。对于当前第 $n$ 轮，输入全分辨率的音频特征 $Z_n$。<br>输入序列如同：<code>&lt;Transcript_1&gt; &lt;C_1&gt; &lt;Transcript_2&gt; &lt;C_2&gt; ... &lt;Transcript_{n-1}&gt; &lt;C_{n-1}&gt; &lt;Z_n&gt;</code></li>
-<li><strong>联合训练</strong>：在这个阶段，LLM 被训练以自回归的方式输出当前轮次的文本 $W_n$。此时，压缩模块 $f_{	heta}$ 也会跟随 ASR 的损失（Cross-Entropy Loss）进行端到端的联合反向传播微调。<br>这使得压缩模块从“尽量保存所有声音细节”转变为了“<strong>只提取对当前这句 ASR 识别有帮助的上下文特征</strong>”（例如发音习惯或语气线索）。</li>
+<li><strong>联合训练</strong>：在这个阶段，LLM 被训练以自回归的方式输出当前轮次的文本 $W_n$。此时，压缩模块 $f_{    heta}$ 也会跟随 ASR 的损失（Cross-Entropy Loss）进行端到端的联合反向传播微调。<br>这使得压缩模块从“尽量保存所有声音细节”转变为了“<strong>只提取对当前这句 ASR 识别有帮助的上下文特征</strong>”（例如发音习惯或语气线索）。</li>
 </ol>
 <hr>
 <h2 id="3-实验结果与深度分析"><a href="#3-实验结果与深度分析" class="headerlink" title="3. 实验结果与深度分析"></a>3. 实验结果与深度分析</h2><h3 id="3-1-压缩率与性能的权衡-Compression-Rates-Trade-off"><a href="#3-1-压缩率与性能的权衡-Compression-Rates-Trade-off" class="headerlink" title="3.1 压缩率与性能的权衡 (Compression Rates Trade-off)"></a>3.1 压缩率与性能的权衡 (Compression Rates Trade-off)</h3><p>为了量化这种架构的收益，作者对比了不同 $K$ 值（每轮保留的隐式 token 数量）对词错误率（WER）的影响。</p>
@@ -358,14 +360,14 @@
 <li><strong>无上下文基线（No Context）</strong>：最差。</li>
 <li><strong>全分辨率上下文（Raw Context）</strong>：性能最好，但需要输入成千上万个 token，KV Cache 开销无法承受。</li>
 <li><strong>抽象压缩（Abstract Compression）</strong>：<ul>
-<li>当 $K&#x3D;1$ 时（极度压缩），模型丢失了过多的细节，性能下降明显。</li>
+<li>当 $K=1$ 时（极度压缩），模型丢失了过多的细节，性能下降明显。</li>
 <li>当 $K \in [4, 8]$ 时（最佳平衡），性能曲线趋于平缓，<strong>模型恢复了使用全分辨率音频时绝大部分的性能增益</strong>，同时上下文 token 的总数减少了两个数量级以上！</li>
 </ul>
 </li>
 </ol>
 <h3 id="3-2-专有名词（Contextual-Entities）的跨轮次对齐"><a href="#3-2-专有名词（Contextual-Entities）的跨轮次对齐" class="headerlink" title="3.2 专有名词（Contextual Entities）的跨轮次对齐"></a>3.2 专有名词（Contextual Entities）的跨轮次对齐</h3><p>这是该论文最为惊艳的发现之一。<br>在日常对话中，第一句可能提到“我叫<strong>张三</strong>（Zhang San）”，第三句再说“<strong>张三</strong>去吃饭了”时，ASR 常常由于发音模糊把第三句听成“<strong>张山</strong>（Zhang Shan）”。<br>通过 Abstract Compression，显式文本（第一句的转录）保留了“张三”这两个字的准确 Lexical Token；而隐式压缩特征 $C_1$ 则保留了说话人当时对“张三”这两个字的<strong>发音（Acoustic Signature）</strong>。<br>经过第二阶段的端到端微调，LLM 学会了在推理时跨越轮次去比对：<strong>“哦，当前这段音频里的发音，和第一句 $C_1$ 里提到的发音一模一样，所以我这里也应该输出文本里的‘张三’。”</strong><br>这使得模型对罕见上下文实体的识别错误率实现了断崖式的降低。</p>
 <hr>
-<h2 id="4-总结"><a href="#4-总结" class="headerlink" title="4. 总结"></a>4. 总结</h2><p>《Distilling Conversations》不仅指出了一条降低多模态 LLM 长音频序列推理成本的明路，更通过**“显式文本防遗忘、隐式音频防歧义”**的双模态互补机制，揭示了 Audio-LLM 如何高效处理上下文的高级技巧。这种采用 Q-Former 风格架构进行跨模态特征蒸馏的两阶段训练法，在未来的全双工语音助手、长播客分析等真实工程落地中，具有极其重要的参考价值。</p>
+<h2 id="4-总结"><a href="#4-总结" class="headerlink" title="4. 总结"></a>4. 总结</h2><p>《Distilling Conversations》不仅指出了一条降低多模态 LLM 长音频序列推理成本的明路，更通过<strong>“显式文本防遗忘、隐式音频防歧义”</strong>的双模态互补机制，揭示了 Audio-LLM 如何高效处理上下文的高级技巧。这种采用 Q-Former 风格架构进行跨模态特征蒸馏的两阶段训练法，在未来的全双工语音助手、长播客分析等真实工程落地中，具有极其重要的参考价值。</p>
 
                 
               </div>
@@ -399,9 +401,9 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
-      
         <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
       
         <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
       

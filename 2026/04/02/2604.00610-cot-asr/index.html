@@ -247,7 +247,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          4.4k 字
+          1.2k 字
         
       </span>
     
@@ -258,7 +258,7 @@
         
         
         
-          37 分钟
+          10 分钟
         
       </span>
     
@@ -326,7 +326,7 @@
 <li><strong>离散语音 Token 扩充词表</strong>（如 AudioLM、SpeechGPT）：将语音转化为离散 token，扩充 LLM 词表后联合训练；</li>
 <li><strong>连续语音表示作为 soft prompt</strong>（如 Qwen-Audio、SALMONN、Phi-4-MultiModal）：用线性映射或 Q-former 将语音 encoder 输出对齐到 LLM 隐空间，再作为 prompt 传入。</li>
 </ol>
-<p>本文聚焦第二类范式，并指出该范式目前存在一个根本性问题：<strong>LLM 在 ASR 任务中实际上被限制在「转述模式」（reproducing&#x2F;refining mode）</strong>，其强大的生成能力和推理能力未得到充分利用。</p>
+<p>本文聚焦第二类范式，并指出该范式目前存在一个根本性问题：<strong>LLM 在 ASR 任务中实际上被限制在「转述模式」（reproducing/refining mode）</strong>，其强大的生成能力和推理能力未得到充分利用。</p>
 <h3 id="1-2-核心痛点：ASR-是内容保全映射"><a href="#1-2-核心痛点：ASR-是内容保全映射" class="headerlink" title="1.2 核心痛点：ASR 是内容保全映射"></a>1.2 核心痛点：ASR 是内容保全映射</h3><p>语音识别（ASR）在信息论上本质是一种嘈声源-通道模型（noisy source-channel formulation）：语音和转录文本承载几乎相同的内容，ASR 所做的是 <strong>content-preserving mapping</strong>，而非真正的语义转换。这与机器翻译、问答等任务截然不同——后者需要大量的语义推断与知识运用。</p>
 <p>因此，当前 LLM-based ASR 系统仅仅将 LLM 当作一个「更好的语言模型打分器」，训练目标仍然是最小化转录 CE loss，无法触发 LLM 在大规模预训练中积累的知识和推理能力。作者通过大量工业预实验证实了这一点：直接将更大的 LLM 接入 ASR 系统，收益不成正比。</p>
 <h3 id="1-3-本文的核心思路"><a href="#1-3-本文的核心思路" class="headerlink" title="1.3 本文的核心思路"></a>1.3 本文的核心思路</h3><p>本文提出 <strong>CoT-ASR（Chain-of-Thought ASR）</strong>，首次将思维链（CoT）推理机制引入 ASR。核心思路是：</p>
@@ -353,28 +353,28 @@
 <hr>
 <h2 id="3-CoT-ASR-方法"><a href="#3-CoT-ASR-方法" class="headerlink" title="3. CoT-ASR 方法"></a>3. CoT-ASR 方法</h2><h3 id="3-1-整体架构"><a href="#3-1-整体架构" class="headerlink" title="3.1 整体架构"></a>3.1 整体架构</h3><p>CoT-ASR 由三个主要模块组成：</p>
 <ol>
-<li><strong>Speech Encoder</strong>：基于 Conformer 架构，将语音信号编码为连续帧级表示序列 $E &#x3D; (e_1, \ldots, e_L)$；</li>
-<li><strong>CTC-guided Modality Adapter</strong>：将 $E$ 转换为模态对齐后的表示序列 $A &#x3D; (a_1, \ldots, a_L)$（长度不变，维度与 LLM 隐层匹配）；</li>
+<li><strong>Speech Encoder</strong>：基于 Conformer 架构，将语音信号编码为连续帧级表示序列 $E = (e_1, \ldots, e_L)$；</li>
+<li><strong>CTC-guided Modality Adapter</strong>：将 $E$ 转换为模态对齐后的表示序列 $A = (a_1, \ldots, a_L)$（长度不变，维度与 LLM 隐层匹配）；</li>
 <li><strong>LLM + LoRA</strong>：以 Phi-4-mini-instruct（3.8B 参数）为主干，接收 $[A; I]$（speech prompt + text prompt embedding 拼接）并执行 next-token prediction。</li>
 </ol>
-<p>CoT-ASR 的生成目标序列 $y &#x3D; (y_1, \ldots, y_N)$ 包含两部分：</p>
-<p>$$<br>\langle\text{CONTEXT}\rangle \text{上下文分析} \langle&#x2F;\text{CONTEXT}\rangle \langle\text{TRANSCRIPT}\rangle \text{转录文本} \langle&#x2F;\text{TRANSCRIPT}\rangle<br>$$</p>
-<p>整体生成概率建模为：</p>
-<p>$$<br>P(y \mid E, I) &#x3D; \prod_{i&#x3D;1}^{N} P(y_i \mid [A; I], y_{&lt;i}) \tag{1}<br>$$</p>
-<p>其中 $[\cdot;\cdot]$ 表示时序维度的拼接，$y_{&lt;i}$ 表示前 $i-1$ 步已生成的 token。</p>
+<p>CoT-ASR 的生成目标序列 $y = (y_1, \ldots, y_N)$ 包含两部分：</p>
+<script type="math/tex; mode=display">
+\langle\text{CONTEXT}\rangle \text{上下文分析} \langle/\text{CONTEXT}\rangle \langle\text{TRANSCRIPT}\rangle \text{转录文本} \langle/\text{TRANSCRIPT}\rangle</script><p>整体生成概率建模为：</p>
+<script type="math/tex; mode=display">
+P(y \mid E, I) = \prod_{i=1}^{N} P(y_i \mid [A; I], y_{<i}) \tag{1}</script><p>其中 $[\cdot;\cdot]$ 表示时序维度的拼接，$y_{&lt;i}$ 表示前 $i-1$ 步已生成的 token。</p>
 <p><img src="/images/paper_figs/2604.00610_fig1_architecture.png" srcset="/img/loading.gif" lazyload alt="CoT-ASR 整体架构图"></p>
 <p><em>图1：CoT-ASR 架构示意图。输入语音经语音编码器和 CTC-guided Modality Adapter 处理后，与文本 prompt embedding 拼接，输入 LLM。输出序列包括红色标注的上下文推理分析（CONTEXT）和绿色标注的最终转录（TRANSCRIPT），在单次生成中完成。</em></p>
 <h3 id="3-2-训练流程"><a href="#3-2-训练流程" class="headerlink" title="3.2 训练流程"></a>3.2 训练流程</h3><h4 id="3-2-1-推理增强数据构建"><a href="#3-2-1-推理增强数据构建" class="headerlink" title="3.2.1 推理增强数据构建"></a>3.2.1 推理增强数据构建</h4><p>训练的核心是将静态的 <code>(speech, transcript)</code> 对转化为动态的推理链数据 <code>(speech, context + transcript)</code>。具体做法是：</p>
 <ul>
 <li>使用现成的文本 LLM（本文采用 Qwen2.5-14B-Instruct）对每条 ground-truth 转录文本自动生成对应的上下文分析（contextual analysis）；</li>
-<li>上下文分析的质量由精心设计的 prompt template 保障（详见 Appendix A），prompt 要求模型识别语境类型、融入具体实体&#x2F;专有名词、描述说话者与听众关系，但不直接引用原文；</li>
+<li>上下文分析的质量由精心设计的 prompt template 保障（详见 Appendix A），prompt 要求模型识别语境类型、融入具体实体/专有名词、描述说话者与听众关系，但不直接引用原文；</li>
 <li>最终生成格式为：<code>&lt;CONTEXT&gt;...&lt;/CONTEXT&gt;&lt;TRANSCRIPT&gt;...&lt;/TRANSCRIPT&gt;</code>。</li>
 </ul>
 <p>这一数据构建策略无需人工标注，可扩展到大规模数据集。</p>
 <h4 id="3-2-2-训练目标"><a href="#3-2-2-训练目标" class="headerlink" title="3.2.2 训练目标"></a>3.2.2 训练目标</h4><p>训练损失为交叉熵损失与 CTC 损失的加权组合：</p>
-<p>$$<br>\mathcal{L}<em>{CE} &#x3D; -\sum</em>{i&#x3D;1}^{N} \log P(y_i \mid [A; I], y_{&lt;i}) \tag{2}<br>$$</p>
-<p>$$<br>\mathcal{L} &#x3D; \mathcal{L}<em>{CE} + \lambda \mathcal{L}</em>{CTC} \tag{3}<br>$$</p>
-<p>其中 $\lambda &#x3D; 0.5$ 为超参数。CTC 损失作用于 Speech Encoder 输出，通过 CTC-guided Modality Adapter 的线性输出层计算。</p>
+<script type="math/tex; mode=display">
+\mathcal{L}_{CE} = -\sum_{i=1}^{N} \log P(y_i \mid [A; I], y_{<i}) \tag{2}</script><script type="math/tex; mode=display">
+\mathcal{L} = \mathcal{L}_{CE} + \lambda \mathcal{L}_{CTC} \tag{3}</script><p>其中 $\lambda = 0.5$ 为超参数。CTC 损失作用于 Speech Encoder 输出，通过 CTC-guided Modality Adapter 的线性输出层计算。</p>
 <h4 id="3-2-3-两阶段微调"><a href="#3-2-3-两阶段微调" class="headerlink" title="3.2.3 两阶段微调"></a>3.2.3 两阶段微调</h4><ul>
 <li><strong>Stage 1</strong>（2,000 步）：仅更新 Modality Adapter，固定 encoder 和 LLM；</li>
 <li><strong>Stage 2</strong>（15,000 步）：同时更新 encoder 和 Modality Adapter，LLM 通过 LoRA 微调。</li>
@@ -398,37 +398,37 @@
 <li>文献 [14] 和本文作者的工业级预实验表明，对语音 prompt 做任何程度的压缩（如丢弃 blank 主导帧）都会导致 ASR 性能下降。</li>
 </ul>
 <h3 id="4-2-CTC-概率的显式计算"><a href="#4-2-CTC-概率的显式计算" class="headerlink" title="4.2 CTC 概率的显式计算"></a>4.2 CTC 概率的显式计算</h3><p>CTC-guided Modality Adapter 的核心思路是：利用 CTC 后验概率分布，显式地将语音帧表示映射到 LLM 文本 embedding 空间。</p>
-<p>给定 speech encoder 输出 $E &#x3D; (e_1, \ldots, e_L)$，线性输出层首先将每帧投影到 CTC 词表大小（含 blank token）的 logits。</p>
+<p>给定 speech encoder 输出 $E = (e_1, \ldots, e_L)$，线性输出层首先将每帧投影到 CTC 词表大小（含 blank token）的 logits。</p>
 <p><strong>Blank 概率</strong>（sigmoid 计算，单独建模）：</p>
-<p>$$<br>p^b_t &#x3D; \text{Sigmoid}(z^b_t) \tag{4}<br>$$</p>
-<p><strong>Non-blank 概率</strong>（softmax 计算）：</p>
-<p>$$<br>p^{nb}_t &#x3D; \text{Softmax}(z^{nb}_t), \quad p^{nb}_t \in \mathbb{R}^V \tag{5}<br>$$</p>
-<p><strong>归一化 non-blank 分布</strong>（为保证 CTC 损失的概率归一化）：</p>
-<p>$$<br>\tilde{p}^{nb}_t &#x3D; (1 - p^b_t) \cdot p^{nb}_t \tag{6}<br>$$</p>
-<p>这样，$p^b_t + \sum_v \tilde{p}^{nb}_{t,v} &#x3D; 1$，满足概率归一性。</p>
-<h3 id="4-3-LLM-Embedding-加权融合"><a href="#4-3-LLM-Embedding-加权融合" class="headerlink" title="4.3 LLM Embedding 加权融合"></a>4.3 LLM Embedding 加权融合</h3><p>利用 non-blank 概率分布 $p^{nb}<em>t$，对 LLM token embedding 矩阵 $W</em>{emb} \in \mathbb{R}^{V \times D}$ 做加权求和：</p>
-<p>$$<br>u_t &#x3D; p^{nb}<em>t \otimes W</em>{emb} \tag{7}<br>$$</p>
-<p>其中 $\otimes$ 表示矩阵乘法，$D$ 为 LLM 隐层维度。得到的 $u_t$ 代表该帧在 LLM 文本空间中的模态对齐表示。</p>
-<p>引入启发式阈值 $\tau &#x3D; 0.05$，对 $p^{nb}_t$ 的低置信激活（低于 $\tau$ 的分量）置零，抑制噪声。</p>
+<script type="math/tex; mode=display">
+p^b_t = \text{Sigmoid}(z^b_t) \tag{4}</script><p><strong>Non-blank 概率</strong>（softmax 计算）：</p>
+<script type="math/tex; mode=display">
+p^{nb}_t = \text{Softmax}(z^{nb}_t), \quad p^{nb}_t \in \mathbb{R}^V \tag{5}</script><p><strong>归一化 non-blank 分布</strong>（为保证 CTC 损失的概率归一化）：</p>
+<script type="math/tex; mode=display">
+\tilde{p}^{nb}_t = (1 - p^b_t) \cdot p^{nb}_t \tag{6}</script><p>这样，$p^b_t + \sum_v \tilde{p}^{nb}_{t,v} = 1$，满足概率归一性。</p>
+<h3 id="4-3-LLM-Embedding-加权融合"><a href="#4-3-LLM-Embedding-加权融合" class="headerlink" title="4.3 LLM Embedding 加权融合"></a>4.3 LLM Embedding 加权融合</h3><p>利用 non-blank 概率分布 $p^{nb}_t$，对 LLM token embedding 矩阵 $W_{emb} \in \mathbb{R}^{V \times D}$ 做加权求和：</p>
+<script type="math/tex; mode=display">
+u_t = p^{nb}_t \otimes W_{emb} \tag{7}</script><p>其中 $\otimes$ 表示矩阵乘法，$D$ 为 LLM 隐层维度。得到的 $u_t$ 代表该帧在 LLM 文本空间中的模态对齐表示。</p>
+<p>引入启发式阈值 $\tau = 0.05$，对 $p^{nb}_t$ 的低置信激活（低于 $\tau$ 的分量）置零，抑制噪声。</p>
 <p><strong>直觉理解</strong>：当 $p^{nb}_t$ 退化为 one-hot 分布时，$u_t$ 恰好等于对应 LLM token 的 embedding 向量，实现了最精确的模态映射。</p>
 <h3 id="4-4-门控残差分支"><a href="#4-4-门控残差分支" class="headerlink" title="4.4 门控残差分支"></a>4.4 门控残差分支</h3><p>为保留语音编码器原始信息，设计门控残差连接：</p>
-<p>$$<br>a_t &#x3D; u_t + g_t \cdot \text{Linear}(e_t) \tag{8}<br>$$</p>
-<p>其中 $g_t \in (0,1)$ 为帧级标量门控，由线性投影后接 sigmoid 计算。线性层将 $e_t$ 映射到 $(D+1)$ 维，前 $D$ 维作为残差表示，最后 1 维经 sigmoid 得到 $g_t$。</p>
-<p>最终 $A &#x3D; (a_1, \ldots, a_L)$ 作为 speech prompt 输入 LLM，长度与编码器输出相同，不做任何压缩。</p>
+<script type="math/tex; mode=display">
+a_t = u_t + g_t \cdot \text{Linear}(e_t) \tag{8}</script><p>其中 $g_t \in (0,1)$ 为帧级标量门控，由线性投影后接 sigmoid 计算。线性层将 $e_t$ 映射到 $(D+1)$ 维，前 $D$ 维作为残差表示，最后 1 维经 sigmoid 得到 $g_t$。</p>
+<p>最终 $A = (a_1, \ldots, a_L)$ 作为 speech prompt 输入 LLM，长度与编码器输出相同，不做任何压缩。</p>
 <p><img src="/images/paper_figs/2604.00610_fig3_adapter.png" srcset="/img/loading.gif" lazyload alt="CTC-guided Modality Adapter 结构图"></p>
-<p><em>图3：CTC-guided Modality Adapter 结构。线性输出层将编码器输出投影至 CTC 词表大小的 logits，blank&#x2F;non-blank 概率分别用 sigmoid&#x2F;softmax 计算。⊗ 为矩阵乘法，⊕ 为加法，Gate 为帧级标量门控。</em></p>
+<p><em>图3：CTC-guided Modality Adapter 结构。线性输出层将编码器输出投影至 CTC 词表大小的 logits，blank/non-blank 概率分别用 sigmoid/softmax 计算。⊗ 为矩阵乘法，⊕ 为加法，Gate 为帧级标量门控。</em></p>
 <hr>
 <h2 id="5-实验设置"><a href="#5-实验设置" class="headerlink" title="5. 实验设置"></a>5. 实验设置</h2><h3 id="5-1-数据集"><a href="#5-1-数据集" class="headerlink" title="5.1 数据集"></a>5.1 数据集</h3><ul>
 <li><strong>训练数据</strong>：38,000 小时内部英文 ASR 数据（匿名化处理）；</li>
 <li><strong>推理增强数据构建</strong>：使用 Qwen2.5-14B-Instruct 对上述训练集的 ground-truth 转录生成上下文分析，构建 CoT 训练数据；</li>
-<li><strong>公开测试集</strong>：LibriSpeech（test-clean &#x2F; test-other）、FLEURS；</li>
+<li><strong>公开测试集</strong>：LibriSpeech（test-clean / test-other）、FLEURS；</li>
 <li><strong>内部测试集</strong>：涵盖消费品（Consumer Goods）、营养（Nutrition）、游戏（Gaming）、健康（Wellness）、患者病史（Patient History）、药房（Pharmacy）、外科手术（Surgery）、银行（Banking）等多个垂直领域。</li>
 </ul>
 <h3 id="5-2-模型配置"><a href="#5-2-模型配置" class="headerlink" title="5.2 模型配置"></a>5.2 模型配置</h3><p><strong>CoT-ASR</strong>：</p>
 <ul>
 <li><strong>LLM 主干</strong>：Phi-4-mini-instruct（3.8B 参数），LoRA 微调；</li>
 <li><strong>Speech Encoder</strong>：Conformer，3 层卷积前端（下采样因子 8，输出帧步长 80ms）+ 24 个 Conformer block（注意力维度 1024，FFN 维度 1536，16 头注意力）；</li>
-<li><strong>Modality Adapter</strong>：CTC-guided，阈值 $\tau&#x3D;0.05$，两层 FFN + GELU；</li>
+<li><strong>Modality Adapter</strong>：CTC-guided，阈值 $\tau=0.05$，两层 FFN + GELU；</li>
 <li><strong>训练数据</strong>：推理增强 ASR 数据（38k 小时 + Qwen 生成的 CONTEXT）。</li>
 </ul>
 <p><strong>Phi4MM-style Baseline</strong>：</p>
@@ -439,10 +439,11 @@
 <li>按照 Phi-4-MultiModal 设计原则构建，作为公平基线。</li>
 </ul>
 <h3 id="5-3-评估指标"><a href="#5-3-评估指标" class="headerlink" title="5.3 评估指标"></a>5.3 评估指标</h3><p>除 WER 之外，本文重点采用 <strong>EER（Entity Error Rate）</strong> 作为主要评估指标。</p>
-<p>$$<br>\text{EER} &#x3D; 1 - \text{Entity Recall}<br>$$</p>
-<p>EER 衡量 reference 中的关键实体（医学术语、人名、专有名词等）未被完整正确识别的比例。与 WER 不同，EER 对语义完整性的要求更严格：一个实体只有在其全部词均正确时才被计为识别成功。这更能反映真实用户体验，也更能考察 LLM 知识利用能力。</p>
+<script type="math/tex; mode=display">
+\text{EER} = 1 - \text{Entity Recall}</script><p>EER 衡量 reference 中的关键实体（医学术语、人名、专有名词等）未被完整正确识别的比例。与 WER 不同，EER 对语义完整性的要求更严格：一个实体只有在其全部词均正确时才被计为识别成功。这更能反映真实用户体验，也更能考察 LLM 知识利用能力。</p>
 <hr>
-<h2 id="6-实验结果"><a href="#6-实验结果" class="headerlink" title="6. 实验结果"></a>6. 实验结果</h2><h3 id="6-1-主要-ASR-结果"><a href="#6-1-主要-ASR-结果" class="headerlink" title="6.1 主要 ASR 结果"></a>6.1 主要 ASR 结果</h3><table>
+<h2 id="6-实验结果"><a href="#6-实验结果" class="headerlink" title="6. 实验结果"></a>6. 实验结果</h2><h3 id="6-1-主要-ASR-结果"><a href="#6-1-主要-ASR-结果" class="headerlink" title="6.1 主要 ASR 结果"></a>6.1 主要 ASR 结果</h3><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>指标</th>
@@ -451,7 +452,8 @@
 <th>CoT-ASR</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>WER ↓</td>
 <td>LibriSpeech test-clean</td>
 <td>2.41</td>
@@ -523,14 +525,17 @@
 <td><strong>11.03</strong></td>
 <td><strong>9.17</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>CoT-ASR 相对 baseline 实现：</p>
 <ul>
 <li>LibriSpeech test-clean WER 相对下降 <strong>8.7%</strong>；</li>
 <li>平均 EER 相对下降 <strong>16.9%</strong>。</li>
 </ul>
 <p>值得注意的是，训练数据不包含 LibriSpeech 和 FLEURS，两者对本文构建的模型属于域外集，但 CoT-ASR 仍然在这些相对简单的测试集上超越了 baseline，说明其提升来自推理能力而非领域过拟合。</p>
-<h3 id="6-2-用户引导转录结果"><a href="#6-2-用户引导转录结果" class="headerlink" title="6.2 用户引导转录结果"></a>6.2 用户引导转录结果</h3><table>
+<h3 id="6-2-用户引导转录结果"><a href="#6-2-用户引导转录结果" class="headerlink" title="6.2 用户引导转录结果"></a>6.2 用户引导转录结果</h3><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>测试集</th>
@@ -538,7 +543,8 @@
 <th>CoT-ASR + 用户上下文</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Consumer Goods</td>
 <td>13.46</td>
 <td><strong>9.03</strong></td>
@@ -583,13 +589,16 @@
 <td><strong>9.17</strong></td>
 <td><strong>6.89</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>引入用户提供的上下文后，EER 平均进一步相对下降 <strong>24.9%</strong>。这一结果验证了：</p>
 <ol>
 <li>CoT-ASR 具备强大的 in-context learning 能力，能有效解析上下文语义线索；</li>
 <li>前一步生成的 CONTEXT 对转录质量有直接因果影响，从而证明推理增强 ASR 范式的有效性。</li>
 </ol>
-<h3 id="6-3-消融实验：CTC-guided-Modality-Adapter"><a href="#6-3-消融实验：CTC-guided-Modality-Adapter" class="headerlink" title="6.3 消融实验：CTC-guided Modality Adapter"></a>6.3 消融实验：CTC-guided Modality Adapter</h3><table>
+<h3 id="6-3-消融实验：CTC-guided-Modality-Adapter"><a href="#6-3-消融实验：CTC-guided-Modality-Adapter" class="headerlink" title="6.3 消融实验：CTC-guided Modality Adapter"></a>6.3 消融实验：CTC-guided Modality Adapter</h3><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>测试集</th>
@@ -597,7 +606,8 @@
 <th>CoT-ASR（线性适配器）</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Consumer Goods</td>
 <td><strong>13.46</strong></td>
 <td>14.93</td>
@@ -642,14 +652,17 @@
 <td><strong>9.17</strong></td>
 <td>10.09</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>CTC-guided 适配器相对线性适配器实现平均 EER <strong>9.1%</strong> 的相对下降。原因分析：</p>
 <ul>
 <li>线性适配器完全依靠训练隐式学习语音→文本映射，没有利用 LLM 预训练 embedding；</li>
 <li>CTC-guided 适配器直接借助 LLM token embedding 矩阵进行显式模态对齐，更高效；</li>
-<li>blank&#x2F;non-blank 分离计算确保每帧信息都被利用，不因 blank 主导帧被丢弃而损失信息。</li>
+<li>blank/non-blank 分离计算确保每帧信息都被利用，不因 blank 主导帧被丢弃而损失信息。</li>
 </ul>
-<h3 id="6-4-与前沿开源模型的对比"><a href="#6-4-与前沿开源模型的对比" class="headerlink" title="6.4 与前沿开源模型的对比"></a>6.4 与前沿开源模型的对比</h3><table>
+<h3 id="6-4-与前沿开源模型的对比"><a href="#6-4-与前沿开源模型的对比" class="headerlink" title="6.4 与前沿开源模型的对比"></a>6.4 与前沿开源模型的对比</h3><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>模型</th>
@@ -665,7 +678,8 @@
 <th>平均 EER</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Phi4MM-style Baseline</td>
 <td>3.8B</td>
 <td>15.45</td>
@@ -756,7 +770,9 @@
 <td>12.45</td>
 <td>10.05</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>关键观察：</p>
 <ul>
 <li>本文 Phi4MM-style Baseline（3.8B，38k 小时训练）性能略低于 Whisper-large-v3，验证了 baseline 的合理性；</li>
@@ -764,7 +780,8 @@
 <li>更大的模型（Qwen3-Omni-30B、Gemma 3n 8B）并未带来等比例的 ASR 性能提升，印证了 ASR 任务中 LLM 能力难以直接转化的论点；</li>
 <li>注意该对比并非等控制对比（训练数据量差异极大），主要用于参考定位。</li>
 </ul>
-<h3 id="6-5-与上下文偏置（Contextual-Biasing）的对比"><a href="#6-5-与上下文偏置（Contextual-Biasing）的对比" class="headerlink" title="6.5 与上下文偏置（Contextual Biasing）的对比"></a>6.5 与上下文偏置（Contextual Biasing）的对比</h3><table>
+<h3 id="6-5-与上下文偏置（Contextual-Biasing）的对比"><a href="#6-5-与上下文偏置（Contextual-Biasing）的对比" class="headerlink" title="6.5 与上下文偏置（Contextual Biasing）的对比"></a>6.5 与上下文偏置（Contextual Biasing）的对比</h3><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>模型</th>
@@ -776,7 +793,8 @@
 <th>test-other U-WER</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>CoT-ASR</td>
 <td><strong>2.20</strong></td>
 <td>9.31</td>
@@ -795,7 +813,7 @@
 <td>3.18</td>
 </tr>
 <tr>
-<td>+ Bias List (size&#x3D;100)</td>
+<td>+ Bias List (size=100)</td>
 <td>2.42</td>
 <td><strong>8.84</strong></td>
 <td>1.60</td>
@@ -804,7 +822,7 @@
 <td>4.03</td>
 </tr>
 <tr>
-<td>+ Bias List (size&#x3D;500)</td>
+<td>+ Bias List (size=500)</td>
 <td>5.99</td>
 <td>10.83</td>
 <td>5.25</td>
@@ -812,15 +830,18 @@
 <td>22.51</td>
 <td>12.78</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>分析：</p>
 <ul>
-<li>偏置列表（size&#x3D;100）可以降低 B-WER（偏置词的 WER），但代价是 U-WER 显著上升（通用词识别恶化），整体 WER 不降反升；</li>
-<li>偏置列表 size&#x3D;500 时，整体 WER 灾难性崩溃（13.80 vs 5.10）；</li>
+<li>偏置列表（size=100）可以降低 B-WER（偏置词的 WER），但代价是 U-WER 显著上升（通用词识别恶化），整体 WER 不降反升；</li>
+<li>偏置列表 size=500 时，整体 WER 灾难性崩溃（13.80 vs 5.10）；</li>
 <li>CoT-ASR 无需任何偏置列表，在通用词和稀有词识别上均实现改善，展现出更平衡的性能曲线。</li>
 </ul>
 <hr>
-<h2 id="7-附录分析"><a href="#7-附录分析" class="headerlink" title="7. 附录分析"></a>7. 附录分析</h2><h3 id="7-1-上下文分析容错性（Appendix-D）"><a href="#7-1-上下文分析容错性（Appendix-D）" class="headerlink" title="7.1 上下文分析容错性（Appendix D）"></a>7.1 上下文分析容错性（Appendix D）</h3><p>为评估 CoT-ASR 对 CONTEXT 错误的鲁棒性，实验在用户提供的上下文中注入不同比例的随机插入&#x2F;删除&#x2F;替换噪声：</p>
+<h2 id="7-附录分析"><a href="#7-附录分析" class="headerlink" title="7. 附录分析"></a>7. 附录分析</h2><h3 id="7-1-上下文分析容错性（Appendix-D）"><a href="#7-1-上下文分析容错性（Appendix-D）" class="headerlink" title="7.1 上下文分析容错性（Appendix D）"></a>7.1 上下文分析容错性（Appendix D）</h3><p>为评估 CoT-ASR 对 CONTEXT 错误的鲁棒性，实验在用户提供的上下文中注入不同比例的随机插入/删除/替换噪声：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -831,7 +852,8 @@
 <th>50% 错误</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Consumer Goods</td>
 <td>9.03</td>
 <td>11.02</td>
@@ -894,41 +916,48 @@
 <td><strong>8.05</strong></td>
 <td><strong>8.48</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>即使在 50% 的高错误率下，CoT-ASR 仍保持合理性能，展现出较强的鲁棒性。</p>
 <h3 id="7-2-推理效率（Appendix-B）"><a href="#7-2-推理效率（Appendix-B）" class="headerlink" title="7.2 推理效率（Appendix B）"></a>7.2 推理效率（Appendix B）</h3><p>在 Consumer Goods 测试集上（H200 GPU，PyTorch 解码）：</p>
 <ul>
-<li><strong>Phi4MM-style Baseline</strong>：RTF &#x3D; 0.157</li>
-<li><strong>CoT-ASR（CTC 适配器）</strong>：RTF &#x3D; 0.257</li>
-<li><strong>CoT-ASR（线性适配器）</strong>：RTF &#x3D; 0.253</li>
+<li><strong>Phi4MM-style Baseline</strong>：RTF = 0.157</li>
+<li><strong>CoT-ASR（CTC 适配器）</strong>：RTF = 0.257</li>
+<li><strong>CoT-ASR（线性适配器）</strong>：RTF = 0.253</li>
 </ul>
 <p>CoT-ASR 由于生成额外的 CONTEXT token 导致约 64% 的 RTF 增加。但由于目标离线 ASR 场景，该额外延迟可接受，且切换至 vLLM 框架后 RTF 可进一步降低。</p>
-<h3 id="7-3-与其他对齐感知适配器的对比（Appendix-E）"><a href="#7-3-与其他对齐感知适配器的对比（Appendix-E）" class="headerlink" title="7.3 与其他对齐感知适配器的对比（Appendix E）"></a>7.3 与其他对齐感知适配器的对比（Appendix E）</h3><table>
+<h3 id="7-3-与其他对齐感知适配器的对比（Appendix-E）"><a href="#7-3-与其他对齐感知适配器的对比（Appendix-E）" class="headerlink" title="7.3 与其他对齐感知适配器的对比（Appendix E）"></a>7.3 与其他对齐感知适配器的对比（Appendix E）</h3><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>适配器类型</th>
 <th>平均 EER</th>
 </tr>
 </thead>
-<tbody><tr>
-<td>CoT-ASR w&#x2F; <strong>CTC-guided Adapter</strong>（本文）</td>
+<tbody>
+<tr>
+<td>CoT-ASR w/ <strong>CTC-guided Adapter</strong>（本文）</td>
 <td><strong>9.17</strong></td>
 </tr>
 <tr>
-<td>CoT-ASR w&#x2F; Linear Adapter</td>
+<td>CoT-ASR w/ Linear Adapter</td>
 <td>10.09</td>
 </tr>
 <tr>
-<td>CoT-ASR w&#x2F; CTC Compressor</td>
+<td>CoT-ASR w/ CTC Compressor</td>
 <td>15.67</td>
 </tr>
 <tr>
-<td>CoT-ASR w&#x2F; SSR</td>
+<td>CoT-ASR w/ SSR</td>
 <td>15.73</td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>CTC Compressor 和 SSR 均因对语音 prompt 进行压缩（丢弃部分帧）而大幅下降。这再次验证了本文的核心设计原则：<strong>保留完整语音 prompt 长度是 LLM-based ASR 的关键</strong>。</p>
-<h3 id="7-4-内部测试集补充-WER（Appendix-C）"><a href="#7-4-内部测试集补充-WER（Appendix-C）" class="headerlink" title="7.4 内部测试集补充 WER（Appendix C）"></a>7.4 内部测试集补充 WER（Appendix C）</h3><table>
+<h3 id="7-4-内部测试集补充-WER（Appendix-C）"><a href="#7-4-内部测试集补充-WER（Appendix-C）" class="headerlink" title="7.4 内部测试集补充 WER（Appendix C）"></a>7.4 内部测试集补充 WER（Appendix C）</h3><div class="table-container">
+<table>
 <thead>
 <tr>
 <th>测试集</th>
@@ -936,7 +965,8 @@
 <th>CoT-ASR WER</th>
 </tr>
 </thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Consumer Goods</td>
 <td>7.38</td>
 <td><strong>6.47</strong></td>
@@ -981,7 +1011,9 @@
 <td><strong>5.86</strong></td>
 <td><strong>5.28</strong></td>
 </tr>
-</tbody></table>
+</tbody>
+</table>
+</div>
 <p>CoT-ASR 在内部测试集 WER 上同样全面超越 baseline，说明其提升是整体性的，而非仅对实体识别有效。</p>
 <hr>
 <h2 id="8-结论与展望"><a href="#8-结论与展望" class="headerlink" title="8. 结论与展望"></a>8. 结论与展望</h2><p>本文提出 CoT-ASR，首次将 Chain-of-Thought 推理机制引入 ASR 任务，建立了<strong>推理驱动 ASR 范式</strong>。核心贡献包括：</p>
@@ -1025,13 +1057,13 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
-      
         <a href="/tags/ASR/" class="print-no-link">#ASR</a>
       
-        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
       
         <a href="/tags/Chain-of-Thought/" class="print-no-link">#Chain-of-Thought</a>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
       
         <a href="/tags/Speech/" class="print-no-link">#Speech</a>
       
@@ -1095,9 +1127,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/04/03/longcat-next/" title="LongCat-Next: Lexicalizing Modalities as Discrete Tokens">
+                      <a href="/2026/04/03/speech-llm-realtime-reasoning-survey/" title="Think While You Speak: A Survey of Real-Time Reasoning in Speech LLMs">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">LongCat-Next: Lexicalizing Modalities as Discrete Tokens</span>
+                        <span class="hidden-mobile">Think While You Speak: A Survey of Real-Time Reasoning in Speech LLMs</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
