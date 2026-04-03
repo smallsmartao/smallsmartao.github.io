@@ -1,0 +1,1568 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/mao.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="本文融合综述三篇 2025 年关于 Speech LLM 实时推理的代表性工作：Mind-Paced Speaking（arXiv:2510.09592）、Can Speech LLMs Think while Listening?（arXiv:2510.07497）、Mini-Omni-Reasoner（arXiv:2508.15827）。三篇论文从不同切面攻克同一核心难题：如何让语音大模型在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Think While You Speak: A Survey of Real-Time Reasoning in Speech LLMs">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/04/03/speech-llm-realtime-reasoning-survey/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="本文融合综述三篇 2025 年关于 Speech LLM 实时推理的代表性工作：Mind-Paced Speaking（arXiv:2510.09592）、Can Speech LLMs Think while Listening?（arXiv:2510.07497）、Mini-Omni-Reasoner（arXiv:2508.15827）。三篇论文从不同切面攻克同一核心难题：如何让语音大模型在">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_speech_reasoning.png">
+<meta property="article:published_time" content="2026-04-03T07:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-03T07:07:37.319Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="CoT">
+<meta property="article:tag" content="Speech LLM">
+<meta property="article:tag" content="全双工">
+<meta property="article:tag" content="实时推理">
+<meta property="article:tag" content="综述">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_speech_reasoning.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Think While You Speak: A Survey of Real-Time Reasoning in Speech LLMs - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/cover.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Think While You Speak: A Survey of Real-Time Reasoning in Speech LLMs"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-04-03 15:00" pubdate>
+          2026年4月3日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          57 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Think While You Speak: A Survey of Real-Time Reasoning in Speech LLMs</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年4月3日 下午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>本文融合综述三篇 2025 年关于 Speech LLM 实时推理的代表性工作：<strong>Mind-Paced Speaking</strong>（arXiv:2510.09592）、<strong>Can Speech LLMs Think while Listening?</strong>（arXiv:2510.07497）、<strong>Mini-Omni-Reasoner</strong>（arXiv:2508.15827）。三篇论文从不同切面攻克同一核心难题：如何让语音大模型在保持实时响应的同时具备深度推理能力。</p>
+</blockquote>
+<hr>
+<h2 id="1-背景与动机"><a href="#1-背景与动机" class="headerlink" title="1. 背景与动机"></a>1. 背景与动机</h2><h3 id="1-1-为什么-Speech-LLM-的实时推理如此困难？"><a href="#1-1-为什么-Speech-LLM-的实时推理如此困难？" class="headerlink" title="1.1 为什么 Speech LLM 的实时推理如此困难？"></a>1.1 为什么 Speech LLM 的实时推理如此困难？</h3><p>语音大模型（Spoken Language Model，SLM）的目标是实现类人的自然对话：用户说话，模型听到后立即给出高质量的语音回复。这一目标在技术上面临三重根本矛盾。</p>
+<p><strong>矛盾一：延迟 vs. 推理深度。</strong> Chain-of-Thought（CoT）推理是提升大模型准确率的关键技术——研究一致表明，让模型先”想清楚”再回答（Think-Before-Speaking，TBS）能够显著提升复杂任务的表现。然而在语音交互场景下，完整 CoT 生成往往需要数百甚至数千个 token，对应数秒的等待时间，严重破坏对话的自然性。</p>
+<p><strong>矛盾二：流式输出 vs. 自回归生成。</strong> 当前主流 SLM 均基于自回归（Autoregressive）Transformer，天然是串行生成的。语音输出需要实时流式合成，而推理 token 的生成必然占据本应用于语音合成的时间窗口。</p>
+<p><strong>矛盾三：语义连贯 vs. 交织生成。</strong> 一种直觉上的解决方案是将 think token 与 response token 交织（interleave）生成：生成若干推理 token，再生成若干回复 token，如此循环。然而，这种模式强制 LLM 在”思考模式”与”回复模式”之间频繁切换，破坏了推理链的语义连贯性，导致性能下降。</p>
+<h3 id="1-2-三篇论文的差异化切入点"><a href="#1-2-三篇论文的差异化切入点" class="headerlink" title="1.2 三篇论文的差异化切入点"></a>1.2 三篇论文的差异化切入点</h3><p>本综述涵盖的三篇工作均在 2025 年提出，均聚焦于”如何让语音模型在实时输出的同时进行有效推理”，但各自从不同维度出发：</p>
+<table>
+<thead>
+<tr>
+<th>论文</th>
+<th>核心范式</th>
+<th>关键创新</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Mind-Paced Speaking (MPS)</td>
+<td>Think-While-Speaking</td>
+<td>双脑架构：Formulation Brain 生成推理，Articulation Brain 并行生成回复</td>
+</tr>
+<tr>
+<td>Can Speech LLMs Think while Listening?</td>
+<td>Think-While-Listening</td>
+<td>多流架构 + CoT 微调 + Question Completeness 指标引导提前推理</td>
+</tr>
+<tr>
+<td>Mini-Omni-Reasoner</td>
+<td>Thinking-in-Speaking</td>
+<td>Token 级交错生成：2:8 的 response:reasoning token 比率</td>
+</tr>
+</tbody></table>
+<p>三者在时序上的共同逻辑是：<strong>不等推理完成就开始产生输出</strong>。但实现路径迥异，形成互补的研究图谱。</p>
+<hr>
+<h2 id="2-Mind-Paced-Speaking（MPS）：双脑框架"><a href="#2-Mind-Paced-Speaking（MPS）：双脑框架" class="headerlink" title="2. Mind-Paced Speaking（MPS）：双脑框架"></a>2. Mind-Paced Speaking（MPS）：双脑框架</h2><h3 id="2-1-问题定义：顺序生成的延迟瓶颈"><a href="#2-1-问题定义：顺序生成的延迟瓶颈" class="headerlink" title="2.1 问题定义：顺序生成的延迟瓶颈"></a>2.1 问题定义：顺序生成的延迟瓶颈</h3><p>标准的 Think-Before-Speaking（TBS）范式可以形式化如下。给定用户语音输入 $X_{\text{spc}}$ 和可选文本指令 $X_{\text{txt}}$，模型首先生成完整的 CoT token 序列 $Y^{\text{cot}} \in \mathbb{R}^{T_c}$：</p>
+<p>$$<br>P_{\theta_l}(Y^{\text{cot}} | \langle X_{\text{spc}}, X_{\text{txt}} \rangle) &#x3D; \prod_{t&#x3D;1}^{T_c} P_{\theta_l}(Y^{\text{cot}}<em>t | \langle Y^{\text{cot}}</em>{1:t-1}, X_{\text{spc}}, X_{\text{txt}} \rangle)<br>\tag{1}<br>$$</p>
+<p>然后基于完整 CoT 生成回复 token $Y^{\text{res}} \in \mathbb{R}^{T_r}$：</p>
+<p>$$<br>P_{\theta_l}(Y^{\text{res}} | \langle Y^{\text{cot}}, X_{\text{spc}}, X_{\text{txt}} \rangle) &#x3D; \prod_{t&#x3D;1}^{T_r} P_{\theta_l}(Y^{\text{res}}<em>t | \langle Y^{\text{res}}</em>{1:t-1}, Y^{\text{cot}}<em>{1:T_c}, X</em>{\text{spc}}, X_{\text{txt}} \rangle)<br>\tag{2}<br>$$</p>
+<p>这一范式的首 token 延迟（First-Token Latency）等于生成全部 $T_c$ 个 CoT token 所需时间。在 Spoken-MQA 基准上，作者测量到 TBS 方法（MPS-tbs）在生成第一个回复 token 之前平均需要额外生成 <strong>762 个 token</strong>，对实时对话而言代价极高。</p>
+<h3 id="2-2-架构设计：Thinking-Brain-vs-Speaking-Brain"><a href="#2-2-架构设计：Thinking-Brain-vs-Speaking-Brain" class="headerlink" title="2.2 架构设计：Thinking Brain vs. Speaking Brain"></a>2.2 架构设计：Thinking Brain vs. Speaking Brain</h3><p>MPS 的核心洞察来自认知神经科学：人类大脑中，负责高级认知推理的前额叶-颞叶网络（prefrontal-temporal cortex）与负责语音运动控制的运动皮层-皮下通路（motor cortex and subcortical pathways）是两套高度专业化且<strong>并行协作</strong>的系统。语言产生并非严格的”先思后说”，而是思考的后半段与表达的前半段在时间上重叠的增量过程。</p>
+<p>受此启发，MPS 将单个 LLM 拆分为两个独立但共享参数的 LLM：</p>
+<ul>
+<li><strong>Formulation Brain（构想脑）</strong>：专注于理解用户意图，执行逐步 CoT 推理，持续生成”think token”段。</li>
+<li><strong>Articulation Brain（表达脑）</strong>：接收 Formulation Brain 实时产出的 think 段，结合历史推理与回复内容，逐段生成”response token”并送入流式 TTS 合成语音。</li>
+</ul>
+<p>关键区别在于：Articulation Brain <strong>无需等待 Formulation Brain 完成全部推理</strong>。每当 Formulation Brain 产出一个 think 段 $S^{\text{cot}}_n$，Articulation Brain 即刻基于目前已有的推理内容生成对应的回复段 $S^{\text{res}}_n$。</p>
+<h3 id="2-3-核心机制"><a href="#2-3-核心机制" class="headerlink" title="2.3 核心机制"></a>2.3 核心机制</h3><p>将 CoT tokens $Y^{\text{cot}}$ 切分为 $N$ 段 $[S^{\text{cot}}_1, S^{\text{cot}}_2, \ldots, S^{\text{cot}}_N]$，Articulation Brain 的分段生成过程可写作：</p>
+<p>$$<br>P_{\theta_l}(S^{\text{res}} | \langle S^{\text{cot}}, X_{\text{spc}}, X_{\text{txt}} \rangle) &#x3D; \prod_{n&#x3D;1}^{N} P_{\theta_l}!\left(S^{\text{res}}<em>n \Big| \langle S^{\text{res}}</em>{1:n-1},, S^{\text{cot}}<em>{1:n},, X</em>{\text{spc}},, X_{\text{txt}} \rangle\right)<br>\tag{3}<br>$$</p>
+<p>每个 $S^{\text{res}}<em>n$ 的生成以 $\langle \texttt{<think>}, S^{\text{cot}}</em>{1:n}, \texttt{</think>} \rangle$ 为前缀，确保回复段与当前已知推理内容保持语义对齐。</p>
+<p><strong>MPS 的两种时序变体：</strong></p>
+<ul>
+<li><strong>MPS-thkfirst（Think-First）</strong>：Formulation Brain 先生成 $T_c$ 个 think token，Articulation Brain 随即生成 $T_r$ 个 response token 并合成语音。首 token 延迟 &#x3D; $T_c$ 个 token 的时间 + 流式 TTS 缓冲，通常约 80 个 token。</li>
+<li><strong>MPS-spkfirst（Speak-First）</strong>：Articulation Brain <strong>先</strong>生成第一段回复，同时 Formulation Brain 同步开始生成第一段 think。延迟 ≈ 0（仅 TTS 缓冲）。</li>
+</ul>
+<p><strong>Think-incomplete SFT（不完整推理监督微调）</strong>：为使 Articulation Brain 能够基于部分推理内容产出合理回复，论文设计了专用训练数据构造策略：随机保留多步骤 CoT 的前 $L$ 步，删去后续内容，以 <code>&lt;think&gt;...(不完整 CoT)...&lt;/think&gt;</code> 加上完整 response 作为训练样本。这一设计使 Articulation Brain 学会”以不完整思路给出回答”，从而在推理链逐步到来时保持回复质量。</p>
+<p>推理阶段，$T_c &#x3D; 80$，$T_r &#x3D; 100$（其中 100 个 response token 对应 20 个文本 token + 80 个语音 token，即 ta4 格式）。</p>
+<h3 id="2-4-实验设置与结果"><a href="#2-4-实验设置与结果" class="headerlink" title="2.4 实验设置与结果"></a>2.4 实验设置与结果</h3><p><strong>基准测试：</strong></p>
+<ul>
+<li><strong>Spoken-MQA</strong>：语音版数学推理基准，含算术（短&#x2F;长形式）和上下文推理（单步&#x2F;多步）子任务，评价指标为准确率。</li>
+<li><strong>URO-Bench</strong>：语音对话综合基准，含日常对话、情感识别、副语言信息、问答等子任务，非问答任务使用 GPT-score（0~100）。</li>
+</ul>
+<p><strong>骨干模型：</strong> Step-Audio 2，中文&#x2F;英文双语语音大模型。</p>
+<p><strong>Spoken-MQA 准确率（%）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>算术（短）</th>
+<th>算术（长）</th>
+<th>算术均值</th>
+<th>推理（单步）</th>
+<th>推理（多步）</th>
+<th>推理均值</th>
+<th>总均值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Whisper-Qwen2.5-7B-Instruct</td>
+<td>—</td>
+<td>—</td>
+<td>70.0</td>
+<td>—</td>
+<td>—</td>
+<td>72.5</td>
+<td>72.2</td>
+</tr>
+<tr>
+<td>Whisper-Qwen2.5-Math-7B-Instruct</td>
+<td>—</td>
+<td>—</td>
+<td>77.3</td>
+<td>—</td>
+<td>—</td>
+<td>86.7</td>
+<td>85.6</td>
+</tr>
+<tr>
+<td>LLaMA-Omni</td>
+<td>40.0</td>
+<td>11.0</td>
+<td>23.5</td>
+<td>29.5</td>
+<td>10.5</td>
+<td>16.2</td>
+<td>16.8</td>
+</tr>
+<tr>
+<td>Mini-Omni</td>
+<td>5.0</td>
+<td>2.3</td>
+<td>3.5</td>
+<td>0.8</td>
+<td>1.9</td>
+<td>1.6</td>
+<td>1.7</td>
+</tr>
+<tr>
+<td>Qwen2.5-Omni-7B</td>
+<td>83.0</td>
+<td>45.1</td>
+<td>61.5</td>
+<td>85.2</td>
+<td>71.5</td>
+<td>75.6</td>
+<td>73.6</td>
+</tr>
+<tr>
+<td>Mini-Omni-Reasoner</td>
+<td>92.9</td>
+<td>66.1</td>
+<td>77.3</td>
+<td>85.9</td>
+<td>60.5</td>
+<td>68.1</td>
+<td>68.6</td>
+</tr>
+<tr>
+<td>Step-Audio 2</td>
+<td>89.0</td>
+<td>52.6</td>
+<td>65.9</td>
+<td>95.6</td>
+<td>90.4</td>
+<td>91.9</td>
+<td>88.8</td>
+</tr>
+<tr>
+<td>MPS-wo&#x2F;thk（无推理基线）</td>
+<td>71.0</td>
+<td>34.1</td>
+<td>47.6</td>
+<td>88.0</td>
+<td>67.8</td>
+<td>73.8</td>
+<td>70.6</td>
+</tr>
+<tr>
+<td>MPS-tbs（完整 CoT 先行）</td>
+<td>90.0</td>
+<td>88.4</td>
+<td>89.0</td>
+<td>94.4</td>
+<td>93.2</td>
+<td>93.6</td>
+<td><strong>93.0</strong></td>
+</tr>
+<tr>
+<td>MPS-thkfirst</td>
+<td>89.0</td>
+<td>84.9</td>
+<td>86.4</td>
+<td>95.6</td>
+<td>94.6</td>
+<td>94.9</td>
+<td><strong>93.9</strong></td>
+</tr>
+<tr>
+<td>MPS-spkfirst</td>
+<td>87.0</td>
+<td>71.7</td>
+<td>77.3</td>
+<td>96.0</td>
+<td>94.5</td>
+<td>94.9</td>
+<td><strong>92.8</strong></td>
+</tr>
+</tbody></table>
+<p><strong>延迟 vs. 精度对比（Spoken-MQA）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>总均值准确率</th>
+<th>首 token 前额外 token 数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Mini-Omni-Reasoner</td>
+<td>68.6%</td>
+<td>8</td>
+</tr>
+<tr>
+<td>MPS-tbs</td>
+<td>93.0%</td>
+<td>762</td>
+</tr>
+<tr>
+<td>MPS-thkfirst</td>
+<td>93.9%</td>
+<td>80</td>
+</tr>
+<tr>
+<td>MPS-spkfirst</td>
+<td>92.8%</td>
+<td><strong>0</strong></td>
+</tr>
+</tbody></table>
+<p>MPS-thkfirst 在将延迟从 762 token 压缩至 80 token 的同时，准确率反而略高于 MPS-tbs，这归因于分段思考与分段回复之间的<strong>隐式语义对齐</strong>效应——每一段 think 与对应 response 段在语义上是强相关的，有助于模型更好利用上下文信息。</p>
+<p><strong>URO-Bench 主要结果（Chinese，Avg）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>Basic Avg</th>
+<th>Pro Avg</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GPT-4o Audio</td>
+<td>78.6</td>
+<td>67.1</td>
+</tr>
+<tr>
+<td>Step-Audio 2</td>
+<td>83.3</td>
+<td>68.3</td>
+</tr>
+<tr>
+<td>MPS-wo&#x2F;thk</td>
+<td>83.4</td>
+<td>74.4</td>
+</tr>
+<tr>
+<td>MPS-tbs</td>
+<td>87.8</td>
+<td>79.0</td>
+</tr>
+<tr>
+<td>MPS-thkfirst</td>
+<td><strong>89.1</strong></td>
+<td><strong>80.5</strong></td>
+</tr>
+<tr>
+<td>MPS-spkfirst</td>
+<td>87.6</td>
+<td>79.9</td>
+</tr>
+</tbody></table>
+<h3 id="2-5-架构图"><a href="#2-5-架构图" class="headerlink" title="2.5 架构图"></a>2.5 架构图</h3><p>MPS 的双脑交替工作流程如下所示（图片来自原论文 Figure 2，矢量图嵌入页面）。Formulation Brain 持续产出 think 段，每产出一段即驱动 Articulation Brain 生成对应 response 段，两脑在时间轴上交替推进，形成流水线并发效果。</p>
+<blockquote>
+<p><em>注：MPS 原 PDF 图表为矢量格式，无法直接提取为栅格图。请参阅 <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2510.09592">原文</a> Figure 2。</em></p>
+</blockquote>
+<hr>
+<h2 id="3-Can-Speech-LLMs-Think-While-Listening？：CoT-与多流架构"><a href="#3-Can-Speech-LLMs-Think-While-Listening？：CoT-与多流架构" class="headerlink" title="3. Can Speech LLMs Think While Listening？：CoT 与多流架构"></a>3. Can Speech LLMs Think While Listening？：CoT 与多流架构</h2><h3 id="3-1-问题：监听时如何同步推理"><a href="#3-1-问题：监听时如何同步推理" class="headerlink" title="3.1 问题：监听时如何同步推理"></a>3.1 问题：监听时如何同步推理</h3><p>上述 MPS 及类似工作解决的是”说话时如何思考（Think-While-Speaking）”——即输出 response 与 CoT 并发。然而，仍存在另一个更早阶段的延迟：<strong>用户说完问题之后、模型开始生成 CoT 之前</strong>。</p>
+<p>Meta 的工作《Can Speech LLMs Think while Listening?》提出了互补的视角：<strong>边听边想（Think-While-Listening）</strong>。其核心观察来自神经科学：人类在倾听时并非被动接受，而是实时预测和推理。当问题的主要信息量已经传达（即使用户尚未说完），人类便开始在心中构思答案。能否让语音模型复现这一认知模式？</p>
+<h3 id="3-2-多流-Speech-LLM-架构"><a href="#3-2-多流-Speech-LLM-架构" class="headerlink" title="3.2 多流 Speech LLM 架构"></a>3.2 多流 Speech LLM 架构</h3><p>本工作以 <strong>Moshi</strong>（Défossez et al., 2024）为基础模型，这是一个全双工多流语音对话模型，在每个时间步同时处理三路 token 流：</p>
+<p>$$<br>\text{User Audio: } A^U \in {1,\ldots,N_A}^{L \times 8}<br>$$<br>$$<br>\text{System Audio: } A^S \in {1,\ldots,N_A}^{L \times 8}<br>$$<br>$$<br>\text{System Text: } T^S \in {1,\ldots,N_T}^L<br>$$</p>
+<p>其中 $N_A &#x3D; 2048$ 为 Mimi 音频编码本大小，$N_T &#x3D; 32000$ 为文本词表大小，$L$ 为时间长度。模型的训练目标为：</p>
+<p>$$<br>p(A^S_{t+1},, T^S_{t+1} \mid A^S_{\le t},, T^S_{\le t},, A^U_{\le t})<br>\tag{4}<br>$$</p>
+<p>多流架构的关键优势在于：<strong>System Text（text monologue）流可以独立修改</strong>，无需与 System Audio 流严格时间对齐。这为在文本流中插入推理 token 提供了结构上的可能性。</p>
+<h3 id="3-3-CoT-Fine-tuning-策略"><a href="#3-3-CoT-Fine-tuning-策略" class="headerlink" title="3.3 CoT Fine-tuning 策略"></a>3.3 CoT Fine-tuning 策略</h3><p><strong>为何用文本 CoT 而非语音 CoT？</strong> 论文通过 GSM8K 消融实验证明，文本 CoT 与语音 CoT 在准确率上持平（17.5% vs. 17.2%），但文本 CoT 的序列长度仅为语音 CoT 的 <strong>1&#x2F;3</strong>（119.0 ± 54.4 vs. 368.8 ± 190.3 个 token）。这从信息密度的角度解释了选择：文本每 token 携带更多语义信息，因此相同推理内容用文本表达更高效。</p>
+<p><strong>CoT 在 text monologue 流中的嵌入方式：</strong> 使用 <code>&lt;start_cot&gt;</code> 和 <code>&lt;end_cot&gt;</code> 特殊 token 在 system text 流中划定推理区域；同时引入<strong>流式 ASR（Streaming ASR）</strong> 将用户语音转录文本插入 text monologue 流（右移 $k&#x3D;6$ 个 token，约 480ms 的前瞻延迟），帮助模型建立用户问题文本与 CoT 之间的语义关联。</p>
+<p>训练序列结构（示意）：</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs xml">[PAD]*k, user_ASR_tokens, <span class="hljs-tag">&lt;<span class="hljs-name">start_cot</span>&gt;</span>, reasoning_tokens, <span class="hljs-tag">&lt;<span class="hljs-name">end_cot</span>&gt;</span>, response_text_tokens<br></code></pre></td></tr></table></figure>
+
+<p><strong>流式 ASR 的作用：</strong> 消融实验显示，移除流式 ASR 后推理任务准确率大幅下降（ARC-E: 77.7% → 55.8%；ARC-C: 59.8% → 44.0%），而事实性任务（LLaMA-QS）变化不大。这说明 ASR 辅助的主要贡献在于帮助模型”理解”用户问题，而非单纯记忆事实。</p>
+<h3 id="3-4-提前思考：Question-Completeness-指标"><a href="#3-4-提前思考：Question-Completeness-指标" class="headerlink" title="3.4 提前思考：Question Completeness 指标"></a>3.4 提前思考：Question Completeness 指标</h3><p><strong>核心思想：</strong> 给定训练样本的问题 $Q_{1:N}$（$N$ 个词）、推理 $R$、答案 $A$，定义<strong>问题完备度（Question Completeness）</strong> $\zeta$ 为：</p>
+<p>$$<br>\zeta(p) &#x3D; 1 - \frac{D_{KL}(X_N | X_p)}{D_{KL}(X_N | X_0)}<br>\tag{5}<br>$$</p>
+<p>其中 $X_p &#x3D; \Pr[R, A \mid Q_{0:p}]$ 为只见到前 $p$ 个词时对 $(R, A)$ 的联合概率估计（用外部语言模型近似），$D_{KL}$ 为 KL 散度。</p>
+<p>由定义，$\zeta(0) &#x3D; 0$，$\zeta(N) &#x3D; 1$，$\zeta$ 可视为问题语义完备进度条。推理触发点 $\hat{p}$ 为：</p>
+<p>$$<br>\hat{p} &#x3D; \min{p : \zeta(p) \ge \theta}<br>\tag{6}<br>$$</p>
+<p>实验取 $\theta &#x3D; 0.95$。将训练数据中的 CoT 起始点左移至 $\hat{p}$，即可教会模型在问题未说完时即开始推理。</p>
+<p><strong>与启发式词偏移（Word-Shift）基线的对比：</strong> QC 方法提供了更平滑、可控的准确率-延迟权衡曲线；而直接按固定词数偏移的 WS-N 方法在 PIQA 和 GSM8K 上无法稳定降低延迟，说明语义感知的触发比简单时间偏移更关键。</p>
+<h3 id="3-5-DPO-偏好微调：进一步压缩延迟"><a href="#3-5-DPO-偏好微调：进一步压缩延迟" class="headerlink" title="3.5 DPO 偏好微调：进一步压缩延迟"></a>3.5 DPO 偏好微调：进一步压缩延迟</h3><p>通过拒绝采样（Rejection Sampling）构造偏好对 $(y_w, y_l)$，再用 DPO 损失微调：</p>
+<p>$$<br>\mathcal{L}<em>{\text{DPO}} &#x3D; -\mathbb{E}</em>{(x,y_w,y_l) \sim \mathcal{D}} \left[ \log \sigma!\left( \beta \log \frac{\pi_\Theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \beta \log \frac{\pi_\Theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)} \right) \right]<br>\tag{7}<br>$$</p>
+<p>训练总损失加入 NLL 正则：</p>
+<p>$$<br>\mathcal{L}<em>{\text{pref}} &#x3D; \mathcal{L}</em>{\text{DPO}} - \lambda, \mathbb{E}<em>{(x,y_w) \sim \mathcal{D}}\left[\log \pi</em>\Theta(y_w|x)\right]<br>\tag{8}<br>$$</p>
+<ul>
+<li><strong>正确性偏好（Correctness-DPO）</strong>：以回复正确性为偏好标准，提升早推理场景下的准确率。</li>
+<li><strong>长度偏好（Length-DPO）</strong>：以推理链长度为偏好标准，在不损失准确率的前提下缩短 CoT。</li>
+</ul>
+<h3 id="3-6-实验结果"><a href="#3-6-实验结果" class="headerlink" title="3.6 实验结果"></a>3.6 实验结果</h3><p><strong>SRQA 基准（ARC-E&#x2F;C、PIQA、SIQA、GSM8K、LLaMA-QS）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>ARC-E</th>
+<th>ARC-C</th>
+<th>SIQA</th>
+<th>PIQA</th>
+<th>GSM8K</th>
+<th>LLaMA-QS</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LLaMA2-7b-Chat</td>
+<td>63.7</td>
+<td>47.1</td>
+<td>13.4</td>
+<td>25.8</td>
+<td>29.4</td>
+<td>70.6</td>
+</tr>
+<tr>
+<td>Gemma-7B-Instruct</td>
+<td>82.5</td>
+<td>66.2</td>
+<td>18.3</td>
+<td>45.0</td>
+<td>43.1</td>
+<td>69.7</td>
+</tr>
+<tr>
+<td>Qwen2-Audio-7B-Instruct</td>
+<td>59.1</td>
+<td>42.4</td>
+<td>21.9</td>
+<td>24.5</td>
+<td>18.1</td>
+<td>64.7</td>
+</tr>
+<tr>
+<td>Kimi-Audio-7B-Instruct</td>
+<td>83.0</td>
+<td>71.5</td>
+<td>32.9</td>
+<td>34.4</td>
+<td>15.7</td>
+<td>61.7</td>
+</tr>
+<tr>
+<td>Moshi（基线）</td>
+<td>30.2</td>
+<td>21.5</td>
+<td>22.8</td>
+<td>23.8</td>
+<td>8.7</td>
+<td>42.8</td>
+</tr>
+<tr>
+<td><strong>Moshi + CoT（本文）</strong></td>
+<td><strong>77.7</strong></td>
+<td><strong>59.8</strong></td>
+<td><strong>56.1</strong></td>
+<td><strong>56.9</strong></td>
+<td><strong>16.1</strong></td>
+<td><strong>57.8</strong></td>
+</tr>
+<tr>
+<td>w&#x2F;o Streaming ASR</td>
+<td>55.8</td>
+<td>44.0</td>
+<td>50.1</td>
+<td>46.3</td>
+<td>12.2</td>
+<td>59.9</td>
+</tr>
+</tbody></table>
+<p>CoT 微调使 Moshi 基线平均准确率提升 <strong>2.4×</strong>（绝对提升 29.1%），在推理任务上全面超越多个用远多预训练数据的语音 LLM。</p>
+<p><strong>DPO 训练对延迟的压缩（$\theta&#x3D;0.75$ SFT 基线）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>任务</th>
+<th>SFT 准确率</th>
+<th>DPO 准确率</th>
+<th>SFT 延迟（token）</th>
+<th>DPO 延迟（token）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>LLaMA-QS</td>
+<td>56.2</td>
+<td>56.9</td>
+<td>35.6</td>
+<td>20.9</td>
+</tr>
+<tr>
+<td>ARC-E</td>
+<td>62.8</td>
+<td>65.4</td>
+<td>49.2</td>
+<td><strong>12.0</strong></td>
+</tr>
+<tr>
+<td>ARC-C</td>
+<td>43.2</td>
+<td>46.0</td>
+<td>49.9</td>
+<td><strong>13.2</strong></td>
+</tr>
+<tr>
+<td>SIQA</td>
+<td>45.1</td>
+<td>45.3</td>
+<td>50.0</td>
+<td><strong>12.9</strong></td>
+</tr>
+<tr>
+<td>PIQA</td>
+<td>40.7</td>
+<td>46.0</td>
+<td>46.6</td>
+<td>18.2</td>
+</tr>
+<tr>
+<td>GSM8K</td>
+<td>13.8</td>
+<td>14.7</td>
+<td>76.0</td>
+<td>48.6</td>
+</tr>
+</tbody></table>
+<p>Length-DPO 在各任务上平均削减延迟 <strong>~70%</strong>，准确率未见明显下降。</p>
+<h3 id="3-7-相关图示"><a href="#3-7-相关图示" class="headerlink" title="3.7 相关图示"></a>3.7 相关图示</h3><p>论文 Figure 1 展示了 CoT token 在 text monologue 流中与流式 ASR token 的交织排布方式（含 <code>&lt;switch_cot&gt;</code> &#x2F; <code>&lt;switch_asr&gt;</code> 切换 token）；Figure 2 展示了两个 Question Completeness 曲线 $\zeta(p)$ 的典型案例；Figure 5 展示了各方法在不同 SRQA 任务上的准确率-延迟帕累托前沿曲线。</p>
+<blockquote>
+<p><em>注：该论文图表为内嵌矢量格式，请参阅 <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2510.07497">原文</a> 相关图示。</em></p>
+</blockquote>
+<hr>
+<h2 id="4-Mini-Omni-Reasoner：Token-级别的-Thinking-in-Speaking"><a href="#4-Mini-Omni-Reasoner：Token-级别的-Thinking-in-Speaking" class="headerlink" title="4. Mini-Omni-Reasoner：Token 级别的 Thinking-in-Speaking"></a>4. Mini-Omni-Reasoner：Token 级别的 Thinking-in-Speaking</h2><h3 id="4-1-Thinking-before-Speaking-的局限"><a href="#4-1-Thinking-before-Speaking-的局限" class="headerlink" title="4.1 Thinking-before-Speaking 的局限"></a>4.1 Thinking-before-Speaking 的局限</h3><p>Mini-Omni-Reasoner（来自南洋理工大学、腾讯等机构）指出了”思考前说话”范式的两条失败路径：</p>
+<ol>
+<li><p><strong>全量语音化（Full Verbalization）</strong>：将推理过程和回复都转换为语音输出。结果是用户需要耐心听完整个推理链才能获得答案，认知负担极重（Qwen2.5-Omni 在 Spoken-MQA 多步推理上平均输出 116.1 个词，对话时长过长）。</p>
+</li>
+<li><p><strong>静默推理（Silent Reasoning）</strong>：推理 token 不合成为语音，只有回复 token 合成。代价是等待推理完成的<strong>首 token 延迟</strong>——对于需要长链推理的复杂问题，该延迟可长达数十秒。</p>
+</li>
+</ol>
+<p>两种路径均无法同时满足<strong>正确率高、延迟低、输出简洁</strong>三个目标。</p>
+<h3 id="4-2-Token-级交错生成机制"><a href="#4-2-Token-级交错生成机制" class="headerlink" title="4.2 Token 级交错生成机制"></a>4.2 Token 级交错生成机制</h3><p><strong>核心创新：</strong> Mini-Omni-Reasoner 利用了一个硬件层面的不对称性——现代 GPU 上大型语言模型的 token 生成速率（&gt;100 tokens&#x2F;s）远超音频播放速率（~12.5 tokens&#x2F;s，对应 Mimi 编解码的帧率；或约 20 tokens&#x2F;s 用于流畅语音合成）。</p>
+<p>基于此，模型以固定比率 $p:q &#x3D; 2:8$ 交错生成 response token 和 reasoning token：</p>
+<p>$$<br>t_{1:(p+q) \cdot K} &#x3D; \bigcup_{i&#x3D;1}^{K} \Big{ \underbrace{t^{\text{resp}}<em>{(i-1)(p+q)+1}, \ldots, t^{\text{resp}}</em>{(i-1)(p+q)+p}}<em>{p \text{ 个回复 token}},; \underbrace{t^{\text{reason}}</em>{(i-1)(p+q)+p+1}, \ldots, t^{\text{reason}}<em>{i(p+q)}}</em>{q \text{ 个推理 token}} \Big}<br>\tag{9}<br>$$</p>
+<p>Talker 模块只对 response token $t^{\text{resp}}_i$ 合成语音：</p>
+<p>$$<br>\hat{x}^a_i &#x3D; D_{\text{audio}}!\left(T_{\text{talker}}(t^{\text{resp}}_i)\right)<br>\tag{10}<br>$$</p>
+<p>reasoning token $t^{\text{reason}}$ 保持静默，仅作为后续 response token 生成的上下文。</p>
+<p><strong>比率设计的三重理由：</strong></p>
+<ol>
+<li><strong>可控性</strong>：短回复块（2 个 token）避免过多语音输出先于充分推理。</li>
+<li><strong>推理容量</strong>：4 倍于回复的推理 token 保证足够的内部推演深度。</li>
+<li><strong>实时兼容性</strong>：3B 模型以 100 tokens&#x2F;s 生成，每秒约输出 20 个 response token（约 5 个词），满足流畅语音合成需求。</li>
+</ol>
+<p><strong>控制 token 设计：</strong> 论文比较了三种策略——无显式标记、有显式标记（含损失加权）、masked 标记（插入切换 token 但从 loss 计算中屏蔽）。实验证明 masked 策略最有效：避免过拟合到 split token，同时在推理时通过手动插入 marker 引导生成模式。每个推理块后额外附加 8 个 padding token，以稳定下游 Talker 的对齐。</p>
+<p><strong>Thinker-Talker 架构回顾：</strong></p>
+<p>给定原始音频 $x^a$，音频编码器提取 token：</p>
+<p>$$<br>h^a_{1:T} &#x3D; E_a(x^a)<br>\tag{11}<br>$$</p>
+<p>Thinker LLM 自回归生成 response token：</p>
+<p>$$<br>t^{\text{resp}}<em>{1:N} &#x3D; T</em>{\text{thinker}}(h^a_{1:T})<br>\tag{12}<br>$$</p>
+<p>Talker LLM 将每个 response token 映射为音频 token：</p>
+<p>$$<br>z^a_j &#x3D; T_{\text{talker}}(t^{\text{resp}}_j)<br>\tag{13}<br>$$</p>
+<p>音频解码器在滑动窗口上重建语音段：</p>
+<p>$$<br>\hat{x}^a_i &#x3D; D_a!\left(z^a_{s_i : s_i + \ell - 1}\right)<br>\tag{14}<br>$$</p>
+<p>在 Thinking-in-Speaking 模式下，Thinker 的输出序列按式 (9) 交错，Talker 只处理 $t^{\text{resp}}$ 部分（图见下方架构图）。</p>
+<h3 id="4-3-训练方法与数据"><a href="#4-3-训练方法与数据" class="headerlink" title="4.3 训练方法与数据"></a>4.3 训练方法与数据</h3><p><strong>SPOKEN-MATH-PROBLEMS-3M 数据集：</strong> 针对语音数学推理，从公开文本数学数据集（GSM8K、MetaMath、Orca-Math、SingleOp 等）重采样 300 万样本，经四阶段流水线构建：</p>
+<ol>
+<li><strong>数据收集</strong>：聚合多样化数学题文本语料（~3.2M 题）。</li>
+<li><strong>口语化改写</strong>：每道题生成两种风格（保留原句式 &#x2F; 转为对话口吻），答案分为符号化推理轨迹 + 简洁口语回复两路。</li>
+<li><strong>TTS 合成</strong>：用 CosyVoice2-0.5B 将问题合成音频；按 2:8 比率将 reasoning + response 文本 token 化并交错。</li>
+<li><strong>GPT 验证（Anticipation Drift 检测）</strong>：反交错还原后，由 GPT 检查是否存在”超前说话”（verbal token 先于对应推理出现）；未通过者丢弃。</li>
+</ol>
+<p><strong>关键挑战——Anticipation Drift（超前漂移）：</strong> 交错生成时，若 response 流推进过快，verbal content 可能先于其逻辑依据出现，导致模型产生幻觉或错误答案。解决方案：（1）要求 reasoning 序列从第一 token 起即进入实质推理，不允许冗余前缀；（2）要求 response 序列以轻量上下文化（如”Okay, let me try…”）开头，推迟实质内容，为推理建立时间缓冲。</p>
+<p><strong>五阶段渐进训练策略：</strong></p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>任务</th>
+<th>冻结模块</th>
+<th>可训练模块</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1. Alignment</td>
+<td>音频适配</td>
+<td>音频编码器</td>
+<td>适配器、嵌入层</td>
+</tr>
+<tr>
+<td>2. Mixed Math Pretraining</td>
+<td>文本&#x2F;语音 TBS 数学</td>
+<td>音频编码器</td>
+<td>全部 Thinker</td>
+</tr>
+<tr>
+<td>3. Textual TiS</td>
+<td>文本输入，交错生成</td>
+<td>音频编码器、适配器</td>
+<td>LLM（Thinker）</td>
+</tr>
+<tr>
+<td>4. Acoustic TiS</td>
+<td>语音输入，交错生成</td>
+<td>全部 Thinker（LLM）</td>
+<td>音频编码器</td>
+</tr>
+<tr>
+<td>5. Talker Training</td>
+<td>语音合成</td>
+<td>全部 Thinker</td>
+<td>Talker</td>
+</tr>
+</tbody></table>
+<p>这一渐进策略将”推理能力迁移到语音”与”语音生成对齐”解耦，避免了多目标同时优化带来的不稳定性。</p>
+<p>训练配置：32 块 NVIDIA H100 GPU，3M 样本，6 个 epoch，batch size 64，cosine decay，最大学习率 2e-4。</p>
+<h3 id="4-4-实验结果"><a href="#4-4-实验结果" class="headerlink" title="4.4 实验结果"></a>4.4 实验结果</h3><p><strong>Spoken-MQA 综合结果（%）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>参数量</th>
+<th>算术（短）</th>
+<th>算术（长）</th>
+<th>算术均值</th>
+<th>推理（单步）</th>
+<th>推理（多步）</th>
+<th>推理均值</th>
+<th>总均值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Whisper-Qwen2.5-Math-7B-Instruct</td>
+<td>7B</td>
+<td>—</td>
+<td>—</td>
+<td>77.3</td>
+<td>—</td>
+<td>—</td>
+<td>86.7</td>
+<td>85.6</td>
+</tr>
+<tr>
+<td>SLAM-Omni</td>
+<td>0.5B</td>
+<td>0.0</td>
+<td>0.0</td>
+<td>0.8</td>
+<td>1.4</td>
+<td>1.2</td>
+<td>1.1</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Mini-Omni</td>
+<td>7B</td>
+<td>5.0</td>
+<td>2.3</td>
+<td>3.5</td>
+<td>0.8</td>
+<td>1.9</td>
+<td>1.6</td>
+<td>1.7</td>
+</tr>
+<tr>
+<td>LLaMA-Omni</td>
+<td>7B</td>
+<td>40.0</td>
+<td>11.0</td>
+<td>23.5</td>
+<td>29.5</td>
+<td>10.5</td>
+<td>16.2</td>
+<td>16.8</td>
+</tr>
+<tr>
+<td>Qwen2.5-Omni-7B</td>
+<td>7B</td>
+<td>90.0</td>
+<td>49.1</td>
+<td>66.8</td>
+<td>84.9</td>
+<td>71.0</td>
+<td>75.1</td>
+<td>73.8</td>
+</tr>
+<tr>
+<td>Qwen2.5-Omni-3B（基线）</td>
+<td>3B</td>
+<td>87.0</td>
+<td>48.0</td>
+<td>64.9</td>
+<td>81.8</td>
+<td>56.4</td>
+<td>64.0</td>
+<td>63.7</td>
+</tr>
+<tr>
+<td>Qwen2.5-Omni-3B（step-by-step）</td>
+<td>3B</td>
+<td>84.0</td>
+<td>43.3</td>
+<td>60.1</td>
+<td>81.5</td>
+<td>57.1</td>
+<td>64.4</td>
+<td>63.6</td>
+</tr>
+<tr>
+<td><strong>Mini-Omni-Reasoner</strong></td>
+<td><strong>3B</strong></td>
+<td><strong>92.9</strong></td>
+<td><strong>66.1</strong></td>
+<td><strong>77.3</strong></td>
+<td><strong>85.9</strong></td>
+<td><strong>60.5</strong></td>
+<td><strong>68.1</strong></td>
+<td><strong>68.6</strong></td>
+</tr>
+</tbody></table>
+<p>Mini-Omni-Reasoner 以 3B 参数量在算术均值上超越所有 7B 语音对话模型以及级联系统（Whisper + Qwen2.5-Math-7B 的 77.3%），达到 77.3%。</p>
+<p><strong>回复长度对比（Spoken-MQA）：</strong></p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>平均回复词数</th>
+<th>多步推理准确率</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Qwen2.5-Omni-3B</td>
+<td>116.1 词（含推理）</td>
+<td>56.4%</td>
+</tr>
+<tr>
+<td>Qwen2.5-Omni-7B（step-by-step）</td>
+<td>118.3 词</td>
+<td>71.0%</td>
+</tr>
+<tr>
+<td>Mini-Omni-Reasoner</td>
+<td><strong>42.9 词</strong></td>
+<td>60.5%</td>
+</tr>
+</tbody></table>
+<p>Mini-Omni-Reasoner 输出词数不足 Qwen2.5-Omni-3B 的 <strong>37%</strong>，同时准确率高出 4.1 个百分点。这一效率源于 Thinking-in-Speaking 范式：总生成 token 量（think + response）虽然约为基线两倍，但仅有 25% 的 token 会被合成为语音，其余均为内部推理。</p>
+<h3 id="4-5-架构图"><a href="#4-5-架构图" class="headerlink" title="4.5 架构图"></a>4.5 架构图</h3><img src="/images/paper_figs/speech_reasoning/mo_p1_img1.png" srcset="/img/loading.gif" lazyload class="" title="Mini-Omni-Reasoner: Thinking-in-Speaking vs Thinking-before-Speaking 对比图">
+
+<p><em>图：Mini-Omni-Reasoner 的”thinking-in-speaking”与传统”thinking-before-speaking”范式对比（原论文 Figure 1）。左侧传统范式需要先完成完整推理链（inner thoughts）才能开口；右侧 Thinking-in-Speaking 将推理 token（灰色）与回复 token（绿色）在 token 级别交错生成，语音仅合成回复 token，实现零延迟实时输出。</em></p>
+<img src="/images/paper_figs/speech_reasoning/mo_p2_img1.jpeg" srcset="/img/loading.gif" lazyload class="" title="Mini-Omni-Reasoner 系统架构图">
+
+<p><em>图：Mini-Omni-Reasoner 系统架构（原论文 Figure 2）。给定音频输入，音频编码器提取特征后送入 Thinker LLM，Thinker 生成交错的 answer token（蓝色）与 reasoning token（橙色）序列，answer token 流入 Talker 实时解码为语音，reasoning token 保持静默。</em></p>
+<hr>
+<h2 id="5-横向对比与分析"><a href="#5-横向对比与分析" class="headerlink" title="5. 横向对比与分析"></a>5. 横向对比与分析</h2><h3 id="5-1-三篇论文方法对比"><a href="#5-1-三篇论文方法对比" class="headerlink" title="5.1 三篇论文方法对比"></a>5.1 三篇论文方法对比</h3><table>
+<thead>
+<tr>
+<th>维度</th>
+<th>Mind-Paced Speaking</th>
+<th>Can Speech LLMs Think While Listening?</th>
+<th>Mini-Omni-Reasoner</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>核心范式</strong></td>
+<td>Think-While-Speaking（双脑并发）</td>
+<td>Think-While-Listening（提前推理）</td>
+<td>Thinking-in-Speaking（token 级交错）</td>
+</tr>
+<tr>
+<td><strong>延迟处理</strong></td>
+<td>Formulation Brain 生成 think 段，Articulation Brain 并发生成 response；Speak-First 变体零延迟</td>
+<td>QC 指标引导在问题未说完时提前开始 CoT；DPO 压缩 CoT 长度</td>
+<td>response:reasoning &#x3D; 2:8 交错生成；仅 response token 合成语音，延迟为零</td>
+</tr>
+<tr>
+<td><strong>架构</strong></td>
+<td>双 LLM（参数共享）+ 流式 TTS</td>
+<td>Moshi 多流（temporal + depth transformer）+ text monologue 通道</td>
+<td>Thinker-Talker 分体架构（Qwen2.5-Omni-3B + Talker 0.5B）</td>
+</tr>
+<tr>
+<td><strong>训练方式</strong></td>
+<td>think-incomplete SFT（随机截断 CoT）；无需重新预训练</td>
+<td>SFT（CoT-Collection 1.8M，语音化）+ Correctness&#x2F;Length DPO</td>
+<td>五阶段渐进训练；3M 语音数学题（SPOKEN-MATH-PROBLEMS-3M）</td>
+</tr>
+<tr>
+<td><strong>Benchmark</strong></td>
+<td>Spoken-MQA（92.8%&#x2F;93.9%）、URO-Bench</td>
+<td>SRQA（ARC-E: 77.7%，平均 2.4x 提升）、延迟降低 70%</td>
+<td>Spoken-MQA（算术均值 77.3%，回复词数 42.9）</td>
+</tr>
+<tr>
+<td><strong>首 token 延迟</strong></td>
+<td>0（spkfirst）&#x2F; 80 token（thkfirst）</td>
+<td>取决于 QC 触发时机，DPO 后约 12~50 token</td>
+<td>0（持续交错生成）</td>
+</tr>
+<tr>
+<td><strong>语义连贯性保障</strong></td>
+<td>双 LLM 各自保持完整 think&#x2F;response 链，无模式切换</td>
+<td>CoT 在 text monologue 独立通道，不干扰 audio 流</td>
+<td>Masked token 稳定交错模式；GPT 验证无 anticipation drift</td>
+</tr>
+<tr>
+<td><strong>适用基础模型</strong></td>
+<td>Step-Audio 2（7B+，中英双语）</td>
+<td>Moshi（7B，全双工，公开可用）</td>
+<td>Qwen2.5-Omni-3B（3B，多语言）</td>
+</tr>
+</tbody></table>
+<h3 id="5-2-各自的适用场景与局限"><a href="#5-2-各自的适用场景与局限" class="headerlink" title="5.2 各自的适用场景与局限"></a>5.2 各自的适用场景与局限</h3><p><strong>Mind-Paced Speaking：</strong></p>
+<p><em>适用场景：</em> 对话质量要求极高、具备双 GPU 部署能力的生产级语音助手（如客服机器人、智能硬件）。双脑设计在 URO-Bench 的复杂对话任务中表现尤为突出，MPS-thkfirst 在中文&#x2F;英文全部主要任务上超越 GPT-4o Audio 和 Step-Audio 2。</p>
+<p><em>局限：</em> (1) 需要两路 LLM 并发推理，计算资源消耗约为单模型两倍；(2) think 段与 response 段之间的段大小（$T_c &#x3D; 80$，$T_r &#x3D; 100$）为超参数，不同任务需要调整；(3) 当前实验仅在 Step-Audio 2 骨干上验证，通用性有待扩展。</p>
+<p><strong>Can Speech LLMs Think While Listening?：</strong></p>
+<p><em>适用场景：</em> 问题语义在说完前已大部分确定的场景（如多选题、常识问答）；对延迟极度敏感且可接受少量精度损失的实时语音交互系统。QC 指标提供了细粒度的准确率-延迟调节旋钮（通过调整 $\theta$）。</p>
+<p><em>局限：</em> (1) 当模型过早触发 CoT 而后续信息至关重要时（如 Example 3 中”get a job”这一关键词在 CoT 启动后才出现），模型可能推理错误，Correct-DPO 虽有改善但未完全解决；(2) Moshi 基础模型在 GSM8K 仅达到 16.1%，与 text LLM 仍有较大差距，说明音频-推理的模态对齐仍是瓶颈；(3) 流式 ASR 引入 480ms 固定延迟，对超低延迟场景仍有约束。</p>
+<p><strong>Mini-Omni-Reasoner：</strong></p>
+<p><em>适用场景：</em> 边缘部署或计算资源受限的场景（3B 参数），需要输出简洁且无额外延迟的数学&#x2F;逻辑推理任务。</p>
+<p><em>局限：</em> (1) 2:8 的固定交错比率是针对当前硬件吞吐和 Mimi 帧率的经验值，在不同部署平台上可能需要重新校准；(2) 训练数据高度集中于数学题（SPOKEN-MATH-PROBLEMS-3M），迁移到开放域对话时泛化能力有待验证；(3) Anticipation Drift 问题在 GPT 验证筛选后虽已减轻，但在高度不确定性的开放域推理中仍可能出现。</p>
+<hr>
+<h2 id="6-展望"><a href="#6-展望" class="headerlink" title="6. 展望"></a>6. 展望</h2><h3 id="6-1-当前主要未解决问题"><a href="#6-1-当前主要未解决问题" class="headerlink" title="6.1 当前主要未解决问题"></a>6.1 当前主要未解决问题</h3><p><strong>问题一：推理长度自适应控制。</strong> 三篇论文的推理 token 数量均为固定设置（MPS 固定 $T_c &#x3D; 80$，Mini-Omni-Reasoner 固定 2:8 比率）。对于简单问题，过多推理 token 是浪费；对于复杂问题，固定 token 数可能不够。如何让模型动态感知推理深度需求、自适应分配 CoT 资源，是尚未充分解决的问题。文本 LLM 领域已有 ThinkLess、ConciseRL 等尝试，但迁移至语音模态面临额外挑战。</p>
+<p><strong>问题二：全双工推理交互。</strong> 当前研究均假设用户单轮发问模型回复，而在真实对话中，用户可能在模型推理或回复过程中插话、打断或追问。如何在流式推理-说话框架中处理用户插话（TurnTaking），维护推理状态的连贯性，是全双工系统的核心未解难题。</p>
+<p><strong>问题三：多模态推理的一致性。</strong> 语音模态承载的信息（语调、情感、停顿）与文本推理链之间的对齐至今缺乏显式建模。例如，当用户语气表明困惑时，模型的 CoT 是否应调整推理策略？这一”副语言感知推理”尚未被任何现有系统系统性解决。</p>
+<p><strong>问题四：推理的可解释性与可控性。</strong> 三篇论文中的 CoT 均为内部状态（silent reasoning），缺乏对推理过程的可解释性保障。如何在保持低延迟的前提下，让推理链对用户透明（如可选的”思考摘要”），是面向实际应用的重要研究方向。</p>
+<h3 id="6-2-未来方向"><a href="#6-2-未来方向" class="headerlink" title="6.2 未来方向"></a>6.2 未来方向</h3><p><strong>方向一：强化学习优化推理策略。</strong> DeepSeek-R1、GRPO 等在文本 LLM 上验证了 RL 对推理能力的显著增益。将 GRPO 等方法迁移至语音模态，以 Spoken-MQA 等基准的准确率为奖励信号，是可预期的下一步。初步探索（如 SARI 等工作）已显示潜力。</p>
+<p><strong>方向二：统一的推理-延迟帕累托建模。</strong> 当前各论文独立优化自己的延迟-准确率权衡，缺乏跨方法的统一理论框架。建立以”有效推理 token 利用率”为核心指标的分析框架，将有助于系统性比较和改进不同范式。</p>
+<p><strong>方向三：轻量化与端侧部署。</strong> Mini-Omni-Reasoner 已将模型压缩至 3B，但端侧（手机、耳机、智能眼镜）部署还需要进一步的量化、剪枝与知识蒸馏。如何在 &lt;1B 参数规模下维持有效推理，是面向消费级硬件的核心挑战。</p>
+<p><strong>方向四：多轮对话中的推理状态维护。</strong> 当前工作均聚焦于单轮推理场景。多轮对话中，跨轮次的推理上下文如何高效保存和检索（类似 KV-cache 的语音推理缓存），是实现真正”持续思考”对话系统的关键技术问题。</p>
+<p><strong>方向五：评测基准的完善。</strong> Spoken-MQA 和 SRQA 目前主要覆盖数学与常识推理，缺乏对情感推理、创意思维、专业知识（医疗、法律）等场景的覆盖。构建更全面的语音推理基准，是推动领域进步的基础工作。</p>
+<hr>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><ol>
+<li><strong>Mind-Paced Speaking</strong>: Donghang Wu et al., “Mind-Paced Speaking: A Dual-Brain Approach to Real-Time Reasoning in Spoken Language Models,” arXiv:2510.09592, 2025.</li>
+<li><strong>Can Speech LLMs Think While Listening?</strong>: Yi-Jen Shih et al., “Can Speech LLMs Think while Listening?,” arXiv:2510.07497, 2025.</li>
+<li><strong>Mini-Omni-Reasoner</strong>: Zhifei Xie et al., “Mini-Omni-Reasoner: Token-Level Thinking-in-Speaking in Large Speech Models,” arXiv:2508.15827, 2025.</li>
+<li>Défossez et al., “Moshi: a speech-text foundation model for real-time dialogue,” arXiv:2410.00037, 2024.</li>
+<li>Wei et al., “Chain-of-thought prompting elicits reasoning in large language models,” NeurIPS, 2022.</li>
+<li>Guo et al., “DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning,” arXiv:2501.12948, 2025.</li>
+<li>Xu et al., “Qwen2.5-Omni Technical Report,” arXiv:2503.20215, 2025.</li>
+<li>Chiang et al., “STITCH: Simultaneous Thinking and Talking with Chunked Reasoning for Spoken Language Models,” arXiv:2507.15375, 2025.</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%85%A8%E5%8F%8C%E5%B7%A5/" class="print-no-link">#全双工</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech LLM</a>
+      
+        <a href="/tags/%E5%AE%9E%E6%97%B6%E6%8E%A8%E7%90%86/" class="print-no-link">#实时推理</a>
+      
+        <a href="/tags/%E7%BB%BC%E8%BF%B0/" class="print-no-link">#综述</a>
+      
+        <a href="/tags/CoT/" class="print-no-link">#CoT</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Think While You Speak: A Survey of Real-Time Reasoning in Speech LLMs</div>
+      <div>https://smallsmartao.github.io/2026/04/03/speech-llm-realtime-reasoning-survey/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年4月3日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年4月3日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/04/03/llm-full-duplex-dialogue-management/" title="LLM-Enhanced Dialogue Management for Full-Duplex Spoken Dialogue Systems">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">LLM-Enhanced Dialogue Management for Full-Duplex Spoken Dialogue Systems</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/04/02/2604.00610-cot-asr/" title="Speech LLMs are Contextual Reasoning Transcribers">
+                        <span class="hidden-mobile">Speech LLMs are Contextual Reasoning Transcribers</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
