@@ -1,0 +1,1196 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/mao.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="📄 论文：TASU: Text-Only Alignment for Speech Understanding👥 作者：Jing Peng, Yi Yang, Xu Li, Yu Xi 等（上海交通大学 X-LANCE Lab、华中科技大学、苏州大学、思必驰）📅 发表：arXiv 2511.03310，2026 年 1 月更新 v2  一句话总结不用一帧语音数据，仅靠文本就能训练出能听懂语">
+<meta property="og:type" content="article">
+<meta property="og:title" content="TASU: Text-Only Alignment for Speech Understanding">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/04/08/tasu-text-only-alignment-speech-understanding/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="📄 论文：TASU: Text-Only Alignment for Speech Understanding👥 作者：Jing Peng, Yi Yang, Xu Li, Yu Xi 等（上海交通大学 X-LANCE Lab、华中科技大学、苏州大学、思必驰）📅 发表：arXiv 2511.03310，2026 年 1 月更新 v2  一句话总结不用一帧语音数据，仅靠文本就能训练出能听懂语">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_tasu.png">
+<meta property="article:published_time" content="2026-04-08T08:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-08T07:57:05.732Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="Speech">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_tasu.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>TASU: Text-Only Alignment for Speech Understanding - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/cover.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="TASU: Text-Only Alignment for Speech Understanding"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-04-08 16:00" pubdate>
+          2026年4月8日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          26 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">TASU: Text-Only Alignment for Speech Understanding</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年4月8日 下午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>📄 论文：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2511.03310">TASU: Text-Only Alignment for Speech Understanding</a><br>👥 作者：Jing Peng, Yi Yang, Xu Li, Yu Xi 等（上海交通大学 X-LANCE Lab、华中科技大学、苏州大学、思必驰）<br>📅 发表：arXiv 2511.03310，2026 年 1 月更新 v2</p>
+</blockquote>
+<h2 id="一句话总结"><a href="#一句话总结" class="headerlink" title="一句话总结"></a>一句话总结</h2><p><strong>不用一帧语音数据，仅靠文本就能训练出能听懂语音的大模型。</strong> TASU 提出了一种全新的语音-文本对齐范式：通过模拟 CTC 后验概率，让模型在训练时只看文本，推理时直接处理语音，实现了零样本语音识别和多任务语音理解，在 MMSU 基准上甚至超越了 GLM-4-Voice 和 Step-Audio。</p>
+<span id="more"></span>
+<h2 id="1-引言：为什么需要-TASU？"><a href="#1-引言：为什么需要-TASU？" class="headerlink" title="1. 引言：为什么需要 TASU？"></a>1. 引言：为什么需要 TASU？</h2><h3 id="1-1-现有-Speech-LLM-对齐范式的痛点"><a href="#1-1-现有-Speech-LLM-对齐范式的痛点" class="headerlink" title="1.1 现有 Speech LLM 对齐范式的痛点"></a>1.1 现有 Speech LLM 对齐范式的痛点</h3><p>近年来，Speech LLM 的主流做法是将语音编码器的输出通过某种投影器映射到大语言模型（LLM）的输入空间。但这里有两个核心问题：</p>
+<ol>
+<li><strong>冗余性问题</strong>：连续音频特征的帧率很高（通常每秒几十到上百帧），直接送入 LLM 会带来大量冗余，增加计算开销，同时加大过拟合风险。</li>
+<li><strong>数据依赖问题</strong>：要缓解冗余、获得好的多任务性能，通常需要海量的配对语音-文本数据和复杂的训练流程。</li>
+</ol>
+<h3 id="1-2-关键直觉：CTC-后验-≈-文本的-one-hot"><a href="#1-2-关键直觉：CTC-后验-≈-文本的-one-hot" class="headerlink" title="1.2 关键直觉：CTC 后验 ≈ 文本的 one-hot"></a>1.2 关键直觉：CTC 后验 ≈ 文本的 one-hot</h3><p>这篇工作的核心洞察非常优雅：<strong>CTC 后验概率在结构上与文本的 one-hot 向量高度相似。</strong></p>
+<p>想想 CTC 解码的过程：大部分帧要么输出 blank，要么输出某个 token 的高置信概率。经过去 blank、合并重复之后，得到的后验序列其实就是一个”软化”的 token 序列——它和文本 one-hot 向量之间的距离，远比原始音频隐层特征与文本之间的距离要小得多。</p>
+<p>这意味着：<strong>如果我们能模拟出 CTC 后验的分布特性，就可以用纯文本数据来训练投影器，完全绕开配对语音数据的需求。</strong></p>
+<p><img src="/images/paper_figs/tasu/psd.drawio.png" srcset="/img/loading.gif" lazyload alt="TASU 系统架构概览：训练阶段（左）只使用文本，通过 CPS 模块生成伪 CTC 后验；推理阶段（右）则对真实语音进行编码和 LSD 处理"></p>
+<h2 id="2-相关工作"><a href="#2-相关工作" class="headerlink" title="2. 相关工作"></a>2. 相关工作</h2><h3 id="2-1-CTC-及其后验概率的利用"><a href="#2-1-CTC-及其后验概率的利用" class="headerlink" title="2.1 CTC 及其后验概率的利用"></a>2.1 CTC 及其后验概率的利用</h3><p>CTC（Connectionist Temporal Classification）通过引入 blank 符号和路径边缘化，将未分段的声学序列映射为变长标签序列。其”折叠”操作——去除 blank、合并重复——将帧级后验投影为紧凑的表示，可以直接用于解码。</p>
+<p>已有一些方法尝试利用 CTC 后验来解决上述两个问题：</p>
+<ul>
+<li><strong>AlignFormer</strong>：利用 CTC 信号对声学特征进行下采样，在一定程度上展示了指令跟随能力。但在配对数据量少时，多任务性能急剧下降，多选题准确率接近随机水平。</li>
+<li><strong>LegoSLM</strong>：用 CTC 后验作为权重对 LLM 的词嵌入进行加权，生成更结构化的声学表示。但这种做法牺牲了多任务能力，且需要大规模数据来重新对齐 LLM 词表。</li>
+</ul>
+<p>TASU 与这些方法的根本区别在于：<strong>它只训练投影器，完全不动 LLM 参数，且训练数据可以是纯文本。</strong></p>
+<h2 id="3-方法：TASU-的两大核心组件"><a href="#3-方法：TASU-的两大核心组件" class="headerlink" title="3. 方法：TASU 的两大核心组件"></a>3. 方法：TASU 的两大核心组件</h2><p>TASU 的核心思想是在 CTC 后验层面建立一个统一的接口：</p>
+<ul>
+<li><strong>训练时</strong>：文本通过 CPS（CTC Posterior Simulation）模块转化为伪 CTC 后验，训练投影器。</li>
+<li><strong>推理时</strong>：真实语音通过编码器和 LSD（Label-Synchronous Decoding）压缩为紧凑的 CTC 后验，经投影器送入冻结的 LLM。</li>
+</ul>
+<h3 id="3-1-标签同步解码-Label-Synchronous-Decoding-LSD"><a href="#3-1-标签同步解码-Label-Synchronous-Decoding-LSD" class="headerlink" title="3.1 标签同步解码 (Label-Synchronous Decoding, LSD)"></a>3.1 标签同步解码 (Label-Synchronous Decoding, LSD)</h3><p>CTC 解码的原始输出有两个问题：大量的 blank 帧和连续的重复帧。直接送入 LLM 会传播冗余并淹没语义信息。LSD 通过两步操作来压缩序列：</p>
+<p><strong>（1）Blank 帧去除</strong></p>
+<p>给定后验序列 $P \in \mathbb{R}^{T \times V}$（$T$ 帧、词表大小 $V$），如果某帧的 blank 概率超过阈值 $\tau$，就直接丢弃：</p>
+<script type="math/tex; mode=display">P'_t = \begin{cases} \varnothing, & \text{if } P_t(\text{blank}) > \tau \\ P_t, & \text{otherwise} \end{cases}</script><p><strong>（2）连续帧合并</strong></p>
+<p>设 $y_t = \arg\max_k P_t(k)$ 为帧 $t$ 的最大概率 token。对于连续相同 $y_t$ 的帧组 $S_j$，取其平均：</p>
+<script type="math/tex; mode=display">P''_j = \frac{1}{|S_j|} \sum_{t \in S_j} P'_t, \quad j = 1, \ldots, J</script><p>其中 $J$ 是去除 blank 后保留的帧组数。</p>
+<p><strong>直觉理解</strong>：LSD 本质上是在做”CTC 折叠”的概率版本——不是硬折叠为离散 token，而是保留概率分布信息的软折叠。实验数据上，LSD 平均实现了接近 <strong>6 倍</strong>的下采样率，这对训练和推理速度的提升是巨大的。</p>
+<h3 id="3-2-CTC-后验模拟-CTC-Posterior-Simulation-CPS"><a href="#3-2-CTC-后验模拟-CTC-Posterior-Simulation-CPS" class="headerlink" title="3.2 CTC 后验模拟 (CTC Posterior Simulation, CPS)"></a>3.2 CTC 后验模拟 (CTC Posterior Simulation, CPS)</h3><p>CPS 是 TASU 实现”纯文本训练”的关键。它将每个 ground-truth token 序列转化为模拟真实 CTC 输出分布特性的伪后验序列 $\tilde{S}$，包含三个随机化阶段：</p>
+<p><strong>（1）随机标签平滑 (Random Label Smoothing)</strong></p>
+<p>给定 token $y$ 的 one-hot 向量 $\delta_y \in \mathbb{R}^V$，与均匀分布插值：</p>
+<script type="math/tex; mode=display">\tilde{p} = \alpha \delta_y + (1 - \alpha) \frac{1}{V} \mathbf{1}, \quad \alpha \sim \mathcal{U}(\lambda_{\text{low}}, \lambda_{\text{high}})</script><p>随机系数 $\alpha$ 使生成的分布覆盖不同的置信度水平，模拟真实声学后验的不确定性。实验中 $\lambda_{\text{low}} = 0.8$，$\lambda_{\text{high}} = 1.0$。</p>
+<p><strong>（2）随机删除 (Random Deletions)</strong></p>
+<p>以概率 $p_{\text{del}}$ 独立删除序列中的每个元素。这模拟了 CTC 对齐中非 blank token 偶尔消失的现象——迫使系统对缺失证据保持鲁棒性。</p>
+<p><strong>（3）随机插入 (Random Insertions)</strong></p>
+<p>插入次数为 $N_{\text{ins}} = \lfloor |\tilde{S}| \times p_{\text{ins}} \rfloor$。每次插入时，以等概率选择：(i) 复制相邻帧，或 (ii) 插入 blank 的 one-hot 向量。这一步引入对齐抖动，捕捉 CTC 特有的重复和 blank 分隔模式。</p>
+<p><strong>实验表明，如果没有随机插入步骤，性能会显著下降</strong>——这说明模拟 CTC 的对齐不确定性是必要的。</p>
+<p>完整的 CPS 算法伪代码如下：</p>
+<figure class="highlight sqf"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><code class="hljs sqf">Algorithm: CTC Posterior Simulation (CPS)<br>输入: Token ID 序列 Y = (y₁,...,yT), 词表大小 V, <br>      (λ<span class="hljs-variable">_low</span>, λ<span class="hljs-variable">_high</span>), 删除概率 p_del, 插入比率 p_ins, blank id b<br>输出: 模拟后验序列 S̃ = &#123;p̃<span class="hljs-variable">_t</span>&#125;<br><br><span class="hljs-number">1</span>. 采样 α ~ U(λ<span class="hljs-variable">_low</span>, λ<span class="hljs-variable">_high</span>)<br><span class="hljs-number">2</span>. 对每个 token y_t: p̃<span class="hljs-variable">_t</span> ← α·δ_&#123;y_t&#125; + (<span class="hljs-number">1</span>-α)·(<span class="hljs-number">1</span>/V)·<span class="hljs-number">1</span><br><span class="hljs-number">3</span>. 以概率 p_del 随机删除元素<br><span class="hljs-number">4</span>. 计算 N_ins = ⌊|S̃| × p_ins⌋<br><span class="hljs-number">5</span>. 随机位置插入 N_ins 个帧（<span class="hljs-number">50</span>% 复制相邻帧，<span class="hljs-number">50</span>% blank）<br></code></pre></td></tr></table></figure>
+<h3 id="3-3-与其他对齐范式的对比"><a href="#3-3-与其他对齐范式的对比" class="headerlink" title="3.3 与其他对齐范式的对比"></a>3.3 与其他对齐范式的对比</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>系统</th>
+<th>训练数据</th>
+<th>可训练部分</th>
+<th>零样本能力</th>
+<th>多任务能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SLAM</td>
+<td>(音频, 文本)</td>
+<td>P + (L)</td>
+<td>✗</td>
+<td>—</td>
+</tr>
+<tr>
+<td>LegoSLM</td>
+<td>(音频, 文本)</td>
+<td>(P) + L</td>
+<td>✗</td>
+<td>—</td>
+</tr>
+<tr>
+<td>AlignFormer</td>
+<td>(音频, 文本)</td>
+<td>E + P</td>
+<td>✓</td>
+<td>—</td>
+</tr>
+<tr>
+<td><strong>TASU</strong></td>
+<td><strong>纯文本</strong></td>
+<td><strong>P</strong></td>
+<td><strong>✓</strong></td>
+<td><strong>✓</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><em>P = 投影器, L = LLM, E = 编码器。括号表示可选。</em></p>
+<p>TASU 的独特之处一目了然：<strong>唯一一个仅用文本训练、仅训练投影器、同时具备零样本和多任务能力的方案。</strong></p>
+<h2 id="4-实验设置"><a href="#4-实验设置" class="headerlink" title="4. 实验设置"></a>4. 实验设置</h2><h3 id="4-1-模型架构"><a href="#4-1-模型架构" class="headerlink" title="4.1 模型架构"></a>4.1 模型架构</h3><ul>
+<li><strong>语音编码器</strong>：SenseVoice-Small（提供可靠的 CTC 后验概率）</li>
+<li><strong>LLM 骨干</strong>：Qwen2.5-1.5B（参数冻结）</li>
+<li><strong>投影器</strong>：Linear–SiLU–Linear 结构，瓶颈维度通常为 1024；多任务设置下为 2048。<strong>仅投影器参数可训练。</strong></li>
+</ul>
+<h3 id="4-2-训练数据"><a href="#4-2-训练数据" class="headerlink" title="4.2 训练数据"></a>4.2 训练数据</h3><ul>
+<li><strong>ASR</strong>：LibriSpeech、SlideSpeech、CommonVoice4</li>
+<li><strong>语音翻译 (ST)</strong>：CoVoST2 En→Zh</li>
+<li><strong>口语指令理解</strong>：SLURP</li>
+</ul>
+<h3 id="4-3-训练超参数"><a href="#4-3-训练超参数" class="headerlink" title="4.3 训练超参数"></a>4.3 训练超参数</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LSD 阈值 $\tau$</td>
+<td>0.9</td>
+</tr>
+<tr>
+<td>标签平滑范围 $(\lambda_{\text{low}}, \lambda_{\text{high}})$</td>
+<td>(0.8, 1.0)</td>
+</tr>
+<tr>
+<td>删除概率 $p_{\text{del}}$</td>
+<td>0.05</td>
+</tr>
+<tr>
+<td>插入概率 $p_{\text{ins}}$</td>
+<td>0.05</td>
+</tr>
+<tr>
+<td>学习率</td>
+<td>$5 \times 10^{-5}$</td>
+</tr>
+<tr>
+<td>训练轮数</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="4-4-评测"><a href="#4-4-评测" class="headerlink" title="4.4 评测"></a>4.4 评测</h3><ul>
+<li><strong>ASR</strong>：LibriSpeech test-clean/test-other（域内），TED-LIUM 3（域外泛化）</li>
+<li><strong>语音理解</strong>：MMSU 基准</li>
+<li><strong>翻译</strong>：CoVoST2 En→Zh (BLEU)</li>
+<li>WER 使用 WeNet 工具包计算</li>
+</ul>
+<h2 id="5-实验结果与分析"><a href="#5-实验结果与分析" class="headerlink" title="5. 实验结果与分析"></a>5. 实验结果与分析</h2><h3 id="5-1-零样本语音识别与领域泛化"><a href="#5-1-零样本语音识别与领域泛化" class="headerlink" title="5.1 零样本语音识别与领域泛化"></a>5.1 零样本语音识别与领域泛化</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>系统</th>
+<th>训练文本</th>
+<th>训练音频</th>
+<th>LibriSpeech clean/other</th>
+<th>SlideSpeech</th>
+<th>TED-LIUM 3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SLAM</td>
+<td>—</td>
+<td>LibriSpeech</td>
+<td>3.72 / 8.47</td>
+<td>18.58</td>
+<td>20.65</td>
+</tr>
+<tr>
+<td>TASU</td>
+<td>LibriSpeech</td>
+<td>—</td>
+<td>4.57 / 9.90</td>
+<td>24.07</td>
+<td>19.36</td>
+</tr>
+<tr>
+<td>TASU</td>
+<td>LibriSpeech + SlideSpeech</td>
+<td>—</td>
+<td>4.21 / 10.31</td>
+<td>18.70</td>
+<td><strong>13.23</strong></td>
+</tr>
+<tr>
+<td>TASU (+SFT)</td>
+<td>LibriSpeech</td>
+<td>LibriSpeech</td>
+<td>3.55 / 7.96</td>
+<td>17.40</td>
+<td>14.38</td>
+</tr>
+<tr>
+<td>TASU (+SFT)</td>
+<td>LibriSpeech + SlideSpeech</td>
+<td>LibriSpeech</td>
+<td><strong>3.06</strong> / 8.04</td>
+<td><strong>14.65</strong></td>
+<td><strong>11.40</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><em>所有系统共享相同组件和训练配置，仅投影器可训练。WER%，越低越好。</em></p>
+<p>几个值得关注的发现：</p>
+<ol>
+<li><p><strong>零样本 ASR 的惊人表现</strong>：纯文本训练的 TASU 在 LibriSpeech 上与使用配对数据的 SLAM 基线差距不到 1.5% WER。考虑到 TASU <strong>一帧语音都没见过</strong>，这个结果令人印象深刻。</p>
+</li>
+<li><p><strong>文本数据的扩展性</strong>：仅通过加入 SlideSpeech 的文本转录（不需要音频！），TASU 在 TED-LIUM 3 上从 19.36% 骤降至 13.23%，远超使用音频训练的 SLAM 基线（20.65%）。这说明 <strong>TASU 可以轻松利用纯文本数据来提升领域泛化能力</strong>。</p>
+</li>
+<li><p><strong>课程学习的叠加效果</strong>：将 TASU 作为预训练阶段、再用配对数据微调（TASU +SFT），在所有测试集上都取得了最佳性能。特别是 SlideSpeech 从 18.58%（SLAM）降至 14.65%，TED-LIUM 3 从 20.65% 降至 11.40%。</p>
+</li>
+</ol>
+<h3 id="5-2-LSD-消融实验"><a href="#5-2-LSD-消融实验" class="headerlink" title="5.2 LSD 消融实验"></a>5.2 LSD 消融实验</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>系统</th>
+<th>投影特征</th>
+<th>LSD</th>
+<th>LibriSpeech clean/other</th>
+<th>SlideSpeech</th>
+<th>TED-LIUM 3</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SLAM</td>
+<td>Hidden</td>
+<td>✗</td>
+<td>3.72 / 8.47</td>
+<td>18.57</td>
+<td>20.65</td>
+</tr>
+<tr>
+<td>SLAM-CTC</td>
+<td>CTC 后验</td>
+<td>✗</td>
+<td>3.79 / 8.13</td>
+<td>24.13</td>
+<td>25.89</td>
+</tr>
+<tr>
+<td>TASU</td>
+<td>伪 CTC</td>
+<td>✗</td>
+<td>&gt; 100</td>
+<td>&gt; 100</td>
+<td>&gt; 100</td>
+</tr>
+<tr>
+<td>SLAM-CTC</td>
+<td>CTC 后验</td>
+<td>✓</td>
+<td>3.13 / 8.59</td>
+<td>18.59</td>
+<td>14.61</td>
+</tr>
+<tr>
+<td>TASU</td>
+<td>伪 CTC</td>
+<td>✓</td>
+<td>4.57 / 9.90</td>
+<td>24.07</td>
+<td>19.36</td>
+</tr>
+<tr>
+<td>TASU (+SFT)</td>
+<td>(伪) CTC</td>
+<td>✓</td>
+<td>3.55 / 7.96</td>
+<td>17.40</td>
+<td>14.38</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><em>所有模型仅在 LibriSpeech 上训练，结构相同。</em></p>
+<p>这个消融实验揭示了几个关键信息：</p>
+<ul>
+<li><strong>LSD 对 TASU 是不可或缺的</strong>：没有 LSD 的 TASU，WER 直接飙升到 100% 以上，完全不可用。这说明 LSD 的压缩不只是加速手段，它是让文本模拟和真实语音后验能够对齐的<strong>必要桥梁</strong>。</li>
+<li><strong>LSD 本身也能提升性能</strong>：即使在使用真实音频的 SLAM-CTC 配置下，加入 LSD 后在 TED-LIUM 3 上从 25.89% 降至 14.61%，巨幅提升。这表明 LSD 有效缓解了过拟合。</li>
+<li><strong>不加 LSD 的 CTC 后验反而比 Hidden 特征差</strong>：SLAM-CTC（无 LSD）在 SlideSpeech 和 TED-LIUM 3 上比 SLAM 更差，说明原始 CTC 后验的冗余 blank 和重复帧确实会损害性能。</li>
+</ul>
+<h3 id="5-3-多任务语音理解泛化"><a href="#5-3-多任务语音理解泛化" class="headerlink" title="5.3 多任务语音理解泛化"></a>5.3 多任务语音理解泛化</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>模型规模</th>
+<th>训练音频时长</th>
+<th>LibriSpeech clean/other (WER%↓)</th>
+<th>CoVoST2 En→Zh (BLEU↑)</th>
+<th>MMSU (ACC↑)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>TASU</strong></td>
+<td>1.5B</td>
+<td><strong>0</strong></td>
+<td>6.47 / 10.35</td>
+<td>33.35</td>
+<td><strong>40.32</strong></td>
+</tr>
+<tr>
+<td><strong>TASU (+SFT)</strong></td>
+<td>1.5B</td>
+<td>0.9k h</td>
+<td>3.28 / 6.91</td>
+<td>36.51</td>
+<td><strong>40.48</strong></td>
+</tr>
+<tr>
+<td>SLAM</td>
+<td>1.5B</td>
+<td>1.8k h</td>
+<td>3.30 / 7.24</td>
+<td><strong>37.34</strong></td>
+<td>36.70</td>
+</tr>
+<tr>
+<td>SALMONN</td>
+<td>13B</td>
+<td>&gt; 100k h</td>
+<td>2.10 / 4.90</td>
+<td>34.40</td>
+<td>25.84</td>
+</tr>
+<tr>
+<td>GLM-4-Voice</td>
+<td>9B</td>
+<td>&gt; 100k h</td>
+<td>2.82 / 7.66</td>
+<td>—</td>
+<td>35.51</td>
+</tr>
+<tr>
+<td>Step-Audio</td>
+<td>130B</td>
+<td>&gt; 100k h</td>
+<td>2.36 / 6.32</td>
+<td>—</td>
+<td>37.42</td>
+</tr>
+<tr>
+<td>Qwen2.5-Omni</td>
+<td>7B</td>
+<td>&gt; 100k h</td>
+<td>2.37 / 4.21</td>
+<td>41.40</td>
+<td>60.57</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>这张表是全文最有冲击力的结果：</p>
+<ol>
+<li><p><strong>零音频的 TASU 在 MMSU 上以 40.32% 超越了所有需要大量音频训练的模型</strong>（SALMONN 25.84%、GLM-4-Voice 35.51%、Step-Audio 37.42%），而这些模型的参数量是 TASU 的 6-87 倍，训练音频量是 TASU 的无穷倍（因为 TASU 是 0）。</p>
+</li>
+<li><p><strong>SLAM 在 MMSU 上只有 36.70%</strong>——使用了 1.8k 小时音频 + 相同架构，却不如纯文本训练的 TASU。这强有力地证明了 TASU 的对齐范式在保留 LLM 多任务能力方面的优势：因为 LLM 完全冻结，原有的推理和多任务能力不会被破坏。</p>
+</li>
+<li><p><strong>加入少量音频微调（TASU +SFT）后</strong>，ASR 和翻译任务迅速提升，同时 MMSU 维持 40.48%。这表明 TASU 作为预训练阶段与后续音频微调具有良好的兼容性。</p>
+</li>
+<li><p>当然，Qwen2.5-Omni 以 60.57% 的 MMSU 准确率遥遥领先，但它使用了 7B 参数和超过 10 万小时的音频数据——这恰恰说明了 TASU 在效率上的非凡潜力。</p>
+</li>
+</ol>
+<h2 id="6-总结与未来方向"><a href="#6-总结与未来方向" class="headerlink" title="6. 总结与未来方向"></a>6. 总结与未来方向</h2><p>TASU 提出了一个简洁而有效的新范式：</p>
+<ul>
+<li><strong>核心理念</strong>：CTC 后验与文本 one-hot 的结构相似性，使得纯文本训练成为可能</li>
+<li><strong>LSD</strong>：6 倍下采样，消除冗余，缓解过拟合，是 TASU 正常工作的必要条件</li>
+<li><strong>CPS</strong>：通过标签平滑 + 随机删除/插入，模拟真实 CTC 后验的分布特性</li>
+<li><strong>结果</strong>：零样本 ASR 仅有微小精度损失；多任务理解超越参数量大数十倍的模型</li>
+</ul>
+<p>未来方向：</p>
+<ol>
+<li>进一步改进 CPS，缩小真实 CTC 后验和伪后验之间的差距</li>
+<li>引入大规模文本数据，探索该对齐方法的可扩展性</li>
+</ol>
+<hr>
+<p>个人思考：TASU 的工作在某种程度上暗示了一个有趣的观点——<strong>对于语义层面的语音理解，声学信息的重要性可能被高估了</strong>。当语音编码器足够好、能产生可靠的 CTC 后验时，对齐投影器其实只需要学习”将 token 概率分布映射到 LLM 嵌入空间”这个相对简单的任务。这个映射与声学细节无关，只与符号层面的结构有关——而文本恰好可以完美提供这一点。当然，这个结论目前仅限于语义理解任务；对于说话人识别、情感识别等依赖声学细节的任务，TASU 的范式是否适用还有待验证。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/Speech/" class="print-no-link">#Speech</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>TASU: Text-Only Alignment for Speech Understanding</div>
+      <div>https://smallsmartao.github.io/2026/04/08/tasu-text-only-alignment-speech-understanding/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年4月8日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年4月8日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/04/03/bpe-revisit/" title="再谈BPE分词">
+                        <span class="hidden-mobile">再谈BPE分词</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
