@@ -28,6 +28,10 @@
       
       <tag>Speech</tag>
       
+      <tag>CTC</tag>
+      
+      <tag>text-only</tag>
+      
     </tags>
     
   </entry>
