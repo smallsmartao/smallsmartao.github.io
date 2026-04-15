@@ -1,5 +1,10 @@
-/* Body uses the same banner image as fixed background, so no grey shows behind content */
+/* Body uses the same banner image as fixed background */
 body {
   background: url('/images/cover.png') no-repeat center top fixed;
   background-size: cover;
+}
+
+/* Make banner transparent so body bg shows through seamlessly */
+.banner {
+  background: transparent !important;
 }
