@@ -1,5 +1,0 @@
-/* Body uses the same banner image as fixed background, so no grey shows behind content */
-body {
-  background: url('/images/cover.png') no-repeat center top fixed;
-  background-size: cover;
-}
