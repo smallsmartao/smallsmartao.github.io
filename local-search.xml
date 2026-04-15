@@ -20,9 +20,9 @@
     
     <tags>
       
-      <tag>LLM</tag>
-      
       <tag>ASR</tag>
+      
+      <tag>LLM</tag>
       
       <tag>语音识别</tag>
       
@@ -51,11 +51,11 @@
     
     <tags>
       
+      <tag>ASR</tag>
+      
       <tag>LLM</tag>
       
       <tag>论文解读</tag>
-      
-      <tag>ASR</tag>
       
       <tag>Speech</tag>
       
@@ -88,11 +88,11 @@
     
     <tags>
       
+      <tag>ASR</tag>
+      
       <tag>LLM</tag>
       
       <tag>论文解读</tag>
-      
-      <tag>ASR</tag>
       
       <tag>Speech Encoder</tag>
       
@@ -123,11 +123,11 @@
     
     <tags>
       
+      <tag>ASR</tag>
+      
       <tag>LLM</tag>
       
       <tag>论文解读</tag>
-      
-      <tag>ASR</tag>
       
       <tag>Speech</tag>
       
@@ -191,11 +191,11 @@
       
       <tag>论文解读</tag>
       
-      <tag>VAD</tag>
-      
       <tag>Full-Duplex</tag>
       
       <tag>对话系统</tag>
+      
+      <tag>VAD</tag>
       
       <tag>Speech LLM</tag>
       
@@ -286,13 +286,13 @@
     
     <tags>
       
-      <tag>LLM</tag>
-      
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
+      <tag>LLM</tag>
+      
       <tag>Chain-of-Thought</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Speech</tag>
       
@@ -319,11 +319,11 @@
     
     <tags>
       
+      <tag>ASR</tag>
+      
       <tag>LLM</tag>
       
       <tag>论文解读</tag>
-      
-      <tag>ASR</tag>
       
       <tag>Speech LM</tag>
       
@@ -354,11 +354,11 @@
     
     <tags>
       
+      <tag>ASR</tag>
+      
       <tag>LLM</tag>
       
       <tag>论文解读</tag>
-      
-      <tag>ASR</tag>
       
       <tag>CIF</tag>
       
@@ -389,11 +389,11 @@
     
     <tags>
       
+      <tag>ASR</tag>
+      
       <tag>LLM</tag>
       
       <tag>论文解读</tag>
-      
-      <tag>ASR</tag>
       
       <tag>Streaming</tag>
       
@@ -420,13 +420,13 @@
     
     <tags>
       
-      <tag>LLM</tag>
+      <tag>ASR</tag>
       
-      <tag>Audio</tag>
+      <tag>LLM</tag>
       
       <tag>论文解读</tag>
       
-      <tag>ASR</tag>
+      <tag>Audio</tag>
       
       <tag>SLM</tag>
       
@@ -455,13 +455,13 @@
     
     <tags>
       
-      <tag>LLM</tag>
+      <tag>ASR</tag>
       
-      <tag>Audio</tag>
+      <tag>LLM</tag>
       
       <tag>论文解读</tag>
       
-      <tag>ASR</tag>
+      <tag>Audio</tag>
       
       <tag>SLM</tag>
       
@@ -591,13 +591,13 @@
       
       <tag>LLM</tag>
       
+      <tag>论文解读</tag>
+      
       <tag>Audio</tag>
       
       <tag>LALM</tag>
       
       <tag>评测基准</tag>
-      
-      <tag>论文解读</tag>
       
     </tags>
     
@@ -622,11 +622,11 @@
     
     <tags>
       
+      <tag>ASR</tag>
+      
       <tag>LLM</tag>
       
       <tag>论文解读</tag>
-      
-      <tag>ASR</tag>
       
       <tag>Diarization</tag>
       
@@ -655,9 +655,9 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>VAD</tag>
       
@@ -754,11 +754,11 @@
     
     <tags>
       
+      <tag>ASR</tag>
+      
       <tag>LLM</tag>
       
       <tag>论文解读</tag>
-      
-      <tag>ASR</tag>
       
       <tag>语音识别</tag>
       
@@ -787,11 +787,11 @@
     
     <tags>
       
+      <tag>ASR</tag>
+      
       <tag>LLM</tag>
       
       <tag>论文解读</tag>
-      
-      <tag>ASR</tag>
       
       <tag>强化学习</tag>
       
@@ -820,11 +820,11 @@
     
     <tags>
       
+      <tag>ASR</tag>
+      
       <tag>LLM</tag>
       
       <tag>论文解读</tag>
-      
-      <tag>ASR</tag>
       
       <tag>语音识别</tag>
       
