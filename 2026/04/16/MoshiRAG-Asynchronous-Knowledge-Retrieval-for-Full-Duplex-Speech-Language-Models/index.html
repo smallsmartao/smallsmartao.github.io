@@ -1,0 +1,1408 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/mao.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文链接：arXiv 2604.12928代码：GitHub - kyutai-labs&#x2F;moshi-ragDemo：moshi-rag.kyutai.org作者：Chung-Ming Chien, Manu Orsini, Eugene Kharitonov, Neil Zeghidour, Karen Livescu, Alexandre Défossez机构：Toyota Technolo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MoshiRAG: Asynchronous Knowledge Retrieval for Full-Duplex Speech Language Models">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/04/16/MoshiRAG-Asynchronous-Knowledge-Retrieval-for-Full-Duplex-Speech-Language-Models/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文链接：arXiv 2604.12928代码：GitHub - kyutai-labs&#x2F;moshi-ragDemo：moshi-rag.kyutai.org作者：Chung-Ming Chien, Manu Orsini, Eugene Kharitonov, Neil Zeghidour, Karen Livescu, Alexandre Défossez机构：Toyota Technolo">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_moshirag_dbzgnk.png">
+<meta property="article:published_time" content="2026-04-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-16T02:11:18.125Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="Full-Duplex">
+<meta property="article:tag" content="RAG">
+<meta property="article:tag" content="Speech LLM">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_moshirag_dbzgnk.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>MoshiRAG: Asynchronous Knowledge Retrieval for Full-Duplex Speech Language Models - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/banner_moshirag_dbzgnk.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="MoshiRAG: Asynchronous Knowledge Retrieval for Full-Duplex Speech Language Models"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-04-16 00:00" pubdate>
+          2026年4月16日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          38 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">MoshiRAG: Asynchronous Knowledge Retrieval for Full-Duplex Speech Language Models</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年4月16日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>论文链接：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2604.12928">arXiv 2604.12928</a><br>代码：<a target="_blank" rel="noopener" href="https://github.com/kyutai-labs/moshi-rag">GitHub - kyutai-labs/moshi-rag</a><br>Demo：<a target="_blank" rel="noopener" href="https://moshi-rag.kyutai.org">moshi-rag.kyutai.org</a><br>作者：Chung-Ming Chien, Manu Orsini, Eugene Kharitonov, Neil Zeghidour, Karen Livescu, Alexandre Défossez<br>机构：Toyota Technological Institute at Chicago, Kyutai, Gradium</p>
+</blockquote>
+<h2 id="1-引言"><a href="#1-引言" class="headerlink" title="1. 引言"></a>1. 引言</h2><p>语音对话语言模型（Speech-to-Speech Language Models）正在成为提升对话式 AI 自然度的核心技术路径。其中，<strong>全双工模型（full-duplex models）</strong> 以其”边听边说”的能力区别于传统的基于轮次（turn-based）的方法——后者在处理完一整段语音（如一个句子）后才能在听和说之间切换（如图所示）。全双工模型能够同时接收语音输入并生成响应，从而更好地处理停顿、打断和反馈信号（backchannel），更贴近真实人类对话的复杂交互模式。</p>
+<p><img src="/images/paper_figs/moshirag/duplex.png" srcset="/img/loading.gif" lazyload alt="Turn-based 模型与 Full-Duplex 模型对比。前者需要显式切换说/听状态，后者可以并发地说和听。"></p>
+<p>然而，全双工方法也带来了独特的挑战：<strong>实时语音处理和生成的需求</strong>。同时，近期研究表明，原生音频模型在需要事实性（factuality）的任务（如问答）上表现远逊于文本模型，部分原因是可用于训练的语音数据在词量上远少于文本数据。</p>
+<p>为了在保持交互性的同时提升事实性，本文提出了 <strong>MoshiRAG</strong>——第一个具备检索增强生成（RAG）能力的全双工语音模型，构建于全双工语音 LM Moshi 之上。其核心洞察在于：利用<strong>口语响应开始到关键信息出现之间的自然时间间隙</strong>（keyword delay），在不中断对话流的情况下异步完成信息检索。</p>
+<h2 id="2-相关工作"><a href="#2-相关工作" class="headerlink" title="2. 相关工作"></a>2. 相关工作</h2><h3 id="2-1-全双工语音模型"><a href="#2-1-全双工语音模型" class="headerlink" title="2.1 全双工语音模型"></a>2.1 全双工语音模型</h3><p>自 dGSLM 开创端到端多说话人对话建模以来，全双工模型已成为日益重要的研究方向。现有方法可分为两类：</p>
+<ul>
+<li><strong>时分复用方法（Time-multiplexing）</strong>：如 OmniFlatten、MinMo，模型在固定时长的用户输入和等长的响应生成之间交替。</li>
+<li><strong>双通道架构（Dual-channel）</strong>：如 Moshi、SALMONN-omni、FLM-Audio、PersonaPlex，以高帧率同时建模输入和输出语音流。</li>
+</ul>
+<h3 id="2-2-语音模型中的-RAG"><a href="#2-2-语音模型中的-RAG" class="headerlink" title="2.2 语音模型中的 RAG"></a>2.2 语音模型中的 RAG</h3><p>为提升语音对话模型的事实性，近期工作如 WavRAG、VoxRAG 等已引入 RAG。与本文最相关的并行工作是 <strong>Stream RAG</strong>，它同样利用口语对话中的时间间隙来执行信息检索。但现有方法均针对<strong>非全双工</strong>场景设计，未能解决实时全双工对话中的严格时序约束。此外，现有方法通常从固定的预索引语料库中检索信息，而 MoshiRAG 将此范式扩展至<strong>开放域 QA</strong>，可直接从网络检索信息。</p>
+<h2 id="3-系统设计"><a href="#3-系统设计" class="headerlink" title="3. 系统设计"></a>3. 系统设计</h2><h3 id="3-1-时序约束分析"><a href="#3-1-时序约束分析" class="headerlink" title="3.1 时序约束分析"></a>3.1 时序约束分析</h3><p>本文首先定义了人机语音对话中与延迟相关的关键术语：</p>
+<ul>
+<li><strong>TTFAT（Time-to-First-Audio-Token）</strong>：用户发言结束到模型生成第一个音频 token 之间的延迟，即音频域的 TTFT。</li>
+<li><strong>Keyword Delay</strong>：模型口语响应开始到关键内容（直接回答用户查询的关键词）首次出现的时间间隔。</li>
+<li><strong>E2EKD（End-to-End Keyword Delay）</strong>：从用户查询结束到关键词在模型响应中被提及的总时间，即 TTFAT + Keyword Delay。</li>
+<li><strong>Retrieval Delay</strong>：从预测检索触发信号到检索过程完成的时间。</li>
+</ul>
+<p><img src="/images/paper_figs/moshirag/time_constraints.png" srcset="/img/loading.gif" lazyload alt="人机对话中不同类型延迟的示意图。E2EKD 衡量用户问题结束到响应中最有信息量的词之间的时间。"></p>
+<p>E2EKD 是一个关键的感知指标，决定了有意义的信息多快能传递给用户。对于检索增强系统，检索延迟必须短于 E2EKD，才能将检索信息及时整合到响应中。初步分析显示，现有语音 LM 的 E2EKD 通常超过 3 秒。据此，MoshiRAG 在数据构建和模型训练中将<strong>检索延迟目标设定为不超过 2 秒</strong>。</p>
+<h3 id="3-2-系统概览"><a href="#3-2-系统概览" class="headerlink" title="3.2 系统概览"></a>3.2 系统概览</h3><p>本文将<strong>前端（front end）</strong> 定义为直接接收或生成音频以与用户实时通信的模块，<strong>后端（back end）</strong> 则不直接与用户交互。前端必须对用户输入提供即时反馈，后端则可优先保证事实性和推理质量。</p>
+<p><img src="/images/paper_figs/moshirag/front_back_end.png" srcset="/img/loading.gif" lazyload alt="MoshiRAG 的前端和后端组件。当模型需要外部信息时输出 ⟨ret⟩ token，对话转录被发送至后端异步处理。结果就绪后注入 Moshi，模型无中断地调整响应。"></p>
+<p>MoshiRAG 以原始 Moshi 模型（略有修改）作为全双工前端，异步信息检索系统作为后端并行运行。此外，由于大多数信息检索系统基于文本，额外使用一个流式 ASR 模型将用户语音转录为文本用于检索。前端与后端之间缺乏同步，使系统能够<strong>“边听边说边思考”</strong>，类似于人类的认知能力。</p>
+<p>在语音对话过程中，前端 Moshi 接收 Mimi codec 编码器编码的用户语音 token 作为输入，在独立通道中自回归地预测文本转录（带填充 token）和对应的语音 token。相对于原始 Moshi 的唯一修改是引入了：</p>
+<ol>
+<li>特殊的<strong>检索触发 token ⟨ret⟩</strong></li>
+<li><strong>参考文本编码器（reference text encoder）</strong></li>
+</ol>
+<p>当 ⟨ret⟩ 被预测时，系统从 ASR 和 Moshi 输出中收集用户与助手的文本转录，将聚合的对话上下文传递给检索后端。检索进行期间，前端 Moshi 继续全双工运行。</p>
+<p><img src="/images/paper_figs/moshirag/streams.png" srcset="/img/loading.gif" lazyload alt="MoshiRAG 输入输出的文本和音频 token 流。前端 Moshi 始终接收其上一步的 token 预测和用户语音 token。检索结果就绪后，其表示与其他 token 流的嵌入相加，在若干时间步内注入。"></p>
+<p>⟨ret⟩ 预测后、检索完成前生成的内容称为 <strong>pre-RAG content</strong>，通常包含对用户查询的粗略回答以及不需要领域知识的填充短语（如 “Let me check that for you…”）。检索完成后，检索到的文档经参考文本编码器编码后注入 Moshi，使模型能够基于外部知识生成更准确、详细的回答。</p>
+<h3 id="3-3-构建模块"><a href="#3-3-构建模块" class="headerlink" title="3.3 构建模块"></a>3.3 构建模块</h3><p>MoshiRAG 由三个主要组件构成：</p>
+<h4 id="3-3-1-RAG-增强的-Moshi-模型（7B）"><a href="#3-3-1-RAG-增强的-Moshi-模型（7B）" class="headerlink" title="3.3.1 RAG 增强的 Moshi 模型（7B）"></a>3.3.1 RAG 增强的 Moshi 模型（7B）</h4><p>原始 Moshi 使用 RQ-Transformer 自回归建模文本和音频 token，包含：</p>
+<ul>
+<li><strong>时间 Transformer（temporal Transformer）</strong>：以 12.5 Hz 运行</li>
+<li><strong>深度 Transformer（depth Transformer）</strong>：每个时间步预测 8 个音频 token</li>
+</ul>
+<p>在时间步 $i$，时间 Transformer 的输入向量为：</p>
+<script type="math/tex; mode=display">h_i = \text{emb}^{\text{model}}_{\text{text},i} + \text{emb}^{\text{model}}_{\text{speech},i} + \text{emb}^{\text{user}}_{\text{speech},i}</script><p>其中 $\text{emb}^r_{m,i}$ 表示角色 $r$（model 或 user）和模态 $m$（text 或 speech）在时间步 $i$ 的嵌入。</p>
+<p>具体而言，文本嵌入为 $\text{emb}^{\text{model}}_{\text{text},i} = \text{Emb}_{\text{text}}(t^{\text{model}}_i)$，语音嵌入为：</p>
+<script type="math/tex; mode=display">\text{emb}^r_{\text{speech},i} = \text{Emb}^r_{\text{speech},1}(s^r_{i,1}) + \sum_{j=2}^{8} \text{Emb}^r_{\text{speech},j}(s^r_{i-1,j})</script><p>其中 $s^r_{i,j}$ 是角色 $r$ 在时间 $i$ 的第 $j$ 层音频 token。</p>
+<p>当检索未激活时，MoshiRAG 的行为与原始 Moshi 完全一致。当 ⟨ret⟩ 信号在时间步 $i_{\text{ret}}$ 被预测，假设检索延迟为 $d$ 秒，检索到的参考文本被编码为嵌入序列 $\text{emb}^{\text{ref}}_{1:l}$（$l$ 为序列长度），经可训练线性投影层后，以流式方式与时间 Transformer 输入相加：</p>
+<script type="math/tex; mode=display">h'_i = \begin{cases} h_i + h^{\text{ref}}_{i - (i_{\text{ret}} + \frac{d}{f_r})} & \text{if } i_{\text{ret}} + \frac{d}{f_r} < i \leq i_{\text{ret}} + \frac{d}{f_r} + l \\ h_i & \text{otherwise} \end{cases}</script><p>其中 $h^{\text{ref}}_i = \text{proj}(\text{emb}^{\text{ref}}_i)$，$f_r$ 为 Moshi 的帧率。</p>
+<p>为解决长参考文档的问题（例如 250 个 token 对应 20 秒嵌入序列），系统采用预训练的序列压缩网络 <strong>ARC-Encoder</strong> 将参考序列长度缩减为原来的 <strong>四分之一</strong>。</p>
+<h4 id="3-3-2-流式-ASR（1B）"><a href="#3-3-2-流式-ASR（1B）" class="headerlink" title="3.3.2 流式 ASR（1B）"></a>3.3.2 流式 ASR（1B）</h4><p>使用预训练的流式 ASR 模型，延迟 0.5 秒，仅 1B 参数，计算成本相对较低。</p>
+<h4 id="3-3-3-检索后端"><a href="#3-3-3-检索后端" class="headerlink" title="3.3.3 检索后端"></a>3.3.3 检索后端</h4><p>⟨ret⟩ 被预测后，系统先等待 0.5 秒让 ASR 模型生成完整的用户发言转录，然后将对话转录发送至检索后端。本文考虑两种后端：</p>
+<ul>
+<li><strong>LLM-based 检索</strong>：提示 LLM 阅读对话上下文并生成简洁、事实性的参考文档。</li>
+<li><strong>Search-based 检索</strong>：使用 AI 优化搜索工具 Tavily 从网络获取实时信息并提取关键亮点。</li>
+</ul>
+<h2 id="4-数据与训练"><a href="#4-数据与训练" class="headerlink" title="4. 数据与训练"></a>4. 数据与训练</h2><h3 id="4-1-数据生成"><a href="#4-1-数据生成" class="headerlink" title="4.1 数据生成"></a>4.1 数据生成</h3><p>MoshiRAG 的训练依赖合成数据，流程如下：</p>
+<h4 id="4-1-1-话题"><a href="#4-1-1-话题" class="headerlink" title="4.1.1 话题"></a>4.1.1 话题</h4><p>从现有 QA 数据集中策划话题：</p>
+<ul>
+<li>Natural Questions：约 307k 话题</li>
+<li>HotpotQA：约 90k 话题</li>
+<li>TriviaQA：约 76k 话题</li>
+<li><strong>总计 474k</strong> QA 衍生话题</li>
+</ul>
+<p>此外，使用 LLM 在特定专家领域生成对话话题，通过与 LLM 的迭代讨论，确定了 16 大类中的 111 个专家领域，使用 Gemma 3 27B 为每个领域生成 50 个对话话题，额外产生 <strong>5.5k</strong> LLM 生成的专家领域话题。</p>
+<h4 id="4-1-2-带参考文档的对话脚本"><a href="#4-1-2-带参考文档的对话脚本" class="headerlink" title="4.1.2 带参考文档的对话脚本"></a>4.1.2 带参考文档的对话脚本</h4><p>对每个话题，使用 LLM 生成模拟自然人机交互的多轮对话脚本，每个脚本附带支持知识密集型回复的参考文档。RAG 启用的回复由三段组成：</p>
+<ul>
+<li><strong>Lead portion</strong>：不依赖外部知识</li>
+<li><strong>Body portion</strong>：包含基于参考的内容</li>
+<li><strong>Tail portion</strong>（可选）：总结性收尾</li>
+</ul>
+<p>生成使用三个 Gemma 3 27B LLM，各担不同角色：</p>
+<ul>
+<li><strong>User LLM</strong>：可访问话题和之前的对话上下文，但不能看参考文档</li>
+<li><strong>Moshi LLM</strong>：不直接观察话题，但可完全访问对话上下文和参考信息</li>
+<li><strong>Reference LLM</strong>：提供参考文档</li>
+</ul>
+<p>为增加多样性和鲁棒性，设计了三种提示变体：</p>
+<ul>
+<li><strong>v1</strong>：围绕选定话题的基本对话</li>
+<li><strong>v2</strong>：用户更频繁地质疑 Moshi，包含更多来回交锋和论辩</li>
+<li><strong>v3</strong>：用户偶尔引入无关话题或闲聊</li>
+</ul>
+<p>此外，为 QA 风格话题构建单轮子集。最终合计约 <strong>190 万</strong> 对话实例。</p>
+<h4 id="4-1-3-语音合成"><a href="#4-1-3-语音合成" class="headerlink" title="4.1.3 语音合成"></a>4.1.3 语音合成</h4><p>使用多通道 TTS 模型将脚本转为音频。使用固定说话人作为 Moshi 的声音，从内部数据集随机采样另一说话人作为用户的声音。合成语音语料库的平均时长：多轮对话约 2 分钟，单轮子集约 15 秒。</p>
+<p><strong>训练数据统计：</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>子集</th>
+<th>LLM</th>
+<th>HotpotQA</th>
+<th>NQ</th>
+<th>TriviaQA</th>
+<th>总计</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Multi-turn v1</td>
+<td>5,457 (231h)</td>
+<td>90,208 (2,201h)</td>
+<td>305,077 (8,083h)</td>
+<td>76,068 (1,866h)</td>
+<td>476,810 (12,381h)</td>
+</tr>
+<tr>
+<td>Multi-turn v2</td>
+<td>5,549 (236h)</td>
+<td>90,034 (2,433h)</td>
+<td>303,359 (9,264h)</td>
+<td>75,515 (2,097h)</td>
+<td>474,457 (14,030h)</td>
+</tr>
+<tr>
+<td>Multi-turn v3</td>
+<td>5,550 (298h)</td>
+<td>90,208 (3,459h)</td>
+<td>306,754 (12,701h)</td>
+<td>76,061 (2,947h)</td>
+<td>478,573 (19,405h)</td>
+</tr>
+<tr>
+<td>Single-turn</td>
+<td>—</td>
+<td>90,172 (438h)</td>
+<td>305,364 (333h)</td>
+<td>—</td>
+<td>471,536 (1,954h)</td>
+</tr>
+<tr>
+<td><strong>总计</strong></td>
+<td>(765h)</td>
+<td>(8,531h)</td>
+<td>(31,231h)</td>
+<td>(7,243h)</td>
+<td><strong>1,901,376 (47,770h)</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="4-2-训练"><a href="#4-2-训练" class="headerlink" title="4.2 训练"></a>4.2 训练</h3><p>⟨ret⟩ token 的放置利用多通道 TTS 模型提供的语音-文本强制对齐。具体地，将 RAG 启用的 Moshi 轮次中 lead 部分首个文本 token 之前的文本 token 替换为 ⟨ret⟩。</p>
+<p>检索延迟通过以下采样策略模拟：</p>
+<script type="math/tex; mode=display">d' = \begin{cases} \mathcal{U}(0, d_{\text{lead}}) & \text{if } d_{\text{lead}} < 2 \text{ or } p < 0.2 \\ \mathcal{U}(1.0, d_{\text{lead}} - 1.0) & \text{otherwise} \end{cases}</script><p>其中 $d’$ 为训练时模拟的检索延迟，$d_{\text{lead}}$ 为 lead 部分的持续时间，$p \sim \mathcal{U}(0,1)$。此设计确保在大多数情况下，检索延迟从区间 $(1.0, d_{\text{lead}} - 1.0)$ 采样，在 body 部分关键信息之前保证至少 1.0 秒的缓冲时间。</p>
+<p><img src="/images/paper_figs/moshirag/delay_hist.png" srcset="/img/loading.gif" lazyload alt="检索延迟和关键词延迟的分布直方图。训练数据覆盖了比实际推理更宽的检索延迟范围。关键词延迟几乎总是长于实际检索延迟，为整合检索信息留下了充足时间。"></p>
+<p>训练配置：</p>
+<ul>
+<li>基于原始 Moshi 初始化，所有参数可训练（参考文本编码器除外）</li>
+<li>参考文档 dropout 概率 0.2</li>
+<li>80ms 窗口音频信号过滤，RMS 低于 −65dBFS 的段置零</li>
+<li>训练 <strong>100k</strong> 更新步，学习率 $2 \times 10^{-6}$，batch size 32</li>
+</ul>
+<h2 id="5-实验"><a href="#5-实验" class="headerlink" title="5. 实验"></a>5. 实验</h2><p>默认使用 Gemma 3 27B 模型作为检索后端。</p>
+<h3 id="5-1-事实性评估"><a href="#5-1-事实性评估" class="headerlink" title="5.1 事实性评估"></a>5.1 事实性评估</h3><p>在语音 QA 数据集上评估事实性，使用 OpenAudioBench 的音频文件和评估协议，用 LLM judge 评估 MoshiRAG 在 Llama Questions、Web Questions、TriviaQA 数据集上的正确率。另外基于 HaluEval 语料构建了更具挑战性的评估集。</p>
+<p><strong>主要结果（Table 1）：</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型 (Base LM Size)</th>
+<th>LlamaQ</th>
+<th>WebQ</th>
+<th>TriviaQA</th>
+<th>HaluEval</th>
+<th>TTFAT</th>
+<th>KD</th>
+<th>E2EKD</th>
+<th>FLOPs/sec</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPT-4o Audio</td>
+<td>88.4</td>
+<td>81.0</td>
+<td>90.6</td>
+<td>68.7</td>
+<td>—</td>
+<td>5.5</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>GLM-4-Voice (9B)</td>
+<td>64.7</td>
+<td>32.2</td>
+<td>39.1</td>
+<td>21.2</td>
+<td>0.3</td>
+<td>4.2</td>
+<td>4.4</td>
+<td>0.74</td>
+</tr>
+<tr>
+<td>Freeze-Omni (7B)</td>
+<td>72.0</td>
+<td>44.7</td>
+<td>53.9</td>
+<td>14.0</td>
+<td>1.2</td>
+<td>5.2</td>
+<td>6.5</td>
+<td>0.18</td>
+</tr>
+<tr>
+<td>MinMo (7B)</td>
+<td>78.9</td>
+<td>55.0</td>
+<td>48.3</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Step-Audio-Chat (130B)</td>
+<td>81.0</td>
+<td>75.1</td>
+<td>58.0</td>
+<td>21.0</td>
+<td>6.2</td>
+<td>4.3</td>
+<td>10.4</td>
+<td>5.03</td>
+</tr>
+<tr>
+<td>Baichuan-Audio (7B)</td>
+<td>78.4</td>
+<td>64.5</td>
+<td>61.7</td>
+<td>25.0</td>
+<td>1.0</td>
+<td>3.8</td>
+<td>4.8</td>
+<td>0.84</td>
+</tr>
+<tr>
+<td>LLaMA-Omni2 (14B)</td>
+<td>73.0</td>
+<td>40.4</td>
+<td>63.8</td>
+<td>28.8</td>
+<td>0.1</td>
+<td>2.8</td>
+<td>2.9</td>
+<td>2.58</td>
+</tr>
+<tr>
+<td>Qwen 2.5 Omni (7B)</td>
+<td>79.0</td>
+<td>62.0</td>
+<td>58.0</td>
+<td>33.7</td>
+<td>1.1</td>
+<td>3.2</td>
+<td>4.3</td>
+<td>4.57</td>
+</tr>
+<tr>
+<td>Kimi-Audio (7B)</td>
+<td>79.3</td>
+<td>70.2</td>
+<td>62.1</td>
+<td>43.2</td>
+<td>0.2</td>
+<td>3.3</td>
+<td>3.5</td>
+<td>6.93</td>
+</tr>
+<tr>
+<td>Qwen3-Omni-A3B (30B)</td>
+<td>84.7</td>
+<td>68.8</td>
+<td>73.6</td>
+<td>38.9</td>
+<td>3.7</td>
+<td>2.0</td>
+<td>5.7</td>
+<td>0.57</td>
+</tr>
+<tr>
+<td><strong>MoshiRAG<sub>Gemma 27B</sub> (7B)</strong></td>
+<td><strong>83.0/80.3</strong></td>
+<td><strong>71.5/67.2</strong></td>
+<td><strong>73.7/69.6</strong></td>
+<td><strong>42.0/36.3</strong></td>
+<td><strong>0.0</strong></td>
+<td><strong>3.1</strong></td>
+<td><strong>3.1</strong></td>
+<td><strong>0.37</strong></td>
+</tr>
+<tr>
+<td>MoshiRAG<sub>GPT 4.1</sub> (7B)</td>
+<td>87.8/80.6</td>
+<td>77.7/68.9</td>
+<td>86.8/78.2</td>
+<td>61.2/51.3</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>MoshiRAG<sub>Tavily</sub> (7B)</td>
+<td>84.6/78.2</td>
+<td>73.5/66.1</td>
+<td>84.9/77.5</td>
+<td>54.3/47.0</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Vanilla Moshi (7B)</td>
+<td>62.3</td>
+<td>26.6</td>
+<td>22.8</td>
+<td>10.5</td>
+<td>0.0</td>
+<td>2.1</td>
+<td>2.1</td>
+<td>0.22</td>
+</tr>
+<tr>
+<td>Vanilla Moshi fine-tuned (7B)</td>
+<td>61.2</td>
+<td>37.0</td>
+<td>29.7</td>
+<td>18.7</td>
+<td>0.0</td>
+<td>3.1</td>
+<td>3.1</td>
+<td>0.22</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键观察：</strong></p>
+<ol>
+<li>从 Moshi 到 MoshiRAG 有<strong>显著的性能提升</strong>，尤其在更具挑战性的 benchmark 上。</li>
+<li>MoshiRAG 也显著优于在 RAG 训练数据上微调的 vanilla Moshi，说明提升主要归因于 RAG 的整合而非训练数据分布。</li>
+<li>“ref.” 列报告的检索参考准确率平均比最终响应高约 5%，反映了 RAG 整合过程中的信息损失，也标记了性能上界。</li>
+<li>切换到更强大的知识源（GPT-4.1 或 Tavily）后，在 TriviaQA 和 HaluEval 上获得了<strong>大幅提升</strong>，超越了除 GPT-4o Audio 外的所有对比语音 LM。</li>
+</ol>
+<h3 id="5-2-延迟与计算消耗"><a href="#5-2-延迟与计算消耗" class="headerlink" title="5.2 延迟与计算消耗"></a>5.2 延迟与计算消耗</h3><p><img src="/images/paper_figs/moshirag/line_wer.png" srcset="/img/loading.gif" lazyload alt=""></p>
+<p>与 vanilla Moshi 相比，MoshiRAG 的对话模板引入了约 1 秒的关键词延迟增加。但 MoshiRAG 的 <strong>E2EKD（3.1s）低于几乎所有竞争系统</strong>。计入检索开销后，计算成本仍与同规模模型相当（0.37 FLOPs/sec vs. Moshi 的 0.22）。</p>
+<h3 id="5-3-交互性评估"><a href="#5-3-交互性评估" class="headerlink" title="5.3 交互性评估"></a>5.3 交互性评估</h3><p>使用 Full-Duplex-Bench 评估交互性，重点关注轮次切换行为：</p>
+<p><strong>Full-Duplex-Bench 结果（Table 2）：</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>Pause TOR<sub>s</sub>↓</th>
+<th>TOR<sub>c</sub>↓</th>
+<th>Backchannel TOR↓</th>
+<th>BC Freq.↑</th>
+<th>Turn Taking TOR↑</th>
+<th>Latency↓</th>
+<th>User Interruption TOR↑</th>
+<th>GPT Score↑</th>
+<th>Latency↓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>dGSLM</td>
+<td>0.93</td>
+<td>0.94</td>
+<td>0.69</td>
+<td>0.015</td>
+<td>0.98</td>
+<td>0.35</td>
+<td>0.92</td>
+<td>0.20</td>
+<td>2.53</td>
+</tr>
+<tr>
+<td>Freeze-Omni</td>
+<td>0.64</td>
+<td>0.48</td>
+<td>0.64</td>
+<td>0.001</td>
+<td>0.34</td>
+<td>0.95</td>
+<td>0.87</td>
+<td>3.62</td>
+<td>1.41</td>
+</tr>
+<tr>
+<td>Gemini</td>
+<td>0.26</td>
+<td>0.31</td>
+<td>0.09</td>
+<td>0.012</td>
+<td>0.66</td>
+<td>1.30</td>
+<td>0.89</td>
+<td>3.38</td>
+<td>1.18</td>
+</tr>
+<tr>
+<td><strong>MoshiRAG</strong></td>
+<td><strong>0.32</strong></td>
+<td><strong>0.56</strong></td>
+<td><strong>0.64</strong></td>
+<td><strong>0.010</strong></td>
+<td><strong>0.83</strong></td>
+<td><strong>0.18</strong></td>
+<td><strong>0.85</strong></td>
+<td><strong>3.75</strong></td>
+<td><strong>1.02</strong></td>
+</tr>
+<tr>
+<td>Vanilla Moshi</td>
+<td>0.99</td>
+<td>0.98</td>
+<td>1.00</td>
+<td>0.001</td>
+<td>0.94</td>
+<td>0.27</td>
+<td>1.00</td>
+<td>0.77</td>
+<td>0.26</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键发现：</strong></p>
+<ol>
+<li>MoshiRAG 在所有条件下的 <strong>Pause TOR 一致低于原始 Moshi</strong>，表明更保守的轮次接管行为，源于更长的知识密集型回复的训练数据分布。</li>
+<li>MoshiRAG 的<strong>延迟始终低于 Freeze-Omni 和 Gemini</strong>，保持了全双工系统的实时交互优势。</li>
+<li>MoshiRAG 和 RAG 微调的 Moshi 对<strong>用户打断的响应显著优于原始 Moshi</strong>（GPT Score 3.75 vs. 0.77），得益于 v2 和 v3 训练子集中对抗性和干扰性对话场景的训练。</li>
+</ol>
+<h3 id="5-4-泛化至未见任务"><a href="#5-4-泛化至未见任务" class="headerlink" title="5.4 泛化至未见任务"></a>5.4 泛化至未见任务</h3><p>尽管 MoshiRAG 主要在 QA 风格数据上训练，其系统设计使其能够泛化至分布外查询。只要检索后端能成功处理问题，MoshiRAG 可以将检索作为外部工具来扩展其能力。</p>
+<p><strong>数学推理结果（Table 3）：</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>AddSub</th>
+<th>MultiArith</th>
+<th>SinglEq</th>
+<th>SVAMP</th>
+<th>GSM8K</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GLM-4-Voice</td>
+<td>59.4</td>
+<td>62.0</td>
+<td>71.0</td>
+<td>4.0</td>
+<td>29.0</td>
+</tr>
+<tr>
+<td>STITCH-S</td>
+<td>81.7</td>
+<td>87.9</td>
+<td>91.7</td>
+<td>72.2</td>
+<td>56.7</td>
+</tr>
+<tr>
+<td><strong>MoshiRAG</strong></td>
+<td><strong>76.6/61.7</strong></td>
+<td><strong>87.1/69.0</strong></td>
+<td><strong>83.2/68.2</strong></td>
+<td><strong>74.1/55.0</strong></td>
+<td><strong>66.2/33.9</strong></td>
+</tr>
+<tr>
+<td>MoshiRAG<sub>summ.</sub></td>
+<td>62.0</td>
+<td>73.1</td>
+<td>66.4</td>
+<td>57.5</td>
+<td>51.2</td>
+</tr>
+<tr>
+<td>MoshiRAG<sub>GPT 4.1</sub></td>
+<td>87.9/64.8</td>
+<td>87.1/76.0</td>
+<td>89.6/72.9</td>
+<td>80.5/61.1</td>
+<td>70.8/43.2</td>
+</tr>
+<tr>
+<td>Vanilla Moshi</td>
+<td>8.3</td>
+<td>9.8</td>
+<td>18.4</td>
+<td>9.7</td>
+<td>2.1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>值得注意的是，<strong>对 LLM 生成的参考进行摘要后再注入</strong>会提升数学推理性能。作者推测，尽管提示中有指示，初始 LLM 参考通常包含过多数值细节、符号表达和冗长推理过程，压缩这些内容使 MoshiRAG 能聚焦于核心概念。</p>
+<h2 id="6-消融实验与深入分析"><a href="#6-消融实验与深入分析" class="headerlink" title="6. 消融实验与深入分析"></a>6. 消融实验与深入分析</h2><h3 id="6-1-信息注入策略"><a href="#6-1-信息注入策略" class="headerlink" title="6.1 信息注入策略"></a>6.1 信息注入策略</h3><p>作者对比了两种信息注入方式：</p>
+<ul>
+<li><strong>加法注入（Additive injection）</strong>：将参考嵌入加到 Moshi 输入嵌入上（如公式 2），输入序列长度不变。</li>
+<li><strong>插入注入（Insertive injection）</strong>：将参考嵌入序列显式插入 Moshi 输入序列，增加序列总长度。</li>
+</ul>
+<p>对两种参考编码器（T5 和 ARC-Encoder），插入注入一致优于加法注入，显示了信息整合效果与序列长度之间的明确权衡。T5 的性能差距更大，归因于其输出过长——加法注入下参考信息可能引入过晚。尽管插入注入效果更好，最终仍采用加法策略以限制序列长度，保持 Moshi 进行长对话的能力。</p>
+<h3 id="6-2-参考编码器选择"><a href="#6-2-参考编码器选择" class="headerlink" title="6.2 参考编码器选择"></a>6.2 参考编码器选择</h3><p>对比 T5 与两种 ARC-Encoder 变体（压缩比 4 和 8）：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>摘要</th>
+<th>参考编码器</th>
+<th>LlamaQ</th>
+<th>WebQ</th>
+<th>TriviaQA</th>
+<th>HaluEval</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>✗</td>
+<td>ARC-8</td>
+<td>77.4</td>
+<td>66.3</td>
+<td>66.2</td>
+<td>33.1</td>
+</tr>
+<tr>
+<td>✗</td>
+<td><strong>ARC-4</strong></td>
+<td><strong>80.3</strong></td>
+<td><strong>74.7</strong></td>
+<td><strong>73.2</strong></td>
+<td><strong>36.3</strong></td>
+</tr>
+<tr>
+<td>✗</td>
+<td>T5</td>
+<td>76.5</td>
+<td>70.9</td>
+<td>72.1</td>
+<td>31.7</td>
+</tr>
+<tr>
+<td>✓</td>
+<td>ARC-4</td>
+<td>77.4</td>
+<td>75.4</td>
+<td>73.5</td>
+<td>37.5</td>
+</tr>
+<tr>
+<td>✓</td>
+<td>T5</td>
+<td>80.5</td>
+<td>71.4</td>
+<td>71.5</td>
+<td>32.9</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>ARC-Encoder 压缩比 4 一致最优。预编码摘要对 T5 有帮助但对 ARC-Encoder 无益。</p>
+<h3 id="6-3-ASR-和参考正确性的敏感度"><a href="#6-3-ASR-和参考正确性的敏感度" class="headerlink" title="6.3 ASR 和参考正确性的敏感度"></a>6.3 ASR 和参考正确性的敏感度</h3><p>MoshiRAG 对 <strong>ASR 错误高度敏感</strong>。使用 ground-truth 用户转录可将检索参考和最终响应的正确率提升高达 15%。提供 ground-truth 参考文档也能提升响应准确率，但 ref. 和 resp. 之间的差距也增大，反映知识整合过程中显著的信息损失。</p>
+<h3 id="6-4-多种检索后端"><a href="#6-4-多种检索后端" class="headerlink" title="6.4 多种检索后端"></a>6.4 多种检索后端</h3><p>MoshiRAG 展示了出色的跨模型稳定性。当配对 GPT-4.1、Mistral Medium 3.1 或 Gemini 2.5 Flash 后端时，性能保持一致，表明 RAG 框架对底层检索器的语言特性基本无关。这意味着：</p>
+<ul>
+<li>高级模型（如 GPT-4.1）设定性能上界</li>
+<li>小型 LLM（如 Gemini Flash）以更低推理成本实现有竞争力的基准性能</li>
+<li>支持多后端实现冗余机制（如本地小 LLM 作为在线 API 的回退策略）</li>
+</ul>
+<p><img src="/images/paper_figs/moshirag/line_retrieval_delay.png" srcset="/img/loading.gif" lazyload alt="MoshiRAG 在不同检索延迟条件下的响应准确率。"></p>
+<h3 id="6-5-Full-Duplex-Bench-v1-5"><a href="#6-5-Full-Duplex-Bench-v1-5" class="headerlink" title="6.5 Full-Duplex-Bench v1.5"></a>6.5 Full-Duplex-Bench v1.5</h3><p>在处理重叠语音时，MoshiRAG 表现出更高的 Resume 倾向。关键的是，当用户真正打断时，MoshiRAG 响应用户输入的比例与 vanilla Moshi 相似，同时在 User Backchannel 和 Background Speech 场景中表现更好。</p>
+<h2 id="7-结论"><a href="#7-结论" class="headerlink" title="7. 结论"></a>7. 结论</h2><p>MoshiRAG 是<strong>首次将 RAG 整合到全双工语音语言模型</strong>的尝试。其核心贡献：</p>
+<ol>
+<li><strong>利用自然时间间隙</strong>：口语响应中查询结束到关键信息出现之间的时间窗口足以完成异步检索。</li>
+<li><strong>模块化、可插拔设计</strong>：检索后端可即插即用替换，无需重新训练。</li>
+<li><strong>事实性显著提升</strong>：超越大多数公开发布的 turn-based 语音 LM，同时保持全双工系统的高交互性。</li>
+<li><strong>工具使用泛化</strong>：在未明确训练的数学推理任务上展现强劲的分布外泛化能力。</li>
+</ol>
+<p>未来方向包括：</p>
+<ul>
+<li>将检索触发与查询难度关联，或使用强化学习决定是否需要检索</li>
+<li>多样化检索工具集，使模型根据用户输入选择合适工具</li>
+<li>提升模型对检索过程中可能出现的错误的鲁棒性</li>
+</ul>
+<p>MoshiRAG 展示了将<strong>实时交互语音界面与更强大的问题解决机制相结合</strong>的广阔前景，为构建更强大、可靠和用户友好的语音 AI 助手指明了方向。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/Full-Duplex/" class="print-no-link">#Full-Duplex</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech LLM</a>
+      
+        <a href="/tags/RAG/" class="print-no-link">#RAG</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>MoshiRAG: Asynchronous Knowledge Retrieval for Full-Duplex Speech Language Models</div>
+      <div>https://smallsmartao.github.io/2026/04/16/MoshiRAG-Asynchronous-Knowledge-Retrieval-for-Full-Duplex-Speech-Language-Models/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年4月16日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年4月16日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/04/16/audio-cogito-deep-audio-reasoning/" title="Audio-Cogito: Towards Deep Audio Reasoning in Large Audio Language Models">
+                        <span class="hidden-mobile">Audio-Cogito: Towards Deep Audio Reasoning in Large Audio Language Models</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

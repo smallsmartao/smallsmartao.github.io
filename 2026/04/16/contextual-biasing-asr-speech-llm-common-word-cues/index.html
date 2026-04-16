@@ -1,0 +1,1354 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/mao.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文链接：arXiv:2604.12398作者：Sashi Novitasari, Takashi Fukuda, Gakuto Kurata, George Saon (IBM Research)  摘要语音感知大语言模型（Speech-aware LLMs, SLLMs）近期在自动语音识别（ASR）任务上取得了最先进的性能，但在转录训练数据中稀少或从未出现过的偏置词（bias words）时">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Contextual Biasing for ASR in Speech LLM with Common Word Cues and Bias Word Position Prediction">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/04/16/contextual-biasing-asr-speech-llm-common-word-cues/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文链接：arXiv:2604.12398作者：Sashi Novitasari, Takashi Fukuda, Gakuto Kurata, George Saon (IBM Research)  摘要语音感知大语言模型（Speech-aware LLMs, SLLMs）近期在自动语音识别（ASR）任务上取得了最先进的性能，但在转录训练数据中稀少或从未出现过的偏置词（bias words）时">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_ctx_bias_sllm.png">
+<meta property="article:published_time" content="2026-04-15T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-16T02:09:48.221Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="Contextual Biasing">
+<meta property="article:tag" content="Speech LLM">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_ctx_bias_sllm.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Contextual Biasing for ASR in Speech LLM with Common Word Cues and Bias Word Position Prediction - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/banner_ctx_bias_sllm.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Contextual Biasing for ASR in Speech LLM with Common Word Cues and Bias Word Position Prediction"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-04-16 00:00" pubdate>
+          2026年4月16日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          39 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Contextual Biasing for ASR in Speech LLM with Common Word Cues and Bias Word Position Prediction</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年4月16日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>论文链接：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2604.12398">arXiv:2604.12398</a><br>作者：Sashi Novitasari, Takashi Fukuda, Gakuto Kurata, George Saon (IBM Research)</p>
+</blockquote>
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>语音感知大语言模型（Speech-aware LLMs, SLLMs）近期在自动语音识别（ASR）任务上取得了最先进的性能，但在转录训练数据中稀少或从未出现过的偏置词（bias words）时仍然存在显著困难。现有的上下文偏置（contextual biasing）机制通常通过文本提示或附加模块将预定义的偏置词列表引入模型，并可辅以 G2P（grapheme-to-phoneme）系统生成的音素表示作为发音线索。然而，当兼容的 G2P 系统不可用时，基于音素的上下文偏置难以施行；手动添加精确的音素序列又要求用户具备高级语音学知识。</p>
+<p>本文提出了一种基于<strong>常见词（common words）</strong>的声学线索方法：利用发音与目标偏置词部分相似的常见词序列作为偏置词的发音提示（例如，”Shelley” → “sheriff, legal”）。此外，作者引入了一种<strong>偏置词位置预测（bias word position prediction）</strong>的多输出训练机制，以增强模型的鲁棒性。该方法相较于基线系统将偏置词识别错误率降低了 16.3%，在域外数据上同样有效。</p>
+<span id="more"></span>
+<h2 id="1-引言（Introduction）"><a href="#1-引言（Introduction）" class="headerlink" title="1. 引言（Introduction）"></a>1. 引言（Introduction）</h2><p>ASR 技术在近年来取得了飞速发展，尤其是将语音能力集成到大语言模型中的 SLLM 框架 [1–4]，凭借其模块化设计和卓越性能受到广泛关注。这类框架通过为文本 LLM 配备语音编码器，使其能够处理基于音频的任务，同时保留核心的文本处理能力。</p>
+<p>然而，端到端 ASR 建模在 SLLM 中仍面临偏置词转录的挑战。偏置词是训练数据中代表性不足的词（即稀有词或未见词），由于训练样本有限，这些词可能被删除或被替换为发音相似但出现频率更高的其他词。</p>
+<p>在非 LLM ASR 系统中，上下文偏置机制通过将预定义的偏置词列表深度融合到 ASR 模型中来准确转录偏置词 [5–7]。在 SLLM 研究中，基于提示的上下文 ASR 方法 [8–11] 通过将偏置列表纳入文本提示与任务指令一起输入，利用 SLLM 的文本模块直接处理偏置列表，而无需额外的偏置编码器模块。为处理长偏置列表，先前的研究还提出了列表剪枝方法 [12, 13]。</p>
+<p>尽管上下文偏置增强了模型的 ASR 能力，但对于拼写或发音不寻常的词仍会出现错误。此前的研究 [14–16] 通过在推理前使用 G2P 系统生成音素作为发音提示来辅助解码。然而，基于音素的系统在实际场景中面临以下挑战：</p>
+<ol>
+<li><strong>G2P 系统的领域/语言覆盖有限</strong>：典型的 G2P 系统通常针对特定领域、语言和音素格式设计，当目标偏置词超出其覆盖范围时便无法适用；</li>
+<li><strong>手动添加发音需要语言学专业知识</strong>：对于基于词典的 G2P 系统，用户必须手动为新偏置词添加发音条目，但准确的发音标注需要罕见的语音学专业知识；</li>
+<li><strong>系统复杂度增加</strong>：集成任何类型的 G2P 系统（包括基于神经网络的系统）都会增加推理阶段的系统复杂度，在低资源场景下尤其不可取。</li>
+</ol>
+<p>本文的核心思想是：不使用直接的音素表示，而是利用与偏置词发音部分相似的<strong>常见词</strong>（common words / non-bias words）作为发音线索。常见词频繁出现在大规模训练数据中，因此 SLLM 对其发音具有充分的知识，使其可作为偏置词的发音参考。所提出的线索可以手动生成或通过简单编程生成，无需任何高级语音学知识。</p>
+<h3 id="本文贡献"><a href="#本文贡献" class="headerlink" title="本文贡献"></a>本文贡献</h3><ol>
+<li>提出基于常见词的词级线索（word-level cues）作为偏置词的发音提示，具有高适用性；</li>
+<li>展示基于音素（发音）和结构（拼写）相似性的词级线索选择方法；</li>
+<li>应用带有偏置词位置预测机制的 SLLM 多输出训练框架，提升模型泛化性能。</li>
+</ol>
+<h2 id="2-相关工作（Related-Work）"><a href="#2-相关工作（Related-Work）" class="headerlink" title="2. 相关工作（Related Work）"></a>2. 相关工作（Related Work）</h2><p>虽然本文未单独设立 Related Work 章节，但在引言部分详细回顾了上下文偏置领域的相关方法，涵盖了从传统 ASR 系统到 LLM 时代的多种偏置技术。以下按类别系统梳理：</p>
+<h3 id="2-1-传统深度融合方法"><a href="#2-1-传统深度融合方法" class="headerlink" title="2.1 传统深度融合方法"></a>2.1 传统深度融合方法</h3><p>在非 LLM 的端到端 ASR 系统中，上下文偏置通常通过将预定义偏置词列表<strong>深度融合（deep fusion）</strong>到模型内部来实现：</p>
+<ul>
+<li><strong>Contextual RNN-T</strong> [5]（Jain et al., Interspeech 2020）：在 RNN-Transducer 框架中引入上下文偏置机制，通过注意力机制将偏置词列表的信息融合到解码过程中，用于开放域 ASR；</li>
+<li><strong>Guided Attention for Contextual Biasing</strong> [6]（Tang et al., ICASSP 2024）：提出引导注意力（guided attention）机制改进 ASR 上下文偏置，通过显式引导模型关注偏置词列表中的相关条目；</li>
+<li><strong>Adaptive Context Biasing</strong> [7]（Yolwas et al., Scientific Reports 2025）：在基于 Transformer 的 ASR 系统中实现自适应上下文偏置，动态调整偏置强度。</li>
+</ul>
+<h3 id="2-2-基于提示的-SLLM-上下文偏置方法"><a href="#2-2-基于提示的-SLLM-上下文偏置方法" class="headerlink" title="2.2 基于提示的 SLLM 上下文偏置方法"></a>2.2 基于提示的 SLLM 上下文偏置方法</h3><p>随着 SLLM 的兴起，研究者开始利用文本提示将偏置词列表直接纳入 LLM 的输入：</p>
+<ul>
+<li><strong>Contextual Biasing of Named-Entities with LLMs</strong> [8]（Sun et al., ICASSP 2024）：将命名实体偏置词列表通过文本提示引入 LLM，使模型在解码时偏向于正确转录这些实体；</li>
+<li><strong>Contextual Biasing in Speech-Enhanced LLM</strong> [9]（Gong et al., Interspeech 2024）：在语音增强的 LLM 中实现上下文偏置语音识别；</li>
+<li><strong>CTC-assisted LLM-based Contextual ASR</strong> [10]（Yang et al., SLT 2024）：结合 CTC 辅助机制与 LLM 的上下文 ASR 方法；</li>
+<li><strong>CMT-LLM</strong> [11]（He et al., Interspeech 2025）：面向多说话人场景的上下文 ASR，利用 LLM 处理多说话人语音中的偏置词。</li>
+</ul>
+<h3 id="2-3-偏置列表剪枝方法"><a href="#2-3-偏置列表剪枝方法" class="headerlink" title="2.3 偏置列表剪枝方法"></a>2.3 偏置列表剪枝方法</h3><p>当偏置词列表过长时，直接将全部词汇纳入提示会导致效率和准确性下降，因此研究者提出了列表剪枝策略：</p>
+<ul>
+<li><strong>BR-ASR</strong> [12]（Gong et al., Interspeech 2025）：提出高效且可扩展的偏置检索框架，在语音 LLM 的上下文偏置 ASR 中实现偏置列表的有效筛选；</li>
+<li><strong>Ranking and Selection of Bias Words</strong> [13]（Hou et al., Interspeech 2025）：对偏置词进行排序和选择，仅保留最相关的偏置词用于上下文语音识别。</li>
+</ul>
+<h3 id="2-4-音素辅助的上下文偏置方法"><a href="#2-4-音素辅助的上下文偏置方法" class="headerlink" title="2.4 音素辅助的上下文偏置方法"></a>2.4 音素辅助的上下文偏置方法</h3><p>为处理拼写或发音不寻常的偏置词，研究者提出利用音素信息作为辅助线索：</p>
+<ul>
+<li><strong>PROCTER</strong> [14]（Pandey et al., ICASSP 2023）：发音感知的上下文适配器（Pronunciation-aware Contextual Adapter），在神经转录器中为个性化语音识别引入发音信息；</li>
+<li><strong>Phoneme Features for Deep Biasing</strong> [15]（Qiu et al., ASRU 2023）：在流式转录器的大规模深度偏置中引入音素特征和纯文本数据，改进偏置词的识别；</li>
+<li><strong>PARCO</strong> [16]（He et al., arXiv 2025）：音素增强的鲁棒上下文 ASR（Phoneme-Augmented Robust Contextual ASR），通过对比实体消歧实现更准确的偏置词识别。</li>
+</ul>
+<p>本文的方法与上述音素辅助方法的关键区别在于：<strong>不依赖 G2P 系统生成音素序列，而是用常见英语词汇作为发音线索</strong>，从根本上消除了对 G2P 系统的依赖，降低了用户使用门槛和系统复杂度。</p>
+<h2 id="3-方法论（Methodology）"><a href="#3-方法论（Methodology）" class="headerlink" title="3. 方法论（Methodology）"></a>3. 方法论（Methodology）</h2><h3 id="3-1-基于文本提示的上下文偏置"><a href="#3-1-基于文本提示的上下文偏置" class="headerlink" title="3.1 基于文本提示的上下文偏置"></a>3.1 基于文本提示的上下文偏置</h3><p>模型采用文本提示的方式实现上下文偏置。输入由三部分组成：</p>
+<ul>
+<li>语音音频 $S = [s_1, s_2, \ldots, s_I]$，包含 $I$ 帧</li>
+<li>文本任务指令 $X = [x_1, x_2, \ldots, x_J]$，包含 $J$ 个词（如 “Transcribe this speech”）</li>
+<li>偏置词列表 $B = [b_1, b_2, \ldots, b_K]$，包含 $K$ 个偏置词</li>
+</ul>
+<p>$X$ 和 $B$ 被拼接为单一文本后输入 SLLM。模型输出为语音转录 $T = [t_1, t_2, \ldots, t_L]$，包含 $L$ 个词，其中 $0 \leq |B \cap T| \leq L$ 个词来自偏置列表。整体操作可表示为：</p>
+<script type="math/tex; mode=display">T = \text{SLLM}(S, X, B)</script><h3 id="3-2-基于常见词线索的上下文偏置（核心创新）"><a href="#3-2-基于常见词线索的上下文偏置（核心创新）" class="headerlink" title="3.2 基于常见词线索的上下文偏置（核心创新）"></a>3.2 基于常见词线索的上下文偏置（核心创新）</h3><p>音素线索通过文本提示提供给 SLLM，与偏置列表 $B$ 中的相应偏置词配对。作者探索了以下几种线索选择准则：</p>
+<h4 id="3-2-1-基于音节的部分音素匹配（Syllable-based-Partial-Phonetic-Match）"><a href="#3-2-1-基于音节的部分音素匹配（Syllable-based-Partial-Phonetic-Match）" class="headerlink" title="3.2.1 基于音节的部分音素匹配（Syllable-based Partial Phonetic Match）"></a>3.2.1 基于音节的部分音素匹配（Syllable-based Partial Phonetic Match）</h4><p>核心思想是：为每个偏置词找到一组常见词，使这些常见词的首音节依次发音时近似于目标偏置词。</p>
+<p>对于一个包含 $M$ 个音节的偏置词 $b_k = [sb_{k1}, \ldots, sb_{kM}]$，将其与 $M$ 个提示词 $H_k = [h_{k1}, \ldots, h_{kM}]$ 配对。第 $m$ 个提示词 $h_{km}$ 由 $R$ 个音节组成（$h_{km} = [s_{km1}, \ldots, s_{kmR}]$），其首音节 $s_{km1}$ 与 $b_k$ 的第 $m$ 个音节 $sb_{km}$ 具有相同或相似的音素序列。</p>
+<p>例如：偏置词 “Gallian”（三个音节）→ 提示词 “gather, leave, under”（三个词的首音节分别近似 “Gal-“, “li-“, “an”）。</p>
+<p><strong>提示词选择流程</strong>（两步）：</p>
+<ol>
+<li>从常见词列表中检索所有首音节音素序列与目标音节相似的候选词；</li>
+<li>从候选词中选择最终提示词，选择策略包括：<ul>
+<li><strong>最小字符级编辑距离（CED）</strong>：选择与目标偏置词拼写最相似的词，在训练和推理时使用；</li>
+<li><strong>随机选择</strong>：模拟用户手动提供的多样化输入，仅在推理时用于评估鲁棒性。</li>
+</ul>
+</li>
+</ol>
+<h4 id="3-2-2-音素元音匹配（Phonetic-Vowel-Match）"><a href="#3-2-2-音素元音匹配（Phonetic-Vowel-Match）" class="headerlink" title="3.2.2 音素元音匹配（Phonetic Vowel Match）"></a>3.2.2 音素元音匹配（Phonetic Vowel Match）</h4><p>偏置词的线索由一组构成与目标词相似元音模式的词序列组成。例如，偏置词 “Shelley” 可与提示词 “healthy” 配对，因为二者共享相同的元音序列 “EH-IY”。</p>
+<p>选择元音匹配的理由是：元音在决定词汇发音中起着核心作用。</p>
+<p>形式化地，偏置词 $b_k$ 与词序列 $H_k = [h_{k1}, \ldots, h_{kU}]$（$U$ 个词）配对。当存在与目标词元音完全匹配的常见词时，$U = 1$；否则 $H_k$ 将扩展为多个词以匹配目标元音序列。</p>
+<h4 id="3-2-3-最小字符级与音素级编辑距离（Closest-CED-PED）"><a href="#3-2-3-最小字符级与音素级编辑距离（Closest-CED-PED）" class="headerlink" title="3.2.3 最小字符级与音素级编辑距离（Closest CED + PED）"></a>3.2.3 最小字符级与音素级编辑距离（Closest CED + PED）</h4><p>不依赖音节匹配，直接从常见词中选择与偏置词 $b_k$ 字符级编辑距离（CED）最小的词 $h_k$ 作为线索。当多个候选词具有相同的最小 CED 时：</p>
+<ul>
+<li><strong>训练时</strong>：进一步按音素级编辑距离（PED）选择最相似的词；</li>
+<li><strong>推理时</strong>：也探索从 CED 最小的候选词中随机选择。</li>
+</ul>
+<h3 id="3-3-偏置词位置预测（Bias-Word-Position-Prediction）"><a href="#3-3-偏置词位置预测（Bias-Word-Position-Prediction）" class="headerlink" title="3.3 偏置词位置预测（Bias Word Position Prediction）"></a>3.3 偏置词位置预测（Bias Word Position Prediction）</h3><p>为在不降低非上下文 ASR 性能的前提下增强上下文 ASR 的鲁棒性，作者提出了一种<strong>多任务、多输出训练框架</strong>。</p>
+<p>如下图所示，该框架在训练阶段为 SLLM 增加了一个可移除的附加模块，用于预测偏置词在语句中的位置。</p>
+<p><img src="/images/paper_figs/contextual_biasing_sllm_fig1.png" srcset="/img/loading.gif" lazyload alt="SLLM 训练框架示意图"><br><em>图 1：所提出的 SLLM 训练框架。偏置列表采用基于音节的部分音素匹配线索。（”b”: 字符级偏置词标签，”n”: 字符级非偏置词标签）</em></p>
+<p>偏置词位置用字符级标签序列 $W = [w_1, w_2, \ldots, w_V]$ 表示，标签集包括 “bias”、”non-bias” 和 “whitespace” 三类。</p>
+<p>位置标签基于两种特征预测：</p>
+<ol>
+<li>语音编码器投影器产生的潜在特征 $E_{sp} = [e_1, e_2, \ldots, e_I]$</li>
+<li>LLM 因果输出中与 $E_{sp}$ 对齐的过去状态 $D_{\text{LLM}}[1:I]$</li>
+</ol>
+<p>这两种特征逐元素拼接后输入偏置词标注器。整体操作为：</p>
+<script type="math/tex; mode=display">D_{\text{LLM}} = \text{LLM}(E_{sp}, E_{tx})</script><script type="math/tex; mode=display">W = \text{Bias word tagger}(E_{sp}, D_{\text{LLM}}[1:I])</script><p>其中 $E_{tx}$ 为文本提示嵌入。偏置词标注器使用 CTC（Connectionist Temporal Classification）[17] 损失优化。模型总损失为：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{SLLM}} = \mathcal{L}_{\text{ASR}}(T, \hat{T}) + \alpha \mathcal{L}_{\text{CTC}}(W, \hat{W})</script><p>其中 $\mathcal{L}_{\text{ASR}}$ 为语音识别任务损失，$\hat{T}$ 为转录输出，$\hat{W}$ 为偏置词位置标签输出，$\alpha$ 为偏置词标注器的损失系数。</p>
+<p><strong>关键设计</strong>：偏置词标注器在推理阶段被移除，因此模型结构与标准 SLLM（语音编码器 + 投影器 + 文本 LLM）保持一致，不增加推理计算成本。</p>
+<h2 id="4-实验设置"><a href="#4-实验设置" class="headerlink" title="4. 实验设置"></a>4. 实验设置</h2><h3 id="4-1-模型"><a href="#4-1-模型" class="headerlink" title="4.1 模型"></a>4.1 模型</h3><p>采用 <strong>Granite-Speech</strong> [4] 架构作为 SLLM 骨干网络，包含：</p>
+<ul>
+<li><strong>语音编码器</strong>：Conformer-CTC 结构，10 个 Conformer 块，经过字符级 ASR 任务预训练</li>
+<li><strong>投影器</strong>：Q-former [18]，将语音编码器输出下采样并投影到 LLM 嵌入空间</li>
+<li><strong>文本 LLM</strong>：granite-3.3-8b-instruct</li>
+</ul>
+<p>通过后训练（post-training）机制在 ASR 数据集上使用上下文 ASR 提示微调模型，训练 3 个 epoch，学习率 5e-6。仅更新 Q-former 和 LLM 关联的 LoRA [19] 参数。</p>
+<p>偏置词标注器采用 FNN 层：音节或元音线索模型使用 9 层，CED+PED 线索模型使用 11 层。</p>
+<h3 id="4-2-数据集"><a href="#4-2-数据集" class="headerlink" title="4.2 数据集"></a>4.2 数据集</h3><p><strong>初始实验</strong>（评估偏置词线索）：仅使用 Librispeech [20]。</p>
+<p><strong>完整实验</strong>（评估完整流水线）：训练集包括 Librispeech、CommonVoice 17.0 [21]、Voicemail [22]、AMI [23]、VoxPopuli [24]。</p>
+<p><strong>评估</strong>：</p>
+<ul>
+<li>域内：CommonVoice 17.0</li>
+<li>域外：SPGI [25]（金融音频）、Gigaspeech [26]（多领域）</li>
+</ul>
+<p>偏置列表通过命名实体标注器从语音转录中自动提取。训练时偏置列表大小随机设定为 1–200 词；推理时使用 10 或 200 词的列表。</p>
+<p><strong>测试数据统计</strong>：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">测试集</th>
+<th style="text-align:center">偏置词数</th>
+<th style="text-align:center">非偏置词数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">Librispeech test-other</td>
+<td style="text-align:center">2,050</td>
+<td style="text-align:center">50,832</td>
+</tr>
+<tr>
+<td style="text-align:left">Common Voice</td>
+<td style="text-align:center">15,669</td>
+<td style="text-align:center">129,456</td>
+</tr>
+<tr>
+<td style="text-align:left">SPGI</td>
+<td style="text-align:center">12,405</td>
+<td style="text-align:center">956,711</td>
+</tr>
+<tr>
+<td style="text-align:left">Gigaspeech</td>
+<td style="text-align:center">15,520</td>
+<td style="text-align:center">388,134</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>常见词列表使用 MIT 10K 词表构建（排除目标偏置词）。音素转换使用手动标注词典和公开的 SoundChoice G2P 模型 [27, 28]。</p>
+<h2 id="5-实验结果与讨论"><a href="#5-实验结果与讨论" class="headerlink" title="5. 实验结果与讨论"></a>5. 实验结果与讨论</h2><h3 id="5-1-词级声学线索的效果"><a href="#5-1-词级声学线索的效果" class="headerlink" title="5.1 词级声学线索的效果"></a>5.1 词级声学线索的效果</h3><p>首先在仅使用 Librispeech 训练的模型上独立评估所提出的词级线索（不使用多输出训练）。</p>
+<p>评估指标：</p>
+<ul>
+<li><strong>B-WER</strong>：仅考虑偏置词的词错误率</li>
+<li><strong>U-WER</strong>：仅考虑非偏置词的词错误率</li>
+<li><strong>WER</strong>：基于完整转录的词错误率</li>
+</ul>
+<p><strong>表 2：Librispeech test-other 上的上下文 ASR 性能（%），偏置列表 200 词</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">#</th>
+<th style="text-align:left">偏置提示选择准则</th>
+<th style="text-align:center">提示类型</th>
+<th style="text-align:center">B-WER</th>
+<th style="text-align:center">U-WER</th>
+<th style="text-align:center">WER</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">1</td>
+<td style="text-align:left">Baseline: Non-ctx</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">20.5</td>
+<td style="text-align:center">2.3</td>
+<td style="text-align:center">3.0</td>
+</tr>
+<tr>
+<td style="text-align:left">2</td>
+<td style="text-align:left">Baseline: Ctx, no phonetic hint</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">5.8</td>
+<td style="text-align:center">2.2</td>
+<td style="text-align:center">2.3</td>
+</tr>
+<tr>
+<td style="text-align:left">3</td>
+<td style="text-align:left">Topline: Ctx, Phon</td>
+<td style="text-align:center">Phon</td>
+<td style="text-align:center">3.4</td>
+<td style="text-align:center">2.2</td>
+<td style="text-align:center">2.2</td>
+</tr>
+<tr>
+<td style="text-align:left">4</td>
+<td style="text-align:left">Syl+CED（训练）/ Syl(rand)（推理）</td>
+<td style="text-align:center">Word</td>
+<td style="text-align:center">5.1</td>
+<td style="text-align:center">2.2</td>
+<td style="text-align:center">2.3</td>
+</tr>
+<tr>
+<td style="text-align:left">4’</td>
+<td style="text-align:left">Syl+CED（训练+推理）</td>
+<td style="text-align:center">Word</td>
+<td style="text-align:center">5.1</td>
+<td style="text-align:center">2.2</td>
+<td style="text-align:center">2.3</td>
+</tr>
+<tr>
+<td style="text-align:left">5</td>
+<td style="text-align:left">Phon.vow+CED / Phon.vow(rand)</td>
+<td style="text-align:center">Word</td>
+<td style="text-align:center">5.4</td>
+<td style="text-align:center">2.1</td>
+<td style="text-align:center">2.3</td>
+</tr>
+<tr>
+<td style="text-align:left">5’</td>
+<td style="text-align:left">Phon.vow+CED</td>
+<td style="text-align:center">Word</td>
+<td style="text-align:center">5.3</td>
+<td style="text-align:center">2.2</td>
+<td style="text-align:center">2.3</td>
+</tr>
+<tr>
+<td style="text-align:left">6</td>
+<td style="text-align:left">CED+PED / CED(rand)</td>
+<td style="text-align:center">Word</td>
+<td style="text-align:center">4.4</td>
+<td style="text-align:center">2.1</td>
+<td style="text-align:center">2.2</td>
+</tr>
+<tr>
+<td style="text-align:left">6’</td>
+<td style="text-align:left">CED+PED</td>
+<td style="text-align:center">Word</td>
+<td style="text-align:center">4.4</td>
+<td style="text-align:center">2.1</td>
+<td style="text-align:center">2.2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>表 3：Librispeech test-other 上的上下文 ASR 性能（%），偏置列表 10 词</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">#</th>
+<th style="text-align:left">偏置提示选择准则</th>
+<th style="text-align:center">提示类型</th>
+<th style="text-align:center">B-WER</th>
+<th style="text-align:center">U-WER</th>
+<th style="text-align:center">WER</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">1</td>
+<td style="text-align:left">Ctx, no phonetic hint</td>
+<td style="text-align:center">-</td>
+<td style="text-align:center">4.2</td>
+<td style="text-align:center">2.1</td>
+<td style="text-align:center">2.2</td>
+</tr>
+<tr>
+<td style="text-align:left">2</td>
+<td style="text-align:left">Ctx, Phon</td>
+<td style="text-align:center">Phon</td>
+<td style="text-align:center">2.3</td>
+<td style="text-align:center">2.1</td>
+<td style="text-align:center">2.1</td>
+</tr>
+<tr>
+<td style="text-align:left">3</td>
+<td style="text-align:left">Syl+CED</td>
+<td style="text-align:center">Word</td>
+<td style="text-align:center">3.8</td>
+<td style="text-align:center">2.1</td>
+<td style="text-align:center">2.2</td>
+</tr>
+<tr>
+<td style="text-align:left">4</td>
+<td style="text-align:left">Phon.vow+CED</td>
+<td style="text-align:center">Word</td>
+<td style="text-align:center">3.2</td>
+<td style="text-align:center">2.1</td>
+<td style="text-align:center">2.2</td>
+</tr>
+<tr>
+<td style="text-align:left">5</td>
+<td style="text-align:left">CED+PED</td>
+<td style="text-align:center">Word</td>
+<td style="text-align:center">3.2</td>
+<td style="text-align:center">2.1</td>
+<td style="text-align:center">2.2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键发现</strong>：</p>
+<ol>
+<li>所有提出的模型相较于基线（#2）均显著降低了 B-WER，最高达 <strong>24.1%</strong>（B-WER 从 5.8% 降至 4.4%），缩小了与使用音素的 oracle 模型（#3）之间的差距。</li>
+<li><strong>CED+PED 方法表现最佳</strong>：这可能是因为其线索仅由单个词组成，比其他方法（词序列）更简洁，便于 SLLM 处理。</li>
+<li><strong>Phon.vow+CED</strong> 在短偏置列表（10 词）上取得最低 B-WER，但在长列表（200 词）上表现不如 CED+PED，可能是因为干扰词也被配对了相似的元音提示词，导致模型混淆。</li>
+<li>所有模型在使用随机选择策略替代编辑距离选择时依然表现稳健，表明系统对用户输入具有良好的容错性。</li>
+</ol>
+<h3 id="5-2-偏置词位置预测的效果"><a href="#5-2-偏置词位置预测的效果" class="headerlink" title="5.2 偏置词位置预测的效果"></a>5.2 偏置词位置预测的效果</h3><p>在全规模数据集上通过多输出训练评估完整流水线。推理时为模拟无语音学专业知识的普通用户，当存在多个候选时随机选择最终提示词。</p>
+<p><strong>表 4：不同 ASR 任务上的性能（%），多输出机制训练，偏置列表 200 词</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">ID</th>
+<th style="text-align:left">模型</th>
+<th style="text-align:center">Common Voice</th>
+<th style="text-align:center"></th>
+<th style="text-align:center">SPGI</th>
+<th style="text-align:center"></th>
+<th style="text-align:center">Gigaspeech</th>
+<th style="text-align:center"></th>
+<th style="text-align:center">平均</th>
+<th style="text-align:center"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left"></td>
+<td style="text-align:center">B-WER</td>
+<td style="text-align:center">U-WER</td>
+<td style="text-align:center">B-WER</td>
+<td style="text-align:center">U-WER</td>
+<td style="text-align:center">B-WER</td>
+<td style="text-align:center">U-WER</td>
+<td style="text-align:center">B-WER</td>
+<td style="text-align:center">U-WER</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>推理：非上下文 ASR（无偏置列表）</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">1</td>
+<td style="text-align:left">Non-ctx</td>
+<td style="text-align:center">22.6</td>
+<td style="text-align:center">5.5</td>
+<td style="text-align:center">15.6</td>
+<td style="text-align:center">3.0</td>
+<td style="text-align:center">27.2</td>
+<td style="text-align:center">9.8</td>
+<td style="text-align:center">21.8</td>
+<td style="text-align:center">6.1</td>
+</tr>
+<tr>
+<td style="text-align:left">2</td>
+<td style="text-align:left">Ctx, no hint</td>
+<td style="text-align:center">23.0</td>
+<td style="text-align:center">5.7</td>
+<td style="text-align:center">15.9</td>
+<td style="text-align:center">3.2</td>
+<td style="text-align:center">26.7</td>
+<td style="text-align:center">9.5</td>
+<td style="text-align:center">21.9</td>
+<td style="text-align:center">6.1</td>
+</tr>
+<tr>
+<td style="text-align:left">3</td>
+<td style="text-align:left">Syl+CED</td>
+<td style="text-align:center">23.0</td>
+<td style="text-align:center">5.8</td>
+<td style="text-align:center">16.1</td>
+<td style="text-align:center">3.3</td>
+<td style="text-align:center">26.8</td>
+<td style="text-align:center">9.6</td>
+<td style="text-align:center">22.0</td>
+<td style="text-align:center">6.2</td>
+</tr>
+<tr>
+<td style="text-align:left">4</td>
+<td style="text-align:left">Phon.vow+CED</td>
+<td style="text-align:center">23.2</td>
+<td style="text-align:center">5.8</td>
+<td style="text-align:center">16.0</td>
+<td style="text-align:center">3.3</td>
+<td style="text-align:center">27.1</td>
+<td style="text-align:center">9.5</td>
+<td style="text-align:center">22.1</td>
+<td style="text-align:center">6.2</td>
+</tr>
+<tr>
+<td style="text-align:left">5</td>
+<td style="text-align:left">CED+PED</td>
+<td style="text-align:center">23.0</td>
+<td style="text-align:center">5.8</td>
+<td style="text-align:center">16.1</td>
+<td style="text-align:center">3.3</td>
+<td style="text-align:center">26.8</td>
+<td style="text-align:center">9.6</td>
+<td style="text-align:center">22.0</td>
+<td style="text-align:center">6.2</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>推理：标准上下文 ASR（无发音提示）</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">2</td>
+<td style="text-align:left">Ctx, no hint</td>
+<td style="text-align:center">9.2</td>
+<td style="text-align:center">5.5</td>
+<td style="text-align:center">5.2</td>
+<td style="text-align:center">3.2</td>
+<td style="text-align:center">17.3</td>
+<td style="text-align:center">9.6</td>
+<td style="text-align:center">10.6</td>
+<td style="text-align:center">6.1</td>
+</tr>
+<tr>
+<td style="text-align:left">3</td>
+<td style="text-align:left">Syl+CED</td>
+<td style="text-align:center">8.9</td>
+<td style="text-align:center">5.5</td>
+<td style="text-align:center">5.2</td>
+<td style="text-align:center">3.3</td>
+<td style="text-align:center">16.9</td>
+<td style="text-align:center">9.6</td>
+<td style="text-align:center">10.3</td>
+<td style="text-align:center">6.1</td>
+</tr>
+<tr>
+<td style="text-align:left">4</td>
+<td style="text-align:left">Phon.vow+CED</td>
+<td style="text-align:center">9.3</td>
+<td style="text-align:center">5.5</td>
+<td style="text-align:center">5.2</td>
+<td style="text-align:center">3.3</td>
+<td style="text-align:center">16.8</td>
+<td style="text-align:center">9.5</td>
+<td style="text-align:center">10.4</td>
+<td style="text-align:center">6.1</td>
+</tr>
+<tr>
+<td style="text-align:left">5</td>
+<td style="text-align:left">CED+PED</td>
+<td style="text-align:center">9.0</td>
+<td style="text-align:center">5.6</td>
+<td style="text-align:center">4.9</td>
+<td style="text-align:center">3.2</td>
+<td style="text-align:center">16.7</td>
+<td style="text-align:center">9.5</td>
+<td style="text-align:center">10.2</td>
+<td style="text-align:center">6.1</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>推理：带词级线索的上下文 ASR</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">3</td>
+<td style="text-align:left">Syl+CED</td>
+<td style="text-align:center">7.6</td>
+<td style="text-align:center">5.6</td>
+<td style="text-align:center">4.3</td>
+<td style="text-align:center">3.3</td>
+<td style="text-align:center">16.0</td>
+<td style="text-align:center">9.5</td>
+<td style="text-align:center">9.3</td>
+<td style="text-align:center">6.1</td>
+</tr>
+<tr>
+<td style="text-align:left">4</td>
+<td style="text-align:left">Phon.vow+CED</td>
+<td style="text-align:center">8.1</td>
+<td style="text-align:center">5.5</td>
+<td style="text-align:center">4.4</td>
+<td style="text-align:center">3.3</td>
+<td style="text-align:center">15.9</td>
+<td style="text-align:center">9.4</td>
+<td style="text-align:center">9.4</td>
+<td style="text-align:center">6.1</td>
+</tr>
+<tr>
+<td style="text-align:left">5</td>
+<td style="text-align:left">CED+PED</td>
+<td style="text-align:center">7.0</td>
+<td style="text-align:center">5.5</td>
+<td style="text-align:center">3.9</td>
+<td style="text-align:center">3.3</td>
+<td style="text-align:center">15.7</td>
+<td style="text-align:center">9.5</td>
+<td style="text-align:center">8.8</td>
+<td style="text-align:center">6.1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键发现</strong>：</p>
+<ol>
+<li>所有提出的模型在标准上下文 ASR 任务（无提示）上均优于基线，表明词级线索训练也增强了模型在无线索推理时的偏置词识别能力；</li>
+<li>应用词级线索后，平均 B-WER 相较于基线获得 <strong>11.3%–16.3%</strong> 的相对提升（B-WER 从 10.6% 降至 9.4%–8.8%）；</li>
+<li><strong>CED+PED 方法整体表现最优</strong>，在所有数据集上一致取得最低 B-WER。</li>
+</ol>
+<p><strong>表 5：单输出 vs 多输出训练的 B-WER（%）对比（Common Voice，Syl+CED 模型）</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">模型</th>
+<th style="text-align:center">Non-ctx</th>
+<th style="text-align:center">Ctx (no hint)</th>
+<th style="text-align:center">Ctx+hint</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">单输出（仅转录）</td>
+<td style="text-align:center">23.2</td>
+<td style="text-align:center">9.3</td>
+<td style="text-align:center">8.3</td>
+</tr>
+<tr>
+<td style="text-align:left">多输出（提出方法）</td>
+<td style="text-align:center">23.0</td>
+<td style="text-align:center">8.9</td>
+<td style="text-align:center">7.6</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>多输出训练方法将上下文 ASR 的 B-WER 改善了最高 <strong>8.4%</strong>，证明偏置词位置预测辅助任务增强了 SLLM 将语音中的偏置词与文本提示中的线索相关联的能力。</p>
+<h2 id="6-结论"><a href="#6-结论" class="headerlink" title="6. 结论"></a>6. 结论</h2><p>本文提出了面向 SLLM 的上下文 ASR 方法，包含两个核心创新：</p>
+<ol>
+<li><strong>常见词声学线索</strong>：利用与偏置词发音部分相似的常见词作为发音提示，摆脱对 G2P 系统的依赖，降低用户使用门槛；</li>
+<li><strong>多输出训练与偏置词位置预测</strong>：通过 CTC 损失优化的辅助标注任务，增强模型对偏置词的识别和泛化能力，且不增加推理阶段的计算开销。</li>
+</ol>
+<p>实验结果表明，所提方法在多个 ASR 任务和数据集（包括域外数据）上均取得了一致的性能提升，支持构建鲁棒且通用的 ASR 系统。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><p>[1] Ma et al., “An embarrassingly simple approach for LLM with strong ASR capacity,” arXiv:2402.08846, 2024.<br>[2] Grattafiori et al., “The Llama 3 herd of models,” arXiv:2407.21783, 2024.<br>[3] Abouelenin et al., “Phi-4-Mini technical report,” arXiv:2503.01743, 2025.<br>[4] Saon et al., “Granite-speech: Open-source speech-aware LLMs,” arXiv:2505.08699, 2025.<br>[5] Jain et al., “Contextual RNN-T for open domain ASR,” Interspeech 2020.<br>[6] Tang et al., “Improving ASR contextual biasing with guided attention,” ICASSP 2024.<br>[7] Yolwas et al., “Adaptive context biasing in transformer-based ASR systems,” Scientific Reports, 2025.<br>[8] Sun et al., “Contextual biasing of named-entities with large language models,” ICASSP 2024.<br>[9] Gong et al., “Contextual biasing speech recognition in speech-enhanced LLM,” Interspeech 2024.<br>[10] Yang et al., “CTC-assisted LLM-based contextual ASR,” SLT 2024.<br>[11] He et al., “CMT-LLM: Contextual multi-talker ASR utilizing LLMs,” Interspeech 2025.<br>[12] Gong et al., “BR-ASR: Efficient and scalable bias retrieval framework,” Interspeech 2025.<br>[13] Hou et al., “Ranking and selection of bias words for contextual bias speech recognition,” Interspeech 2025.<br>[14] Pandey et al., “PROCTER: Pronunciation-aware contextual adapter,” ICASSP 2023.<br>[15] Qiu et al., “Improving large-scale deep biasing with phoneme features,” ASRU 2023.<br>[16] He et al., “PARCO: Phoneme-augmented robust contextual ASR,” arXiv:2509.04357, 2025.<br>[17] Graves et al., “Connectionist temporal classification,” ICML 2006.<br>[18] Li et al., “BLIP-2: Bootstrapping language-image pre-training,” ICML 2023.<br>[19] Hu et al., “LoRA: Low-rank adaptation of large language models,” arXiv:2106.09685, 2021.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech LLM</a>
+      
+        <a href="/tags/Contextual-Biasing/" class="print-no-link">#Contextual Biasing</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Contextual Biasing for ASR in Speech LLM with Common Word Cues and Bias Word Position Prediction</div>
+      <div>https://smallsmartao.github.io/2026/04/16/contextual-biasing-asr-speech-llm-common-word-cues/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年4月16日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年4月16日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/04/16/audio-cogito-deep-audio-reasoning/" title="Audio-Cogito: Towards Deep Audio Reasoning in Large Audio Language Models">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Audio-Cogito: Towards Deep Audio Reasoning in Large Audio Language Models</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/04/14/phoneme-vs-projector-llm-asr/" title="Phonemes vs. Projectors: An Investigation of Speech-Language Interfaces for LLM-based ASR">
+                        <span class="hidden-mobile">Phonemes vs. Projectors: An Investigation of Speech-Language Interfaces for LLM-based ASR</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
