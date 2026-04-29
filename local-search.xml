@@ -20,11 +20,11 @@
     
     <tags>
       
+      <tag>论文解读</tag>
+      
       <tag>Audio-LLM</tag>
       
       <tag>RLHF</tag>
-      
-      <tag>论文解读</tag>
       
       <tag>Speech Reasoning</tag>
       
@@ -51,42 +51,11 @@
     
     <tags>
       
-      <tag>Audio-LLM</tag>
-      
       <tag>论文解读</tag>
       
+      <tag>Audio-LLM</tag>
+      
       <tag>Uncertainty Estimation</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
-    <title>奖池模式：一套适合工薪族的 ETF 定投进化策略</title>
-    <link href="/2026/04/24/jackpot-investment-strategy/"/>
-    <url>/2026/04/24/jackpot-investment-strategy/</url>
-    
-    <content type="html"><![CDATA[<blockquote><p><strong>免责声明</strong>：本文仅为个人投资策略的学习笔记与思路交流记录，不构成任何投资建议，也不推荐任何具体标的。投资有风险，入市需谨慎。请根据自身风险承受能力独立决策。</p></blockquote><h2 id="定投的痛点：为什么需要进化"><a href="#定投的痛点：为什么需要进化" class="headerlink" title="定投的痛点：为什么需要进化"></a>定投的痛点：为什么需要进化</h2><p>普通定投的逻辑很简单——每月固定买入，长期摊平成本。听起来很美，但实际执行下来会碰到几个真实痛点：</p><ol><li><strong>子弹打光问题</strong>：大跌来了最想加仓，但钱已经在前面的高点买完了</li><li><strong>资金利用率低</strong>：如果设了”跌 X% 才买”这种条件触发，可能大半年都触发不了，钱干趴在账上</li><li><strong>追涨杀跌的心理陷阱</strong>：涨了舍不得卖，跌了不敢买，最后变成”高位站岗、低位割肉”</li></ol><p>我花了不少时间琢磨这些问题，最终设计出一套”奖池模式”——核心思路就是<strong>把子弹攒起来，等猎物出现再集中开火</strong>。</p><h2 id="资金分层：先分清楚哪些钱可以动"><a href="#资金分层：先分清楚哪些钱可以动" class="headerlink" title="资金分层：先分清楚哪些钱可以动"></a>资金分层：先分清楚哪些钱可以动</h2><p>假设月到手 ¥18,000，扣除固定开支（房租水电等 ~¥4,000）和弹性消费（社交娱乐 ~¥2,000），每月可投资金额大约 ¥12,000。</p><p>我把这笔钱一分为二：</p><div class="table-container"><table><thead><tr><th>类别</th><th>月投入</th><th>定位</th></tr></thead><tbody><tr><td>稳健部分</td><td>¥6,000</td><td>打底，求稳，提供流动性</td></tr><tr><td>进攻部分</td><td>¥6,000</td><td>用”奖池模式”博取超额收益</td></tr></tbody></table></div><p>进攻部分换算下来，每周约 ¥1,500 进入奖池。</p><h2 id="奖池模式：核心策略"><a href="#奖池模式：核心策略" class="headerlink" title="奖池模式：核心策略"></a>奖池模式：核心策略</h2><p>传统定投是”钱到了就买”，奖池模式的核心区别是——<strong>钱到了先不买，存进奖池等信号</strong>。</p><p>具体流程：</p><ol><li><strong>每周 ¥1,500 存入奖池</strong>（用货币基金暂存，不浪费利息）</li><li><strong>每周扫描一次标的池</strong>，看有没有触发买入信号</li><li><strong>信号触发 → 奖池全额买入</strong>，集中火力打在低估标的上</li><li><strong>止盈卖出的钱也回流奖池</strong>，形成”滚雪球”</li></ol><p>奖池的本质是一个<strong>蓄水池</strong>：平时涓涓细流地蓄水，遇到低估机会就开闸放水。这样解决了”子弹打光”和”资金利用率低”两个痛点。</p><h2 id="买入规则：4-触发法"><a href="#买入规则：4-触发法" class="headerlink" title="买入规则：4% 触发法"></a>买入规则：4% 触发法</h2><p>光说”低估就买”太笼统了，需要一套明确的、可执行的规则：</p><h3 id="建仓前提"><a href="#建仓前提" class="headerlink" title="建仓前提"></a>建仓前提</h3><p>标的必须处于<strong>低估区间</strong>（PE 或 PB 百分位处于历史较低水平）才允许建仓。高估和正常估值的标的一律不碰。</p><h3 id="首次建仓"><a href="#首次建仓" class="headerlink" title="首次建仓"></a>首次建仓</h3><p>当某个标的进入低估区间，把奖池里的钱<strong>全额买入</strong>。这是第一笔。</p><h3 id="加仓触发"><a href="#加仓触发" class="headerlink" title="加仓触发"></a>加仓触发</h3><p>在首次建仓后，如果标的继续下跌——<strong>比上次买入价再跌 4%</strong>，奖池再次全额买入。</p><p>举个例子：</p><ul><li>首次买入价 ¥1.00</li><li>跌到 ¥0.96（-4%）→ 触发加仓，奖池全买</li><li>再跌到 ¥0.9216（再 -4%）→ 再次触发，奖池全买</li><li>以此类推</li></ul><h3 id="冲突处理"><a href="#冲突处理" class="headerlink" title="冲突处理"></a>冲突处理</h3><ul><li>多个标的同时触发 → <strong>买估值百分位最低的那个</strong></li><li>单个标的仓位 <strong>不超过总仓位的 40%</strong>，强制分散</li></ul><p>4% 这个数字不是拍脑袋定的——太小（如 2%）会频繁触发，失去”集中火力”的意义；太大（如 8%）又容易错过机会。4% 在回测中表现出了较好的平衡。</p><h2 id="卖出规则：分批止盈"><a href="#卖出规则：分批止盈" class="headerlink" title="卖出规则：分批止盈"></a>卖出规则：分批止盈</h2><p>买得好不如卖得好。我用的是<strong>三步止盈法</strong>：</p><div class="table-container"><table><thead><tr><th>触发条件</th><th>操作</th><th>逻辑</th></tr></thead><tbody><tr><td>标的进入高估区间 <strong>且</strong> 收益率 &gt; 20%</td><td>卖出 1/3，回流奖池</td><td>先锁定一部分利润</td></tr><tr><td>收益率达到 +35%</td><td>再卖 1/3</td><td>继续锁利，留仓位吃尾巴</td></tr><tr><td>收益率达到 +50% <strong>或</strong> 标的进入极度高估区间</td><td>清仓最后 1/3</td><td>落袋为安</td></tr></tbody></table></div><p>为什么分三次卖？因为：</p><ul><li>一次性卖完容易卖飞——后面还涨 30% 你心态就崩了</li><li>完全不卖又容易坐过山车——利润回吐比亏损更难受</li><li>分批止盈是一个心理上和收益上的折中方案</li></ul><p>卖出的钱<strong>全部回流奖池</strong>，等待下一次低估机会。</p><h2 id="标的选择：怎么挑-ETF"><a href="#标的选择：怎么挑-ETF" class="headerlink" title="标的选择：怎么挑 ETF"></a>标的选择：怎么挑 ETF</h2><p>我的标的池都是场内 ETF，选择标准：</p><ol><li><strong>指数发布时间 &gt; 7 年</strong>：数据够长才能做有效的估值百分位判断</li><li><strong>成分股业绩有稳定增长逻辑</strong>：消费、医疗这类有长期需求支撑的行业</li><li><strong>周期型行业用 PB 替代 PE</strong>：比如券商类，利润波动大，PE 会失真，PB 更靠谱</li><li><strong>分散配置</strong>：消费类、医疗类、科技互联网类、金融类……不押单一赛道</li></ol><p>当前我关注的方向包括消费类 ETF、医疗类 ETF、跨境互联网类 ETF、券商类 ETF 等。宽基指数（如沪深 300、标普 500 对应的 ETF）目前处于正常或偏高估值区间，暂时只观望不建仓。</p><p><strong>估值数据来源</strong>：我使用蛋卷基金 API 获取每日更新的指数估值数据（覆盖 60 多个主流指数），作为判断低估/高估的依据。</p><h2 id="稳健配置：不冒险的那一半"><a href="#稳健配置：不冒险的那一半" class="headerlink" title="稳健配置：不冒险的那一半"></a>稳健配置：不冒险的那一半</h2><p>进攻部分靠奖池模式博收益，稳健部分则是打底：</p><div class="table-container"><table><thead><tr><th>类型</th><th>月投入</th><th>定位</th></tr></thead><tbody><tr><td>货币基金</td><td>¥1,500</td><td>活钱，随时可用</td></tr><tr><td>中长期纯债基金</td><td>¥3,000</td><td>半年以上不动，吃票息</td></tr><tr><td>同业存单基金</td><td>¥1,500</td><td>灵活备用金，等宽基回调时可转入进攻仓</td></tr></tbody></table></div><p>稳健部分不追求高收益，核心目标是<strong>跑赢通胀 + 保持流动性</strong>。</p><h2 id="回测验证：数据说话"><a href="#回测验证：数据说话" class="headerlink" title="回测验证：数据说话"></a>回测验证：数据说话</h2><p>我用 2023 年 4 月至 2026 年 4 月的数据做了回测，对比三种策略：</p><div class="table-container"><table><thead><tr><th>策略</th><th>年化收益</th><th>说明</th></tr></thead><tbody><tr><td>纯 4% 触发（每次固定 ¥1,500）</td><td>-1.6%</td><td>资金利用率仅 11%，大量资金闲置</td></tr><tr><td><strong>奖池模式</strong></td><td><strong>+6.8%</strong></td><td>资金利用率 45%，显著改善</td></tr><tr><td>无脑定投宽基指数</td><td>+7.0%</td><td>100% 资金始终在场</td></tr></tbody></table></div><p>乍一看，奖池模式比无脑定投还低了 0.2%？别急，看另一组数据——</p><p><strong>熊市阶段（2020–2023）</strong>：</p><div class="table-container"><table><thead><tr><th>策略</th><th>年化收益</th></tr></thead><tbody><tr><td>奖池模式</td><td>+3.2%</td></tr><tr><td>无脑定投宽基指数</td><td>-4.6%</td></tr></tbody></table></div><p>差距接近 <strong>8 个百分点</strong>。</p><p>这说明：</p><ul><li>牛市里，奖池模式因为”等信号”会少买一些，跑不赢全仓干的策略</li><li>但在熊市和震荡市里，奖池模式的”集中抄底 + 分批止盈”优势非常明显</li><li>考虑到 A 股牛短熊长的特性，奖池模式的长期表现值得期待</li></ul><p>更重要的是——<strong>奖池模式的回撤控制远好于无脑定投</strong>，心态上更容易坚持。</p><h2 id="执行纪律：每周五扫描流程"><a href="#执行纪律：每周五扫描流程" class="headerlink" title="执行纪律：每周五扫描流程"></a>执行纪律：每周五扫描流程</h2><p>再好的策略，执行不了也白搭。我把操作简化成每周五的固定流程：</p><ol><li>¥1,500 转入奖池（货基）</li><li>打开估值数据，检查标的池各标的的百分位</li><li>检查是否有标的触发 4% 加仓信号</li><li>如果触发 → 奖池全额买入该标的</li><li>检查持仓是否触发止盈条件</li><li>如果触发 → 按规则卖出对应比例</li><li>记录操作日志</li></ol><p>整个流程 15 分钟搞定。不需要盯盘，不需要看新闻，不需要判断大势。<strong>规则定好了，照着执行就行。</strong></p><h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>奖池模式的本质是对传统定投的三个改进：</p><ol><li><strong>蓄水池机制</strong>解决了”子弹打光”的问题</li><li><strong>4% 触发法</strong>解决了”什么时候买”的问题</li><li><strong>分批止盈</strong>解决了”什么时候卖”的问题</li></ol><p>它不是什么暴富秘籍——年化 6%~8% 的预期收益，对于激进的投资者来说可能不够刺激。但对于一个工薪族来说，<strong>用每周 15 分钟的时间，换一个纪律清晰、心态稳定、长期可持续的投资系统</strong>，我觉得这笔账算得过来。</p><p>最后，这套策略还在持续迭代中。如果你有类似的思路或者更好的改进方案，欢迎交流。</p><hr><blockquote><p><strong>免责声明</strong>：本文仅为个人投资策略的学习笔记与思路交流记录，不构成任何投资建议，也不推荐任何具体标的。文中提及的行业方向仅为策略示例，不代表推荐买入。投资有风险，入市需谨慎。请根据自身风险承受能力独立决策。</p></blockquote>]]></content>
-    
-    
-    <categories>
-      
-      <category>论文解读</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>投资</tag>
-      
-      <tag>交易策略</tag>
-      
-      <tag>A股</tag>
-      
-      <tag>宏观经济</tag>
       
     </tags>
     
@@ -111,11 +80,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>语音识别评估</tag>
       
@@ -144,9 +113,9 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Transducer</tag>
       
@@ -237,9 +206,9 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Speech LLM</tag>
       
@@ -299,11 +268,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Speech</tag>
       
@@ -336,11 +305,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Speech Encoder</tag>
       
@@ -371,11 +340,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Speech</tag>
       
@@ -443,9 +412,9 @@
       
       <tag>Full-Duplex</tag>
       
-      <tag>VAD</tag>
-      
       <tag>对话系统</tag>
+      
+      <tag>VAD</tag>
       
     </tags>
     
@@ -470,9 +439,9 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>长文本</tag>
       
@@ -534,13 +503,13 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
       
       <tag>Chain-of-Thought</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Speech</tag>
       
@@ -567,11 +536,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Speech LM</tag>
       
@@ -602,11 +571,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>CIF</tag>
       
@@ -637,11 +606,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Streaming</tag>
       
@@ -668,11 +637,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Audio</tag>
       
@@ -703,11 +672,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Audio</tag>
       
@@ -738,13 +707,13 @@
     
     <tags>
       
-      <tag>投资</tag>
-      
       <tag>交易策略</tag>
       
-      <tag>A股</tag>
+      <tag>投资</tag>
       
       <tag>宏观经济</tag>
+      
+      <tag>A股</tag>
       
     </tags>
     
@@ -837,9 +806,9 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Audio</tag>
       
@@ -870,11 +839,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Diarization</tag>
       
@@ -903,9 +872,9 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>VAD</tag>
       
@@ -1002,11 +971,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>语音识别</tag>
       
@@ -1035,11 +1004,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>强化学习</tag>
       
@@ -1068,11 +1037,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>语音识别</tag>
       
@@ -1136,9 +1105,9 @@
     
     <tags>
       
-      <tag>beamsearch</tag>
-      
       <tag>asr</tag>
+      
+      <tag>beamsearch</tag>
       
       <tag>decode</tag>
       
@@ -1265,9 +1234,9 @@
     
     <tags>
       
-      <tag>asr</tag>
-      
       <tag>ctc</tag>
+      
+      <tag>asr</tag>
       
     </tags>
     
