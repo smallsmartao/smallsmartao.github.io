@@ -1,0 +1,1645 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息  标题: Walking Through Uncertainty: An Empirical Study of Uncertainty Estimation for Audio-Aware Large Language Models 作者: Chun-Yi Kuan, Wei-Ping Huang, Hung-yi Lee (National Taiwan University) ar">
+<meta property="og:type" content="article">
+<meta property="og:title" content="An Empirical Study of Uncertainty Estimation for Audio-Aware Large Language Models">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/04/29/uncertainty-estimation-audio-aware-llm/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息  标题: Walking Through Uncertainty: An Empirical Study of Uncertainty Estimation for Audio-Aware Large Language Models 作者: Chun-Yi Kuan, Wei-Ping Huang, Hung-yi Lee (National Taiwan University) ar">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_uncertainty_allm.png">
+<meta property="article:published_time" content="2026-04-28T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-29T02:14:46.142Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="Audio-LLM">
+<meta property="article:tag" content="Uncertainty Estimation">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_uncertainty_allm.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>An Empirical Study of Uncertainty Estimation for Audio-Aware Large Language Models - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/cover_uncertainty_allm.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="An Empirical Study of Uncertainty Estimation for Audio-Aware Large Language Models"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-04-29 00:00" pubdate>
+          2026年4月29日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          39 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">An Empirical Study of Uncertainty Estimation for Audio-Aware Large Language Models</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年4月29日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p><strong>论文信息</strong></p>
+<ul>
+<li><strong>标题</strong>: Walking Through Uncertainty: An Empirical Study of Uncertainty Estimation for Audio-Aware Large Language Models</li>
+<li><strong>作者</strong>: Chun-Yi Kuan, Wei-Ping Huang, Hung-yi Lee (National Taiwan University)</li>
+<li><strong>arXiv</strong>: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2604.25591">2604.25591</a></li>
+</ul>
+</blockquote>
+<h2 id="为什么需要研究-Audio-Aware-LLM-的不确定性？"><a href="#为什么需要研究-Audio-Aware-LLM-的不确定性？" class="headerlink" title="为什么需要研究 Audio-Aware LLM 的不确定性？"></a>为什么需要研究 Audio-Aware LLM 的不确定性？</h2><p>近年来，音频感知大语言模型（Audio-Aware LLMs, ALLMs）在音频理解、语音问答、音乐推理等任务上取得了显著进展。然而，<strong>强性能不等于可靠性</strong>。在实际部署中，ALLMs 仍然频繁产生无依据的答案、幻觉内容或过度自信的回复——尤其当音频证据模糊、不完整或根本不足以回答问题时。</p>
+<p>不确定性估计（Uncertainty Estimation）为解决这一问题提供了天然的框架：可靠的不确定性估计能够支持错误检测、选择性预测、校准和更安全的部署。在纯文本 LLM 领域，已有大量工作探索了预测熵（Predictive Entropy）、语义熵（Semantic Entropy）和自验证方法 P(True) 等。但关键问题在于：<strong>这些方法在音频条件生成中是否依然有效？</strong> 音频引入了感知模糊性（perceptual ambiguity）、跨模态锚定（cross-modal grounding）、以及对语言先验的过度依赖等新挑战。</p>
+<p>本文是<strong>首个系统性研究 ALLMs 不确定性估计的实证工作</strong>，在多个模型和多种评估场景下对五种代表性方法进行了基准测试。</p>
+<hr>
+<h2 id="I-Introduction"><a href="#I-Introduction" class="headerlink" title="I. Introduction"></a>I. Introduction</h2><p>作者指出 ALLMs 虽然在多种任务上表现优异，但仍存在根本性的可靠性缺口：模型不仅需要给出正确答案，还需要知道<strong>自己何时可能出错</strong>。在纯文本 LLM 中，不确定性估计已被广泛研究，但在 ALLMs 中几乎未被探索。</p>
+<p>本文的核心贡献为两个关键发现：</p>
+<ol>
+<li><strong>在通用音频理解与推理基准上</strong>，语义级和验证型方法一致性地优于 token 级基线方法。</li>
+<li><strong>在可信度导向基准上</strong>（幻觉检测、不可回答问题），不确定性方法的相对有效性变得<strong>高度依赖模型和基准</strong>，表明从通用推理场景得出的结论不能直接迁移到可信度场景。</li>
+</ol>
+<p>此外，作者探索了基于不确定性的自适应推理（adaptive inference）作为下游应用。</p>
+<hr>
+<h2 id="II-Related-Work"><a href="#II-Related-Work" class="headerlink" title="II. Related Work"></a>II. Related Work</h2><h3 id="II-A-语言模型中的不确定性估计"><a href="#II-A-语言模型中的不确定性估计" class="headerlink" title="II-A. 语言模型中的不确定性估计"></a>II-A. 语言模型中的不确定性估计</h3><p>不确定性估计方法可大致分为三类：</p>
+<ul>
+<li><strong>Token 级方法</strong>：从生成序列的预测分布量化不确定性，如预测熵（predictive entropy）及相关的似然度度量。</li>
+<li><strong>语义级方法</strong>：考虑多个生成可能在表面形式不同但语义相同的情况，在语义等价的响应聚类上度量不确定性。代表性工作为 Semantic Entropy（Kuhn et al., 2023）。</li>
+<li><strong>验证型方法</strong>：通过提示模型评判自身答案是否正确来估计置信度，代表性方法为 P(True)（Kadavath et al., 2022）。</li>
+</ul>
+<p>现有研究已展示不确定性估计可支持校准、幻觉检测和选择性预测等下游任务。但绝大多数发现建立在纯文本 LLM 上，是否迁移到 ALLMs 仍不明确。</p>
+<h3 id="II-B-Audio-Aware-LLM-评估与可信度"><a href="#II-B-Audio-Aware-LLM-评估与可信度" class="headerlink" title="II-B. Audio-Aware LLM 评估与可信度"></a>II-B. Audio-Aware LLM 评估与可信度</h3><p>现有评估基准覆盖了通用音频理解与推理，近期也开始关注可信度问题：</p>
+<ul>
+<li>幻觉研究（Kuan et al., 2025）表明 ALLMs 会幻觉出输入音频中不存在的声音事件。</li>
+<li>AQUA-Bench（Kuan &amp; Lee, 2026）显式评估不可回答的音频问题和其他可信度场景。</li>
+</ul>
+<p>尽管对 ALLM 能力和可信度的评估兴趣日增，<strong>不确定性估计在该场景中仍几乎未被探索</strong>。</p>
+<hr>
+<h2 id="III-Method"><a href="#III-Method" class="headerlink" title="III. Method"></a>III. Method</h2><h3 id="III-A-问题设定"><a href="#III-A-问题设定" class="headerlink" title="III-A. 问题设定"></a>III-A. 问题设定</h3><p>给定输入 $x$（包含一段音频和对应的指令或问题），ALLM 根据条件分布 $p(y \mid x)$ 生成回答 $y$。目标是估计模型对其预测的不确定程度。</p>
+<h3 id="III-B-预测与不确定性估计协议"><a href="#III-B-预测与不确定性估计协议" class="headerlink" title="III-B. 预测与不确定性估计协议"></a>III-B. 预测与不确定性估计协议</h3><p>采用<strong>两阶段协议</strong>，将预测与不确定性估计解耦：</p>
+<ol>
+<li><strong>预测阶段</strong>：使用低温度解码（temperature = 0.1）获得预测 $\hat{y}$，作为模型的最终答案用于正确性评估。</li>
+<li><strong>不确定性估计阶段</strong>：从 $p(y \mid x)$ 以高温度（temperature = 1.0）采样 $K = 10$ 个随机响应 ${y^i}_{i=1}^K$，基于这些样本计算不确定性度量。</li>
+</ol>
+<p>对于 P(True)，则直接对低温度预测 $\hat{y}$ 进行自验证。</p>
+<h3 id="III-C-不确定性估计方法"><a href="#III-C-不确定性估计方法" class="headerlink" title="III-C. 不确定性估计方法"></a>III-C. 不确定性估计方法</h3><h4 id="1-Predictive-Entropy（预测熵）"><a href="#1-Predictive-Entropy（预测熵）" class="headerlink" title="1. Predictive Entropy（预测熵）"></a>1. Predictive Entropy（预测熵）</h4><p>序列级预测熵定义为：</p>
+<script type="math/tex; mode=display">H_{\text{pred}}(x) = \mathbb{E}_{y \sim p(y|x)}[-\log p(y \mid x)]</script><p>通过蒙特卡罗采样近似：</p>
+<script type="math/tex; mode=display">H_{\text{pred}}(x) \approx \frac{1}{K}\sum_{i=1}^{K} -\log p(y^i \mid x)</script><p>更高的预测熵表示模型对其采样生成平均分配了更低的概率，反映更大的序列级不确定性。</p>
+<h4 id="2-Length-Normalized-Predictive-Entropy（长度归一化预测熵）"><a href="#2-Length-Normalized-Predictive-Entropy（长度归一化预测熵）" class="headerlink" title="2. Length-Normalized Predictive Entropy（长度归一化预测熵）"></a>2. Length-Normalized Predictive Entropy（长度归一化预测熵）</h4><p>预测熵可能受答案长度偏差影响（更长的序列通常累积更大的负对数似然）。为减少此效应，引入长度归一化：</p>
+<script type="math/tex; mode=display">H_{\text{norm}}(x) = \mathbb{E}_{y \sim p(y|x)}\left[\frac{-\log p(y \mid x)}{|y|}\right]</script><p>实际采用 token 级估计器：</p>
+<script type="math/tex; mode=display">H_{\text{norm}}^{\text{tok}}(x) = \frac{\sum_{i=1}^{K} -\log p(y^i \mid x)}{\sum_{i=1}^{K} |y^i|}</script><p>这可视为期望比值的近似，能更稳定地估计跨采样响应的平均 token 级不确定性。</p>
+<h4 id="3-Semantic-Entropy（语义熵）"><a href="#3-Semantic-Entropy（语义熵）" class="headerlink" title="3. Semantic Entropy（语义熵）"></a>3. Semantic Entropy（语义熵）</h4><p>序列级似然度无法区分表面形式变化和真正的语义不确定性。语义熵通过对采样答案进行语义等价聚类来解决此问题。</p>
+<p>语义等价通过<strong>双向蕴含聚类</strong>（bidirectional entailment clustering）判定：使用 NLI 模型检验两个答案 $s$ 和 $s’$ 是否互相蕴含。两个答案被归入同一语义聚类当且仅当双向蕴含关系均成立。</p>
+<p>聚类概率质量通过求和获得：</p>
+<script type="math/tex; mode=display">p(c_k \mid x) = \sum_{s \in c_k} p(s \mid x)</script><p>语义熵定义为：</p>
+<script type="math/tex; mode=display">H_{\text{sem}}(x) = -\sum_k p(c_k \mid x) \log p(c_k \mid x)</script><p>当大多数采样答案收敛到同一语义聚类时，语义熵较低；当概率质量分散到多个语义不同的答案时，语义熵较高。</p>
+<h4 id="4-Discrete-Semantic-Entropy（离散语义熵）"><a href="#4-Discrete-Semantic-Entropy（离散语义熵）" class="headerlink" title="4. Discrete Semantic Entropy（离散语义熵）"></a>4. Discrete Semantic Entropy（离散语义熵）</h4><p>对于具有预定义离散答案空间的任务，语义变化自然受到候选答案集的约束。设 $\mathcal{A}$ 为候选答案集，将每个采样响应映射到 $\mathcal{A}$ 中的选项，估计经验答案分布：</p>
+<script type="math/tex; mode=display">p(a \mid x) \approx \frac{\text{count}(a)}{K}, \quad a \in \mathcal{A}</script><p>离散语义熵为：</p>
+<script type="math/tex; mode=display">H_{\text{disc}}(x) = -\sum_{a \in \mathcal{A}} p(a \mid x) \log p(a \mid x)</script><p>可视为语义熵在封闭式答案空间的离散对应版本，避免了语义等价聚类的需要。</p>
+<h4 id="5-P-True"><a href="#5-P-True" class="headerlink" title="5. P(True)"></a>5. P(True)</h4><p>自验证型置信度估计。给定输入 $x$ 和候选答案 $\hat{y}$，提示模型判断答案是否受输入支持：</p>
+<script type="math/tex; mode=display">P(\text{true} \mid x, \hat{y}) = p(\text{true} \mid x, \hat{y})</script><p>模型被约束产生二元决策（true/false），置信度分数由这两个验证 token 的归一化似然度计算。更高的 P(True) 表示模型对自身答案正确性的置信度更高。本文仅使用自验证，不依赖外部验证模型。</p>
+<h4 id="方法总结"><a href="#方法总结" class="headerlink" title="方法总结"></a>方法总结</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>不确定性层级</th>
+<th>核心思想</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Predictive Entropy</td>
+<td>序列似然度</td>
+<td>生成序列的负对数似然期望</td>
+</tr>
+<tr>
+<td>Length-Normalized Entropy</td>
+<td>Token 似然度</td>
+<td>按长度归一化的 token 级不确定性</td>
+</tr>
+<tr>
+<td>Semantic Entropy</td>
+<td>语义聚类</td>
+<td>语义等价答案聚类上的熵</td>
+</tr>
+<tr>
+<td>Discrete Semantic Entropy</td>
+<td>离散答案空间</td>
+<td>候选答案经验分布上的熵</td>
+</tr>
+<tr>
+<td>P(True)</td>
+<td>显式自验证</td>
+<td>模型自评答案正确性的概率</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="IV-Experimental-Setup"><a href="#IV-Experimental-Setup" class="headerlink" title="IV. Experimental Setup"></a>IV. Experimental Setup</h2><h3 id="IV-A-评估数据集、模型与设置"><a href="#IV-A-评估数据集、模型与设置" class="headerlink" title="IV-A. 评估数据集、模型与设置"></a>IV-A. 评估数据集、模型与设置</h3><h4 id="评估基准"><a href="#评估基准" class="headerlink" title="评估基准"></a>评估基准</h4><p>分为两个互补设置：</p>
+<p><strong>通用音频理解与推理基准：</strong></p>
+<ul>
+<li><strong>MMAU</strong>：大规模多任务音频理解与推理基准</li>
+<li><strong>MMAR</strong>：涵盖语音、音频、音乐及混合场景的深度推理挑战性基准</li>
+<li><strong>MMSU</strong>：大规模多任务口语理解与推理基准</li>
+<li><strong>SAKURA</strong>：基于语音和音频信息的多跳推理基准</li>
+</ul>
+<p><strong>可信度导向基准：</strong></p>
+<ul>
+<li><strong>Audio-Hallucination</strong>：音频幻觉检测</li>
+<li><strong>AQUA-Bench</strong>：不可回答音频问题评估</li>
+</ul>
+<h4 id="模型"><a href="#模型" class="headerlink" title="模型"></a>模型</h4><ul>
+<li><strong>Qwen2.5-Omni-7B</strong></li>
+<li><strong>Qwen2.5-Omni-3B</strong></li>
+<li><strong>Audio Flamingo 3</strong></li>
+</ul>
+<h4 id="推理设置"><a href="#推理设置" class="headerlink" title="推理设置"></a>推理设置</h4><ul>
+<li>预测阶段：temperature = 0.1（低温度解码）</li>
+<li>采样阶段：temperature = 1.0，K = 10 次采样</li>
+<li>硬件：单张 NVIDIA RTX 3090 GPU</li>
+</ul>
+<h3 id="IV-B-评估指标"><a href="#IV-B-评估指标" class="headerlink" title="IV-B. 评估指标"></a>IV-B. 评估指标</h3><ul>
+<li><strong>AUROC</strong>（Area Under Receiver Operating Characteristic Curve）：衡量不确定性估计区分正确预测和错误预测的能力。更高的 AUROC 表示不确定性分数更有效地将错误与正确答案区分开。</li>
+<li><strong>AURAC</strong>（Area Under Rejection–Accuracy Curve）：评估不确定性估计用于选择性预测的实用性。逐步拒绝最不确定的样本后绘制准确率曲线。更高的 AURAC 表示不确定性估计更有助于识别应放弃或需要额外处理的预测。</li>
+<li>同时报告每个基准上的<strong>原始准确率（Accuracy）</strong>作为参考。</li>
+</ul>
+<hr>
+<h2 id="V-Results-and-Analysis"><a href="#V-Results-and-Analysis" class="headerlink" title="V. Results and Analysis"></a>V. Results and Analysis</h2><h3 id="V-A-不确定性估计方法的总体比较"><a href="#V-A-不确定性估计方法的总体比较" class="headerlink" title="V-A. 不确定性估计方法的总体比较"></a>V-A. 不确定性估计方法的总体比较</h3><p>Tables I 和 II 呈现了跨基准和模型的整体结果。</p>
+<p><strong>通用音频理解与推理基准结果（Table I）：</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Model</th>
+<th>Acc.</th>
+<th>Disc. SE AUROC</th>
+<th>Disc. SE AURAC</th>
+<th>Sem. Ent. AUROC</th>
+<th>Sem. Ent. AURAC</th>
+<th>P(True) AUROC</th>
+<th>P(True) AURAC</th>
+<th>Pred. Ent. AUROC</th>
+<th>Pred. Ent. AURAC</th>
+<th>Norm. Ent. AUROC</th>
+<th>Norm. Ent. AURAC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MMAU</td>
+<td>Qwen-7B</td>
+<td>0.71</td>
+<td><strong>0.85</strong></td>
+<td>0.90</td>
+<td>0.84</td>
+<td>0.90</td>
+<td>0.82</td>
+<td>0.89</td>
+<td>0.64</td>
+<td>0.81</td>
+<td>0.69</td>
+<td>0.82</td>
+</tr>
+<tr>
+<td>MMAU</td>
+<td>Qwen-3B</td>
+<td>0.73</td>
+<td>0.81</td>
+<td>0.88</td>
+<td><strong>0.82</strong></td>
+<td>0.89</td>
+<td>0.78</td>
+<td>0.89</td>
+<td>0.62</td>
+<td>0.82</td>
+<td>0.66</td>
+<td>0.84</td>
+</tr>
+<tr>
+<td>MMAU</td>
+<td>AF3</td>
+<td>0.74</td>
+<td>0.80</td>
+<td>0.89</td>
+<td><strong>0.82</strong></td>
+<td>0.90</td>
+<td>0.72</td>
+<td>0.86</td>
+<td>0.72</td>
+<td>0.88</td>
+<td>0.73</td>
+<td>0.88</td>
+</tr>
+<tr>
+<td>MMAR</td>
+<td>Qwen-7B</td>
+<td>0.58</td>
+<td>0.69</td>
+<td>0.73</td>
+<td><strong>0.70</strong></td>
+<td>0.74</td>
+<td>0.70</td>
+<td><strong>0.75</strong></td>
+<td>0.59</td>
+<td>0.68</td>
+<td>0.62</td>
+<td>0.67</td>
+</tr>
+<tr>
+<td>MMAR</td>
+<td>Qwen-3B</td>
+<td>0.58</td>
+<td>0.69</td>
+<td>0.71</td>
+<td>0.70</td>
+<td>0.71</td>
+<td><strong>0.71</strong></td>
+<td><strong>0.74</strong></td>
+<td>0.63</td>
+<td>0.69</td>
+<td>0.62</td>
+<td>0.68</td>
+</tr>
+<tr>
+<td>MMAR</td>
+<td>AF3</td>
+<td>0.55</td>
+<td>0.65</td>
+<td>0.69</td>
+<td><strong>0.67</strong></td>
+<td>0.69</td>
+<td>0.61</td>
+<td>0.65</td>
+<td>0.60</td>
+<td>0.66</td>
+<td>0.58</td>
+<td>0.64</td>
+</tr>
+<tr>
+<td>MMSU</td>
+<td>Qwen-7B</td>
+<td>0.62</td>
+<td><strong>0.80</strong></td>
+<td><strong>0.82</strong></td>
+<td>0.80</td>
+<td>0.81</td>
+<td>0.78</td>
+<td>0.81</td>
+<td>0.60</td>
+<td>0.71</td>
+<td>0.69</td>
+<td>0.76</td>
+</tr>
+<tr>
+<td>MMSU</td>
+<td>Qwen-3B</td>
+<td>0.60</td>
+<td><strong>0.80</strong></td>
+<td><strong>0.81</strong></td>
+<td>0.80</td>
+<td>0.81</td>
+<td>0.79</td>
+<td>0.81</td>
+<td>0.54</td>
+<td>0.66</td>
+<td>0.68</td>
+<td>0.75</td>
+</tr>
+<tr>
+<td>MMSU</td>
+<td>AF3</td>
+<td>0.55</td>
+<td>0.71</td>
+<td>0.71</td>
+<td><strong>0.74</strong></td>
+<td><strong>0.73</strong></td>
+<td>0.69</td>
+<td>0.71</td>
+<td>0.61</td>
+<td>0.68</td>
+<td>0.64</td>
+<td>0.68</td>
+</tr>
+<tr>
+<td>SAKURA</td>
+<td>Qwen-7B</td>
+<td>0.70</td>
+<td><strong>0.77</strong></td>
+<td><strong>0.84</strong></td>
+<td>0.76</td>
+<td>0.83</td>
+<td>0.76</td>
+<td>0.83</td>
+<td>0.63</td>
+<td>0.78</td>
+<td>0.59</td>
+<td>0.73</td>
+</tr>
+<tr>
+<td>SAKURA</td>
+<td>Qwen-3B</td>
+<td>0.69</td>
+<td>0.76</td>
+<td>0.84</td>
+<td>0.77</td>
+<td>0.84</td>
+<td><strong>0.79</strong></td>
+<td><strong>0.87</strong></td>
+<td>0.63</td>
+<td>0.79</td>
+<td>0.60</td>
+<td>0.74</td>
+</tr>
+<tr>
+<td>SAKURA</td>
+<td>AF3</td>
+<td>0.62</td>
+<td>0.67</td>
+<td>0.75</td>
+<td><strong>0.71</strong></td>
+<td><strong>0.78</strong></td>
+<td>0.69</td>
+<td>0.75</td>
+<td>0.64</td>
+<td>0.75</td>
+<td>0.58</td>
+<td>0.71</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>核心发现：语义级和验证型方法（discrete semantic entropy、semantic entropy、P(True)）在通用音频推理基准上<strong>一致性地优于</strong> token 级基线（predictive entropy、normalized entropy）。Predictive entropy 通常是最弱的方法。这表明纯 token 级不确定性不足以捕获 ALLMs 中的答案正确性。</p>
+<p><strong>可信度导向基准结果（Table II）：</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Model</th>
+<th>Acc.</th>
+<th>Disc. SE AUROC</th>
+<th>Disc. SE AURAC</th>
+<th>Sem. Ent. AUROC</th>
+<th>Sem. Ent. AURAC</th>
+<th>P(True) AUROC</th>
+<th>P(True) AURAC</th>
+<th>Pred. Ent. AUROC</th>
+<th>Pred. Ent. AURAC</th>
+<th>Norm. Ent. AUROC</th>
+<th>Norm. Ent. AURAC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AQUA</td>
+<td>Qwen-7B</td>
+<td>0.68</td>
+<td>0.70</td>
+<td>0.80</td>
+<td>0.71</td>
+<td>0.80</td>
+<td><strong>0.79</strong></td>
+<td><strong>0.85</strong></td>
+<td>0.55</td>
+<td>0.73</td>
+<td>0.62</td>
+<td>0.77</td>
+</tr>
+<tr>
+<td>AQUA</td>
+<td>Qwen-3B</td>
+<td>0.76</td>
+<td>0.71</td>
+<td>0.87</td>
+<td>0.72</td>
+<td>0.87</td>
+<td>0.52</td>
+<td>0.80</td>
+<td>0.72</td>
+<td>0.88</td>
+<td><strong>0.75</strong></td>
+<td><strong>0.89</strong></td>
+</tr>
+<tr>
+<td>AQUA</td>
+<td>AF3</td>
+<td>0.18</td>
+<td>0.82</td>
+<td>0.34</td>
+<td>0.83</td>
+<td>0.34</td>
+<td><strong>0.89</strong></td>
+<td><strong>0.40</strong></td>
+<td>0.81</td>
+<td>0.34</td>
+<td>0.81</td>
+<td>0.34</td>
+</tr>
+<tr>
+<td>Halluc.</td>
+<td>Qwen-7B</td>
+<td>0.89</td>
+<td><strong>0.78</strong></td>
+<td><strong>0.95</strong></td>
+<td>0.78</td>
+<td>0.95</td>
+<td>0.71</td>
+<td>0.95</td>
+<td>0.66</td>
+<td>0.93</td>
+<td>0.69</td>
+<td>0.94</td>
+</tr>
+<tr>
+<td>Halluc.</td>
+<td>Qwen-3B</td>
+<td>0.89</td>
+<td>0.74</td>
+<td>0.95</td>
+<td><strong>0.77</strong></td>
+<td><strong>0.95</strong></td>
+<td>0.55</td>
+<td>0.93</td>
+<td>0.75</td>
+<td>0.95</td>
+<td>0.71</td>
+<td>0.95</td>
+</tr>
+<tr>
+<td>Halluc.</td>
+<td>AF3</td>
+<td>0.80</td>
+<td>0.74</td>
+<td>0.89</td>
+<td>0.75</td>
+<td>0.89</td>
+<td>0.44</td>
+<td>0.83</td>
+<td>0.75</td>
+<td>0.91</td>
+<td><strong>0.78</strong></td>
+<td><strong>0.92</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>关键观察：在可信度基准上，方法的相对排名<strong>变得不稳定</strong>。例如在 AQUA 上，P(True) 对 Qwen-7B 最佳，normalized entropy 对 Qwen-3B 最佳，P(True) 对 Audio Flamingo 3 再次最强。在 Audio-Hallucination 上，对 Qwen 模型语义熵最强，但对 Audio Flamingo 3 则是 normalized entropy 最佳。<strong>从通用推理基准得出的结论不能直接迁移到可信度场景。</strong></p>
+<h3 id="V-B-通用音频理解与推理基准的详细分析"><a href="#V-B-通用音频理解与推理基准的详细分析" class="headerlink" title="V-B. 通用音频理解与推理基准的详细分析"></a>V-B. 通用音频理解与推理基准的详细分析</h3><p>在 MMAU、MMAR、MMSU、SAKURA 上，总体趋势高度一致：semantic entropy、discrete semantic entropy 和 P(True) 普遍优于 predictive entropy 和 normalized entropy。</p>
+<ul>
+<li><strong>MMAU</strong>: semantic entropy 在 Qwen-3B 和 AF3 上 AUROC 最佳，discrete semantic entropy 在 Qwen-7B 上最佳。</li>
+<li><strong>MMSU</strong>: semantic entropy 和 discrete semantic entropy 在所有三个模型上均表现主导。</li>
+<li><strong>SAKURA</strong>: P(True) 在 Qwen-3B 上更具竞争力（AUROC=0.79），semantic entropy 在其余模型上更强。</li>
+<li><strong>MMAR</strong>: 模式稍有混合，但 token 级方法始终最弱。</li>
+</ul>
+<p><strong>MMAR 和 MMSU 的 Perception vs. Reasoning 子任务细分（Table III）：</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Subtask</th>
+<th>Model</th>
+<th>Acc.</th>
+<th>Disc. SE</th>
+<th>Sem. Ent.</th>
+<th>P(True)</th>
+<th>Pred. Ent.</th>
+<th>Norm. Ent.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MMAR</td>
+<td>Perception</td>
+<td>Qwen-7B</td>
+<td>0.56</td>
+<td>0.68</td>
+<td>0.70</td>
+<td><strong>0.73</strong></td>
+<td>0.61</td>
+<td>0.58</td>
+</tr>
+<tr>
+<td>MMAR</td>
+<td>Perception</td>
+<td>Qwen-3B</td>
+<td>0.53</td>
+<td>0.68</td>
+<td>0.69</td>
+<td><strong>0.73</strong></td>
+<td>0.62</td>
+<td>0.59</td>
+</tr>
+<tr>
+<td>MMAR</td>
+<td>Perception</td>
+<td>AF3</td>
+<td>0.51</td>
+<td>0.64</td>
+<td><strong>0.65</strong></td>
+<td>0.63</td>
+<td>0.61</td>
+<td>0.56</td>
+</tr>
+<tr>
+<td>MMAR</td>
+<td>Reasoning</td>
+<td>Qwen-7B</td>
+<td>0.62</td>
+<td><strong>0.74</strong></td>
+<td>0.73</td>
+<td>0.69</td>
+<td>0.59</td>
+<td>0.64</td>
+</tr>
+<tr>
+<td>MMAR</td>
+<td>Reasoning</td>
+<td>Qwen-3B</td>
+<td>0.63</td>
+<td><strong>0.70</strong></td>
+<td>0.69</td>
+<td>0.68</td>
+<td>0.62</td>
+<td>0.62</td>
+</tr>
+<tr>
+<td>MMAR</td>
+<td>Reasoning</td>
+<td>AF3</td>
+<td>0.62</td>
+<td>0.67</td>
+<td><strong>0.69</strong></td>
+<td>0.58</td>
+<td>0.61</td>
+<td>0.61</td>
+</tr>
+<tr>
+<td>MMSU</td>
+<td>Perception</td>
+<td>Qwen-7B</td>
+<td>0.45</td>
+<td><strong>0.73</strong></td>
+<td>0.72</td>
+<td>0.72</td>
+<td>0.58</td>
+<td>0.58</td>
+</tr>
+<tr>
+<td>MMSU</td>
+<td>Perception</td>
+<td>Qwen-3B</td>
+<td>0.45</td>
+<td><strong>0.71</strong></td>
+<td>0.70</td>
+<td>0.69</td>
+<td>0.52</td>
+<td>0.58</td>
+</tr>
+<tr>
+<td>MMSU</td>
+<td>Perception</td>
+<td>AF3</td>
+<td>0.41</td>
+<td>0.64</td>
+<td><strong>0.66</strong></td>
+<td>0.66</td>
+<td>0.48</td>
+<td>0.50</td>
+</tr>
+<tr>
+<td>MMSU</td>
+<td>Reasoning</td>
+<td>Qwen-7B</td>
+<td>0.79</td>
+<td>0.78</td>
+<td>0.78</td>
+<td><strong>0.80</strong></td>
+<td>0.58</td>
+<td>0.67</td>
+</tr>
+<tr>
+<td>MMSU</td>
+<td>Reasoning</td>
+<td>Qwen-3B</td>
+<td>0.77</td>
+<td>0.81</td>
+<td><strong>0.82</strong></td>
+<td>0.80</td>
+<td>0.56</td>
+<td>0.67</td>
+</tr>
+<tr>
+<td>MMSU</td>
+<td>Reasoning</td>
+<td>AF3</td>
+<td>0.69</td>
+<td>0.70</td>
+<td><strong>0.75</strong></td>
+<td>0.69</td>
+<td>0.66</td>
+<td>0.62</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>（表中仅列出 AUROC）</p>
+<p>关键发现：</p>
+<ul>
+<li>在 MMAR-Perception 上，P(True) 对 Qwen 模型特别有竞争力。</li>
+<li>在 MMAR-Reasoning 上，discrete semantic entropy 和 semantic entropy 变得相对更强。</li>
+<li>在 MMSU-Reasoning 上，P(True) 对 Qwen-7B 特别强（0.80）。</li>
+<li>这表明不确定性估计行为<strong>不仅取决于基准整体，还取决于任务是更偏感知驱动还是推理驱动</strong>。</li>
+</ul>
+<h3 id="V-C-可信度导向基准的详细分析"><a href="#V-C-可信度导向基准的详细分析" class="headerlink" title="V-C. 可信度导向基准的详细分析"></a>V-C. 可信度导向基准的详细分析</h3><p><strong>AQUA-Bench</strong>：不确定性方法排名在模型间变化显著。</p>
+<ul>
+<li>Qwen-7B: P(True) AUROC 最佳（0.79）——显式自验证对检测不可回答/无支持预测特别有效。</li>
+<li>Qwen-3B: normalized entropy AUROC 最佳（0.75），predictive entropy 也有竞争力（0.72）。</li>
+<li>AF3: P(True) 再次最强（0.89），但模型整体准确率仅 0.18。</li>
+</ul>
+<p><strong>Audio-Hallucination</strong>：模式更稳定但仍存在模型依赖性。</p>
+<ul>
+<li>Qwen 模型: semantic entropy 和 discrete semantic entropy AUROC 最强。</li>
+<li>AF3: normalized entropy 最佳（0.78），predictive entropy 也有竞争力。</li>
+</ul>
+<p>总体而言，可信度基准揭示了比通用推理基准<strong>更加异质的图景</strong>——没有单一的一致性主导方法，而是呈现出更强的基准和模型依赖变化。这本身就是一个重要发现：<strong>不确定性估计在可信度导向的音频任务中可能本质上更加困难。</strong></p>
+<h3 id="V-D-应用：基于不确定性的自适应推理"><a href="#V-D-应用：基于不确定性的自适应推理" class="headerlink" title="V-D. 应用：基于不确定性的自适应推理"></a>V-D. 应用：基于不确定性的自适应推理</h3><p>超越将不确定性作为诊断信号，作者进一步探索其用于改善推理时决策。核心动机是并非所有样本都需要相同的推理力度——部分可通过直接推理正确回答，其余可能需要更审慎的推理过程。</p>
+<p>自适应推理定义为：</p>
+<script type="math/tex; mode=display">\hat{y}_{\text{adaptive}}(x) = \begin{cases} \hat{y}_{\text{reason}}(x), & \text{if } u(x) > \tau \\ \hat{y}_{\text{direct}}(x), & \text{otherwise} \end{cases}</script><p>其中 $u(x)$ 为不确定性分数，$\tau = 0.25$ 为预定义阈值。推理模式采用 <strong>caption-then-reason</strong> 策略：先提示模型描述音频内容，再基于描述逐步回答问题。</p>
+<p><img src="/images/paper_figs/pareto-figure.png" srcset="/img/loading.gif" lazyload alt="Cost–accuracy Pareto frontier"><br><em>图 1：四个基准上 Reasoning 与 Adaptive 推理的成本-准确率 Pareto 前沿。空心方块为 Reasoning（100% token 成本），实心圆为 Adaptive（降低成本）。虚线箭头表示从全推理到自适应推理的转移。灰色虚线为 Pareto 前沿。</em></p>
+<p><strong>自适应推理结果（Table IV）：</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Model</th>
+<th>Direct</th>
+<th>Reasoning</th>
+<th>Adaptive (Token Cost)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MMAU</td>
+<td>Qwen-7B</td>
+<td>0.71</td>
+<td>0.75</td>
+<td><strong>0.76</strong> (41%)</td>
+</tr>
+<tr>
+<td>MMAU</td>
+<td>Qwen-3B</td>
+<td>0.73</td>
+<td>0.73</td>
+<td><strong>0.74</strong> (43%)</td>
+</tr>
+<tr>
+<td>MMAU</td>
+<td>AF3</td>
+<td><strong>0.75</strong></td>
+<td>0.65</td>
+<td>0.74 (24%)</td>
+</tr>
+<tr>
+<td>MMAR</td>
+<td>Qwen-7B</td>
+<td><strong>0.59</strong></td>
+<td>0.54</td>
+<td>0.58 (61%)</td>
+</tr>
+<tr>
+<td>MMAR</td>
+<td>Qwen-3B</td>
+<td><strong>0.58</strong></td>
+<td>0.53</td>
+<td>0.57 (64%)</td>
+</tr>
+<tr>
+<td>MMAR</td>
+<td>AF3</td>
+<td><strong>0.56</strong></td>
+<td>0.47</td>
+<td>0.53 (47%)</td>
+</tr>
+<tr>
+<td>MMSU</td>
+<td>Qwen-7B</td>
+<td>0.62</td>
+<td><strong>0.63</strong></td>
+<td>0.62 (52%)</td>
+</tr>
+<tr>
+<td>MMSU</td>
+<td>Qwen-3B</td>
+<td>0.60</td>
+<td>0.61</td>
+<td><strong>0.62</strong> (51%)</td>
+</tr>
+<tr>
+<td>MMSU</td>
+<td>AF3</td>
+<td><strong>0.56</strong></td>
+<td>0.54</td>
+<td>0.56 (54%)</td>
+</tr>
+<tr>
+<td>SAKURA</td>
+<td>Qwen-7B</td>
+<td>0.70</td>
+<td><strong>0.77</strong></td>
+<td>0.75 (56%)</td>
+</tr>
+<tr>
+<td>SAKURA</td>
+<td>Qwen-3B</td>
+<td>0.69</td>
+<td><strong>0.73</strong></td>
+<td>0.73 (56%)</td>
+</tr>
+<tr>
+<td>SAKURA</td>
+<td>AF3</td>
+<td>0.63</td>
+<td><strong>0.70</strong></td>
+<td>0.70 (61%)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>核心发现：</p>
+<ul>
+<li><strong>当推理模式本身优于直接推理时</strong>（如 MMAU 和 SAKURA 的 Qwen 模型），自适应推理有效——通常匹配或进一步改善最佳策略，同时仅使用全推理 24%–64% 的 token 成本。</li>
+<li><strong>当推理模式无益时</strong>（如 MMAR 上推理大幅降低所有模型性能），自适应推理相应无法改善直接推理。</li>
+<li><strong>关键结论：不确定性本身不足以保证更好的路由决策——自适应推理的有效性取决于备选推理模式是否对不确定样本确实有用。</strong></li>
+</ul>
+<hr>
+<h2 id="VI-Discussion-and-Future-Works"><a href="#VI-Discussion-and-Future-Works" class="headerlink" title="VI. Discussion and Future Works"></a>VI. Discussion and Future Works</h2><p>作者讨论了不确定性估计超越基准测试的更广泛价值：</p>
+<ol>
+<li><strong>推理时决策</strong>：不确定性可作为路由信号，决定输入应由直接推理处理还是更昂贵的推理模式，或用作弃权、回退到外部工具、升级到人工审核的阈值。</li>
+<li><strong>训练信号</strong>：不确定性估计可用于优先处理困难或模糊样本、重新加权训练实例、或在自训练和强化学习管道中指导数据选择。</li>
+<li><strong>局限性认知</strong>：不确定性不应被视为普遍可靠的解决方案。其价值取决于任务、模型和下游应用。ALLMs 中的不确定性估计可能受到模态特定因素（如感知模糊性、弱音频锚定、语言先验）的影响。</li>
+</ol>
+<hr>
+<h2 id="VII-Conclusion"><a href="#VII-Conclusion" class="headerlink" title="VII. Conclusion"></a>VII. Conclusion</h2><p>本文呈现了首个系统性的 ALLMs 不确定性估计研究。核心发现：</p>
+<ol>
+<li>语义级和验证型方法通常优于 token 级基线，但此优势在通用推理任务上最为稳定。</li>
+<li>在可信度导向基准上，不确定性估计变得更加模型和任务依赖，表明这些场景构成了值得专门研究的根本不同挑战。</li>
+</ol>
+<hr>
+<h2 id="VIII-Limitations"><a href="#VIII-Limitations" class="headerlink" title="VIII. Limitations"></a>VIII. Limitations</h2><ol>
+<li><strong>受限的答案空间</strong>：主要评估正确性可明确定义的场景，在开放式音频语言任务（自由形式问答、描述、对话）上的泛化仍为未知。</li>
+<li><strong>方法继承自文本 LLM</strong>：未显式建模源自音频感知本身的不确定性。视觉-语言领域已有针对视觉感知的模态感知不确定性方法，音频-语言的类似工作是有前景的方向。</li>
+<li><strong>未探索内部表征信号</strong>：如中间层注意力模式或隐藏状态几何结构可能捕获 token 级方法无法表面化的音频特定模糊性。</li>
+<li><strong>自适应推理策略简单</strong>：仅使用基于阈值的路由和固定备选推理模式。更复杂的决策框架（学习的路由策略、级联推理管道、成本感知选择机制）可进一步改善成本与可靠性的权衡。</li>
+</ol>
+<hr>
+<h2 id="附录：Capability-Calibration-初步分析"><a href="#附录：Capability-Calibration-初步分析" class="headerlink" title="附录：Capability Calibration 初步分析"></a>附录：Capability Calibration 初步分析</h2><p>除主实验中的响应校准（response calibration）外，作者还在附录中对 Qwen2.5-Omni 7B/3B 进行了<strong>能力校准</strong>（capability calibration）的初步分析——即模型能否在生成答案之前预判自己是否会回答正确。</p>
+<h3 id="方法"><a href="#方法" class="headerlink" title="方法"></a>方法</h3><p>使用类似 P(True) 的自评估提示（P(IK)：”I Know”的概率），计算模型预测置信度 $c(x)$ 与采样经验准确率 $\hat{a}(x)$ 的对齐程度。评估指标为 ECE（Expected Calibration Error）和 Brier Score。</p>
+<h3 id="结果（Table-IX）"><a href="#结果（Table-IX）" class="headerlink" title="结果（Table IX）"></a>结果（Table IX）</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Benchmark</th>
+<th>Category</th>
+<th>7B ECE</th>
+<th>7B Brier</th>
+<th>3B ECE</th>
+<th>3B Brier</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MMAU</td>
+<td>Overall</td>
+<td>0.054</td>
+<td>0.112</td>
+<td>0.104</td>
+<td>0.114</td>
+</tr>
+<tr>
+<td>MMAR</td>
+<td>Overall</td>
+<td>0.114</td>
+<td>0.124</td>
+<td>0.164</td>
+<td>0.118</td>
+</tr>
+<tr>
+<td>MMSU</td>
+<td>Overall</td>
+<td>0.108</td>
+<td>0.117</td>
+<td><strong>0.044</strong></td>
+<td>0.110</td>
+</tr>
+<tr>
+<td>SAKURA</td>
+<td>Overall</td>
+<td>0.077</td>
+<td>0.110</td>
+<td>0.092</td>
+<td>0.123</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>关键发现：</p>
+<ul>
+<li>模型大小不能一致性地改善校准质量。</li>
+<li>MMSU-Perception 的校准误差特别高（7B ECE=0.212），而 MMSU-Reasoning 则良好（7B ECE=0.041）——<strong>模型系统性高估其感知能力，同时在推理任务上维持更准确的自我评估</strong>。</li>
+<li>SAKURA-Emotion 校准误差最高（ECE=0.227），与主观/感知模糊音频属性对模型预测和自我校准均构成更大挑战的直觉一致。</li>
+<li>大多数场景的可靠性图显示高置信区间有<strong>过度自信</strong>倾向。</li>
+</ul>
+<p><img src="/images/paper_figs/mmau-capability-calibration.png" srcset="/img/loading.gif" lazyload alt="MMAU 7B Reliability Diagrams"><br><em>图 2：Qwen2.5-Omni-7B 在 MMAU 上的可靠性图（overall 及 sound/speech/music 三个领域）。</em></p>
+<p><img src="/images/paper_figs/mmau-capability-calibration-3B.png" srcset="/img/loading.gif" lazyload alt="MMAU 3B Reliability Diagrams"><br><em>图 3：Qwen2.5-Omni-3B 在 MMAU 上的可靠性图。</em></p>
+<p><img src="/images/paper_figs/mmar-capability-calibration.png" srcset="/img/loading.gif" lazyload alt="MMAR 7B Reliability Diagrams"><br><em>图 4：Qwen2.5-Omni-7B 在 MMAR 上的可靠性图（overall 及 Perception/Semantic 子任务）。</em></p>
+<p><img src="/images/paper_figs/mmar-capability-calibration-3B.png" srcset="/img/loading.gif" lazyload alt="MMAR 3B Reliability Diagrams"><br><em>图 5：Qwen2.5-Omni-3B 在 MMAR 上的可靠性图。</em></p>
+<p><img src="/images/paper_figs/mmsu-capability-calibration.png" srcset="/img/loading.gif" lazyload alt="MMSU 7B Reliability Diagrams"><br><em>图 6：Qwen2.5-Omni-7B 在 MMSU 上的可靠性图（overall 及 Perception/Reasoning 子任务）。</em></p>
+<p><img src="/images/paper_figs/mmsu-capability-calibration-3B.png" srcset="/img/loading.gif" lazyload alt="MMSU 3B Reliability Diagrams"><br><em>图 7：Qwen2.5-Omni-3B 在 MMSU 上的可靠性图。</em></p>
+<p><img src="/images/paper_figs/sakura-capability-calibration.png" srcset="/img/loading.gif" lazyload alt="SAKURA 7B Reliability Diagrams"><br><em>图 8：Qwen2.5-Omni-7B 在 SAKURA 上的可靠性图（overall 及 animal/emotion/language/gender 四个 track）。</em></p>
+<p><img src="/images/paper_figs/sakura-capability-calibration-3B.png" srcset="/img/loading.gif" lazyload alt="SAKURA 3B Reliability Diagrams"><br><em>图 9：Qwen2.5-Omni-3B 在 SAKURA 上的可靠性图。</em></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/Audio-LLM/" class="print-no-link">#Audio-LLM</a>
+      
+        <a href="/tags/Uncertainty-Estimation/" class="print-no-link">#Uncertainty Estimation</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>An Empirical Study of Uncertainty Estimation for Audio-Aware Large Language Models</div>
+      <div>https://smallsmartao.github.io/2026/04/29/uncertainty-estimation-audio-aware-llm/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年4月29日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年4月29日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/04/29/Step-Audio-R1-5-Technical-Report/" title="Step-Audio-R1.5 Technical Report">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Step-Audio-R1.5 Technical Report</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/04/24/jackpot-investment-strategy/" title="奖池模式：一套适合工薪族的 ETF 定投进化策略">
+                        <span class="hidden-mobile">奖池模式：一套适合工薪族的 ETF 定投进化策略</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

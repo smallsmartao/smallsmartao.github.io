@@ -1,0 +1,976 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文链接：arXiv 2604.25719机构：StepFun（阶跃星辰）、南洋理工大学、新南威尔士大学、上海交通大学关键词：Audio Language Model, Chain-of-Thought Reasoning, RLHF, Verifiable Reward Trap, Multi-turn Spoken Dialogue  为什么需要这篇工作：可验证奖励陷阱 (Verifiabl">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Step-Audio-R1.5 Technical Report">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/04/29/Step-Audio-R1-5-Technical-Report/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文链接：arXiv 2604.25719机构：StepFun（阶跃星辰）、南洋理工大学、新南威尔士大学、上海交通大学关键词：Audio Language Model, Chain-of-Thought Reasoning, RLHF, Verifiable Reward Trap, Multi-turn Spoken Dialogue  为什么需要这篇工作：可验证奖励陷阱 (Verifiabl">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/smallao__--ar_169_--stylize_400_--niji_7_1ac1612a-33b2-4dbc-82be-c10196083f69_1.png">
+<meta property="article:published_time" content="2026-04-29T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-04-29T02:12:05.315Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="Audio-LLM">
+<meta property="article:tag" content="RLHF">
+<meta property="article:tag" content="Speech Reasoning">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/smallao__--ar_169_--stylize_400_--niji_7_1ac1612a-33b2-4dbc-82be-c10196083f69_1.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Step-Audio-R1.5 Technical Report - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/smallao__--ar_169_--stylize_400_--niji_7_1ac1612a-33b2-4dbc-82be-c10196083f69_1.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Step-Audio-R1.5 Technical Report"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-04-29 10:00" pubdate>
+          2026年4月29日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          31 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Step-Audio-R1.5 Technical Report</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年4月29日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>论文链接：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2604.25719">arXiv 2604.25719</a><br>机构：StepFun（阶跃星辰）、南洋理工大学、新南威尔士大学、上海交通大学<br>关键词：Audio Language Model, Chain-of-Thought Reasoning, RLHF, Verifiable Reward Trap, Multi-turn Spoken Dialogue</p>
+</blockquote>
+<h2 id="为什么需要这篇工作：可验证奖励陷阱-Verifiable-Reward-Trap"><a href="#为什么需要这篇工作：可验证奖励陷阱-Verifiable-Reward-Trap" class="headerlink" title="为什么需要这篇工作：可验证奖励陷阱 (Verifiable Reward Trap)"></a>为什么需要这篇工作：可验证奖励陷阱 (Verifiable Reward Trap)</h2><p>近期，大型音频语言模型（Large Audio Language Models）开始将链式思维（Chain-of-Thought, CoT）推理能力扩展至听觉领域。驱动这一进展的主流训练范式是<strong>可验证奖励的强化学习（Reinforcement Learning with Verified Rewards, RLVR）</strong>——该范式源自 DeepSeek-R1 等文本推理模型的成功经验，使用二值化的、自动可验证的正确性信号来强化扩展推理链。</p>
+<p>然而，本文的核心洞察在于：RLVR 在音频领域存在一个<strong>结构性缺陷</strong>。音频输入是时间连续的、富含韵律与情感信息的信号流，而 RLVR 的优化目标将其最终压缩为一个离散标签（类别、数字或简短事实字符串）。奖励模型仅能奖励模型产出该特定标签，对韵律自然度、情感连续性和对话连贯性则<strong>结构性地失明</strong>。</p>
+<p>作者将此问题定义为<strong>“可验证奖励陷阱”（Verifiable Reward Trap）</strong>：优化目标严格选择孤立的答案准确性，而忽略决定真实部署中用户体验的细微品质。其经验性后果一致且可复现——在持续的 RLVR 训练下，模型在保留测试集上的准确率不断提升，但交互体验不断退化：回复变得简短、机械、情感平淡。在多轮语音对话中，模型退化为一台”应答机器”——技术上准确，但体验上空洞。</p>
+<p>这一矛盾的根源在于 <strong>RLVR 优化的是”说什么”（what to say），而用户关心的是”怎么说”（how to say it）</strong>。事实正确性是必要条件，但不是高质量音频交互的充分条件。</p>
+<p>Step-Audio-R1.5 正是为弥合这一鸿沟而提出的：在 RLVR 基础上引入<strong>来自人类反馈的强化学习（RLHF）</strong>，训练一个基于整体人类偏好判断的奖励模型，将正确性、流利度和情感共鸣整合为统一的监督信号，使策略能够逃离奖励陷阱，优化整体回复质量而非孤立的事实准确性。</p>
+<h2 id="1-引言-Introduction"><a href="#1-引言-Introduction" class="headerlink" title="1 引言 (Introduction)"></a>1 引言 (Introduction)</h2><p>链式思维推理显著推进了大型语言模型的能力。通过将复杂问题分解为显式的中间步骤，OpenAI o1 和 DeepSeek-R1 等模型在数学奥林匹克、竞赛编程和科学探索中达到了人类水平的表现。RLVR 是其核心——使用二值化的自动可检验正确性信号来强化推理链，从而绕过了对学习奖励模型的需求。</p>
+<p>将这一方案移植到听觉领域的努力正在加速：Audio-Reasoner、Omni-R1、Step-Audio-R1 等模型将 CoT 推理应用于语音、音乐和环境声音，早期 RLVR 训练的变体在语音问答、声学场景标注等客观任务上取得了强劲结果。然而，这些基准共享一个<strong>关键结构局限</strong>：时间扩展的音频输入最终被归约为单个离散标签。RLVR 仅能奖励产出该标签的行为，使其对韵律自然度、情感连续性和对话连贯性<strong>结构性失明</strong>。</p>
+<p>为弥合机械客观验证与真正感官共情之间的差距，本文引入 Step-Audio-R1.5，标志着音频推理从 RLVR 到 RLHF 的<strong>范式转移</strong>。全面评估表明，Step-Audio-R1.5 不仅保持了稳健的分析推理能力，还深刻改善了交互体验，重新定义了深度沉浸式长轮次语音对话的边界。据作者所知，Step-Audio-R1.5 是<strong>首个系统性整合 RLHF 的音频推理模型</strong>。</p>
+<h2 id="2-架构-Architecture"><a href="#2-架构-Architecture" class="headerlink" title="2 架构 (Architecture)"></a>2 架构 (Architecture)</h2><p>Step-Audio-R1.5 基于 Step-Audio-R1 的结构基础，采用专为扩展音频推理设计的精简架构，包含三个主要组件：</p>
+<h3 id="音频编码器-Audio-Encoder"><a href="#音频编码器-Audio-Encoder" class="headerlink" title="音频编码器 (Audio Encoder)"></a>音频编码器 (Audio Encoder)</h3><p>声学前端采用 <strong>Qwen2 音频编码器</strong>，该编码器在多样化的语音与音频理解任务上经过大规模预训练。编码器以 <strong>25 Hz</strong> 的帧率运行，并在整个训练流程中<strong>严格冻结</strong>，以保持其稳健的听觉感知能力。</p>
+<h3 id="音频适配器-Audio-Adaptor"><a href="#音频适配器-Audio-Adaptor" class="headerlink" title="音频适配器 (Audio Adaptor)"></a>音频适配器 (Audio Adaptor)</h3><p>为连接连续声学模态与离散文本空间，音频适配器施加 <strong>2 倍时间降采样</strong>，将潜在表征有效压缩至 <strong>12.5 Hz</strong>。这一设计缓解了复杂多轮交互中的<strong>序列长度爆炸</strong>问题。</p>
+<h3 id="LLM-解码器-LLM-Decoder"><a href="#LLM-解码器-LLM-Decoder" class="headerlink" title="LLM 解码器 (LLM Decoder)"></a>LLM 解码器 (LLM Decoder)</h3><p>核心推理引擎为基于 <strong>Qwen2.5 32B</strong> 初始化的 LLM 解码器。它直接接收降采样后的音频特征，生成纯文本输出。为支持链式思维推理，生成过程被<strong>结构性分区</strong>：解码器首先被提示合成显式的中间推理轨迹（reasoning traces），随后自回归生成最终回复。这种将内部分析与外部回复解耦的设计至关重要——它构成了无缝整合 RLHF 的架构基础。</p>
+<h2 id="3-训练方法-Training-Method"><a href="#3-训练方法-Training-Method" class="headerlink" title="3 训练方法 (Training Method)"></a>3 训练方法 (Training Method)</h2><h3 id="3-1-以音频为中心的中间训练-Audio-Centric-Mid-Training"><a href="#3-1-以音频为中心的中间训练-Audio-Centric-Mid-Training" class="headerlink" title="3.1 以音频为中心的中间训练 (Audio-Centric Mid-Training)"></a>3.1 以音频为中心的中间训练 (Audio-Centric Mid-Training)</h3><p>给定基础音频-语言模型 $\pi_{\theta_0}$，在后训练对齐之前执行以音频为中心的中间训练阶段，以强化音频理解、音频驱动推理和通用审慎推理能力。训练目标在统一的监督目标下结合了音频驱动推理数据与辅助纯文本推理数据：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{mid}} = \mathbb{E}_{(x,q,r,y) \sim \mathcal{D}_{\text{audio}}} [\log \pi_\theta(r, y \mid x, q)] + \mathbb{E}_{(q,r,y) \sim \mathcal{D}_{\text{text}}} [\log \pi_\theta(r, y \mid q)]</script><p>其中：</p>
+<ul>
+<li>$(x, q, r, y)$：音频驱动样本，$x$ 为输入音频，$q$ 为关联文本上下文，$r$ 为推理轨迹，$y$ 为回复</li>
+<li>$(q, r, y)$：纯文本样本，$q$ 为上下文，$r$ 为推理轨迹，$y$ 为回复</li>
+</ul>
+<p>音频驱动监督取自多样化的高质量音频中心数据，使模型建立广泛的感知覆盖。</p>
+<h3 id="3-2-冷启动监督微调-Cold-start-Supervised-Fine-tuning"><a href="#3-2-冷启动监督微调-Cold-start-Supervised-Fine-tuning" class="headerlink" title="3.2 冷启动监督微调 (Cold-start Supervised Fine-tuning)"></a>3.2 冷启动监督微调 (Cold-start Supervised Fine-tuning)</h3><p>中间训练虽然提升了音频领域知识、感知能力和通用推理能力，但并未直接优化模型的高质量多轮交互表现。强音频理解能力本身不足以确保自然、连贯和对指令敏感的对话行为。</p>
+<p>冷启动 SFT 阶段为交互导向行为提供监督初始化，而非进一步扩展领域知识。该阶段着重强调交互行为的四个方面：</p>
+<ol>
+<li><strong>多轮对话连续性</strong>：在多轮对话中维持上下文和用户约束的能力</li>
+<li><strong>指令遵循</strong>：在用户指定的内容、格式和风格要求下一致响应的能力</li>
+<li><strong>回复自然度</strong>：产出连贯且对话适当回复的能力</li>
+<li><strong>交互感知</strong>：对后续问题、澄清请求、打断和用户侧修改的鲁棒响应能力</li>
+</ol>
+<p>冷启动 SFT 基于富含指令的多轮对话数据构建，引导模型以用户导向的方式组织回复，而非作为孤立的任务输出。该阶段为后续 RLHF 阶段提供更强的对话初始化，使偏好优化能聚焦于精炼整体交互质量，而非纠正基础对话行为。</p>
+<h3 id="3-3-基于评分准则的生成式奖励模型-RLHF-RLHF-with-Rubric-based-Generated-Reward-Model"><a href="#3-3-基于评分准则的生成式奖励模型-RLHF-RLHF-with-Rubric-based-Generated-Reward-Model" class="headerlink" title="3.3 基于评分准则的生成式奖励模型 RLHF (RLHF with Rubric-based Generated Reward Model)"></a>3.3 基于评分准则的生成式奖励模型 RLHF (RLHF with Rubric-based Generated Reward Model)</h3><p>多轮语音交互呈现<strong>高度异质的优化目标</strong>。部分行为由显式且局部化的约束治理（内容要求、格式规范、人设设定、跨轮次指令保持），其他行为本质上由偏好驱动且仅弱可规定（对话自然度、后续交互下的连贯性、语调适当性、整体对话流利度）。这些目标不仅形式不同，评估方式也应不同。</p>
+<p>为适应这种异质性，本文采用基于生成式奖励模型的<strong>统一 RLHF 框架</strong>，联合支持评分准则引导评估与常规偏好比较。</p>
+<p><strong>形式化定义</strong>：设 $H_{1:T} = {h_t}_{t=1}^T$ 为截至第 $T$ 轮的多轮对话历史。给定 $H_{1:T}$、策略回复 $y$、参考回复 $y_{\text{ref}}$ 和可选评分准则 $c$，生成式奖励模型产出相对质量判断：</p>
+<script type="math/tex; mode=display">g = R(H_{1:T}, y, y_{\text{ref}}; c), \quad c \in \mathcal{C} \cup \{\varnothing\}</script><p>其中 $c = \varnothing$ 对应常规成对偏好比较，$c \neq \varnothing$ 表示准则条件下的评估。判断 $g$ 随后映射为标量奖励：</p>
+<script type="math/tex; mode=display">r = \phi(g)</script><p>策略通过最大化 PPO 风格目标进行优化：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{RLHF}}(\theta) = \mathbb{E}_t \left[ \min\left(\rho_t(\theta) \hat{A}_t, \text{clip}(\rho_t(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t \right) \right] - \beta D_{\text{KL}}(\pi_\theta(\cdot \mid H_{1:T}, c) \| \pi_{\text{ref}}(\cdot \mid H_{1:T}, c))</script><p>其中：</p>
+<script type="math/tex; mode=display">\rho_t(\theta) = \frac{\pi_\theta(y_t \mid H_{1:T}, c)}{\pi_{\theta_{\text{old}}}(y_t \mid H_{1:T}, c)}</script><p>$\hat{A}_t$ 为由生成式奖励估计的优势函数，$\pi_{\text{ref}}$ 为用于正则化的参考策略。</p>
+<p><strong>关键设计决策</strong>：两种形式的监督（准则引导评估和偏好比较）<strong>联合优化</strong>而非分阶段训练。原因在于两者的优化方向可能存在实质性差异；经验上，解耦训练倾向于引发非平凡的遗忘——后续在某一交互模式上的优化会退化在另一模式中习得的行为。联合优化提供了更稳定的路径，在单一策略内同时对齐指令敏感和偏好敏感两方面的多轮对话能力。</p>
+<p><strong>相对比较机制</strong>：奖励模型不对每个回复赋予绝对质量分数，而是在相同多轮对话上下文下将策略回复与参考回复进行比较，根据相对质量产出偏好判断。这种<strong>相对奖励公式</strong>更适合语音对话对齐——交互质量的许多重要方面难以用单一绝对分数校准。通过将奖励表示为具有多个序数等级的细粒度相对偏好信号，模型能够捕捉超越二元区分的不同程度的回复质量，产出更具判别性的策略优化监督信号。</p>
+<h2 id="4-评估-Evaluation"><a href="#4-评估-Evaluation" class="headerlink" title="4 评估 (Evaluation)"></a>4 评估 (Evaluation)</h2><h3 id="4-1-基准测试-Benchmarks"><a href="#4-1-基准测试-Benchmarks" class="headerlink" title="4.1 基准测试 (Benchmarks)"></a>4.1 基准测试 (Benchmarks)</h3><p>为全面评估 Step-Audio-R1.5 的推理和感知能力，本文采用一组语音到文本（Speech-to-Text, S2T）基准测试。S2T 评估通过要求文本回复来隔离模型理解和推理声学信号的能力。</p>
+<p><strong>AudioMultiChallenge (Audio MC)</strong>：多轮基准，评估语音对话系统在自然人类交互模式下的表现，包括打断、犹豫和话语中修正。测量四个维度：推理记忆（Inference Memory）、指令保持（Instruction Retention）、自我连贯（Self Coherence）和语音编辑（Voice Editing）。</p>
+<p><strong>Step-Caption</strong>：新提出的基准，评估模型的细粒度音频描述能力。测试集包含 907 个精心策划的音频样本，来源于 YouTube 和 Bilibili，涵盖中英文的单说话人和多说话人场景。每个样本由人类专家在 16 个维度上标注，包括性别、年龄、语速、节奏、音高、音色、情感、口音等副语言特征。模型需生成全面描述说话人声学特征的自然语言段落。</p>
+<p><strong>Step-Dialogue-Understanding (Step-DU)</strong>：评估模型在对话上下文中回答关于副语言特征的特定问题的能力。测试集包含 87 个多样说话人录制的样本，每个样本直接询问自身声学特征（年龄、性别、语速或节奏）。模型需仅从声学信号推断正确答案。</p>
+<p><strong>StepEval-Audio-Paralinguistic (Step-SPQA)</strong>：最初作为 AQAA（Audio Query–Audio Answer）基准在 Step-Audio 2 中引入，本文将其转换为 AQTA（Audio Query–Text Answer）格式以确保跨模型的一致文本评估。</p>
+<p><strong>其他公开基准</strong>：MMSU 和 MMAU（专家级音频理解与推理）、Big Bench Audio（复杂多步逻辑推理）、Spoken MQA（口述数学问题推理）。</p>
+<h3 id="4-2-实验结果-Experimental-Results"><a href="#4-2-实验结果-Experimental-Results" class="headerlink" title="4.2 实验结果 (Experimental Results)"></a>4.2 实验结果 (Experimental Results)</h3><p>为确保公平一致的比较，所有基线模型均通过统一评估框架调用官方 API 评估，而非依赖已发布的数值。基线模型包括 Gemini 系列（Gemini 3 Flash、Gemini 3 Pro）和 Qwen 系列（qwen3.5-omni-flash、qwen3.5-omni-plus）。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Avg.</th>
+<th>Audio MC</th>
+<th>Big Bench</th>
+<th>MMSU</th>
+<th>MMAU</th>
+<th>Spoken MQA</th>
+<th>Step-Caption</th>
+<th>Step-DU</th>
+<th>Step-SPQA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gemini 3 Flash</td>
+<td>77.56</td>
+<td>56.42</td>
+<td>96.80</td>
+<td>76.64</td>
+<td>75.90</td>
+<td>95.37</td>
+<td>65.12</td>
+<td>80.46</td>
+<td>73.80</td>
+</tr>
+<tr>
+<td>Gemini 3 Pro</td>
+<td><strong>79.67</strong></td>
+<td><strong>66.37</strong></td>
+<td><strong>99.40</strong></td>
+<td><strong>83.70</strong></td>
+<td><strong>79.80</strong></td>
+<td><strong>96.56</strong></td>
+<td><strong>75.55</strong></td>
+<td>72.41</td>
+<td>63.60</td>
+</tr>
+<tr>
+<td>qwen3.5-omni-flash</td>
+<td>70.55</td>
+<td>25.44</td>
+<td>59.59</td>
+<td>72.50</td>
+<td>77.20</td>
+<td>93.39</td>
+<td>73.57</td>
+<td>83.91</td>
+<td>78.80</td>
+</tr>
+<tr>
+<td>qwen3.5-omni-plus</td>
+<td>75.77</td>
+<td>39.38</td>
+<td>73.03</td>
+<td>82.74</td>
+<td>79.60</td>
+<td>96.03</td>
+<td>74.93</td>
+<td>85.63</td>
+<td>74.80</td>
+</tr>
+<tr>
+<td>Step-Audio-R1</td>
+<td>72.50</td>
+<td>24.61</td>
+<td>98.29</td>
+<td>75.68</td>
+<td>77.00</td>
+<td>95.06</td>
+<td>70.60</td>
+<td>64.37</td>
+<td>74.36</td>
+</tr>
+<tr>
+<td>Step-Audio-R1.5</td>
+<td>77.97</td>
+<td>41.15</td>
+<td>98.30</td>
+<td>79.03</td>
+<td>77.90</td>
+<td>93.74</td>
+<td>71.48</td>
+<td><strong>82.76</strong></td>
+<td><strong>79.40</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><img src="/images/paper_figs/step_audio_r1.5/rank.png" srcset="/img/loading.gif" lazyload alt="Figure 1: 跨语音到文本基准的综合性能。平均分代表每个模型在 8 个不同推理与感知基准上的整体能力。Step-Audio-R1.5 显著优于其前身，并与 Gemini 3 Pro 等最先进商业系统保持高度竞争力。"></p>
+<p><strong>核心发现</strong>：</p>
+<ul>
+<li>Step-Audio-R1.5 以 77.97 的平均分位列所有评估模型中<strong>第二位</strong>，仅 32B 参数即与大规模商业模型竞争</li>
+<li>在 Audio MC 上取得 41.15，仅落后于 Gemini 系列模型，表明其多轮交互能力的显著提升</li>
+<li>相较于前身 Step-Audio-R1（72.50），平均分提升 <strong>5.47 分</strong></li>
+<li>提升主要来自需要多轮和长上下文理解的复杂任务（Audio MC 从 24.61 → 41.15）</li>
+<li>感知基准同样呈现广泛改善：Step-DU 提升 <strong>+18.39</strong>，Step-SPQA 提升 <strong>+5.04</strong>，Step-Caption 提升 +0.88</li>
+<li>这些结果共同验证了架构与训练流程的有效性</li>
+</ul>
+<h2 id="5-结论-Conclusion"><a href="#5-结论-Conclusion" class="headerlink" title="5 结论 (Conclusion)"></a>5 结论 (Conclusion)</h2><p>早期音频推理模型中观察到的机械、情感平淡的回复<strong>并非</strong>链式思维过程的固有局限，而是可验证奖励陷阱的产物。本工作证明，通过 RLVR 对孤立语义正确性的重度优化会使模型对真实人类交互的多维细微差别结构性失明。</p>
+<p>Step-Audio-R1.5 通过系统性整合 RLHF 打破了这一权衡，利用解耦的生成架构和准则引导的偏好奖励模型。通过将优化目标从单纯的”说什么”重新对齐为整体的”怎么说”，Step-Audio-R1.5 在保持分析严谨性的同时实质性地改善了多轮对话质量。</p>
+<p>本工作为音频语言模型的演进提供了一个关键洞察：随着声学理解的成熟，人工音频智能的下一前沿不在于将连续感官输入还原为离散事实谜题，而在于将模型行为与自然语音对话的丰富、共情动态对齐。</p>
+<h2 id="6-贡献者-Contributors"><a href="#6-贡献者-Contributors" class="headerlink" title="6 贡献者 (Contributors)"></a>6 贡献者 (Contributors)</h2><p><strong>核心贡献者</strong>：Yuxin Zhang（上海交通大学/StepFun）, Xiangyu Tony Zhang（UNSW）, Daijiao Liu（StepFun/UNSW）, Fei Tian（StepFun, 通讯作者/项目负责人）, Yayue Deng, Jun Chen, Qingjian Lin</p>
+<p><strong>贡献者</strong>：Haoyang Zhang, Yuxin Li, Jinglan Gong, Yechang Huang, Liang Zhao, Chengyuan Yao, Hexin Liu, Eng Siong Chng（NTU）, Xuerui Yang, Gang Yu, Xiangyu Zhang, Daxin Jiang</p>
+<p><strong>机构</strong>：StepFun（阶跃星辰）、南洋理工大学、新南威尔士大学、上海交通大学</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/Audio-LLM/" class="print-no-link">#Audio-LLM</a>
+      
+        <a href="/tags/RLHF/" class="print-no-link">#RLHF</a>
+      
+        <a href="/tags/Speech-Reasoning/" class="print-no-link">#Speech Reasoning</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Step-Audio-R1.5 Technical Report</div>
+      <div>https://smallsmartao.github.io/2026/04/29/Step-Audio-R1-5-Technical-Report/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年4月29日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年4月29日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/04/29/uncertainty-estimation-audio-aware-llm/" title="An Empirical Study of Uncertainty Estimation for Audio-Aware Large Language Models">
+                        <span class="hidden-mobile">An Empirical Study of Uncertainty Estimation for Audio-Aware Large Language Models</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
