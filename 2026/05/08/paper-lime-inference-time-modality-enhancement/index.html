@@ -1,0 +1,1527 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息 标题: Mitigating Multimodal LLMs Hallucinations via Relevance Propagation at Inference Time 作者: Itai Allouche, Joseph Keshet (Technion, Israel) 链接: arXiv:2605.01766 代码: GitHub   1. 引言：多模态幻觉的根源1.1 问">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LIME: 通过推理时相关性传播增强模态利用以缓解多模态LLM幻觉">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/05/08/paper-lime-inference-time-modality-enhancement/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息 标题: Mitigating Multimodal LLMs Hallucinations via Relevance Propagation at Inference Time 作者: Itai Allouche, Joseph Keshet (Technion, Israel) 链接: arXiv:2605.01766 代码: GitHub   1. 引言：多模态幻觉的根源1.1 问">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_lime_2605.01766.png">
+<meta property="article:published_time" content="2026-05-08T03:00:00.000Z">
+<meta property="article:modified_time" content="2026-05-08T03:16:26.037Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="LRP">
+<meta property="article:tag" content="可解释性">
+<meta property="article:tag" content="多模态大模型">
+<meta property="article:tag" content="幻觉缓解">
+<meta property="article:tag" content="推理时优化">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_lime_2605.01766.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>LIME: 通过推理时相关性传播增强模态利用以缓解多模态LLM幻觉 - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/cover_lime_2605.01766.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="LIME: 通过推理时相关性传播增强模态利用以缓解多模态LLM幻觉"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-05-08 11:00" pubdate>
+          2026年5月8日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          15 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">LIME: 通过推理时相关性传播增强模态利用以缓解多模态LLM幻觉</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年5月8日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>: Mitigating Multimodal LLMs Hallucinations via Relevance Propagation at Inference Time</li>
+<li><strong>作者</strong>: Itai Allouche, Joseph Keshet (Technion, Israel)</li>
+<li><strong>链接</strong>: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2605.01766">arXiv:2605.01766</a></li>
+<li><strong>代码</strong>: <a target="_blank" rel="noopener" href="https://github.com/ItaiAllouche/lime">GitHub</a></li>
+</ul>
+<hr>
+<h2 id="1-引言：多模态幻觉的根源"><a href="#1-引言：多模态幻觉的根源" class="headerlink" title="1. 引言：多模态幻觉的根源"></a>1. 引言：多模态幻觉的根源</h2><h3 id="1-1-问题背景"><a href="#1-1-问题背景" class="headerlink" title="1.1 问题背景"></a>1.1 问题背景</h3><p>多模态大语言模型（MLLMs）在视觉问答、音频推理和多模态对话等任务中展现了强大能力。然而，一个核心挑战始终存在：<strong>幻觉（Hallucination）</strong>——模型生成的内容与提供的感知输入不一致或不被支持。</p>
+<p><img src="/images/paper_figs/lime/fig1.png" srcset="/img/loading.gif" lazyload alt="LIME方法的动机示例"></p>
+<p>如上图所示，面对”图像中是否有花瓶？”的问题，标准解码下模型给出了错误的”Yes”回答（面板b），而使用LIME后模型正确回答”No”并将注意力集中在相关区域（面板c）。类似地，对于运动球的问题（面板d-f），LIME帮助模型正确定位并给出准确答案。</p>
+<h3 id="1-2-痛点分析：模态利用不平衡"><a href="#1-2-痛点分析：模态利用不平衡" class="headerlink" title="1.2 痛点分析：模态利用不平衡"></a>1.2 痛点分析：模态利用不平衡</h3><p>大量实证研究表明，多模态幻觉与模型在推理时对不同输入模态的<strong>利用不平衡</strong>密切相关。具体而言：</p>
+<ul>
+<li><strong>文本token主导生成过程</strong>，而视觉或音频token的注意力不足</li>
+<li>Asadi等人[2]的研究表明，多模态模型的视觉推理能力可能部分源于强大的文本先验——即使没有对应的视觉输入，模型也能产生看似合理的视觉描述</li>
+<li>这表明幻觉不仅是训练数据不足的后果，更源于解码过程中<strong>次优的内部推理和信息整合</strong></li>
+</ul>
+<h3 id="1-3-核心发现与贡献"><a href="#1-3-核心发现与贡献" class="headerlink" title="1.3 核心发现与贡献"></a>1.3 核心发现与贡献</h3><p>作者使用<strong>层级相关性传播（Layer-wise Relevance Propagation, LRP）</strong>对MLLMs进行分析，发现：</p>
+<blockquote>
+<p>文本token被一致性地赋予了比模态token更高的相关性分数，即便在关键依赖感知输入的任务中也是如此。</p>
+</blockquote>
+<p>基于这一发现，本文的贡献包括：</p>
+<ol>
+<li><strong>可解释性分析</strong>：证明幻觉与模态token利用不足相关联</li>
+<li><strong>推理时框架LIME</strong>：通过相关性引导的推理时优化增强模态token贡献</li>
+<li><strong>跨模态验证</strong>：在多个视觉和音频模型/基准上验证有效性</li>
+</ol>
+<hr>
+<h2 id="2-相关工作"><a href="#2-相关工作" class="headerlink" title="2. 相关工作"></a>2. 相关工作</h2><h3 id="2-1-多模态幻觉研究现状"><a href="#2-1-多模态幻觉研究现状" class="headerlink" title="2.1 多模态幻觉研究现状"></a>2.1 多模态幻觉研究现状</h3><p>多模态幻觉指模型生成与感知输入不一致的内容，如描述图像中不存在的物体或虚构音频中的事件。现有缓解方法可分为两大类：</p>
+<p><strong>基于训练的方法</strong>：</p>
+<ul>
+<li>监督微调[10]</li>
+<li>强化学习[37]</li>
+<li>辅助模块修正幻觉输出[39]</li>
+</ul>
+<p><strong>无需训练的方法</strong>（推理时干预）：</p>
+<ul>
+<li><strong>OPERA</strong>[12]：惩罚主导token以鼓励对感知输入的注意</li>
+<li><strong>对比解码（CD）</strong>[19]系列：通过比较扰动/移除模态输入下的输出来抑制对模态信息不敏感的token<ul>
+<li>PAI[24]、VCD[18]、ICD[35]、AAD[11]</li>
+</ul>
+</li>
+<li><strong>MemVR</strong>[40]和<strong>V-ITI</strong>[31]：在推理时修改隐藏表示以改善grounding</li>
+</ul>
+<h3 id="2-2-现有方法的局限"><a href="#2-2-现有方法的局限" class="headerlink" title="2.2 现有方法的局限"></a>2.2 现有方法的局限</h3><p>尽管已有进展，现有无训练方法通常依赖<strong>启发式干预规则或间接信号</strong>，无法直接量化不同模态对最终预测的贡献。这使得在推理时直接强制实现平衡的多模态grounding变得困难。</p>
+<h3 id="2-3-与CFT的区别"><a href="#2-3-与CFT的区别" class="headerlink" title="2.3 与CFT的区别"></a>2.3 与CFT的区别</h3><p>并行工作CFT[9]利用LRP相关性图来对齐模型解释与语义概念。关键区别：CFT微调模型参数，而LIME在推理时操作，直接调整内部表示而不更新模型参数。</p>
+<hr>
+<h2 id="3-方法：LIME框架"><a href="#3-方法：LIME框架" class="headerlink" title="3. 方法：LIME框架"></a>3. 方法：LIME框架</h2><p><img src="/images/paper_figs/lime/fig2.png" srcset="/img/loading.gif" lazyload alt="LIME整体架构"></p>
+<p>上图展示了LIME的整体流程：通过迭代优化可学习的KV更新（$\Delta KV$），增加模态相关性（$\mathcal{L}_{rel}$），同时保持接近原始模型分布（$\mathcal{L}_{KL}$）。基础MLLM保持冻结，推理时学习通过可优化的KV更新实现。</p>
+<h3 id="3-1-符号与设置"><a href="#3-1-符号与设置" class="headerlink" title="3.1 符号与设置"></a>3.1 符号与设置</h3><p>考虑一个MLLM，由模态编码器、投影模块和LLM骨干组成。给定多模态输入：</p>
+<ul>
+<li><strong>模态编码器</strong>将原始感知信号（图像或音频）转换为潜在表示</li>
+<li><strong>投影层</strong>将其映射为感知token序列，与文本token共享同一嵌入空间</li>
+</ul>
+<p>定义符号：</p>
+<ul>
+<li>$x_i$：第$i$个token的嵌入向量</li>
+<li>$\mathcal{M}$：模态token集合；$\mathcal{T}$：文本token集合（两者互斥）</li>
+<li>$X = (x_1, \ldots, x_N)$：输入token嵌入序列</li>
+<li>$y_{&lt;t} = (y_1, \ldots, y_{t-1})$：到解码步$t$时已生成的token序列</li>
+<li>$p_\theta(y_t | X, y_{&lt;t})$：模型在步$t$的下一token分布</li>
+</ul>
+<p>定义 $\Delta = {\Delta K, \Delta V}$ 为推理时对所有Transformer层的key和value张量的<strong>加性更新</strong>：</p>
+<ul>
+<li>与对应的key/value张量具有相同维度</li>
+<li>跨完整序列应用（而非针对特定token位置）</li>
+<li>在每个解码步独立计算并随后重置</li>
+<li>调整后的分布记为 $p_{\theta,\Delta}(y_t | X, y_{&lt;t})$</li>
+</ul>
+<h3 id="3-2-相关性与问题形式化"><a href="#3-2-相关性与问题形式化" class="headerlink" title="3.2 相关性与问题形式化"></a>3.2 相关性与问题形式化</h3><p>设 $z_t$ 为LLM在步$t$的logits向量，$z_t^<em> \triangleq z_t[y_t]$ 为生成token $y_t$ 对应的logit标量。定义相关性函数 $\Phi(z_t^</em>)$ 为每个输入token相对于输出logit $z_t^*$ 的标量相关性分数。</p>
+<p>模态和文本token的总相关性定义为：</p>
+<script type="math/tex; mode=display">\Phi_\mathcal{M} = \sum_{i \in \mathcal{M}} \Phi_i, \quad \Phi_\mathcal{T} = \sum_{j \in \mathcal{T}} \Phi_j \tag{1}</script><h4 id="LRP相关性传播规则"><a href="#LRP相关性传播规则" class="headerlink" title="LRP相关性传播规则"></a>LRP相关性传播规则</h4><p>给定输出logit $z_t^*$，相关性从输出向输入token反向传播。基本LRP公式：</p>
+<script type="math/tex; mode=display">\Phi_j^\ell = \sum_i \frac{a_j^\ell W_{ji}^\ell}{\sum_k a_k^\ell W_{ki}^\ell} \Phi_i^{\ell+1}</script><p>其中 $a^\ell$ 为第$\ell$层输入，$W^\ell$ 为该层权重。分母确保相关性的适当归一化。通过递归应用此规则可获得低层的相关性。</p>
+<p>在LIME的设置中，相关性传播通过由$\Delta$诱导的修改前向传播在LLM骨干中执行，得到$X$上的token级相关性分数。问题形式化为：<strong>在每个解码步找到$\Delta$，使得相关性向模态token偏移，同时模型保持接近其原始行为。</strong></p>
+<h3 id="3-3-推理时优化"><a href="#3-3-推理时优化" class="headerlink" title="3.3 推理时优化"></a>3.3 推理时优化</h3><p><img src="/images/paper_figs/lime/fig3.png" srcset="/img/loading.gif" lazyload alt="相关性演化过程"></p>
+<p>上图展示了推理时视觉相关性的演化过程。随着LIME优化步数增加（3→5→7步），相关性从最初的弥散状态逐渐集中到相关区域，表明grounding得到改善。</p>
+<h4 id="相关性目标函数"><a href="#相关性目标函数" class="headerlink" title="相关性目标函数"></a>相关性目标函数</h4><p>为促进对模态token的依赖增加，定义基于<strong>噪声对比估计（NCE）</strong>和对比学习原理的相关性目标。模态token被视为正样本，其余token隐式充当竞争替代：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{rel}(\Delta) = -\frac{1}{|\mathcal{M}|} \sum_{i \in \mathcal{M}} \log \frac{\exp(\Phi_{i,\Delta} / \tau)}{\sum_{k \in \mathcal{M} \cup \mathcal{T}} \exp(\Phi_{k,\Delta} / \tau)} \tag{2}</script><p>其中：</p>
+<ul>
+<li>$\tau &gt; 0$ 为温度参数</li>
+<li>$\Phi_{i,\Delta}$ 为在KV更新下第$i$个token的相关性</li>
+<li>$\mathcal{T}$ 包含文本输入token和先前生成的token</li>
+<li>最小化此损失增加多模态token的解释性贡献，同时抑制对文本上下文的过度依赖</li>
+</ul>
+<h4 id="KL散度正则化"><a href="#KL散度正则化" class="headerlink" title="KL散度正则化"></a>KL散度正则化</h4><p>为约束与预训练模型的偏离，使用KL散度正则器：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{KL}(\Delta) = D_{KL}(p_{\theta,\Delta}(y_t | X, y_{<t}) \| p_\theta(y_t | X, y_{<t})) \tag{3}</script><p>参考模型 $p_\theta(y_t | X, y_{&lt;t})$ 共享相同权重但不应用$\Delta$。此项确保对key和value表示的修改保持预训练模型的语言先验和解码稳定性。</p>
+<h4 id="复合损失优化"><a href="#复合损失优化" class="headerlink" title="复合损失优化"></a>复合损失优化</h4><p>组合两个损失项，$\Delta$变量在每个解码步通过最小化以下复合损失进行优化：</p>
+<script type="math/tex; mode=display">\arg\min_\Delta \mathcal{L}_{rel}(\Delta) + \lambda \mathcal{L}_{KL}(\Delta)</script><p>其中 $\lambda &gt; 0$ 控制促进多模态相关性与约束偏离参考模型之间的权衡。</p>
+<p><strong>关键实现细节</strong>：</p>
+<ul>
+<li>相关性项促进增加感知证据的利用</li>
+<li>KL项正则化优化以保持接近原始模型分布</li>
+<li>优化在每个解码步独立执行</li>
+<li>KV扰动初始化为零，使用少量梯度步更新</li>
+<li>由于相关性目标依赖LRP相关性，优化$\Delta$需要通过相关性计算的<strong>二阶导数</strong></li>
+<li>更新在每步后丢弃，确保控制保持局部性且不跨时间步累积</li>
+</ul>
+<hr>
+<h2 id="4-实验"><a href="#4-实验" class="headerlink" title="4. 实验"></a>4. 实验</h2><h3 id="4-1-视觉基准测试"><a href="#4-1-视觉基准测试" class="headerlink" title="4.1 视觉基准测试"></a>4.1 视觉基准测试</h3><h4 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h4><p>使用三个MLLMs进行视觉评估：</p>
+<ul>
+<li><strong>LLaVA-1.5-7B</strong>[23]：CLIP视觉编码器 + LLaMA骨干</li>
+<li><strong>Qwen-VL-Chat</strong>[5]：CLIP视觉编码器 + Qwen骨干</li>
+<li><strong>Qwen2.5-VL-7B-Instruct</strong>[6]：CLIP视觉编码器 + Qwen骨干</li>
+</ul>
+<p>所有模型使用预训练指令微调变体，严格零样本评估。</p>
+<p>对比的无训练基线：OPERA[12]、VCD[18]、ICD[35]、MemVR[40]、V-ITI[31]。</p>
+<h4 id="POPE基准结果（LLaVA-1-5-7B-on-MSCOCO）"><a href="#POPE基准结果（LLaVA-1-5-7B-on-MSCOCO）" class="headerlink" title="POPE基准结果（LLaVA-1.5-7B on MSCOCO）"></a>POPE基准结果（LLaVA-1.5-7B on MSCOCO）</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Methods</th>
+<th>Random Acc</th>
+<th>Random F1</th>
+<th>Popular Acc</th>
+<th>Popular F1</th>
+<th>Adversarial Acc</th>
+<th>Adversarial F1</th>
+<th>Avg Acc</th>
+<th>Avg F1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LLaVA-1.5-7B</td>
+<td>83.49</td>
+<td>82.28</td>
+<td>79.98</td>
+<td>79.34</td>
+<td>76.03</td>
+<td>76.26</td>
+<td>79.83</td>
+<td>79.29</td>
+</tr>
+<tr>
+<td>+ OPERA</td>
+<td>87.53</td>
+<td>86.45</td>
+<td>84.21</td>
+<td>83.50</td>
+<td>80.88</td>
+<td>80.69</td>
+<td>84.21</td>
+<td>83.55</td>
+</tr>
+<tr>
+<td>+ VCD</td>
+<td>86.84</td>
+<td>86.83</td>
+<td>82.65</td>
+<td>83.37</td>
+<td>77.31</td>
+<td>79.28</td>
+<td>82.27</td>
+<td>83.16</td>
+</tr>
+<tr>
+<td>+ ICD</td>
+<td>84.87</td>
+<td>83.27</td>
+<td>82.93</td>
+<td>81.45</td>
+<td>81.07</td>
+<td>79.96</td>
+<td>82.96</td>
+<td>81.56</td>
+</tr>
+<tr>
+<td>+ MemVR</td>
+<td>88.50</td>
+<td>87.34</td>
+<td>87.10</td>
+<td>86.01</td>
+<td>85.20</td>
+<td>84.28</td>
+<td>86.93</td>
+<td>85.88</td>
+</tr>
+<tr>
+<td>+ V-ITI</td>
+<td>89.74</td>
+<td>87.72</td>
+<td>84.96</td>
+<td>84.77</td>
+<td>86.31</td>
+<td>82.44</td>
+<td>87.00</td>
+<td>84.98</td>
+</tr>
+<tr>
+<td><strong>+ LIME</strong></td>
+<td><strong>90.27</strong></td>
+<td><strong>89.75</strong></td>
+<td><strong>87.91</strong></td>
+<td><strong>87.85</strong></td>
+<td>85.51</td>
+<td>84.52</td>
+<td><strong>87.89</strong></td>
+<td><strong>87.37</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>LIME在大多数评估指标上超越所有基线，取得了最高的平均准确率和F1分数。在对抗性分割上的改进最大，表明对具有挑战性的负样本具有更强的鲁棒性。</p>
+<h4 id="POPE基准结果（Qwen-VL-Chat-amp-Qwen2-5-VL-on-MSCOCO）"><a href="#POPE基准结果（Qwen-VL-Chat-amp-Qwen2-5-VL-on-MSCOCO）" class="headerlink" title="POPE基准结果（Qwen-VL-Chat &amp; Qwen2.5-VL on MSCOCO）"></a>POPE基准结果（Qwen-VL-Chat &amp; Qwen2.5-VL on MSCOCO）</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Methods</th>
+<th>Random Acc</th>
+<th>Random F1</th>
+<th>Popular Acc</th>
+<th>Popular F1</th>
+<th>Adversarial Acc</th>
+<th>Adversarial F1</th>
+<th>Avg Acc</th>
+<th>Avg F1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Qwen-VL-Chat</td>
+<td>84.73</td>
+<td>82.67</td>
+<td>84.13</td>
+<td>82.06</td>
+<td>82.26</td>
+<td>80.37</td>
+<td>83.70</td>
+<td>81.70</td>
+</tr>
+<tr>
+<td>+ VCD</td>
+<td>88.63</td>
+<td>87.81</td>
+<td>87.12</td>
+<td>86.40</td>
+<td>84.26</td>
+<td>83.90</td>
+<td>86.67</td>
+<td>86.03</td>
+</tr>
+<tr>
+<td><strong>+ LIME</strong></td>
+<td><strong>89.10</strong></td>
+<td><strong>88.42</strong></td>
+<td><strong>88.12</strong></td>
+<td><strong>87.89</strong></td>
+<td>84.55</td>
+<td>84.78</td>
+<td><strong>87.25</strong></td>
+<td><strong>87.03</strong></td>
+</tr>
+<tr>
+<td>Qwen2.5-VL-7B</td>
+<td>86.60</td>
+<td>84.48</td>
+<td>85.20</td>
+<td>83.12</td>
+<td>84.23</td>
+<td>82.16</td>
+<td>85.34</td>
+<td>83.25</td>
+</tr>
+<tr>
+<td><strong>+ LIME</strong></td>
+<td><strong>88.11</strong></td>
+<td><strong>86.32</strong></td>
+<td><strong>85.77</strong></td>
+<td><strong>84.10</strong></td>
+<td><strong>85.33</strong></td>
+<td><strong>83.88</strong></td>
+<td><strong>86.40</strong></td>
+<td><strong>84.76</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="CHAIR基准结果"><a href="#CHAIR基准结果" class="headerlink" title="CHAIR基准结果"></a>CHAIR基准结果</h4><p>CHAIR通过评估生成描述中的物体提及来量化幻觉。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Methods</th>
+<th>CHAIR_S ↓</th>
+<th>CHAIR_I ↓</th>
+<th>Average ↓</th>
+<th>Recall ↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LLaVA-1.5-7B</td>
+<td>52.0</td>
+<td>15.8</td>
+<td>32.7</td>
+<td>75.2</td>
+</tr>
+<tr>
+<td>+ OPERA</td>
+<td>47.8</td>
+<td>14.6</td>
+<td>31.8</td>
+<td>77.3</td>
+</tr>
+<tr>
+<td>+ VCD</td>
+<td>48.6</td>
+<td>14.9</td>
+<td>31.2</td>
+<td>76.8</td>
+</tr>
+<tr>
+<td>+ ICD</td>
+<td>56.2</td>
+<td>16.3</td>
+<td>36.3</td>
+<td>16.3</td>
+</tr>
+<tr>
+<td>+ MemVR</td>
+<td>46.6</td>
+<td>13.0</td>
+<td>29.8</td>
+<td>80.8</td>
+</tr>
+<tr>
+<td>+ V-ITI</td>
+<td>46.1</td>
+<td>13.5</td>
+<td>29.8</td>
+<td>80.4</td>
+</tr>
+<tr>
+<td><strong>+ LIME</strong></td>
+<td><strong>42.7</strong></td>
+<td><strong>13.0</strong></td>
+<td><strong>27.85</strong></td>
+<td>72.0</td>
+</tr>
+<tr>
+<td>Qwen-VL-Chat</td>
+<td>46.0</td>
+<td>12.5</td>
+<td>29.3</td>
+<td>64.3</td>
+</tr>
+<tr>
+<td>+ VCD</td>
+<td>46.8</td>
+<td>12.3</td>
+<td>29.6</td>
+<td>67.9</td>
+</tr>
+<tr>
+<td>+ ICD</td>
+<td>45.0</td>
+<td>14.3</td>
+<td>29.7</td>
+<td>47.6</td>
+</tr>
+<tr>
+<td>+ V-ITI</td>
+<td>44.2</td>
+<td>12.5</td>
+<td>28.4</td>
+<td>66.4</td>
+</tr>
+<tr>
+<td><strong>+ LIME</strong></td>
+<td>44.5</td>
+<td><strong>12.0</strong></td>
+<td><strong>28.25</strong></td>
+<td>68.7</td>
+</tr>
+<tr>
+<td>Qwen2.5-VL-7B</td>
+<td>25.6</td>
+<td>9.1</td>
+<td>17.35</td>
+<td>55.1</td>
+</tr>
+<tr>
+<td><strong>+ LIME</strong></td>
+<td><strong>21.2</strong></td>
+<td><strong>8.2</strong></td>
+<td><strong>14.7</strong></td>
+<td><strong>56.5</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>LIME在所有模型上一致降低幻觉率。虽然某些方法达到更高的Recall，但通常以增加幻觉为代价；LIME在忠实度和覆盖率之间实现了更优的权衡。</p>
+<h3 id="4-2-音频基准测试"><a href="#4-2-音频基准测试" class="headerlink" title="4.2 音频基准测试"></a>4.2 音频基准测试</h3><h4 id="实验设置-1"><a href="#实验设置-1" class="headerlink" title="实验设置"></a>实验设置</h4><p>使用两个SpeechLM：</p>
+<ul>
+<li><strong>SALMONN-7B</strong>[32]：Whisper encoder large v2 + Vicuna骨干</li>
+<li><strong>Qwen2-Audio-7B-Instruct</strong>[8]：Whisper encoder large v3 + Qwen骨干</li>
+</ul>
+<p>对比基线：AAD[11]（唯一找到的无训练音频幻觉缓解方法）。</p>
+<h4 id="音频基准结果"><a href="#音频基准结果" class="headerlink" title="音频基准结果"></a>音频基准结果</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Methods</th>
+<th>Dataset</th>
+<th>Random Acc</th>
+<th>Random F1</th>
+<th>Popular Acc</th>
+<th>Popular F1</th>
+<th>Adv Acc</th>
+<th>Adv F1</th>
+<th>Speech</th>
+<th>Sound</th>
+<th>Music</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SALMONN-7B</td>
+<td>Audio QA</td>
+<td>53.91</td>
+<td>23.37</td>
+<td>49.32</td>
+<td>18.27</td>
+<td>50.31</td>
+<td>20.01</td>
+<td>37.51</td>
+<td>33.58</td>
+<td>31.05</td>
+</tr>
+<tr>
+<td>+ AAD</td>
+<td></td>
+<td>57.22</td>
+<td>36.74</td>
+<td>48.71</td>
+<td>18.78</td>
+<td>48.04</td>
+<td>17.42</td>
+<td>42.62</td>
+<td>34.56</td>
+<td>30.38</td>
+</tr>
+<tr>
+<td><strong>+ LIME</strong></td>
+<td></td>
+<td>56.88</td>
+<td><strong>36.85</strong></td>
+<td><strong>53.12</strong></td>
+<td><strong>25.76</strong></td>
+<td><strong>54.35</strong></td>
+<td><strong>26.00</strong></td>
+<td><strong>45.20</strong></td>
+<td><strong>36.90</strong></td>
+<td><strong>31.95</strong></td>
+</tr>
+<tr>
+<td>Qwen2-Audio-7B</td>
+<td>Audio QA</td>
+<td>56.19</td>
+<td>26.78</td>
+<td>51.34</td>
+<td>20.50</td>
+<td>50.13</td>
+<td>20.24</td>
+<td>57.56</td>
+<td>60.86</td>
+<td>55.89</td>
+</tr>
+<tr>
+<td>+ AAD</td>
+<td></td>
+<td>59.50</td>
+<td>31.62</td>
+<td>51.31</td>
+<td>12.09</td>
+<td>51.29</td>
+<td>11.43</td>
+<td>60.00</td>
+<td>61.90</td>
+<td>57.43</td>
+</tr>
+<tr>
+<td><strong>+ LIME</strong></td>
+<td></td>
+<td><strong>63.36</strong></td>
+<td><strong>50.27</strong></td>
+<td><strong>57.53</strong></td>
+<td><strong>46.43</strong></td>
+<td><strong>53.10</strong></td>
+<td><strong>37.08</strong></td>
+<td><strong>66.10</strong></td>
+<td><strong>66.41</strong></td>
+<td>56.25</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><img src="/images/paper_figs/lime/fig4.png" srcset="/img/loading.gif" lazyload alt="音频领域的幻觉缓解示例"></p>
+<p>上图展示了音频领域的定性示例。音频波形叠加了相关性分数（绿色），虚线标注了ground-truth事件区域。标准解码下（a,c）相关性弥散且与相关音频段对齐差，导致错误预测。使用LIME后（b,d），相关性集中在正确的时间区域，产生grounded的准确预测。</p>
+<h3 id="4-3-模态利用分析"><a href="#4-3-模态利用分析" class="headerlink" title="4.3 模态利用分析"></a>4.3 模态利用分析</h3><p>为量化LIME对多模态grounding的影响，进行了基于LRP的相关性分析。</p>
+<p>定义两个指标：</p>
+<ul>
+<li><strong>空间Grounding</strong>：模态相关性定位在ground-truth区域内的比例 $\sum_{i \in G} \Phi_i / \Phi_\mathcal{M}$</li>
+<li><strong>模态依赖度</strong>：模态token相关性占所有输入token的比例 $\Phi_\mathcal{M} / (\Phi_\mathcal{M} + \Phi_\mathcal{T})$</li>
+</ul>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Decoding</th>
+<th>LLaVA-1.5-7B</th>
+<th>Qwen-VL-Chat</th>
+<th>Qwen2.5-VL-7B</th>
+<th>SALMONN-7B</th>
+<th>Qwen2-Audio-7B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Spatial Grounding ↑</td>
+<td>Vanilla</td>
+<td>0.27</td>
+<td>0.13</td>
+<td>0.12</td>
+<td>0.19</td>
+<td>0.31</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>LIME</strong></td>
+<td><strong>0.36</strong></td>
+<td><strong>0.20</strong></td>
+<td><strong>0.21</strong></td>
+<td><strong>0.28</strong></td>
+<td><strong>0.57</strong></td>
+</tr>
+<tr>
+<td>Modality Reliance ↑</td>
+<td>Vanilla</td>
+<td>0.10</td>
+<td>0.41</td>
+<td>0.43</td>
+<td>0.10</td>
+<td>0.34</td>
+</tr>
+<tr>
+<td></td>
+<td><strong>LIME</strong></td>
+<td><strong>0.17</strong></td>
+<td><strong>0.53</strong></td>
+<td><strong>0.52</strong></td>
+<td><strong>0.19</strong></td>
+<td><strong>0.42</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>LIME在所有视觉和音频模型上一致改善了空间grounding和模态依赖度。模态依赖度的提升表明模型赋予感知token更大的解释性责任，空间grounding的改善则表明相关性更集中在语义相关区域。</p>
+<h3 id="4-4-计算开销"><a href="#4-4-计算开销" class="headerlink" title="4.4 计算开销"></a>4.4 计算开销</h3><p>LIME由于在每个解码步优化KV扰动引入了额外计算开销。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Methods</th>
+<th>Tokens/sec ↑</th>
+<th>Slowdown ↓</th>
+<th>Peak Memory (GB) ↓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LLaVA-1.5-7B</td>
+<td>3.02</td>
+<td>1.0×</td>
+<td>26.24</td>
+</tr>
+<tr>
+<td>+ LIME</td>
+<td>0.32</td>
+<td>9.43×</td>
+<td>34.75</td>
+</tr>
+<tr>
+<td>Qwen2-Audio-7B</td>
+<td>2.76</td>
+<td>1.0×</td>
+<td>30.84</td>
+</tr>
+<tr>
+<td>+ LIME</td>
+<td>0.30</td>
+<td>9.20×</td>
+<td>33.84</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>LIME带来约9倍的推理减速和约3-8 GB的额外显存占用。虽然延迟增加，但对于离线或高精度场景（其中改善多模态grounding至关重要）仍然实用。</p>
+<h3 id="4-5-消融实验"><a href="#4-5-消融实验" class="headerlink" title="4.5 消融实验"></a>4.5 消融实验</h3><p><img src="/images/paper_figs/lime/fig5.png" srcset="/img/loading.gif" lazyload alt="消融实验：KL正则化与编辑策略"></p>
+<p>上图展示了不同编辑策略（$\Delta K$、$\Delta V$、$\Delta KV$）在不同KL正则化权重$\lambda$下的效果。</p>
+<p><strong>关键发现</strong>：</p>
+<ol>
+<li><strong>所有变体均优于基线</strong>，表明key和value更新各自独立贡献于改善多模态grounding</li>
+<li><strong>联合修改key和value（$\Delta KV$）一致取得最佳性能</strong>，说明两者在控制注意力和信息聚合中扮演互补角色</li>
+<li><strong>KL正则化项作用关键</strong>：<ul>
+<li>较小的$\lambda$允许更强的内部表示更新</li>
+<li>较大的$\lambda$约束优化并降低效果</li>
+<li>中间值的$\lambda$在两个领域中都提供最佳权衡</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="5-方法细节：Transformer的LRP传播规则"><a href="#5-方法细节：Transformer的LRP传播规则" class="headerlink" title="5. 方法细节：Transformer的LRP传播规则"></a>5. 方法细节：Transformer的LRP传播规则</h2><h3 id="5-1-LRP基本原理"><a href="#5-1-LRP基本原理" class="headerlink" title="5.1 LRP基本原理"></a>5.1 LRP基本原理</h3><p>LRP是一类归因方法，通过将标量模型输出分解为中间表示和输入特征的加性贡献来解释模型。对于标量函数$f_j$和大小为$N$的输入向量$x$，LRP赋予相关性值 ${\Phi_{i \leftarrow j}}_{i=0}^{N-1}$，满足：</p>
+<script type="math/tex; mode=display">f_j(x) \propto \Phi_j = \sum_i \Phi_{i \leftarrow j} \tag{4}</script><p><strong>守恒律</strong>：当相关性通过分层网络反向传播时，总相关性跨层保持：</p>
+<script type="math/tex; mode=display">\Phi^{\ell-1} = \sum_i \Phi_i^{\ell-1} = \sum_j \Phi_j^\ell = \Phi^\ell \tag{6}</script><h3 id="5-2-Deep-Taylor-Decomposition"><a href="#5-2-Deep-Taylor-Decomposition" class="headerlink" title="5.2 Deep Taylor Decomposition"></a>5.2 Deep Taylor Decomposition</h3><p>LRP通过Deep Taylor Decomposition（DTD）推导传播规则。对于表示为标量函数$f_j(x)$的神经元$j$，在参考点$x^0$处进行一阶Taylor展开：</p>
+<script type="math/tex; mode=display">f_j(x) \approx f_j(x^0) + \sum_i \frac{\partial f_j}{\partial x_i}(x^0)(x_i - x_i^0)</script><p>由此得到标准LRP-z规则：</p>
+<script type="math/tex; mode=display">\Phi_j^\ell = \sum_i \frac{x_j^\ell W_{ji}^\ell}{\sum_k x_k^\ell W_{ki}^\ell} \Phi_i^{\ell+1}</script><h3 id="5-3-LRP-ε规则"><a href="#5-3-LRP-ε规则" class="headerlink" title="5.3 LRP-ε规则"></a>5.3 LRP-ε规则</h3><p>当分母趋近零时引入稳定化项：</p>
+<script type="math/tex; mode=display">\Phi_j^\ell = \sum_i \frac{x_j^\ell W_{ji}^\ell}{\sum_k x_k^\ell W_{ki}^\ell + \epsilon \cdot \text{sign}(\sum_m x_m^\ell W_{mi}^\ell)} \Phi_i^{\ell+1}</script><h3 id="5-4-Softmax的LRP规则"><a href="#5-4-Softmax的LRP规则" class="headerlink" title="5.4 Softmax的LRP规则"></a>5.4 Softmax的LRP规则</h3><p>Softmax引入维度间的竞争归一化：</p>
+<script type="math/tex; mode=display">a_j^\ell = \text{softmax}(x^\ell)_j = \frac{\exp(x_j^\ell)}{\sum_k \exp(x_k^\ell)}</script><p>相关性重新分配为：</p>
+<script type="math/tex; mode=display">\Phi_j^{\ell-1} = x_j^\ell \left( \Phi_j^\ell - a_j^\ell \sum_i \Phi_i^\ell \right)</script><h3 id="5-5-注意力矩阵分解的LRP规则"><a href="#5-5-注意力矩阵分解的LRP规则" class="headerlink" title="5.5 注意力矩阵分解的LRP规则"></a>5.5 注意力矩阵分解的LRP规则</h3><p>对于注意力-value交互 $O^\ell = A^\ell V^\ell$，赋予注意力项$A_{ji}^\ell$的相关性为：</p>
+<script type="math/tex; mode=display">\Phi_{ji}^{\ell-1} = \sum_p \frac{A_{ji}^\ell V_{ip}^\ell}{2O_{jp}^\ell + \epsilon} \Phi_{jp}^\ell</script><h3 id="5-6-LayerNorm和RMSNorm的LRP"><a href="#5-6-LayerNorm和RMSNorm的LRP" class="headerlink" title="5.6 LayerNorm和RMSNorm的LRP"></a>5.6 LayerNorm和RMSNorm的LRP</h3><p>归一化层主要重新缩放激活而非重新分配信息，因此使用恒等映射近似：</p>
+<script type="math/tex; mode=display">\Phi_i^{\ell-1} = \Phi_i^\ell</script><hr>
+<h2 id="6-实验设置补充"><a href="#6-实验设置补充" class="headerlink" title="6. 实验设置补充"></a>6. 实验设置补充</h2><h3 id="6-1-超参数设置"><a href="#6-1-超参数设置" class="headerlink" title="6.1 超参数设置"></a>6.1 超参数设置</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Optimization Steps</th>
+<th>Learning Rate</th>
+<th>KL Weight ($\lambda$)</th>
+<th>Temperature ($\tau$)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LLaVA-1.5-7B</td>
+<td>7</td>
+<td>$3 \times 10^{-4}$</td>
+<td>0.1</td>
+<td>0.1</td>
+</tr>
+<tr>
+<td>Qwen-VL-Chat</td>
+<td>7</td>
+<td>$4 \times 10^{-4}$</td>
+<td>0.1</td>
+<td>0.1</td>
+</tr>
+<tr>
+<td>Qwen2.5-VL-7B-Instruct</td>
+<td>7</td>
+<td>$3 \times 10^{-4}$</td>
+<td>0.1</td>
+<td>0.1</td>
+</tr>
+<tr>
+<td>SALMONN-7B</td>
+<td>7</td>
+<td>$3 \times 10^{-4}$</td>
+<td>0.1</td>
+<td>0.1</td>
+</tr>
+<tr>
+<td>Qwen2-Audio-7B-Instruct</td>
+<td>7</td>
+<td>$5 \times 10^{-4}$</td>
+<td>$7 \times 10^{-3}$</td>
+<td>0.1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>所有推理时优化使用Adam优化器。为提高稳定性并减少优化变量数，更新在每层所有注意力头之间共享。每个解码步后重置并重新初始化扰动。</p>
+<h3 id="6-2-评估基准详细说明"><a href="#6-2-评估基准详细说明" class="headerlink" title="6.2 评估基准详细说明"></a>6.2 评估基准详细说明</h3><ul>
+<li><strong>POPE</strong>：轮询式物体探测评估，二分类VQA任务。使用500张随机采样图像，三种负样本策略（random/popular/adversarial），最大生成长度20 token</li>
+<li><strong>CHAIR</strong>：通过MSCOCO实例标注和参考描述评估图像描述中的物体幻觉，最大生成长度150 token</li>
+<li><strong>AIR-Bench</strong>：覆盖语音/自然声音/音乐三个领域的19k单选题（生成式回答），使用GPT-4评判，最大生成长度50 token</li>
+<li><strong>Audio Hallucination QA</strong>：音频物体幻觉二分类任务，最大生成长度20 token</li>
+</ul>
+<hr>
+<h2 id="7-定性分析"><a href="#7-定性分析" class="headerlink" title="7. 定性分析"></a>7. 定性分析</h2><h3 id="7-1-视觉领域"><a href="#7-1-视觉领域" class="headerlink" title="7.1 视觉领域"></a>7.1 视觉领域</h3><p><img src="/images/paper_figs/lime/fig6.png" srcset="/img/loading.gif" lazyload alt="LLaVA-1.5-7B上的幻觉减少示例"></p>
+<p>上图展示了LLaVA-1.5-7B在图像描述任务中的定性对比。红色斜体标注了幻觉内容。可以观察到，LIME生成的描述更加忠实于图像内容，减少了虚构物体和人物。</p>
+<p><img src="/images/paper_figs/lime/fig7.png" srcset="/img/loading.gif" lazyload alt="Qwen-VL-Chat上的幻觉减少示例"></p>
+<p>Qwen-VL-Chat的定性对比同样显示LIME有效减少了幻觉，生成更紧凑、准确的描述。</p>
+<p><img src="/images/paper_figs/lime/fig8.png" srcset="/img/loading.gif" lazyload alt="Qwen2.5-VL-7B-Instruct上的幻觉减少示例"></p>
+<p>对于更新的Qwen2.5-VL模型，LIME同样展示了一致的幻觉减少效果。</p>
+<hr>
+<h2 id="8-结论"><a href="#8-结论" class="headerlink" title="8. 结论"></a>8. 结论</h2><p>本文从推理时模态利用的角度研究了多模态幻觉。通过LRP分析揭示了幻觉与模态贡献不平衡之间的关联——文本token主导而感知token被低利用。</p>
+<p>为此提出了LIME，一个无需训练的解码框架，通过使用LRP信号优化key和value表示来改善模态利用，而不修改模型参数。跨视觉和音频基准的实验表明，LIME一致减少幻觉并改善grounding，同时保持整体生成质量。</p>
+<p><strong>局限性</strong>：</p>
+<ul>
+<li>由于每步解码时的优化引入了约9倍的额外计算开销</li>
+<li>需要仔细的超参数调优</li>
+<li>可能限制其在延迟敏感或资源受限场景中的适用性</li>
+</ul>
+<p><strong>核心启示</strong>：推理时模态贡献的控制是一种有效且通用的策略，可增强多模态模型的可靠性。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/" class="category-chain-item">论文阅读</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%AE%BA%E6%96%87%E9%98%85%E8%AF%BB/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%AD%A6%E4%B9%A0/" class="category-chain-item">多模态学习</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="print-no-link">#多模态大模型</a>
+      
+        <a href="/tags/%E5%B9%BB%E8%A7%89%E7%BC%93%E8%A7%A3/" class="print-no-link">#幻觉缓解</a>
+      
+        <a href="/tags/%E6%8E%A8%E7%90%86%E6%97%B6%E4%BC%98%E5%8C%96/" class="print-no-link">#推理时优化</a>
+      
+        <a href="/tags/LRP/" class="print-no-link">#LRP</a>
+      
+        <a href="/tags/%E5%8F%AF%E8%A7%A3%E9%87%8A%E6%80%A7/" class="print-no-link">#可解释性</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>LIME: 通过推理时相关性传播增强模态利用以缓解多模态LLM幻觉</div>
+      <div>https://smallsmartao.github.io/2026/05/08/paper-lime-inference-time-modality-enhancement/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年5月8日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年5月8日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/05/08/chunked-attention-encoder-decoder-streaming-asr/" title="论文精读：Chunked Attention-Based Encoder-Decoder Model for Streaming Speech Recognition">
+                        <span class="hidden-mobile">论文精读：Chunked Attention-Based Encoder-Decoder Model for Streaming Speech Recognition</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,1310 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="概览论文标题: Chunked Attention-Based Encoder-Decoder Model for Streaming Speech Recognition作者: Mohammad Zeineldeen, Albert Zeyer, Ralf Schlüter, Hermann Ney机构: RWTH Aachen University &#x2F; AppTek GmbH链接: arXiv">
+<meta property="og:type" content="article">
+<meta property="og:title" content="论文精读：Chunked Attention-Based Encoder-Decoder Model for Streaming Speech Recognition">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/05/08/chunked-attention-encoder-decoder-streaming-asr/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="概览论文标题: Chunked Attention-Based Encoder-Decoder Model for Streaming Speech Recognition作者: Mohammad Zeineldeen, Albert Zeyer, Ralf Schlüter, Hermann Ney机构: RWTH Aachen University &#x2F; AppTek GmbH链接: arXiv">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_chunked_aed.png">
+<meta property="article:published_time" content="2026-05-07T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-05-08T03:19:24.280Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="Attention">
+<meta property="article:tag" content="Encoder-Decoder">
+<meta property="article:tag" content="Streaming">
+<meta property="article:tag" content="Transducer">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_chunked_aed.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>论文精读：Chunked Attention-Based Encoder-Decoder Model for Streaming Speech Recognition - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/banner_chunked_aed.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="论文精读：Chunked Attention-Based Encoder-Decoder Model for Streaming Speech Recognition"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-05-08 00:00" pubdate>
+          2026年5月8日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          25 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">论文精读：Chunked Attention-Based Encoder-Decoder Model for Streaming Speech Recognition</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年5月8日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="概览"><a href="#概览" class="headerlink" title="概览"></a>概览</h2><p><strong>论文标题</strong>: Chunked Attention-Based Encoder-Decoder Model for Streaming Speech Recognition<br><strong>作者</strong>: Mohammad Zeineldeen, Albert Zeyer, Ralf Schlüter, Hermann Ney<br><strong>机构</strong>: RWTH Aachen University / AppTek GmbH<br><strong>链接</strong>: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2309.08436">arXiv:2309.08436</a></p>
+<hr>
+<h2 id="1-引言与相关工作-Introduction-amp-Related-Work"><a href="#1-引言与相关工作-Introduction-amp-Related-Work" class="headerlink" title="1. 引言与相关工作 (Introduction &amp; Related Work)"></a>1. 引言与相关工作 (Introduction &amp; Related Work)</h2><h3 id="1-1-痛点：流式-AED-模型的困境"><a href="#1-1-痛点：流式-AED-模型的困境" class="headerlink" title="1.1 痛点：流式 AED 模型的困境"></a>1.1 痛点：流式 AED 模型的困境</h3><p>在端到端语音识别领域，流式（streaming）模型一直是工业界的核心需求。传统的流式方案包括：</p>
+<ul>
+<li>HMM [1]</li>
+<li>CTC [2]</li>
+<li>Transducer（RNN-T）[3]</li>
+</ul>
+<p>基于注意力的编码器-解码器（Attention-based Encoder-Decoder, AED）模型虽然在离线场景性能卓越，但将其改造为流式模型一直面临重大挑战。已有的流式 AED 方案 [4–8] 普遍存在以下问题：</p>
+<ul>
+<li><strong>过于复杂</strong>：依赖大量启发式规则</li>
+<li><strong>鲁棒性不足</strong>：相比 Transducer 表现不够稳定，尤其在长音频场景下 [9]</li>
+</ul>
+<h3 id="1-2-本文方案：极简修改实现流式化"><a href="#1-2-本文方案：极简修改实现流式化" class="headerlink" title="1.2 本文方案：极简修改实现流式化"></a>1.2 本文方案：极简修改实现流式化</h3><p>本文提出了一种看似极其简单的修改，却能让 AED 模型变为流式模型，并表现出极强的鲁棒性和竞争力——特别是在长音频（long-form speech）识别任务上，这与很多其他 AED 和 Transducer 模型 [8–12] 形成鲜明对比。</p>
+<p>核心机制：<strong>分块（Chunking）</strong>，同时应用于编码器（encoder）和解码器（decoder）的交叉注意力（cross-attention）。具体来说：</p>
+<ul>
+<li>从输入中取出<strong>固定宽度、固定步长</strong>的块（chunk/window）</li>
+<li>固定步长意味着<strong>每个块内的标签数量是可变的</strong></li>
+<li>编码器中的固定大小允许训练和识别中高效处理，比因果自注意力（causal self-attention）更高效，且性能更好</li>
+</ul>
+<h3 id="1-3-与相关方法的区别"><a href="#1-3-与相关方法的区别" class="headerlink" title="1.3 与相关方法的区别"></a>1.3 与相关方法的区别</h3><p>与分块处理相关的方法包括：</p>
+<ul>
+<li><strong>分段注意力模型（Segmental Attention）</strong>[8]：使用可变边界的段</li>
+<li><strong>固定大小窗口在可变位置</strong>[13]：每个窗口/段只有一个标签</li>
+</ul>
+<p>本文的固定大小块在固定位置的方案意味着每个块内有可变数量的标签。而且可以在编码器中使用相同的分块策略，这带来了巨大优势——可以并行处理所有块。</p>
+<h3 id="1-4-与-Transducer-的等价关系"><a href="#1-4-与-Transducer-的等价关系" class="headerlink" title="1.4 与 Transducer 的等价关系"></a>1.4 与 Transducer 的等价关系</h3><p>一个有趣的发现是：这个简单修改使得模型在数学上等价于一个<strong>在块而非帧上操作的 Transducer 模型</strong>，其中 End-of-Chunk（EOC）符号对应 Transducer 中的 blank 符号。本文进一步探讨了标准 Transducer 与本模型之间的剩余差异。</p>
+<hr>
+<h2 id="2-基线模型：全局-AED-Global-AED-Baseline"><a href="#2-基线模型：全局-AED-Global-AED-Baseline" class="headerlink" title="2. 基线模型：全局 AED (Global AED Baseline)"></a>2. 基线模型：全局 AED (Global AED Baseline)</h2><p>全局 AED 模型作为对比基线。标准做法是使用全局注意力的 Conformer 编码器处理整个输入序列：</p>
+<script type="math/tex; mode=display">
+h_{1:T'} = \text{GlobalEncoder}(x_{1:T}) \in \mathbb{R}^{T' \times D_{\text{enc}}}</script><p>解码器通过全局交叉注意力访问整个编码器输出来生成标签序列。</p>
+<hr>
+<h2 id="3-流式分块-AED-模型-Streamable-Chunked-AED"><a href="#3-流式分块-AED-模型-Streamable-Chunked-AED" class="headerlink" title="3. 流式分块 AED 模型 (Streamable Chunked AED)"></a>3. 流式分块 AED 模型 (Streamable Chunked AED)</h2><h3 id="3-1-分块机制"><a href="#3-1-分块机制" class="headerlink" title="3.1 分块机制"></a>3.1 分块机制</h3><p><img src="/images/paper_figs/chunked_aed/chunking.drawio.png" srcset="/img/loading.gif" lazyload alt="Chunking 示意图"><br><em>图1：输入帧 $x_{1:T}$ 上的分块操作，chunk center 大小为 $T_w$，右上下文 $T_r$，步长 $T_s$，其中 $T_s = T_w$。</em></p>
+<p>将输入帧 $x_{1:T}$ 按固定步长 $T_s$ 分成 $K = \lceil T/T_s \rceil$ 个块，每个块表示为：</p>
+<script type="math/tex; mode=display">
+x'_{k,t} = x_{(k-1) \cdot T_s + t} \in \mathbb{R}^D, \quad t \in \{1, \ldots, T_w\}</script><p>重组后得到 $x’_{1:K, 1:T_w} \in \mathbb{R}^{K \times T_w \times D}$。此外，可以额外扩展 $T_r$ 帧作为右侧上下文（lookahead）。</p>
+<p>对于流式模型，分块直接应用于输入特征（如每 10ms 的 log-mel 特征），然后 Conformer 变体在各块上计算编码器输出：</p>
+<script type="math/tex; mode=display">
+h'_{1:K, 1:T'_w} = \text{ChunkedEncoder}(x'_{1:K, 1:T_w}) \in \mathbb{R}^{K \times T'_w \times D_{\text{enc}}}</script><p>其中 $T’_w = \lceil T_w / 6 \rceil$（因为编码器有 6 倍下采样）。</p>
+<h3 id="3-2-流式分块编码器-Streamable-Chunked-Encoder"><a href="#3-2-流式分块编码器-Streamable-Chunked-Encoder" class="headerlink" title="3.2 流式分块编码器 (Streamable Chunked Encoder)"></a>3.2 流式分块编码器 (Streamable Chunked Encoder)</h3><p><img src="/images/paper_figs/chunked_aed/chunk-self-att.drawio.png" srcset="/img/loading.gif" lazyload alt="分块自注意力"><br><em>图2：编码器中的分块自注意力。每个块的自注意力可以看到当前块的所有帧以及前一个块。</em></p>
+<p>起点是标准 Conformer，但工作在各个块上而非整个序列。自注意力的计算规则：</p>
+<ul>
+<li><strong>注意力范围</strong>：每个块内所有帧（包括 chunk center 和右上下文帧），以及<strong>前一个块</strong></li>
+<li><strong>块内非因果</strong>：块内的自注意力和卷积都是非因果的</li>
+<li><strong>解码器仅访问 chunk center</strong>：右上下文帧只为编码器提供前瞻信息</li>
+<li><strong>右上下文不跨层累积</strong>：lookahead 不会随着层数增加而扩大，但历史上下文（通过前一个块）会跨层累积——这解释了为什么不需要额外的左上下文帧</li>
+</ul>
+<p><strong>训练效率</strong>：所有块可以并行计算，每个块内的自注意力比全局自注意力更高效，仅因右上下文帧的重叠产生少量开销。</p>
+<p>从数学上看，这等价于 Emformer [24] 和 dual causal/non-causal self-attention [31] 中的前瞻上下文泄漏避免机制。</p>
+<h3 id="3-3-流式分块解码器-Streamable-Chunked-Decoder"><a href="#3-3-流式分块解码器-Streamable-Chunked-Decoder" class="headerlink" title="3.3 流式分块解码器 (Streamable Chunked Decoder)"></a>3.3 流式分块解码器 (Streamable Chunked Decoder)</h3><p><img src="/images/paper_figs/chunked_aed/lattice.drawio.png" srcset="/img/loading.gif" lazyload alt="Lattice 示意图"><br><em>图3：对于非 EOC 标签序列 “ABC”（长度 $N=3$）和 $K=4$ 个块的所有可能转移序列 $a_{1:K+N}$，其中 $\varepsilon$ 是 End-of-Chunk（EOC）符号。</em></p>
+<p>在输出词汇表 $\mathcal{A}$ 中，用一个新的特殊 <strong>End-of-Chunk (EOC)</strong> 符号替换传统的 End-of-Sequence (EOS)。工作流程：</p>
+<ol>
+<li>从第一个块（$k=1$）开始</li>
+<li>解码器在当前块上进行注意力操作</li>
+<li>一旦输出 EOC，前进到下一个块（$k’ = k+1$）</li>
+<li>解码器与全局 AED 完全相同，只是全局注意力被替换为<strong>对当前块的注意力</strong></li>
+</ol>
+<p>下一个标签的概率建模为：</p>
+<script type="math/tex; mode=display">
+P(a_s | a_1, \ldots, a_{s-1}, h'_{k, 1:T'_w})</script><p>其中 $k$ 是当前块索引，随 EOC 的输出而递增。</p>
+<h3 id="3-4-训练-Training"><a href="#3-4-训练-Training" class="headerlink" title="3.4 训练 (Training)"></a>3.4 训练 (Training)</h3><p>训练流程：</p>
+<ol>
+<li>从已有的<strong>帧级对齐（framewise alignment）</strong>生成<strong>块级对齐（chunkwise alignment）</strong></li>
+<li>在块级对齐中添加 EOC 标签</li>
+<li>使用<strong>标签级交叉熵（labelwise cross-entropy）</strong>训练，与标准 AED 训练相同</li>
+</ol>
+<p>这与标准 Transducer 训练不同：</p>
+<ul>
+<li>标准 Transducer 对所有对齐路径执行<strong>全和（full sum）</strong></li>
+<li>由于对齐标签依赖性，标准 Transducer 训练准则在此不能直接应用 [9, 12]</li>
+</ul>
+<h3 id="3-5-波束搜索-Beam-Search"><a href="#3-5-波束搜索-Beam-Search" class="headerlink" title="3.5 波束搜索 (Beam Search)"></a>3.5 波束搜索 (Beam Search)</h3><p>搜索策略：<strong>对齐同步搜索（alignment-synchronous search）</strong>——每一步所有假设具有相同数量的标签（包括 EOC），与对齐同步 Transducer 搜索 [12, 40] 完全相同。</p>
+<p>对于最佳结果，使用外部语言模型（LM）和内部语言模型（ILM）先验校正 [41]。得分计算：</p>
+<script type="math/tex; mode=display">
+P(a_s | \ldots) = \begin{cases}
+P^{\alpha}_{\text{AED}}(a_s | \ldots) \cdot P^{\beta}_{\text{LM}}(a_s | \ldots) \cdot P^{-\lambda}_{\text{ILM}}(a_s | \ldots), & a_s \neq \text{EOC} \\
+P_{\text{AED}}(\text{EOC} | \ldots), & a_s = \text{EOC},\, k < K \\
+P^{\alpha}_{\text{AED}}(\text{EOC} | \ldots) \cdot P^{\beta}_{\text{LM}}(\text{EOS} | \ldots) \cdot P^{-\lambda}_{\text{ILM}}(\text{EOS} | \ldots), & a_s = \text{EOC},\, k = K
+\end{cases}</script><p>其中 $\alpha, \beta, \lambda$ 是调优的缩放因子，$\alpha = 1 - \beta$。当 $k &lt; K$ 时，$P_{\text{LM}}(\text{EOS}|\ldots)$ 和 $P_{\text{ILM}}(\text{EOS}|\ldots)$ 设为 0 并重新归一化。使用 Mini-LSTM ILM 方法 [41]。</p>
+<hr>
+<h2 id="4-实验-Experiments"><a href="#4-实验-Experiments" class="headerlink" title="4. 实验 (Experiments)"></a>4. 实验 (Experiments)</h2><p>实验在 <strong>LibriSpeech 960h</strong> [43] 和 <strong>TED-LIUM-v2 200h</strong> [44] 上进行，使用 BPE 标签 [45]，基于 RETURNN [46] / TensorFlow [47]。</p>
+<h3 id="模型配置"><a href="#模型配置" class="headerlink" title="模型配置"></a>模型配置</h3><ul>
+<li>全局 AED 模型训练 100 epochs，单消费级 GPU</li>
+<li>在线速度扰动 + SpecAugment [34]</li>
+<li>编码器：12 层 Conformer，512 维模型维度</li>
+<li>解码器：LSTM，1024 维</li>
+<li>辅助 CTC 损失用于改善训练收敛和提取对齐</li>
+<li>分块模型：从全局 AED 最佳 checkpoint 初始化，再训练 15–30 epochs</li>
+<li>对齐提取：从联合训练的 CTC 模型中提取时间同步对齐（禁止标签循环）</li>
+</ul>
+<h3 id="4-1-分块解码器实验-Chunked-Decoder"><a href="#4-1-分块解码器实验-Chunked-Decoder" class="headerlink" title="4.1 分块解码器实验 (Chunked Decoder)"></a>4.1 分块解码器实验 (Chunked Decoder)</h3><p>仅在解码器端分块（编码器仍为全局），研究不同块大小的影响：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Chunk size $T’_w$</th>
+<th>时长 (sec)</th>
+<th>TED-v2 dev</th>
+<th>TED-v2 test</th>
+<th>LS dev-other</th>
+<th>LS test-other</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0.06</td>
+<td>7.5</td>
+<td>7.3</td>
+<td>5.8</td>
+<td>6.0</td>
+</tr>
+<tr>
+<td>5</td>
+<td>0.3</td>
+<td>7.3</td>
+<td>7.1</td>
+<td>5.7</td>
+<td>5.9</td>
+</tr>
+<tr>
+<td>10</td>
+<td>0.6</td>
+<td>7.3</td>
+<td>6.9</td>
+<td>5.7</td>
+<td>5.7</td>
+</tr>
+<tr>
+<td>25</td>
+<td>1.5</td>
+<td>7.4</td>
+<td>6.9</td>
+<td>5.6</td>
+<td>5.7</td>
+</tr>
+<tr>
+<td>∞（全局）</td>
+<td>—</td>
+<td>7.4</td>
+<td>6.9</td>
+<td>5.6</td>
+<td>5.7</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>结论</strong>：即使块大小仅为 0.6 秒（10 帧），分块解码器已经达到与全局解码器相当的性能。最极端情况（单帧块 = 60ms）仅有微小退化。</p>
+<h3 id="4-2-分块编码器实验-Chunked-Encoder"><a href="#4-2-分块编码器实验-Chunked-Encoder" class="headerlink" title="4.2 分块编码器实验 (Chunked Encoder)"></a>4.2 分块编码器实验 (Chunked Encoder)</h3><p>分块编码器 + 分块解码器的联合配置：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Chunk (ms)</th>
+<th>Lookahead (ms)</th>
+<th>Left ctx (ms)</th>
+<th>TED-v2 dev</th>
+<th>TED-v2 test</th>
+<th>LS dev-other</th>
+<th>LS test-other</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>800</td>
+<td>0</td>
+<td>1600</td>
+<td>8.7</td>
+<td>8.5</td>
+<td>7.4</td>
+<td>7.5</td>
+</tr>
+<tr>
+<td>1200</td>
+<td>0</td>
+<td>2400</td>
+<td>8.3</td>
+<td>8.0</td>
+<td>6.8</td>
+<td>7.0</td>
+</tr>
+<tr>
+<td>1200</td>
+<td>320</td>
+<td>2400</td>
+<td>7.9</td>
+<td>7.7</td>
+<td>6.5</td>
+<td>6.6</td>
+</tr>
+<tr>
+<td>2000</td>
+<td>0</td>
+<td>4000</td>
+<td>8.0</td>
+<td>7.8</td>
+<td>6.5</td>
+<td>6.7</td>
+</tr>
+<tr>
+<td>2000</td>
+<td>320</td>
+<td>4000</td>
+<td>7.7</td>
+<td>7.5</td>
+<td>6.2</td>
+<td>6.2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>观察</strong>：</p>
+<ul>
+<li>更大的块/更多上下文带来更好的性能</li>
+<li>320ms lookahead 提供显著增益（约 0.3–0.5% WER 绝对改善）</li>
+</ul>
+<h3 id="4-3-延迟分析-Latency"><a href="#4-3-延迟分析-Latency" class="headerlink" title="4.3 延迟分析 (Latency)"></a>4.3 延迟分析 (Latency)</h3><p>词发射延迟（Word Emit Latency）实验显示：lookahead 比增大块大小带来更多延迟开销。</p>
+<h3 id="4-4-长音频识别-Long-Form-Recognition"><a href="#4-4-长音频识别-Long-Form-Recognition" class="headerlink" title="4.4 长音频识别 (Long-Form Recognition)"></a>4.4 长音频识别 (Long-Form Recognition)</h3><p>通过拼接 TED-LIUM-v2 测试集的连续片段来创建长音频，这是本文最精彩的实验之一：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>C (拼接数)</th>
+<th>序列长度 Mean±Std (sec)</th>
+<th>Min-Max (sec)</th>
+<th>Global Enc. + Gl. Dec.</th>
+<th>Global Enc. + Chunk Dec.</th>
+<th>Ch. Enc. + Ch. Dec.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>8.20±4.30</td>
+<td>0.35–32.55</td>
+<td>6.9</td>
+<td>6.9</td>
+<td>7.3</td>
+</tr>
+<tr>
+<td>2</td>
+<td>23.10±8.50</td>
+<td>0.41–45.70</td>
+<td>7.0</td>
+<td>6.9</td>
+<td>7.1</td>
+</tr>
+<tr>
+<td>4</td>
+<td>33.70±11.90</td>
+<td>0.41–70.70</td>
+<td>9.2</td>
+<td>7.0</td>
+<td>7.0</td>
+</tr>
+<tr>
+<td>8</td>
+<td>65.95±22.19</td>
+<td>7.19–116.99</td>
+<td>23.4</td>
+<td>7.1</td>
+<td>7.1</td>
+</tr>
+<tr>
+<td>10</td>
+<td>82.51±26.87</td>
+<td>15.67–142.08</td>
+<td>34.2</td>
+<td>7.1</td>
+<td>7.0</td>
+</tr>
+<tr>
+<td>20</td>
+<td>160.14±53.98</td>
+<td>17.83–237.27</td>
+<td>62.4</td>
+<td>7.1</td>
+<td>7.0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键发现</strong>：</p>
+<ul>
+<li>全局 AED 模型在长音频上严重退化（C=20 时 WER 高达 62.4%）</li>
+<li>分块 AED 模型（无论编码器是否分块）在长音频上泛化极好，WER 保持稳定甚至略有改善</li>
+<li>解码器拥有更好的 LM 上下文可能是性能略有提升的原因</li>
+<li>编码器中的相对位置编码可能有助于泛化</li>
+</ul>
+<h3 id="4-5-波束大小与长度归一化-Beam-Size-amp-Length-Normalization"><a href="#4-5-波束大小与长度归一化-Beam-Size-amp-Length-Normalization" class="headerlink" title="4.5 波束大小与长度归一化 (Beam Size &amp; Length Normalization)"></a>4.5 波束大小与长度归一化 (Beam Size &amp; Length Normalization)</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Length Norm.</th>
+<th>Beam</th>
+<th>Global AED</th>
+<th>Chunked AED</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(无影响)</td>
+<td>1</td>
+<td>7.1</td>
+<td>7.4</td>
+</tr>
+<tr>
+<td>Yes</td>
+<td>12</td>
+<td>6.9</td>
+<td>7.3</td>
+</tr>
+<tr>
+<td>Yes</td>
+<td>32</td>
+<td>6.9</td>
+<td>7.3</td>
+</tr>
+<tr>
+<td>Yes</td>
+<td>64</td>
+<td>6.9</td>
+<td>7.3</td>
+</tr>
+<tr>
+<td>No</td>
+<td>12</td>
+<td>7.0</td>
+<td>7.3</td>
+</tr>
+<tr>
+<td>No</td>
+<td>32</td>
+<td>8.5</td>
+<td>7.3</td>
+</tr>
+<tr>
+<td>No</td>
+<td>64</td>
+<td>10.9</td>
+<td>7.3</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键发现</strong>：</p>
+<ul>
+<li>全局 AED 存在<strong>长度偏差问题</strong>（length bias）：无显式长度建模导致模型偏好短假设，增大 beam size 且不做长度归一化时性能严重退化</li>
+<li>分块 AED 模型（类似 Transducer）<strong>不存在长度偏差问题</strong>：EOC 符号隐式建模了长度，无需长度归一化启发式</li>
+</ul>
+<h3 id="4-6-语言模型集成-Language-Model-Integration"><a href="#4-6-语言模型集成-Language-Model-Integration" class="headerlink" title="4.6 语言模型集成 (Language Model Integration)"></a>4.6 语言模型集成 (Language Model Integration)</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>LM</th>
+<th>ILM</th>
+<th>dev-other</th>
+<th>test-other</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Global AED</td>
+<td>—</td>
+<td>—</td>
+<td>5.6</td>
+<td>5.7</td>
+</tr>
+<tr>
+<td>Global AED</td>
+<td>LSTM</td>
+<td>No</td>
+<td>4.6</td>
+<td>5.0</td>
+</tr>
+<tr>
+<td>Global AED</td>
+<td>LSTM</td>
+<td>Yes</td>
+<td>4.3</td>
+<td>4.5</td>
+</tr>
+<tr>
+<td>Global AED</td>
+<td>Trafo</td>
+<td>—</td>
+<td>3.7</td>
+<td>4.2</td>
+</tr>
+<tr>
+<td>Chunked AED</td>
+<td>—</td>
+<td>—</td>
+<td>6.2</td>
+<td>6.2</td>
+</tr>
+<tr>
+<td>Chunked AED</td>
+<td>LSTM</td>
+<td>No</td>
+<td>5.2</td>
+<td>5.3</td>
+</tr>
+<tr>
+<td>Chunked AED</td>
+<td>LSTM</td>
+<td>Yes</td>
+<td>4.5</td>
+<td>4.8</td>
+</tr>
+<tr>
+<td>Chunked AED</td>
+<td>Trafo</td>
+<td>—</td>
+<td>4.4</td>
+<td>4.7</td>
+</tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li>ILM 先验校正对分块模型同样有效（~0.5% WER 绝对改善）</li>
+<li>使用 Transformer LM 后，分块模型与全局模型的差距进一步缩小</li>
+</ul>
+<h3 id="4-7-向原始-Transducer-过渡-Transition-Towards-Original-Transducer"><a href="#4-7-向原始-Transducer-过渡-Transition-Towards-Original-Transducer" class="headerlink" title="4.7 向原始 Transducer 过渡 (Transition Towards Original Transducer)"></a>4.7 向原始 Transducer 过渡 (Transition Towards Original Transducer)</h3><p>本文还研究了在块大小设为 1（即单帧）的极限情况下，分块 AED 模型与标准 Transducer 之间的剩余差异：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>修改</th>
+<th>dev-other</th>
+<th>test-other</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chunked AED (chunk=1)</td>
+<td>5.8</td>
+<td>6.0</td>
+</tr>
+<tr>
+<td>+ 移除标签上下文（label context）</td>
+<td>退化</td>
+<td>退化</td>
+</tr>
+<tr>
+<td>+ Viterbi 对齐替换为 full-sum</td>
+<td>—</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>当块大小为 1 时，分块 AED 实际上就是一个帧级 Transducer。两者的关键差异在于：</p>
+<ol>
+<li><strong>训练准则</strong>：分块 AED 使用 Viterbi 对齐 + 交叉熵；Transducer 使用 full-sum</li>
+<li><strong>标签依赖</strong>：分块 AED 保留了完整的标签历史上下文；标准 Transducer 通常限制上下文</li>
+</ol>
+<hr>
+<h2 id="5-总结与讨论-Conclusion"><a href="#5-总结与讨论-Conclusion" class="headerlink" title="5. 总结与讨论 (Conclusion)"></a>5. 总结与讨论 (Conclusion)</h2><p>本文的核心贡献：</p>
+<ol>
+<li><strong>极简改造</strong>：仅通过引入 EOC 符号和分块注意力，就将 AED 模型转化为鲁棒的流式模型</li>
+<li><strong>理论洞察</strong>：揭示了分块 AED 与 Transducer 之间的数学等价关系（EOC ↔ blank）</li>
+<li><strong>长音频泛化</strong>：分块模型在长音频上表现极其稳定，彻底解决了全局 AED 的退化问题</li>
+<li><strong>无长度偏差</strong>：分块模型不需要长度归一化等启发式技巧</li>
+<li><strong>训练高效</strong>：从全局模型初始化，仅需少量额外训练（15–30 epochs）</li>
+<li><strong>性能竞争力</strong>：在 LibriSpeech test-other 上达到 4.7% WER（含 Transformer LM），与全局模型（4.2%）差距很小</li>
+</ol>
+<p>代码和完整 recipe 公开在：<a target="_blank" rel="noopener" href="https://github.com/rwth-i6/returnn-experiments/tree/master/2023-chunked-aed">github.com/rwth-i6/returnn-experiments</a></p>
+<hr>
+<h2 id="个人评论"><a href="#个人评论" class="headerlink" title="个人评论"></a>个人评论</h2><p>这篇文章最令人印象深刻的地方在于其<strong>简洁性</strong>。作者展示了一个看似微不足道的修改（用 EOC 替换 EOS + 分块注意力）如何解决了 AED 流式化中长期存在的问题。Table 4 的长音频实验结果尤为震撼——全局模型 WER 从 6.9% 飙升至 62.4%，而分块模型岿然不动。这种将复杂问题化简为优雅方案的能力，正是好研究的标志。</p>
+<p>从实用角度看，该方法的另一大优势是可以从已有的全局 AED 模型热启动，大幅降低了部署流式模型的训练成本。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/" class="category-chain-item">论文精读</a>
+  
+  
+    <span>></span>
+    
+  <a href="/categories/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/%E8%AF%AD%E9%9F%B3%E8%AF%86%E5%88%AB/" class="category-chain-item">语音识别</a>
+  
+  
+
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/Transducer/" class="print-no-link">#Transducer</a>
+      
+        <a href="/tags/Streaming/" class="print-no-link">#Streaming</a>
+      
+        <a href="/tags/Attention/" class="print-no-link">#Attention</a>
+      
+        <a href="/tags/Encoder-Decoder/" class="print-no-link">#Encoder-Decoder</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>论文精读：Chunked Attention-Based Encoder-Decoder Model for Streaming Speech Recognition</div>
+      <div>https://smallsmartao.github.io/2026/05/08/chunked-attention-encoder-decoder-streaming-asr/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年5月8日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年5月8日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/05/08/paper-lime-inference-time-modality-enhancement/" title="LIME: 通过推理时相关性传播增强模态利用以缓解多模态LLM幻觉">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">LIME: 通过推理时相关性传播增强模态利用以缓解多模态LLM幻觉</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/04/29/Step-Audio-R1-5-Technical-Report/" title="Step-Audio-R1.5 Technical Report">
+                        <span class="hidden-mobile">Step-Audio-R1.5 Technical Report</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
