@@ -59,11 +59,11 @@
       
       <tag>ASR</tag>
       
-      <tag>Transducer</tag>
-      
       <tag>Streaming</tag>
       
       <tag>Attention</tag>
+      
+      <tag>Transducer</tag>
       
       <tag>Encoder-Decoder</tag>
       
@@ -187,9 +187,9 @@
       
       <tag>论文解读</tag>
       
-      <tag>Transducer</tag>
-      
       <tag>Streaming</tag>
+      
+      <tag>Transducer</tag>
       
     </tags>
     
@@ -482,9 +482,9 @@
       
       <tag>Full-Duplex</tag>
       
-      <tag>对话系统</tag>
-      
       <tag>VAD</tag>
+      
+      <tag>对话系统</tag>
       
     </tags>
     
@@ -1175,9 +1175,9 @@
     
     <tags>
       
-      <tag>asr</tag>
-      
       <tag>beamsearch</tag>
+      
+      <tag>asr</tag>
       
       <tag>decode</tag>
       
@@ -1304,9 +1304,9 @@
     
     <tags>
       
-      <tag>ctc</tag>
-      
       <tag>asr</tag>
+      
+      <tag>ctc</tag>
       
     </tags>
     
