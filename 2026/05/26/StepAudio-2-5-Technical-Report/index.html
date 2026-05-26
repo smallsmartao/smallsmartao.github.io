@@ -1,0 +1,1125 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息 标题: StepAudio 2.5 Technical Report 机构: 阶跃星辰 (StepFun) 链接: arXiv:2605.23463 日期: 2026-05-22  核心问题：统一模型 vs 专用系统的性能鸿沟语音系统正经历架构收敛——ASR、TTS、实时对话三条技术路线汇聚到同一个终点：将语音视为大语言模型框架内的另一种序列类型。然而，现有的统一音频-语言基座模型（如">
+<meta property="og:type" content="article">
+<meta property="og:title" content="StepAudio 2.5 Technical Report">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/05/26/StepAudio-2-5-Technical-Report/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息 标题: StepAudio 2.5 Technical Report 机构: 阶跃星辰 (StepFun) 链接: arXiv:2605.23463 日期: 2026-05-22  核心问题：统一模型 vs 专用系统的性能鸿沟语音系统正经历架构收敛——ASR、TTS、实时对话三条技术路线汇聚到同一个终点：将语音视为大语言模型框架内的另一种序列类型。然而，现有的统一音频-语言基座模型（如">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_stepaudio25.jpg">
+<meta property="article:published_time" content="2026-05-26T03:30:00.000Z">
+<meta property="article:modified_time" content="2026-05-26T03:22:42.968Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="Audio-LLM">
+<meta property="article:tag" content="RLHF">
+<meta property="article:tag" content="TTS">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_stepaudio25.jpg">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>StepAudio 2.5 Technical Report - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/cover_stepaudio25.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="StepAudio 2.5 Technical Report"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-05-26 11:30" pubdate>
+          2026年5月26日 中午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          25 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">StepAudio 2.5 Technical Report</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年5月26日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>: StepAudio 2.5 Technical Report</li>
+<li><strong>机构</strong>: 阶跃星辰 (StepFun)</li>
+<li><strong>链接</strong>: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2605.23463">arXiv:2605.23463</a></li>
+<li><strong>日期</strong>: 2026-05-22</li>
+</ul>
+<h2 id="核心问题：统一模型-vs-专用系统的性能鸿沟"><a href="#核心问题：统一模型-vs-专用系统的性能鸿沟" class="headerlink" title="核心问题：统一模型 vs 专用系统的性能鸿沟"></a>核心问题：统一模型 vs 专用系统的性能鸿沟</h2><p>语音系统正经历架构收敛——ASR、TTS、实时对话三条技术路线汇聚到同一个终点：将语音视为大语言模型框架内的另一种序列类型。然而，现有的统一音频-语言基座模型（如 Step-Audio 2、Qwen3-Omni）往往在某一两个方向表现不错，却在另一个方向落后于专用系统。</p>
+<p>根本原因在于三个任务的优化目标天然冲突：</p>
+<ul>
+<li><strong>ASR</strong> 追求精准高效的长音频转录</li>
+<li><strong>TTS</strong> 追求可控、自然、富有表现力的语音合成</li>
+<li><strong>实时对话</strong> 在低延迟约束下还需保持人设一致性和副语言响应能力</li>
+</ul>
+<p>StepAudio 2.5 的核心论点是：<strong>一旦文本和音频共享了多模态表示空间，任务特化就不再是架构问题，而是”操作模式”的差异</strong>——即数据构造、优化目标和解码约束的组合。</p>
+<h2 id="统一基座架构"><a href="#统一基座架构" class="headerlink" title="统一基座架构"></a>统一基座架构</h2><h3 id="共享骨干"><a href="#共享骨干" class="headerlink" title="共享骨干"></a>共享骨干</h3><p>架构采用标准的 audio-encoder → adapter → LLM-decoder 模式：</p>
+<ul>
+<li><strong>音频编码器</strong>（冻结）：将波形特征转为紧凑声学嵌入</li>
+<li><strong>适配器</strong>：将声学嵌入映射到 LLM 的隐空间</li>
+<li><strong>解码器</strong>：从文本 LLM 初始化的 MoE 大模型，在统一序列空间中同时处理文本 token 和音频 token</li>
+</ul>
+<p><img src="/images/paper_figs/stepaudio25-unified-foundation-architecture.png" srcset="/img/loading.gif" lazyload alt="统一架构"></p>
+<p>设计是有意非对称的：编码器负责稳定的声学抽象，解码器承载语义、上下文管理、指令遵循和生成。这种非对称性使得下游任务可以共享大部分模型参数。</p>
+<h3 id="任务特化即方向性推理"><a href="#任务特化即方向性推理" class="headerlink" title="任务特化即方向性推理"></a>任务特化即方向性推理</h3><p>三种推理方向共享同一个多模态先验：</p>
+<ul>
+<li><strong>ASR</strong>：音频嵌入条件化解码器生成转录 token（输出空间窄、确定性高）</li>
+<li><strong>TTS</strong>：文本+控制指令条件化解码器生成音频 token（输出空间丰富，核心挑战是自然表达）</li>
+<li><strong>Realtime</strong>：在严格延迟约束下耦合音频理解和响应生成</li>
+</ul>
+<p>核心洞察：基座模型不需要分离的”理解”和”生成”概念——只需要一个高质量的多模态先验加上将监督信号路由到不同输出空间的机制。</p>
+<h2 id="共享数据引擎与基座预训练"><a href="#共享数据引擎与基座预训练" class="headerlink" title="共享数据引擎与基座预训练"></a>共享数据引擎与基座预训练</h2><h3 id="数据生产流水线"><a href="#数据生产流水线" class="headerlink" title="数据生产流水线"></a>数据生产流水线</h3><p>自动化流水线联合支撑语音理解、TTS 和语音对话：</p>
+<ol>
+<li>声音事件检测（SED）+ 语音活动检测（VAD）过滤低质量段</li>
+<li>相邻 VAD 段合并、重新切分为语义完整的基础样本</li>
+<li>音频级标注：质量评分、合成语音检测、说话人计数</li>
+<li>文本级标注：双 ASR 模型转录 + 语言识别，WER/编辑距离/语速交叉验证</li>
+<li>按语言、时长、语义质量、音频质量分级</li>
+</ol>
+<h3 id="渐进式基座训练"><a href="#渐进式基座训练" class="headerlink" title="渐进式基座训练"></a>渐进式基座训练</h3><p>从文本 MoE LLM 初始化，持续预训练 <strong>2.2T tokens</strong>：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>数据量</th>
+<th>序列长度</th>
+<th>关键操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>对齐阶段</td>
+<td>3B tokens ASR</td>
+<td>-</td>
+<td>冻结编码器+LLM，仅训适配器</td>
+</tr>
+<tr>
+<td>多模态 warmup</td>
+<td>128B tokens</td>
+<td>16K</td>
+<td>适配器/embedding/output 高学习率，MoE router 低学习率</td>
+</tr>
+<tr>
+<td>多模态主训练</td>
+<td>800B 文本 + 800B 语音</td>
+<td>16K</td>
+<td>层学习率统一，MoE 辅助损失逐步退火</td>
+</tr>
+<tr>
+<td>冷却阶段</td>
+<td>600B 高质量数据</td>
+<td>32K</td>
+<td>引入 Audio Caption 和 Instruct TTS</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>语音数据覆盖：ASR、TTS、语音翻译、文本-语音交错续写、语音对话等多种输入输出配置。模型学到的不仅是文本和音频的原始关联，而是二者之间的<strong>操作接口</strong>。</p>
+<h2 id="ASR-分支：可验证多-Token-解码"><a href="#ASR-分支：可验证多-Token-解码" class="headerlink" title="ASR 分支：可验证多 Token 解码"></a>ASR 分支：可验证多 Token 解码</h2><h3 id="MTP-5-架构"><a href="#MTP-5-架构" class="headerlink" title="MTP-5 架构"></a>MTP-5 架构</h3><p><img src="/images/paper_figs/stepaudio25-asr-mtp-architecture.png" srcset="/img/loading.gif" lazyload alt="ASR MTP 架构"></p>
+<p>在标准 encoder-adapter-decoder 基础上增加 MTP-5 头：在解码位置 $t$，主分支预测下一个 token $x_{t+1}$，第 $h$ 个 MTP 分支预测 $x_{t+1+h}$（$h \in {1,…,5}$），一次前向产生 6-token 提议。</p>
+<p><strong>验证机制</strong>：提议仅作为已验证前缀被接受——一旦某个未来 token 与正常解码路径不一致，后续提议被拒绝，从已接受前缀继续自回归解码。MTP 严格作为加速原语，不影响最终转录质量。</p>
+<p>每个 MTP block 接收前一分支的隐状态和移位 token embedding，归一化、拼接、投影回解码器隐维度，经 Transformer block 处理。所有分支共享 embedding 层和词表输出头。</p>
+<h3 id="训练流程"><a href="#训练流程" class="headerlink" title="训练流程"></a>训练流程</h3><p><strong>ASR SFT</strong>：32K token 序列预算，SpecAugment 数据增强，冻结编码器，优化适配器和解码器 10K 步，峰值学习率 $2 \times 10^{-5}$。</p>
+<p><strong>MTP 训练</strong>（两阶段）：</p>
+<ol>
+<li><strong>冻结分支对齐</strong>：5 个 MTP block 从最后一层解码器初始化 Transformer 层，仅优化 MTP block，学习率 $2 \times 10^{-4}$</li>
+<li><strong>联合校准</strong>：解冻适配器和解码器，低学习率 $2 \times 10^{-5}$ 联合优化</li>
+</ol>
+<p>训练损失中分支权重按指数衰减：</p>
+<script type="math/tex; mode=display">w_h = \frac{\alpha^{h-1}}{\sum_{j=1}^{H} \alpha^{j-1}}, \quad H=5, \quad \alpha=0.9</script><p>总损失：</p>
+<script type="math/tex; mode=display">\mathcal{L}_t = \text{CE}(p_t, x_{t+1}) + \sum_{h=1}^{H} w_h \text{CE}(p_{t,h}, x_{t+1+h})</script><h3 id="数据"><a href="#数据" class="headerlink" title="数据"></a>数据</h3><ul>
+<li><strong>短音频 SFT</strong>：约 10 万小时，覆盖普通话、英语、code-switching、专业术语、远场/高噪声场景，单样本 ≤30s</li>
+<li><strong>长音频伪标签</strong>：5 万小时，三系统转录 → ROVER 投票融合 → 不一致率 &gt;5% 的片段丢弃 → 相邻段拼接 → LLM 精修标点/术语一致性</li>
+</ul>
+<p><img src="/images/paper_figs/stepaudio25-asr-data-pipeline.png" srcset="/img/loading.gif" lazyload alt="长音频数据流水线"></p>
+<h3 id="评测结果"><a href="#评测结果" class="headerlink" title="评测结果"></a>评测结果</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>测试集</th>
+<th>VibeVoice</th>
+<th>FunASR-Nano</th>
+<th>Doubao-2603</th>
+<th>Qwen3-ASR</th>
+<th><strong>StepAudio 2.5</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>中文</td>
+<td>AISHELL-1</td>
+<td>5.19</td>
+<td>1.88</td>
+<td>2.07</td>
+<td>1.49</td>
+<td><strong>0.71</strong></td>
+</tr>
+<tr>
+<td>中文</td>
+<td>AISHELL-2</td>
+<td>5.10</td>
+<td>2.61</td>
+<td>2.70</td>
+<td>2.50</td>
+<td><strong>2.29</strong></td>
+</tr>
+<tr>
+<td>中文</td>
+<td>WenetSpeech testnet</td>
+<td>14.79</td>
+<td>5.30</td>
+<td><strong>4.03</strong></td>
+<td>4.44</td>
+<td>4.54</td>
+</tr>
+<tr>
+<td>中文</td>
+<td>FLEURS zh</td>
+<td>8.77</td>
+<td>3.19</td>
+<td>2.83</td>
+<td>2.74</td>
+<td><strong>2.63</strong></td>
+</tr>
+<tr>
+<td>中文</td>
+<td><strong>平均</strong></td>
+<td>10.19</td>
+<td>3.66</td>
+<td>3.34</td>
+<td>3.17</td>
+<td><strong>2.97</strong></td>
+</tr>
+<tr>
+<td>英文</td>
+<td>LibriSpeech clean</td>
+<td>2.30</td>
+<td>1.80</td>
+<td>2.94</td>
+<td>1.69</td>
+<td><strong>1.38</strong></td>
+</tr>
+<tr>
+<td>英文</td>
+<td>LibriSpeech other</td>
+<td>5.79</td>
+<td>4.43</td>
+<td>5.98</td>
+<td>3.57</td>
+<td><strong>3.16</strong></td>
+</tr>
+<tr>
+<td>英文</td>
+<td><strong>平均</strong></td>
+<td>7.14</td>
+<td>5.24</td>
+<td>6.67</td>
+<td>3.85</td>
+<td><strong>3.68</strong></td>
+</tr>
+<tr>
+<td>长音频</td>
+<td><strong>平均</strong></td>
+<td>4.87</td>
+<td>5.59</td>
+<td>6.11</td>
+<td>4.20</td>
+<td><strong>3.70</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>解码效率</strong>：RTF = <strong>0.0053</strong>（Qwen3-ASR 为 0.0094，快近一倍）。</p>
+<p><strong>MTP 接受率分析</strong>：MTP-5 平均接受长度 5.0/6，各位置接受率约以 0.9 的因子逐位衰减。MTP-7 相比 MTP-5 仅多 22% 收益但增加 KV cache 回滚开销，MTP-5 是效率-复杂度的最优折中。</p>
+<p><strong>关键洞察</strong>：接地生成任务（grounded generation）比自由文本生成更适合投机解码加速，因为外部模态降低了语义分支的不确定性。</p>
+<h2 id="TTS-分支：纯-LLM-骨干的可控合成"><a href="#TTS-分支：纯-LLM-骨干的可控合成" class="headerlink" title="TTS 分支：纯 LLM 骨干的可控合成"></a>TTS 分支：纯 LLM 骨干的可控合成</h2><h3 id="架构特点"><a href="#架构特点" class="headerlink" title="架构特点"></a>架构特点</h3><p>与 ASR/Realtime 不同，TTS 分支<strong>完全去掉了编码器-适配器模块</strong>，纯靠 LLM 骨干建模。音频 token 被当作一种新”语言”，语音合成被重新定义为纯 next-token prediction 任务。核心挑战变为学习文本和音频表示空间之间的有效对齐。</p>
+<h3 id="训练流程-1"><a href="#训练流程-1" class="headerlink" title="训练流程"></a>训练流程</h3><h4 id="SFT（两阶段）"><a href="#SFT（两阶段）" class="headerlink" title="SFT（两阶段）"></a>SFT（两阶段）</h4><ol>
+<li><strong>全局指令控制</strong>：大规模零样本语音克隆训练，学习粗粒度控制（音色、风格、整体韵律）</li>
+<li><strong>全局+行内联合控制</strong>：使用带全局和行内指令标注的高质量数据，实现句内级别精细控制</li>
+</ol>
+<h4 id="强化学习（RLHF）"><a href="#强化学习（RLHF）" class="headerlink" title="强化学习（RLHF）"></a>强化学习（RLHF）</h4><p>训练生成式奖励模型（GRM）$r_\phi$。对每个 prompt $x$，给定高质量参考响应 $y^<em>$，策略模型 $\pi_\theta$ 生成候选 $y$，GRM 评估 $y$ 相对于 $y^</em>$ 的配对偏好得分：</p>
+<script type="math/tex; mode=display">r_{hf}(x, y, y^*) = s(r_\phi(x, y, y^*))</script><p>其中 $s(\cdot)$ 为奖励塑形变换。这使模型能处理复杂、抽象、高上下文依赖的指令，同时提升自然度和表现力。</p>
+<h3 id="SFT-数据构建"><a href="#SFT-数据构建" class="headerlink" title="SFT 数据构建"></a>SFT 数据构建</h3><p>两类数据源：</p>
+<ol>
+<li><strong>模型合成数据</strong>（全局指令控制）：使用 Step-Audio-EditX 模型生成大规模多样风格/情感变化的语音数据</li>
+<li><strong>录制语音数据</strong>（全局+行内控制）：遵循 Emotional-Context-Speech 标注流水线<ul>
+<li>Whisper-Large-v3 转录 → Montreal Forced Aligner 获取词级时间戳 → 切分为句级样本</li>
+<li>提取并离散化韵律特征：F0、语速、停顿统计、频谱质心、RMS 能量、MFCC 方差、HNR</li>
+<li>LLM 标注生成两种输出：(a) 全局控制描述（整体风格/韵律/情感）；(b) 行内表达描述（局部指令标记）</li>
+<li>ASR 交叉验证，丢弃转录不匹配的段</li>
+</ul>
+</li>
+</ol>
+<h3 id="评测"><a href="#评测" class="headerlink" title="评测"></a>评测</h3><p>采用 Arena 式配对评估，与 MiniMax-2.8-HD、ElevenLabs-v3、Gemini-3.1-Flash-TTS 对比，使用 774 条 prompts。</p>
+<p><img src="/images/paper_figs/stepaudio25-tts-arena.png" srcset="/img/loading.gif" lazyload alt="TTS Arena 胜率"></p>
+<p><strong>StepAudio 2.5 TTS 总体胜率 67.6%</strong>，在所有配对比较中均取得一致优势。</p>
+<h2 id="Realtime-分支：低延迟人设一致对话"><a href="#Realtime-分支：低延迟人设一致对话" class="headerlink" title="Realtime 分支：低延迟人设一致对话"></a>Realtime 分支：低延迟人设一致对话</h2><h3 id="核心挑战"><a href="#核心挑战" class="headerlink" title="核心挑战"></a>核心挑战</h3><ul>
+<li><strong>对话连贯性</strong>：跨多轮维持话题上下文和风格一致性</li>
+<li><strong>人设一致性</strong>：面对多样甚至对抗性输入仍保持特定人格特征</li>
+<li><strong>副语言敏感性</strong>：理解并恰当回应犹豫、笑声、叹息、节奏变化等非语言线索</li>
+<li><strong>奖励稀疏性</strong>：对话属性（自然度、情感适配）缺乏单一真值目标</li>
+</ul>
+<h3 id="训练流程-2"><a href="#训练流程-2" class="headerlink" title="训练流程"></a>训练流程</h3><h4 id="1-音频中心中训练"><a href="#1-音频中心中训练" class="headerlink" title="1. 音频中心中训练"></a>1. 音频中心中训练</h4><p>继承自基座模型，赋予模型稳健的音频感知和长链推理能力。</p>
+<h4 id="2-渐进式-SFT（三维度递进）"><a href="#2-渐进式-SFT（三维度递进）" class="headerlink" title="2. 渐进式 SFT（三维度递进）"></a>2. 渐进式 SFT（三维度递进）</h4><ul>
+<li><strong>对话对齐</strong>：使用指令丰富的对话数据校准多轮交互，处理口语不流畅、中途打断，偏好口语化表达</li>
+<li><strong>人设与风格控制</strong>：从 10,000+ 原生人设出发，通过属性正交分裂（性格、口头禅、情感边界、交互原型）扩展为百万级人设矩阵，配对百万级真实场景对话</li>
+<li><strong>副语言敏感性</strong>：使用带氛围描述符和线索标签（犹豫、轻笑、叹息、呼吸、节奏变化、降调）的真实对话训练</li>
+</ul>
+<p><strong>动态排练机制</strong>：交互数据与通用指令/推理任务按验证指标动态交错，防止灾难性遗忘。</p>
+<h4 id="3-RLHF（生成式奖励模型）"><a href="#3-RLHF（生成式奖励模型）" class="headerlink" title="3. RLHF（生成式奖励模型）"></a>3. RLHF（生成式奖励模型）</h4><p>PPO + KL 正则化。生成式奖励模型基于显式交互评分维度（rubrics）评估候选响应：</p>
+<ul>
+<li>多轮对话数据鼓励跨轮一致性</li>
+<li>单轮 prompts 提供更长推理和偏好表达空间</li>
+<li>配对偏好比较作为主奖励信号</li>
+<li>Rubric 得分补充指令敏感维度（如跨轮连贯、忠实用户内容）</li>
+</ul>
+<h3 id="数据-1"><a href="#数据-1" class="headerlink" title="数据"></a>数据</h3><p>三类互补数据流：</p>
+<ol>
+<li><strong>对话骨干</strong>：自然口语多轮对话，偏好轮间连续性、省略/不流畅表达，弱化书面风格</li>
+<li><strong>人设条件化对话</strong>：10,000 原生人设 → 属性正交分裂 → 百万级人设矩阵 × 百万级真实场景</li>
+<li><strong>副语言线索对话</strong>：带氛围描述符和线索标签的对话</li>
+</ol>
+<p>全部通过统一流水线检查人设一致性、交叉验证标注、去重。</p>
+<h3 id="评测-1"><a href="#评测-1" class="headerlink" title="评测"></a>评测</h3><p>五个评测套件覆盖主观+客观：</p>
+<p><img src="/images/paper_figs/stepaudio25-realtime-evaluation.png" srcset="/img/loading.gif" lazyload alt="Realtime 评测结果"></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>人类主观评估</th>
+<th>通用对话</th>
+<th>车载对话</th>
+<th>对话理解</th>
+<th>Step-SPQA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Doubao Realtime-202604</td>
+<td>70.70</td>
+<td>62.61</td>
+<td>75.69</td>
+<td>16.09</td>
+<td>33.80</td>
+</tr>
+<tr>
+<td>Gemini Live-202604</td>
+<td>67.16</td>
+<td>76.51</td>
+<td>79.40</td>
+<td>58.05</td>
+<td>63.20</td>
+</tr>
+<tr>
+<td>GPT-realtime-1.5</td>
+<td>68.01</td>
+<td>81.60</td>
+<td>80.80</td>
+<td>80.46</td>
+<td>53.20</td>
+</tr>
+<tr>
+<td><strong>StepAudio 2.5</strong></td>
+<td><strong>80.41</strong></td>
+<td><strong>86.36</strong></td>
+<td><strong>84.80</strong></td>
+<td><strong>82.18</strong></td>
+<td><strong>79.80</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>主观评估领先第二名 <strong>+10.0 分</strong>，Step-SPQA 领先 <strong>+16.6 分</strong>。副语言条件化增强了声学理解而未损害通用推理能力。</p>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>StepAudio 2.5 证明了一个关键路线：<strong>统一音频-语言基座已经可以在 ASR、TTS、实时对话三个方向同时超越专用系统</strong>。技术杠杆不在架构创新，而在 post-training 的系统工程——以 RLHF 为核心分化机制，配合任务特化的解码策略（MTP 加速 ASR、纯 NTP 做 TTS、生成式奖励模型驱动实时对话），将同一个共享骨干塑造为三种截然不同的操作模式。</p>
+<p>对从业者的启示：</p>
+<ol>
+<li><strong>接地生成任务天然适合投机解码</strong>——外部模态降低语义不确定性</li>
+<li><strong>RLHF 不只是对齐工具，更是任务分化工具</strong>——相同底座通过不同偏好信号分化出不同能力</li>
+<li><strong>数据工程的分阶段设计</strong>（对齐→warmup→主训练→冷却）比简单堆量更有效</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Audio-LLM/" class="print-no-link">#Audio-LLM</a>
+      
+        <a href="/tags/RLHF/" class="print-no-link">#RLHF</a>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/TTS/" class="print-no-link">#TTS</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>StepAudio 2.5 Technical Report</div>
+      <div>https://smallsmartao.github.io/2026/05/26/StepAudio-2-5-Technical-Report/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年5月26日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年5月26日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/05/23/training-science-strength-muscle-endurance/" title="力量、肌肉、耐力到底怎么练？从训练科学重新理解身体进步">
+                        <span class="hidden-mobile">力量、肌肉、耐力到底怎么练？从训练科学重新理解身体进步</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
