@@ -1,0 +1,1173 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息 标题: Efficient ASR Training with Conversations that Never Happened 作者: Máté Gedeon, Péter Mihajlik 机构: Budapest University of Technology and Economics; SpeechTex Ltd.; ELTE Research Centre for Lin">
+<meta property="og:type" content="article">
+<meta property="og:title" content="论文解读：Efficient ASR Training with Conversations that Never Happened">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/06/03/paper-efficient-asr-synthetic-conversations/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息 标题: Efficient ASR Training with Conversations that Never Happened 作者: Máté Gedeon, Péter Mihajlik 机构: Budapest University of Technology and Economics; SpeechTex Ltd.; ELTE Research Centre for Lin">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_synthetic_conv_asr.png">
+<meta property="article:published_time" content="2026-06-02T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-03T02:12:53.678Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="Synthetic Data">
+<meta property="article:tag" content="TTS">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_synthetic_conv_asr.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>论文解读：Efficient ASR Training with Conversations that Never Happened - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/banner_cover_synthetic_conv_asr.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="论文解读：Efficient ASR Training with Conversations that Never Happened"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-06-03 00:00" pubdate>
+          2026年6月3日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          31 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">论文解读：Efficient ASR Training with Conversations that Never Happened</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年6月3日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>: Efficient ASR Training with Conversations that Never Happened</li>
+<li><strong>作者</strong>: Máté Gedeon, Péter Mihajlik</li>
+<li><strong>机构</strong>: Budapest University of Technology and Economics; SpeechTex Ltd.; ELTE Research Centre for Linguistics</li>
+<li><strong>arXiv</strong>: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2606.03957">2606.03957</a></li>
+<li><strong>发表时间</strong>: 2026年6月2日</li>
+</ul>
+<hr>
+<h2 id="1-引言（Introduction）"><a href="#1-引言（Introduction）" class="headerlink" title="1. 引言（Introduction）"></a>1. 引言（Introduction）</h2><p>对话式自动语音识别（Conversational ASR）在低资源语言和垂直领域中面临严重的数据瓶颈：可用语料无法覆盖真实对话中的说话人多样性、话语现象和话题变化。传统数据增强手段——如速度/噪声扰动（Ko et al., 2015）、SpecAugment（Park et al., 2019）——仅能引入声学层面的变化，无法提供新的词汇内容、说话人角色、话语结构或话题变化。基于 TTS 的合成虽然可以从任意文本生成语音，但单句级别合成无法刻画对话中说话人切换、停顿、插话和重叠等交互特征。</p>
+<p>本文提出一个统一的合成对话数据生成流水线（pipeline），利用大语言模型（LLM）生成场景级对话，将说话人属性映射到 TTS 语音配置文件，并通过说话人感知的对话模拟（Speaker-Aware Simulated Conversation）组装为多说话人对话波形。在匈牙利语 BEA-Dialogue 基准上进行评估，最终结果表明：仅使用 67 小时真实对话加 636 小时合成数据，即可超过一个在 2700 小时匈牙利语语音上训练的零样本模型。</p>
+<h3 id="核心贡献"><a href="#核心贡献" class="headerlink" title="核心贡献"></a>核心贡献</h3><ol>
+<li>统一框架：结合 LLM 场景生成、TTS 合成和多说话人对话构建，用于 ASR 数据增强</li>
+<li>元数据条件化语音选择：将生成的说话人年龄和性别属性映射到最匹配的参考语音配置文件</li>
+<li>多 LLM 对比评估：在统一增强协议下比较 GPT、Grok、Gemini、Qwen 和 Claude Haiku 五个 LLM 家族</li>
+<li>实证证据：LLM 驱动的说话人感知合成对话可改善匈牙利语对话 ASR 性能</li>
+</ol>
+<hr>
+<h2 id="2-相关工作（Related-Work）"><a href="#2-相关工作（Related-Work）" class="headerlink" title="2. 相关工作（Related Work）"></a>2. 相关工作（Related Work）</h2><p>论文梳理了以下几条研究线索：</p>
+<p><strong>ASR 架构演进</strong>：从深度声学模型（Hinton et al., 2012）到 CTC/Encoder-Decoder 端到端方法（Graves et al., 2006; Chan et al., 2016），再到 Conformer（Gulati et al., 2020）、wav2vec 2.0（Baevski et al., 2020）、HuBERT（Hsu et al., 2021）和 Whisper（Radford et al., 2023）。这些进展依赖大规模数据，低资源语言仍受限于标注语音不足。</p>
+<p><strong>数据增强方法</strong>：速度扰动（Ko et al., 2015）和 SpecAugment（Park et al., 2019）属于信号级增强，不能引入新词汇或对话结构。神经 TTS（WaveNet、Tacotron、FastSpeech、xTTS）可以从文本合成语音，但句子级合成不足以模拟对话场景。在英语中已有对话级 TTS 模型（Pheme、FireRedTTS-2），但大多数语言尚不具备此类模型。</p>
+<p><strong>LLM 文本生成</strong>：大语言模型具有生成连贯场景、说话人画像和多轮对话的能力（Brown et al., 2020; Ouyang et al., 2022），使得从”转录级增强”向”场景级对话合成”跃迁成为可能。</p>
+<p><strong>对话语音特征</strong>：对话具有系统化的轮次切换、沉默和重叠模式（Sacks et al., 1974）。经典对话语料库（Switchboard、ICSI、AMI）推动了自发多说话人识别研究。匈牙利语方面，BEA-Dialogue 提供了对话 ASR 的领域资源，但标注数据量有限。</p>
+<p><strong>模拟对话方法</strong>：早期工作通过拼接孤立语句、采样静音时长或人工引入重叠模式来近似自发对话（Landini et al., 2022; Yamashita et al., 2022）。Gedeon and Mihajlik (2026b) 提出了说话人感知的模拟对话策略（SASC），更好地再现对话时序结构。本文在此基础上，用 LLM 动态生成场景和对话，替代固定语句库。</p>
+<hr>
+<h2 id="3-方法论（Methodology）"><a href="#3-方法论（Methodology）" class="headerlink" title="3. 方法论（Methodology）"></a>3. 方法论（Methodology）</h2><p>本文提出三阶段流水线：(i) LLM 场景与对话生成；(ii) 元数据条件化 TTS 合成；(iii) 说话人感知对话模拟。</p>
+<h3 id="3-1-问题设定与符号"><a href="#3-1-问题设定与符号" class="headerlink" title="3.1 问题设定与符号"></a>3.1 问题设定与符号</h3><p>设原始 ASR 训练集为 $D_{\text{real}} = {(x_i, y_i)}_{i=1}^N$，其中 $x_i$ 为音频段，$y_i$ 为转录文本。目标是构建合成对话集 $D_{\text{syn}} = {(\tilde{x}_k, \tilde{y}_k)}_{k=1}^K$，在合并数据上训练：</p>
+<script type="math/tex; mode=display">D_{\text{train}} = D_{\text{real}} \cup D_{\text{syn}} \tag{1}</script><h3 id="3-2-阶段一：LLM-场景与对话生成"><a href="#3-2-阶段一：LLM-场景与对话生成" class="headerlink" title="3.2 阶段一：LLM 场景与对话生成"></a>3.2 阶段一：LLM 场景与对话生成</h3><p>采用两步提示协议（two-step prompting protocol）。</p>
+<p><strong>场景生成</strong>。对每个合成对话 $k$，生成场景：</p>
+<script type="math/tex; mode=display">c_k = (t_k, M_k), \quad M_k = \{m_{k,1}, \ldots, m_{k,S_k}\} \tag{2}</script><p>其中 $t_k$ 为话题，$m_{k,j}$ 为说话人 $j$ 的元数据元组：</p>
+<script type="math/tex; mode=display">m_{k,j} = (a_{k,j},\; g_{k,j},\; o_{k,j},\; r_{k,j}) \tag{3}</script><p>分别对应年龄 $a$、性别 $g$、职业 $o$、对话角色 $r$。提示设计鼓励话题多样性、自传式/经验式讨论、避免过于宽泛或过于冷门的话题，以及年龄和职业的真实变化。</p>
+<p><strong>对话生成</strong>。以场景 $c_k$ 为条件，生成轮次级对话：</p>
+<script type="math/tex; mode=display">U_k = \left((z_{k,1}, u_{k,1}), \ldots, (z_{k,T_k}, u_{k,T_k})\right) \tag{4}</script><p>其中 $u_{k,t}$ 为第 $t$ 轮文本，$z_{k,t} \in {1,\ldots,S_k}$ 为当前说话人索引。使用固定示例对话稳定风格与轮次结构，输出经基本质量过滤（有效说话人标签、非空轮次、正确格式）。</p>
+<h3 id="3-3-阶段二：元数据条件化-TTS-合成"><a href="#3-3-阶段二：元数据条件化-TTS-合成" class="headerlink" title="3.3 阶段二：元数据条件化 TTS 合成"></a>3.3 阶段二：元数据条件化 TTS 合成</h3><p>每个语句 $u_{k,t}$ 由从参考池中选择的说话人配置文件合成。使用 xTTS-v2 神经 TTS 模型，逐句合成，利用其语音克隆能力。</p>
+<p>设参考库为 $R$，每个样本 $r \in R$ 有人口统计标注 $(a^{(r)}, g^{(r)})$。对场景 $k$ 中的说话人 $j$，选择最匹配参考：</p>
+<script type="math/tex; mode=display">\rho^*_{k,j} = \arg\min_{r \in R:\; g^{(r)} = g_{k,j}} |a^{(r)} - a_{k,j}| \tag{5}</script><p>即在性别匹配的参考中选择年龄最接近者。然后合成：</p>
+<script type="math/tex; mode=display">\hat{x}_{k,t} = G\left(u_{k,t},\; \rho^*_{k,z_{k,t}}\right) \tag{6}</script><p>其中 $G(\cdot)$ 为 TTS 模型。这一映射在保持 LLM 生成的语言多样性的同时，提供对说话人身份的显式控制。</p>
+<h3 id="3-4-阶段三：说话人感知对话模拟"><a href="#3-4-阶段三：说话人感知对话模拟" class="headerlink" title="3.4 阶段三：说话人感知对话模拟"></a>3.4 阶段三：说话人感知对话模拟</h3><p>将合成轮次 ${\hat{x}_{k,t}}_{t=1}^{T_k}$ 转换为单个对话波形。设 $d_{k,t}$ 为语句 $t$ 的时长，递归定义起始时间：</p>
+<script type="math/tex; mode=display">\tau_{k,1} = 0 \tag{7}</script><script type="math/tex; mode=display">\tau_{k,t} = \tau_{k,t-1} + d_{k,t-1} + \Delta_{k,t} \quad (t > 1) \tag{8}</script><p>其中 $\Delta_{k,t}$ 为采样的轮间偏移。若 $z_{k,t} = z_{k,t-1}$（同一说话人），则 $\Delta_{k,t} \sim P_{\text{same}}$；否则 $\Delta_{k,t} \sim P_{\text{switch}}$。负值允许重叠，正值模拟停顿。</p>
+<p>最终混合对话：</p>
+<script type="math/tex; mode=display">\tilde{x}_k(\tau) = \sum_{t=1}^{T_k} \hat{x}_{k,t}(\tau - \tau_{k,t}) \tag{9}</script><p>转录 $\tilde{y}_k$ 由有序轮次及其时间戳构成。该阶段的目的是在不依赖对话级 TTS 模型（多数语言不可用）的情况下，生成更接近对话 ASR 条件的训练样本。</p>
+<h3 id="3-5-流水线输出"><a href="#3-5-流水线输出" class="headerlink" title="3.5 流水线输出"></a>3.5 流水线输出</h3><p>输出带时间戳的多说话人对话及对齐转录，适用于端到端 ASR 训练。</p>
+<hr>
+<h2 id="4-实验设置（Experiments）"><a href="#4-实验设置（Experiments）" class="headerlink" title="4. 实验设置（Experiments）"></a>4. 实验设置（Experiments）</h2><p>实验围绕三个研究问题：(i) 合成对话是否改善仅用真实数据的训练？(ii) 下游性能对 LLM 选择的敏感度如何？(iii) 生成器混合是否带来互补增益？</p>
+<h3 id="4-1-合成数据生成"><a href="#4-1-合成数据生成" class="headerlink" title="4.1 合成数据生成"></a>4.1 合成数据生成</h3><h4 id="4-1-1-LLM-后端"><a href="#4-1-1-LLM-后端" class="headerlink" title="4.1.1 LLM 后端"></a>4.1.1 LLM 后端</h4><p>使用五个 LLM 后端通过 API 生成，使用相同提示模板和控制参数，可用时使用批量推理降低成本。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>LLM</th>
+<th>费用 (USD)</th>
+<th>合成音频时长 (h)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPT-5.4 mini</td>
+<td>5.81</td>
+<td>146</td>
+</tr>
+<tr>
+<td>Claude Haiku 4.5</td>
+<td>8.70</td>
+<td>127</td>
+</tr>
+<tr>
+<td>Gemini 3.5 Flash</td>
+<td>4.50</td>
+<td>85</td>
+</tr>
+<tr>
+<td>Grok 4.1 (non-reasoning)</td>
+<td>0.55</td>
+<td>81</td>
+</tr>
+<tr>
+<td>Qwen3-235B-A22B</td>
+<td>2.62</td>
+<td>73</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>尽管使用相同提示，各模型生成的数据集总时长不同，这源于各模型特定的生成行为（主要是平均响应长度差异）。为保证比较公平性，数据集未做后处理均衡。</p>
+<h4 id="4-1-2-TTS-参考库"><a href="#4-1-2-TTS-参考库" class="headerlink" title="4.1.2 TTS 参考库"></a>4.1.2 TTS 参考库</h4><p>使用 xTTS-v2，参考库来自 BEA-Large 的语音片段。候选参考过滤为 3.5–15 秒时长，限定为包含自发语音的模块（目标域为对话 ASR 而非朗读语音），并排除出现在 BEA-Dialogue 开发或评估集中的说话人。过滤后参考库包含 287 位说话人，年龄和性别覆盖充分。</p>
+<h4 id="4-1-3-对话模拟"><a href="#4-1-3-对话模拟" class="headerlink" title="4.1.3 对话模拟"></a>4.1.3 对话模拟</h4><p>采用 Gedeon and Mihajlik (2026a) 的说话人感知模拟对话框架，使用从 BEA-Dialogue 提取的对话统计量，保持已发表的核密度带宽和模拟参数不变，从而隔离文本生成阶段的效果。</p>
+<h3 id="4-2-评估协议"><a href="#4-2-评估协议" class="headerlink" title="4.2 评估协议"></a>4.2 评估协议</h3><p>在 BEA-Dialogue 训练集上增加合成对话，仅在 BEA-Dialogue 评估集上评估。BEA-Dialogue 包含 11,662 个对话片段，平均时长约 26 秒，总计 84.9 小时。训练/开发/评估分区在所有说话人角色上完全不相交。</p>
+<p>主要评估指标为<strong>拼接最小排列词错误率（cpWER）</strong>和<strong>字符错误率（cpCER）</strong>（Watanabe et al., 2020）。</p>
+<p>ASR 模型：以英语 FastConformer-Large CTC 为初始化，使用 NVIDIA NeMo 框架，单张 NVIDIA RTX 5000 Ada（32GB VRAM），batch size 16，学习率 $5 \times 10^{-4}$，余弦退火调度器。</p>
+<p><strong>实验设计</strong>：</p>
+<ul>
+<li><strong>单生成器缩放</strong>：每个 LLM 生成 $K \in {100, 200, 300, 400, 500}$ 段对话，共 25 个条件</li>
+<li><strong>混合研究</strong>：固定 500 段对话预算，形成均匀混合（2-way 到 5-way）</li>
+<li><strong>放大研究</strong>：移除预算限制，使用每个最佳组合的全部可用合成数据</li>
+</ul>
+<h3 id="4-3-基线系统"><a href="#4-3-基线系统" class="headerlink" title="4.3 基线系统"></a>4.3 基线系统</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>基线</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Whisper (zero-shot)</td>
+<td>Whisper-large-v3 零样本</td>
+</tr>
+<tr>
+<td>Real-only</td>
+<td>FastConformer-Large 仅在 BEA-Dialogue 训练集上微调</td>
+</tr>
+<tr>
+<td>SASC augmentation</td>
+<td>同一骨干 + BEA-Large 语句构建的说话人感知模拟对话</td>
+</tr>
+<tr>
+<td>Hungarian monolingual (zero-shot)</td>
+<td>FastConformer-Large 在 2700 小时匈牙利语标注语音上训练，BEA-Dialogue 未包含在训练集中</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="5-实验结果（Results）"><a href="#5-实验结果（Results）" class="headerlink" title="5. 实验结果（Results）"></a>5. 实验结果（Results）</h2><h3 id="5-1-单生成器设置"><a href="#5-1-单生成器设置" class="headerlink" title="5.1 单生成器设置"></a>5.1 单生成器设置</h3><p>所有五个生成器在最大评估规模 $K=500$ 时获得最佳性能，表明合成数据在整个测试范围内持续有用。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>LLM</th>
+<th>最佳 K</th>
+<th>cpCER</th>
+<th>cpWER</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPT-5.4 mini</td>
+<td>500</td>
+<td>8.20</td>
+<td>17.75</td>
+</tr>
+<tr>
+<td>Claude Haiku 4.5</td>
+<td>500</td>
+<td>8.26</td>
+<td>18.02</td>
+</tr>
+<tr>
+<td>Gemini 3.5 Flash</td>
+<td>500</td>
+<td>8.26</td>
+<td>18.18</td>
+</tr>
+<tr>
+<td>Grok 4.1 (non-reasoning)</td>
+<td>500</td>
+<td>8.41</td>
+<td>18.58</td>
+</tr>
+<tr>
+<td>Qwen3-235B-A22B</td>
+<td>500</td>
+<td>8.47</td>
+<td>18.60</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>GPT-5.4 mini 是最强单一生成器。模型排名与生成数据集规模一致，但规模并非唯一因素——例如 Gemini 仅比 Grok 多 4 小时音频，但 cpCER/cpWER 差距远大于 Grok 与 Qwen 之间的差距。</p>
+<p><img src="/images/paper_figs/2606.03957/ablation_results.png" srcset="/img/loading.gif" lazyload alt="单生成器缩放实验"><br><em>图 1：单生成器设置下不同对话数量的 cpWER 和 cpCER 变化曲线。</em></p>
+<p>缩放曲线并非完全单调：Grok 和 Qwen 在中间规模交换排名，均在 $K=400$ 时的 cpCER 弱于 $K=300$，表明规模之外，生成对话的语言和声学属性也影响增强数据的迁移效果。</p>
+<h3 id="5-2-生成器混合"><a href="#5-2-生成器混合" class="headerlink" title="5.2 生成器混合"></a>5.2 生成器混合</h3><p>在固定 500 段对话预算下评估组合效果：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>混合规模</th>
+<th>最佳子集</th>
+<th>cpCER</th>
+<th>cpWER</th>
+<th>ΔcpWER vs 最佳单一</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1-mix</td>
+<td>GPT</td>
+<td>8.20</td>
+<td>17.75</td>
+<td>0.00</td>
+</tr>
+<tr>
+<td>2-mix</td>
+<td>GPT + Haiku</td>
+<td>8.19</td>
+<td>17.56</td>
+<td>-0.19</td>
+</tr>
+<tr>
+<td>3-mix</td>
+<td>GPT + Haiku + Qwen</td>
+<td>8.22</td>
+<td>17.87</td>
+<td>+0.12</td>
+</tr>
+<tr>
+<td>4-mix</td>
+<td>GPT + Haiku + Qwen + Grok</td>
+<td>8.29</td>
+<td>18.19</td>
+<td>+0.44</td>
+</tr>
+<tr>
+<td>5-mix</td>
+<td>GPT + Haiku + Qwen + Grok + Gemini</td>
+<td>8.35</td>
+<td>18.27</td>
+<td>+0.52</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键发现</strong>：最佳固定预算混合为 GPT + Haiku（2-mix），改善 0.19 绝对 cpWER。但更大混合在固定预算下反而退化——添加较弱生成器替换了高价值 GPT/Haiku 样本，降低增强集的平均效用。</p>
+<p><img src="/images/paper_figs/2606.03957/upset_cpwer.png" srcset="/img/loading.gif" lazyload alt="UpSet 图"><br><em>图 2：各生成器混合子集的 cpWER（BEA-Dialogue eval）。</em></p>
+<p><img src="/images/paper_figs/2606.03957/cpwer_heatmap.png" srcset="/img/loading.gif" lazyload alt="配对混合热力图"><br><em>图 3（左）：配对混合 cpWER 热力图。对角线为单生成器基线，非对角线为均匀两生成器混合。</em></p>
+<p><img src="/images/paper_figs/2606.03957/cpcer_heatmap.png" srcset="/img/loading.gif" lazyload alt="配对混合 cpCER 热力图"><br><em>图 3（右）：配对混合 cpCER 热力图。</em></p>
+<p>值得注意的是，Qwen 在混合设置中出现在两个 top-5 配置中，而 Gemini 完全缺席——尽管 Gemini 在单生成器设置中显著优于 Qwen。这说明生成器对混合的贡献不能仅从其单独性能推断，生成器间的交互决定了最终训练数据的有效性。</p>
+<h3 id="5-3-放大实验与基线对比"><a href="#5-3-放大实验与基线对比" class="headerlink" title="5.3 放大实验与基线对比"></a>5.3 放大实验与基线对比</h3><p>移除固定预算限制，使用每个选定生成器的全部可用合成数据：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>设置</th>
+<th>配置</th>
+<th>训练规模 (h)</th>
+<th>cpCER</th>
+<th>cpWER</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Baseline 1</td>
+<td>Whisper (z-s)</td>
+<td>N/A</td>
+<td>12.18</td>
+<td>22.13</td>
+</tr>
+<tr>
+<td>Baseline 2</td>
+<td>2700h monolingual (z-s)</td>
+<td>2700</td>
+<td>7.71</td>
+<td>16.27</td>
+</tr>
+<tr>
+<td>Baseline 3</td>
+<td>BEA-Dialogue only</td>
+<td>67</td>
+<td>9.00</td>
+<td>20.44</td>
+</tr>
+<tr>
+<td>Baseline 4</td>
+<td>BEA-Dialogue + simulated</td>
+<td>67 + 209</td>
+<td>8.13</td>
+<td>17.64</td>
+</tr>
+<tr>
+<td>1-scale</td>
+<td>GPT</td>
+<td>67 + 146</td>
+<td>8.20</td>
+<td>17.75</td>
+</tr>
+<tr>
+<td>2-scale</td>
+<td>GPT + Haiku</td>
+<td>67 + 273</td>
+<td>8.03</td>
+<td>16.96</td>
+</tr>
+<tr>
+<td>3-scale</td>
+<td>GPT + Haiku + Qwen</td>
+<td>67 + 346</td>
+<td>8.05</td>
+<td>16.86</td>
+</tr>
+<tr>
+<td><strong>4-scale</strong></td>
+<td><strong>GPT + Haiku + Qwen + Grok</strong></td>
+<td><strong>67 + 427</strong></td>
+<td><strong>7.97</strong></td>
+<td><strong>16.65</strong></td>
+</tr>
+<tr>
+<td>5-scale</td>
+<td>GPT + Haiku + Qwen + Grok + Gemini</td>
+<td>67 + 512</td>
+<td>8.06</td>
+<td>16.68</td>
+</tr>
+<tr>
+<td><strong>4-scale + sim</strong></td>
+<td><strong>GPT + Haiku + Qwen + Grok + simulated</strong></td>
+<td><strong>67 + 427 + 209</strong></td>
+<td><strong>7.57</strong></td>
+<td><strong>15.40</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>核心结论</strong>：</p>
+<ol>
+<li><strong>4-scale（GPT + Haiku + Qwen + Grok）</strong> 是纯 LLM 生成的最佳配置，达到 7.97 cpCER / 16.65 cpWER，相比仅用 BEA-Dialogue 训练分别改善 1.03 和 3.79 个绝对百分点</li>
+<li>添加 Gemini（5-scale）增加至 512 小时合成但略微恶化两项指标——规模本身不足，边际生成器必须贡献有用的变化</li>
+<li><strong>4-scale + sim</strong> 进一步将 cpWER 从 16.65 降至 15.40，cpCER 从 7.97 降至 7.57，为全表最优。两种增强源互补：LLM 生成对话提供可控的话题与对话多样性，真实语句模拟保留自然声学和词汇特性</li>
+<li>最终组合模型<strong>超越了 2700 小时匈牙利语训练的零样本系统</strong>（16.27 → 15.40 cpWER），而训练数据仅为 67h 真实 + 636h 合成</li>
+</ol>
+<p><strong>统计显著性</strong>（bootstrap 检验，$\alpha = 0.05$）：</p>
+<ul>
+<li>所有放大模型在 cpCER 和 cpWER 上显著优于 Baseline 1 和 3</li>
+<li>2/3/4/5-scale 在 cpWER 上显著优于 Baseline 4（2700h monolingual）</li>
+<li>4-scale + sim 在 cpWER 上显著优于 Baseline 2（SASC augmentation）</li>
+</ul>
+<hr>
+<h2 id="6-结论（Conclusion）"><a href="#6-结论（Conclusion）" class="headerlink" title="6. 结论（Conclusion）"></a>6. 结论（Conclusion）</h2><p>本文提出了一个 LLM 驱动的对话 ASR 增强流水线，结合场景级对话生成、元数据条件化 TTS 合成和说话人感知对话模拟。主要结论：</p>
+<ol>
+<li><strong>单生成器增强已有效</strong>：即使使用单一 LLM，合成对话也能改善仅用真实数据的训练</li>
+<li><strong>混合策略需审慎</strong>：固定预算下仅 GPT + Haiku 互补有效，更大混合稀释强源反而退化</li>
+<li><strong>移除预算限制后可持续扩展</strong>：放大最强生成器组合带来进一步增益，前提是新增生成器贡献有用变化</li>
+<li><strong>LLM 合成与真实语句模拟互补</strong>：二者结合产生最强系统，仅用少量真实对话即超越大规模通用训练</li>
+</ol>
+<p><strong>未来方向</strong>：将实验扩展至 500 段以上的对话规模；在更领域特定的语料上评估流水线的可迁移性和鲁棒性。</p>
+<hr>
+<h2 id="个人评注"><a href="#个人评注" class="headerlink" title="个人评注"></a>个人评注</h2><p>本文的核心贡献在于将”合成对话”从简单的 TTS 句子拼接提升到了场景驱动、元数据感知的完整流水线层面。几个值得关注的点：</p>
+<ul>
+<li><strong>成本效率极高</strong>：全部 LLM API 费用不超过 \$22.18，生成 512 小时合成音频，这使得该方法对低资源场景极具实用价值</li>
+<li><strong>生成器选择比数据量更重要</strong>：Gemini 在单生成器设置中排第三，但在混合中完全无贡献，揭示了”更多 ≠ 更好”的重要洞察</li>
+<li><strong>方法的语言无关性</strong>：虽在匈牙利语上验证，但流水线仅需目标语言的 TTS 系统和说话人参考库即可迁移</li>
+<li><strong>局限性</strong>：xTTS-v2 的合成质量对非英语语言可能存在差距；对话模拟的时序参数源自特定语料，跨语言迁移需重新标定</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
+      
+        <a href="/tags/TTS/" class="print-no-link">#TTS</a>
+      
+        <a href="/tags/Synthetic-Data/" class="print-no-link">#Synthetic Data</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>论文解读：Efficient ASR Training with Conversations that Never Happened</div>
+      <div>https://smallsmartao.github.io/2026/06/03/paper-efficient-asr-synthetic-conversations/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年6月3日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年6月3日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/06/03/svhalluc-speech-vision-hallucination-benchmark/" title="SVHalluc: 音视频大语言模型中语音-视觉幻觉的系统性基准评测">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">SVHalluc: 音视频大语言模型中语音-视觉幻觉的系统性基准评测</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/06/02/UNISON-Unified-Sound-Generation-Editing-Deep-LLM-Fusion/" title="UNISON: 基于深度 LLM 融合的统一声音生成与编辑框架">
+                        <span class="hidden-mobile">UNISON: 基于深度 LLM 融合的统一声音生成与编辑框架</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
