@@ -1,0 +1,1364 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息 标题: Audio Interaction Model 作者: Zhifei Xie, Zihang Liu, Ze An, Xiaobin Hu 等 (NTU &#x2F; NUS &#x2F; CUHK) 链接: arXiv:2606.05121 代码: GitHub 数据: StreamAudio-2M   1. 为什么需要 Audio Interaction Model？1.1 离线范式的根本局限当">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Audio Interaction Model：从离线音频理解迈向统一流式音频交互">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/06/05/paper-audio-interaction-model/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息 标题: Audio Interaction Model 作者: Zhifei Xie, Zihang Liu, Ze An, Xiaobin Hu 等 (NTU &#x2F; NUS &#x2F; CUHK) 链接: arXiv:2606.05121 代码: GitHub 数据: StreamAudio-2M   1. 为什么需要 Audio Interaction Model？1.1 离线范式的根本局限当">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_audio_interaction.png">
+<meta property="article:published_time" content="2026-06-04T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-05T02:40:44.444Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="多模态交互">
+<meta property="article:tag" content="流式推理">
+<meta property="article:tag" content="语音对话">
+<meta property="article:tag" content="音频大模型">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_audio_interaction.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Audio Interaction Model：从离线音频理解迈向统一流式音频交互 - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/cover_audio_interaction.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Audio Interaction Model：从离线音频理解迈向统一流式音频交互"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-06-05 00:00" pubdate>
+          2026年6月5日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          421 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          4 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Audio Interaction Model：从离线音频理解迈向统一流式音频交互</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年6月5日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>: Audio Interaction Model</li>
+<li><strong>作者</strong>: Zhifei Xie, Zihang Liu, Ze An, Xiaobin Hu 等 (NTU / NUS / CUHK)</li>
+<li><strong>链接</strong>: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2606.05121">arXiv:2606.05121</a></li>
+<li><strong>代码</strong>: <a target="_blank" rel="noopener" href="https://github.com/xzf-thu/Audio-Interaction">GitHub</a></li>
+<li><strong>数据</strong>: <a target="_blank" rel="noopener" href="https://huggingface.co/datasets/zhifeixie/StreamAudio-2M">StreamAudio-2M</a></li>
+</ul>
+<hr>
+<h2 id="1-为什么需要-Audio-Interaction-Model？"><a href="#1-为什么需要-Audio-Interaction-Model？" class="headerlink" title="1. 为什么需要 Audio Interaction Model？"></a>1. 为什么需要 Audio Interaction Model？</h2><h3 id="1-1-离线范式的根本局限"><a href="#1-1-离线范式的根本局限" class="headerlink" title="1.1 离线范式的根本局限"></a>1.1 离线范式的根本局限</h3><p>当前大型音频语言模型（LALMs）沿袭视觉-语言多模态的离线范式 $y = f(x, A)$：等待完整音频输入后一次性生成响应。这一设计与音频的本质属性——<strong>连续、实时、交互</strong>——存在根本性矛盾。</p>
+<p>现有的”在线补丁”方案——为每个任务单独训练流式模型（如流式 ASR、语音对话），面临两个结构性问题：</p>
+<ol>
+<li><strong>每种能力需从头训练独立模型</strong>，无法复用通用音频理解能力；</li>
+<li><strong>单模型仅覆盖窄能力</strong>——即便是完全流式的 Moshi，也无法理解犹豫停顿或识别咳嗽。</li>
+</ol>
+<h3 id="1-2-流式交互的两大核心挑战"><a href="#1-2-流式交互的两大核心挑战" class="headerlink" title="1.2 流式交互的两大核心挑战"></a>1.2 流式交互的两大核心挑战</h3><p>从离线迁移到交互范式，本文明确了两个前所未有的技术挑战：</p>
+<ul>
+<li><strong>(C1) 基于理解的响应触发</strong>：交互模型必须在每个 chunk 处基于语义理解决定是否响应，而非依赖表面声学线索。现有语料不包含连续音频与恰当时间触发标注的配对数据。</li>
+<li><strong>(C2) 分块推理下的实时上下文连续性</strong>：为满足低延迟，音频必须按固定 chunk 消费，但分块会破坏声学信号的时间连续性和跨交互的长程上下文。</li>
+</ul>
+<p><img src="/images/paper_figs/aim/aim_overview.png" srcset="/img/loading.gif" lazyload alt="Figure 1: Audio-Interaction 的能力概览"></p>
+<hr>
+<h2 id="2-方法：SoundFlow-框架"><a href="#2-方法：SoundFlow-框架" class="headerlink" title="2. 方法：SoundFlow 框架"></a>2. 方法：SoundFlow 框架</h2><p>本文提出 <strong>Audio-Interaction</strong> 模型与 <strong>SoundFlow</strong> 端到端框架，将音频交互形式化为 always-on 的感知-决策-响应循环：</p>
+<script type="math/tex; mode=display">
+(d_t, r_t) = f(a_{\leq t},\; d_{<t},\; r_{<t})</script><p>其中 $a_t$ 为当前音频 chunk，$d_t \in {\texttt{<silent>}, \texttt{<response>}}$ 为流式干预决策，$r_t$ 为生成响应。在此循环下，翻译、识别、对话、主动辅助均作为指令自然统一于单一交互范式。</p>
+<p><img src="/images/paper_figs/aim/aim_training.png" srcset="/img/loading.gif" lazyload alt="SoundFlow 框架训练流程"></p>
+<p>SoundFlow 包含三个核心组件：<strong>流式数据构造</strong>、<strong>交互感知训练</strong>、<strong>异步低延迟推理</strong>。</p>
+<h3 id="2-1-流式数据构造"><a href="#2-1-流式数据构造" class="headerlink" title="2.1 流式数据构造"></a>2.1 流式数据构造</h3><h4 id="2-1-1-时频联合预处理模块（TFJP）"><a href="#2-1-1-时频联合预处理模块（TFJP）" class="headerlink" title="2.1.1 时频联合预处理模块（TFJP）"></a>2.1.1 时频联合预处理模块（TFJP）</h4><p>TFJP 模块对每段音频进行时域-频域联合正则化，使片段平滑、自然，为下游拼接做准备。流程包括：</p>
+<ol>
+<li><strong>迭代静音裁剪</strong> <code>silence_cut</code>：裁剪过长的内部静音</li>
+<li><strong>噪声估计与去噪</strong> <code>noise_profile</code> → <code>denoise</code>：从低能量区域估计背景噪声，在频域中去除</li>
+<li><strong>核心信息定位</strong> <code>core_locate</code>：定位信息最密集的区间</li>
+<li><strong>边界归一化与频谱平滑</strong> <code>boundary_norm</code> → <code>spec_smooth</code>：以半 chunk 对齐步长 $\delta = \frac{1}{2}$ 和短窗口 $\omega$ 进行精细裁剪</li>
+</ol>
+<p>完整算法如 Algorithm 1 所示：若最终静音裁剪仍改变了信号，则回到 Stage 1 进行另一轮迭代。</p>
+<h4 id="2-1-2-层次化音频事件选择"><a href="#2-1-2-层次化音频事件选择" class="headerlink" title="2.1.2 层次化音频事件选择"></a>2.1.2 层次化音频事件选择</h4><p>随机拼接音频片段会导致事件冲突（如说话时出现汽车喇叭），破坏语境一致性。本文采用层次化事件编排管线：</p>
+<ol>
+<li><strong>场景规划</strong>：由 LLM 从随机匹配的音频标注中规划完整的高层场景</li>
+<li><strong>事件细化</strong>：将每个主题细化为具体音频事件序列</li>
+<li><strong>片段锚定</strong>：通过检索（Top-3 候选验证）或生成（音频生成模型合成）获取最终音频片段</li>
+</ol>
+<h3 id="2-2-流式训练"><a href="#2-2-流式训练" class="headerlink" title="2.2 流式训练"></a>2.2 流式训练</h3><h4 id="2-2-1-流式建模"><a href="#2-2-1-流式建模" class="headerlink" title="2.2.1 流式建模"></a>2.2.1 流式建模</h4><p>模型以 <strong>400ms</strong> 为 chunk 增量消费音频。每步预测一个特殊 token $d_t$ 决定是否响应：</p>
+<script type="math/tex; mode=display">
+d_t, r_t = f_{\text{det}}(a_t, \mathcal{C}_t), \quad r_t = \begin{cases} \varnothing, & d_t = \texttt{<silent>} \\ f_{\text{resp}}(a_t, \mathcal{C}_t), & d_t = \texttt{<response>} \end{cases}</script><p>其中 $\mathcal{C}_t$ 为截至步骤 $t$ 的流式上下文。</p>
+<h4 id="2-2-2-上下文记忆与理解感知静默训练"><a href="#2-2-2-上下文记忆与理解感知静默训练" class="headerlink" title="2.2.2 上下文记忆与理解感知静默训练"></a>2.2.2 上下文记忆与理解感知静默训练</h4><p>训练中观察到两种关键失败模式并分别应对：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>失败模式</th>
+<th>解决方案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>上下文遗忘</strong>：模型忽略早期上下文</td>
+<td><strong>历史回顾训练</strong>：在序列后期位置插入关于前文内容的问题</td>
+</tr>
+<tr>
+<td><strong>误触发</strong>：模型对无关声学事件响应</td>
+<td><strong>理解感知静默</strong>：引入大量经验证无需响应的静音音频</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="2-2-3-双损失多阶段流式转换"><a href="#2-2-3-双损失多阶段流式转换" class="headerlink" title="2.2.3 双损失多阶段流式转换"></a>2.2.3 双损失多阶段流式转换</h4><p>模型初始化自 Qwen2.5-Omni-3B，训练损失为标准语言建模与流式控制目标的组合：</p>
+<script type="math/tex; mode=display">
+\mathcal{L} = \frac{1}{N}\sum_{j=1}^{N}\left[\underbrace{-\log P_\theta(t_j \mid H_j)}_{\mathcal{L}_{\text{LLM}}} + \lambda \underbrace{-\log P_\theta(s_j \mid H_j)}_{\mathcal{L}_{\text{stream}}}\right]</script><p>其中 $t_j$ 为目标文本 token，$s_j$ 为流式控制 token，$\lambda$ 控制相对权重。</p>
+<p><strong>四阶段训练流水线：</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>目标</th>
+<th>数据形式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stage 1: 格式训练</td>
+<td>学习目标序列格式与 <code>&lt;Spe_token&gt;</code> 用法</td>
+<td>$(A_{\text{ins}}, A_{\text{in}} \to T)$</td>
+</tr>
+<tr>
+<td>Stage 2: Adapter 训练</td>
+<td>映射 chunk 声学表示到 LM 空间</td>
+<td>同上</td>
+</tr>
+<tr>
+<td>Stage 3: 大规模流式 SFT</td>
+<td>联合优化 adapter 与 LM</td>
+<td>$(A_{\text{ins}} \to T)$, $(A_{\text{ins}}, A_{\text{in}} \to T)$</td>
+</tr>
+<tr>
+<td>Stage 4: 指令跟随微调</td>
+<td>复杂流式行为</td>
+<td>交错序列 $(A_{\text{ins}}, A_1, T_1, A_2, T_2, \ldots)$ 等</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="2-3-异步推理与-FIFO-调度"><a href="#2-3-异步推理与-FIFO-调度" class="headerlink" title="2.3 异步推理与 FIFO 调度"></a>2.3 异步推理与 FIFO 调度</h3><p><img src="/images/paper_figs/aim/aim_inference.png" srcset="/img/loading.gif" lazyload alt="FIFO 异步推理示意"></p>
+<p>编码器持续处理流式 chunk 并将声学表示追加到时间有序队列 $Q_t$。解码过程基于上一生成 token 条件触发：</p>
+<ul>
+<li>若 $r_{t-1} \in {\texttt{<eos>}, \texttt{<silent>}}$：消费队列特征 $Q_t$，生成下一输出</li>
+<li>否则：等待后续 chunk 到达</li>
+</ul>
+<p>该方案<strong>完全消除推理阻塞</strong>，将响应完成后恢复监听的首帧延迟降低 <strong>4.5×</strong>。</p>
+<hr>
+<h2 id="3-StreamAudio-2M-数据集"><a href="#3-StreamAudio-2M-数据集" class="headerlink" title="3. StreamAudio-2M 数据集"></a>3. StreamAudio-2M 数据集</h2><p><img src="/images/paper_figs/aim/aim_dataset.png" srcset="/img/loading.gif" lazyload alt="StreamAudio-2M 数据集构成"></p>
+<p>StreamAudio-2M 是专为流式音频交互构建的大规模语料，包含 <strong>2.6M 条目、302k 小时</strong>，覆盖 <strong>7 大能力类别、28 个子任务</strong>：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>任务类别</th>
+<th>条目数</th>
+<th>占比</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Voice Chatting</td>
+<td>539k</td>
+<td>23.1%</td>
+</tr>
+<tr>
+<td>Streaming Instruction Following</td>
+<td>487k</td>
+<td>20.8%</td>
+</tr>
+<tr>
+<td>Streaming Audio Understanding</td>
+<td>382k</td>
+<td>16.4%</td>
+</tr>
+<tr>
+<td>Streaming Translation</td>
+<td>357k</td>
+<td>15.3%</td>
+</tr>
+<tr>
+<td>Real-time ASR</td>
+<td>270k</td>
+<td>11.6%</td>
+</tr>
+<tr>
+<td>Proactive Response</td>
+<td>171k</td>
+<td>7.3%</td>
+</tr>
+<tr>
+<td>Environmental Audio Agent</td>
+<td>130k</td>
+<td>5.5%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>每个样本为 3–15 轮异质交互，包含交错事件与稀疏、上下文相关的响应触发线索。</p>
+<h3 id="3-1-Proactive-Sound-Bench"><a href="#3-1-Proactive-Sound-Bench" class="headerlink" title="3.1 Proactive-Sound-Bench"></a>3.1 Proactive-Sound-Bench</h3><p>评估主动流式响应能力的 benchmark，包含 <strong>644 个人工设计的声学事件</strong>，横跨 6 大类别 17 子类别，分为 Single（单事件决策）和 Multiple（同类事件串联抗干扰）两层，以平均准确率为最终指标。</p>
+<hr>
+<h2 id="4-实验结果"><a href="#4-实验结果" class="headerlink" title="4. 实验结果"></a>4. 实验结果</h2><h3 id="4-1-通用音频理解（MMAU）"><a href="#4-1-通用音频理解（MMAU）" class="headerlink" title="4.1 通用音频理解（MMAU）"></a>4.1 通用音频理解（MMAU）</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>规模</th>
+<th>流式</th>
+<th>Text Avg.</th>
+<th>Audio Avg.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Audio Flamingo 2</td>
+<td>3B</td>
+<td>✗</td>
+<td>62.40</td>
+<td>1.16</td>
+</tr>
+<tr>
+<td>Qwen2-Audio</td>
+<td>7B</td>
+<td>✗</td>
+<td>49.20</td>
+<td>19.41</td>
+</tr>
+<tr>
+<td>Voxtral-Mini</td>
+<td>3B</td>
+<td>✗</td>
+<td>50.60</td>
+<td>37.24</td>
+</tr>
+<tr>
+<td>Audio-Reasoner</td>
+<td>8.4B</td>
+<td>✗</td>
+<td>61.71</td>
+<td>20.57</td>
+</tr>
+<tr>
+<td>Qwen2.5-Omni</td>
+<td>3B</td>
+<td>✗</td>
+<td>57.81</td>
+<td>42.51</td>
+</tr>
+<tr>
+<td>Qwen2.5-Omni</td>
+<td>7B</td>
+<td>✗</td>
+<td>65.60</td>
+<td>49.58</td>
+</tr>
+<tr>
+<td>Phi-4-multimodal</td>
+<td>5.6B</td>
+<td>✗</td>
+<td>55.56</td>
+<td>31.75</td>
+</tr>
+<tr>
+<td>Baichuan-Omni-1.5</td>
+<td>7B</td>
+<td>✗</td>
+<td>59.90</td>
+<td>40.40</td>
+</tr>
+<tr>
+<td><strong>Audio-Interaction</strong></td>
+<td><strong>3B</strong></td>
+<td><strong>✓</strong></td>
+<td><strong>55.68</strong></td>
+<td><strong>58.15</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>关键发现：Audio-Interaction 在音频指令条件下的 MMAU 得分（58.15）<strong>超过所有基线包括 7B 模型</strong>，表明流式训练不仅未损害通用理解能力，反而因设计上消除了文本/音频指令的 mismatch 而提升了音频指令鲁棒性。</p>
+<h3 id="4-2-语音对话"><a href="#4-2-语音对话" class="headerlink" title="4.2 语音对话"></a>4.2 语音对话</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>规模</th>
+<th>Llama Q.</th>
+<th>Web Q.</th>
+<th>Alpaca</th>
+<th>SD-QA</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Moshi</td>
+<td>7B</td>
+<td>62.20</td>
+<td>26.30</td>
+<td>2.01</td>
+<td>15.01</td>
+</tr>
+<tr>
+<td>Freeze-Omni</td>
+<td>7B</td>
+<td>72.00</td>
+<td>44.73</td>
+<td>4.14</td>
+<td>50.16</td>
+</tr>
+<tr>
+<td>Qwen2.5-Omni (3B)</td>
+<td>3B</td>
+<td>66.00</td>
+<td>27.95</td>
+<td>4.32</td>
+<td>49.37</td>
+</tr>
+<tr>
+<td>Qwen2.5-Omni (7B)</td>
+<td>7B</td>
+<td>75.33</td>
+<td>62.80</td>
+<td>4.49</td>
+<td>55.71</td>
+</tr>
+<tr>
+<td><strong>Audio-Interaction</strong></td>
+<td><strong>3B</strong></td>
+<td><strong>67.31</strong></td>
+<td><strong>54.34</strong></td>
+<td><strong>4.28</strong></td>
+<td><strong>52.14</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>3B 模型在 4 个对话 benchmark 中的 3 个匹配或超越初始化基座。</p>
+<h3 id="4-3-ASR-与语音翻译"><a href="#4-3-ASR-与语音翻译" class="headerlink" title="4.3 ASR 与语音翻译"></a>4.3 ASR 与语音翻译</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>规模</th>
+<th>LibriSpeech clean↓</th>
+<th>other↓</th>
+<th>CoVoST en-zh↑</th>
+<th>zh-en↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Qwen2.5-Omni (3B)</td>
+<td>3B</td>
+<td>2.87</td>
+<td>5.90</td>
+<td>39.50</td>
+<td>18.17</td>
+</tr>
+<tr>
+<td>Qwen2-Audio</td>
+<td>7B</td>
+<td>1.60</td>
+<td>3.60</td>
+<td>45.20</td>
+<td>24.40</td>
+</tr>
+<tr>
+<td><strong>Audio-Interaction</strong></td>
+<td><strong>3B</strong></td>
+<td><strong>3.17</strong></td>
+<td><strong>6.04</strong></td>
+<td><strong>55.22</strong></td>
+<td><strong>35.21</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>CoVoST2 翻译性能相比初始化基座提升 <strong>+15.72/+17.04 BLEU</strong>，代价仅为 LibriSpeech 上轻微 WER 回归——这是从 utterance-level ASR head 迁移到 chunk-wise 流式解码器的必然折衷。</p>
+<h3 id="4-4-主动响应（Proactive-Sound-Bench）"><a href="#4-4-主动响应（Proactive-Sound-Bench）" class="headerlink" title="4.4 主动响应（Proactive-Sound-Bench）"></a>4.4 主动响应（Proactive-Sound-Bench）</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>Single Avg.</th>
+<th>Multiple Avg.</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Qwen2.5-Omni-3B</td>
+<td>41.0</td>
+<td>29.3</td>
+</tr>
+<tr>
+<td>Qwen2.5-Omni-7B</td>
+<td>58.2</td>
+<td>32.1</td>
+</tr>
+<tr>
+<td>MiniCPM-o-4.5</td>
+<td>58.9</td>
+<td>58.9</td>
+</tr>
+<tr>
+<td>Gemini-3-Flash</td>
+<td>37.0</td>
+<td>50.8</td>
+</tr>
+<tr>
+<td><strong>Audio-Interaction</strong></td>
+<td><strong>61.2</strong></td>
+<td><strong>62.8</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Audio-Interaction 在 Single 和 Multiple 两层均取得最佳或次佳，且跨类别覆盖均衡。</p>
+<h3 id="4-5-流式拼接下的能力稳定性"><a href="#4-5-流式拼接下的能力稳定性" class="headerlink" title="4.5 流式拼接下的能力稳定性"></a>4.5 流式拼接下的能力稳定性</h3><p>随着拼接段数 $N$ 增长到 5，Audio-Interaction 保持 <strong>91%</strong> 以上的单段准确率，而基线模型下降 <strong>30%+</strong>——这是原生流式训练带来的固有长流鲁棒性。</p>
+<hr>
+<h2 id="5-深入分析"><a href="#5-深入分析" class="headerlink" title="5. 深入分析"></a>5. 深入分析</h2><h3 id="5-1-观察1：早期解码层重建跨-chunk-连续性"><a href="#5-1-观察1：早期解码层重建跨-chunk-连续性" class="headerlink" title="5.1 观察1：早期解码层重建跨 chunk 连续性"></a>5.1 观察1：早期解码层重建跨 chunk 连续性</h3><p><img src="/images/paper_figs/aim/aim_continuity.png" srcset="/img/loading.gif" lazyload alt="跨 chunk 连续性比"></p>
+<p>连续性比（boundary pair 余弦相似度 / intra-chunk pair）在编码器输出仅为 0.25，经 projector 提升不到 0.02，但 <strong>GPT Layer 0 一步即将其提升至 0.80</strong>。这证明连续性重建发生在最早的解码层，通过跨 chunk KV-cache 访问实现，是流式体制的固有性质而非任务特异性。</p>
+<h3 id="5-2-观察2：单注意力头主导-silent-respond-决策"><a href="#5-2-观察2：单注意力头主导-silent-respond-决策" class="headerlink" title="5.2 观察2：单注意力头主导 silent/respond 决策"></a>5.2 观察2：单注意力头主导 silent/respond 决策</h3><p><img src="/images/paper_figs/aim/aim_heatmaps.png" srcset="/img/loading.gif" lazyload alt="Per-head 重要性分析"></p>
+<p>在 576 个注意力头中，单个头（L35H14）在所有四个任务上均主导流式控制 token 的生成。单独 ablation 该头使 S2TT token-match score 下降 0.88，表明流式决策通过一个狭窄的、任务无关的通路路由。</p>
+<hr>
+<h2 id="6-消融实验"><a href="#6-消融实验" class="headerlink" title="6. 消融实验"></a>6. 消融实验</h2><h3 id="6-1-FIFO-推理的必要性"><a href="#6-1-FIFO-推理的必要性" class="headerlink" title="6.1 FIFO 推理的必要性"></a>6.1 FIFO 推理的必要性</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>配置</th>
+<th>平均首帧延迟</th>
+<th>阻塞率</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>完整方案</td>
+<td>392ms</td>
+<td>0.0%</td>
+</tr>
+<tr>
+<td>w/o FIFO</td>
+<td>831ms</td>
+<td>5.2%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="6-2-训练组件贡献"><a href="#6-2-训练组件贡献" class="headerlink" title="6.2 训练组件贡献"></a>6.2 训练组件贡献</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>变体</th>
+<th>MMAU↑</th>
+<th>Alpaca↑</th>
+<th>触发准确率↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V1: Baseline</td>
+<td>57.81</td>
+<td>4.32</td>
+<td>–</td>
+</tr>
+<tr>
+<td>V2: + Streaming SFT</td>
+<td>58.56</td>
+<td>4.17</td>
+<td>92.42%</td>
+</tr>
+<tr>
+<td>V3: V2 w/o TFJP</td>
+<td>57.74</td>
+<td>4.19</td>
+<td>85.35%</td>
+</tr>
+<tr>
+<td>V4: V2 w/o Event Selection</td>
+<td>55.11</td>
+<td>4.25</td>
+<td>88.51%</td>
+</tr>
+<tr>
+<td>V5: Audio-Interaction</td>
+<td>58.15</td>
+<td>4.28</td>
+<td><strong>96.77%</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>TFJP 和层次化事件选择分别贡献 7.1 和 3.9 个点的触发准确率提升。</p>
+<h3 id="6-3-Chunk-大小的精度-延迟权衡"><a href="#6-3-Chunk-大小的精度-延迟权衡" class="headerlink" title="6.3 Chunk 大小的精度-延迟权衡"></a>6.3 Chunk 大小的精度-延迟权衡</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Chunk 大小</th>
+<th>Alpaca↑</th>
+<th>MMAU↑</th>
+<th>延迟(ms)↓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.2s</td>
+<td>3.41</td>
+<td>49.74</td>
+<td>258</td>
+</tr>
+<tr>
+<td><strong>0.4s</strong></td>
+<td><strong>4.28</strong></td>
+<td><strong>58.15</strong></td>
+<td><strong>392</strong></td>
+</tr>
+<tr>
+<td>0.6s</td>
+<td>4.27</td>
+<td>58.46</td>
+<td>674</td>
+</tr>
+<tr>
+<td>0.8s</td>
+<td>4.30</td>
+<td>59.13</td>
+<td>786</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>0.4s 实现最优精度-延迟折衷。</p>
+<h3 id="6-4-双损失权重-lambda"><a href="#6-4-双损失权重-lambda" class="headerlink" title="6.4 双损失权重 $\lambda$"></a>6.4 双损失权重 $\lambda$</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>$\lambda$</th>
+<th>MMAU↑</th>
+<th>Trigger Acc.↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0.5</td>
+<td>58.3</td>
+<td>95.3</td>
+</tr>
+<tr>
+<td><strong>1.0</strong></td>
+<td><strong>58.2</strong></td>
+<td><strong>96.7</strong></td>
+</tr>
+<tr>
+<td>2.0</td>
+<td>57.3</td>
+<td>96.9</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>$\lambda=1.0$ 为最佳折衷点。</p>
+<hr>
+<h2 id="7-总结与思考"><a href="#7-总结与思考" class="headerlink" title="7. 总结与思考"></a>7. 总结与思考</h2><p>Audio-Interaction 将音频交互形式化为 always-on 的感知-决策-响应循环，在 3B 参数量下实现了：</p>
+<ol>
+<li><strong>离线能力无损</strong>：流式训练后 MMAU 与主流 7B 系统可比</li>
+<li><strong>核心语音任务竞争力</strong>：CoVoST2 翻译大幅提升</li>
+<li><strong>离线模型不可达的流式能力</strong>：实时 ASR、流式指令跟随、主动干预</li>
+</ol>
+<p>从方法论角度，SoundFlow 框架的设计哲学值得关注：</p>
+<ul>
+<li><strong>数据层面</strong>：层次化事件编排 + TFJP 预处理确保长流语料的语义连贯性与声学自然度</li>
+<li><strong>训练层面</strong>：双损失解耦内容生成与时机决策；历史回顾与静默训练分别解决遗忘与误触发</li>
+<li><strong>部署层面</strong>：FIFO 异步调度彻底消除编解码耦合带来的阻塞</li>
+</ul>
+<p>此外，两个机理层面的发现——“连续性由最早解码层重建”和”响应决策由单一注意力头主导”——为理解流式音频 LM 的内部机制提供了有价值的观测证据。</p>
+<hr>
+<p><em>封面图由 Midjourney 生成</em></p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%AF%AD%E9%9F%B3%E5%AF%B9%E8%AF%9D/" class="print-no-link">#语音对话</a>
+      
+        <a href="/tags/%E9%9F%B3%E9%A2%91%E5%A4%A7%E6%A8%A1%E5%9E%8B/" class="print-no-link">#音频大模型</a>
+      
+        <a href="/tags/%E6%B5%81%E5%BC%8F%E6%8E%A8%E7%90%86/" class="print-no-link">#流式推理</a>
+      
+        <a href="/tags/%E5%A4%9A%E6%A8%A1%E6%80%81%E4%BA%A4%E4%BA%92/" class="print-no-link">#多模态交互</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Audio Interaction Model：从离线音频理解迈向统一流式音频交互</div>
+      <div>https://smallsmartao.github.io/2026/06/05/paper-audio-interaction-model/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年6月5日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年6月5日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/06/05/entity-binding-failures-speech-llm/" title="论文解读：Entity Binding Failures in Speech LLM Reasoning">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">论文解读：Entity Binding Failures in Speech LLM Reasoning</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/06/03/FSA-GRPO-Teaching-Auditory-LLMs-Few-shot/" title="FSA-GRPO: Teaching Auditory LLMs to Use Few-shot Demonstrations">
+                        <span class="hidden-mobile">FSA-GRPO: Teaching Auditory LLMs to Use Few-shot Demonstrations</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
