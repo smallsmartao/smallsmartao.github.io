@@ -1,0 +1,1254 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息 标题: AuRA: Internalizing Audio Understanding into LLMs as LoRA 作者: Bo Cheng, Lei Shi, Zhanyu Ma, Yuan Wu, Jun Xu, Jiuchong Gao, Jinghua Hao, Renqing He 机构: 美团 &amp; 吉林大学 链接: arXiv:2606.11033   1.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AuRA: 将音频理解能力蒸馏内化为 LLM 的 LoRA 适配器">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/06/10/aura-internalizing-audio-understanding-into-llms-as-lora/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息 标题: AuRA: Internalizing Audio Understanding into LLMs as LoRA 作者: Bo Cheng, Lei Shi, Zhanyu Ma, Yuan Wu, Jun Xu, Jiuchong Gao, Jinghua Hao, Renqing He 机构: 美团 &amp; 吉林大学 链接: arXiv:2606.11033   1.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_aura.png">
+<meta property="article:published_time" content="2026-06-10T03:30:00.000Z">
+<meta property="article:modified_time" content="2026-06-10T03:28:44.301Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="Audio Understanding">
+<meta property="article:tag" content="Knowledge Distillation">
+<meta property="article:tag" content="LoRA">
+<meta property="article:tag" content="Parameter-Efficient Fine-Tuning">
+<meta property="article:tag" content="Speech-Language Model">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_aura.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>AuRA: 将音频理解能力蒸馏内化为 LLM 的 LoRA 适配器 - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/cover_aura.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="AuRA: 将音频理解能力蒸馏内化为 LLM 的 LoRA 适配器"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-06-10 11:30" pubdate>
+          2026年6月10日 中午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          23 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">AuRA: 将音频理解能力蒸馏内化为 LLM 的 LoRA 适配器</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年6月10日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>: AuRA: Internalizing Audio Understanding into LLMs as LoRA</li>
+<li><strong>作者</strong>: Bo Cheng, Lei Shi, Zhanyu Ma, Yuan Wu, Jun Xu, Jiuchong Gao, Jinghua Hao, Renqing He</li>
+<li><strong>机构</strong>: 美团 &amp; 吉林大学</li>
+<li><strong>链接</strong>: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2606.11033">arXiv:2606.11033</a></li>
+</ul>
+<hr>
+<h2 id="1-问题动机：为什么需要-AuRA？"><a href="#1-问题动机：为什么需要-AuRA？" class="headerlink" title="1. 问题动机：为什么需要 AuRA？"></a>1. 问题动机：为什么需要 AuRA？</h2><p>将 LLM 的能力从文本扩展到语音是构建自然语音助手的关键步骤。现有方案可分为三类范式，各自存在明确的不足：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>范式</th>
+<th>代表工作</th>
+<th>优势</th>
+<th>局限</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>级联 ASR-LLM</td>
+<td>Whisper + Qwen</td>
+<td>复用成熟预训练组件</td>
+<td>转录接口带来延迟和信息损失；语音-语言无法联合建模</td>
+</tr>
+<tr>
+<td>端到端语音-语言模型</td>
+<td>Qwen2-Audio, Qwen2.5-Omni</td>
+<td>语音感知与语言推理紧耦合</td>
+<td>依赖大规模多模态数据和昂贵训练流程</td>
+</tr>
+<tr>
+<td>桥接/蒸馏适配</td>
+<td>BLSP, DiVA</td>
+<td>参数和数据效率高</td>
+<td>语音和语言仍以串行方式处理，推理时需保留重型语音编码器</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<p><img src="/images/paper_figs/aura/fig1_paradigms.png" srcset="/img/loading.gif" lazyload alt="图1：语音-语言建模范式对比及 AuRA 的定位"></p>
+<p><strong>AuRA 的核心思路</strong>：将音频理解视为一种<strong>可以蒸馏进 LLM 内部的能力</strong>，而非需要外部编码器持续提供的信号。训练时利用 ASR 编码器作为教师；推理时完全移除教师编码器，仅保留轻量的音频 patch 嵌入模块和 LoRA 适配后的 LLM，实现 encoder-free 的音频条件生成路径。</p>
+<hr>
+<h2 id="2-方法详解"><a href="#2-方法详解" class="headerlink" title="2. 方法详解"></a>2. 方法详解</h2><h3 id="2-1-整体架构"><a href="#2-1-整体架构" class="headerlink" title="2.1 整体架构"></a>2.1 整体架构</h3><p><img src="/images/paper_figs/aura/fig2_overview.png" srcset="/img/loading.gif" lazyload alt="图2：AuRA 整体架构"></p>
+<p>如图2所示，AuRA 采用教师-学生训练框架：</p>
+<ul>
+<li><strong>教师</strong>：冻结的 Whisper-Large-v3 编码器，提供逐层语音表征监督</li>
+<li><strong>学生</strong>：冻结的 LLM（Qwen2.5-7B-Instruct），仅在前 $N$ 层插入可训练 LoRA 适配器</li>
+<li><strong>训练时</strong>：教师和学生并行处理同一段语音，通过逐层蒸馏对齐学生隐藏状态</li>
+<li><strong>推理时</strong>：移除教师编码器和所有投影头，仅保留音频 patch 嵌入 + LoRA-adapted LLM</li>
+</ul>
+<h3 id="2-2-Audio-Patch-Embedding（音频-Patch-嵌入）"><a href="#2-2-Audio-Patch-Embedding（音频-Patch-嵌入）" class="headerlink" title="2.2 Audio Patch Embedding（音频 Patch 嵌入）"></a>2.2 Audio Patch Embedding（音频 Patch 嵌入）</h3><p>输入原始音频波形经预处理后得到 Whisper 风格的 Mel 频谱图 $X \in \mathbb{R}^{M \times T}$（$M=128$ 个 Mel bins，$T$ 帧）。时间轴填充/截断到固定长度 $\bar{T}$，按步长 $p=16$ 帧划分为不重叠的 patch，共得到 $P = \lceil \bar{T}/p \rceil$ 个 patch。</p>
+<p>第 $k$ 个 patch 展平为 $\mathbf{x}_k \in \mathbb{R}^{Mp}$，投影到 LLM 隐藏维度 $d$：</p>
+<script type="math/tex; mode=display">
+\mathbf{a}_k = \text{LN}(W_a \mathbf{x}_k + \mathbf{b}_a + \mathbf{r}_k), \quad k = 1, \ldots, P</script><p>其中：</p>
+<ul>
+<li>$W_a \in \mathbb{R}^{d \times Mp}$：可学习投影矩阵</li>
+<li>$\mathbf{b}_a$：偏置</li>
+<li>$\mathbf{r}_k \in \mathbb{R}^d$：可学习位置嵌入</li>
+<li>$\text{LN}$：Layer Normalization</li>
+</ul>
+<p>最终音频 token 序列为：</p>
+<script type="math/tex; mode=display">
+A = [\mathbf{a}_1, \ldots, \mathbf{a}_P] \in \mathbb{R}^{P \times d}</script><p>该序列替换文本 prompt 中的音频占位符，与文本 token 共享同一 embedding 空间和 transformer 上下文，二者通过标准自注意力直接交互，无需单独的融合模块。同时构造二元音频掩码 $\mathbf{m}^a \in {0,1}^S$，音频 token 位置被排除在语言建模目标之外。</p>
+<h3 id="2-3-LoRA-adapted-LLM-Student"><a href="#2-3-LoRA-adapted-LLM-Student" class="headerlink" title="2.3 LoRA-adapted LLM Student"></a>2.3 LoRA-adapted LLM Student</h3><p>LLM 主干完全冻结，仅在前 $N=4$ 层插入 LoRA 适配器。对每个目标线性层，冻结的投影 $W$ 被增量更新：</p>
+<script type="math/tex; mode=display">
+\text{LoRA}(\mathbf{x}) = W\mathbf{x} + \frac{\alpha}{r} BA\mathbf{x}</script><p>其中：</p>
+<ul>
+<li>$A \in \mathbb{R}^{r \times d_{in}}$，$B \in \mathbb{R}^{d_{out} \times r}$：低秩可训练矩阵</li>
+<li>$r = 256$：LoRA 秩</li>
+<li>$\alpha$：缩放系数</li>
+<li>$A$ 以 Kaiming uniform 初始化，$B$ 初始化为零（初始时残差分支输出为零）</li>
+</ul>
+<p>适配器应用于注意力投影 ${q, k, v, o}$ 和 MLP 投影 ${up, gate, down}$。</p>
+<p><strong>设计动机</strong>：音频以低级连续 token 进入模型，需要在浅层将声学/音素线索转化为文本兼容的隐藏状态；深层冻结的 LLM 保留高层语义和推理能力。这使得音频特定学习局限于轻量参数集，浅层适配层充当语音→文本表征的桥梁。</p>
+<h3 id="2-4-Teacher-Student-Distillation（教师-学生蒸馏）"><a href="#2-4-Teacher-Student-Distillation（教师-学生蒸馏）" class="headerlink" title="2.4 Teacher-Student Distillation（教师-学生蒸馏）"></a>2.4 Teacher-Student Distillation（教师-学生蒸馏）</h3><h4 id="学生音频状态提取"><a href="#学生音频状态提取" class="headerlink" title="学生音频状态提取"></a>学生音频状态提取</h4><p>对样本 $b$，第 $i$ 层适配后的 LLM 隐藏状态为 $H_i^{(b)} \in \mathbb{R}^{L_b \times d}$。通过音频掩码提取音频 token 对应的隐藏状态：</p>
+<script type="math/tex; mode=display">
+H_i^{a,(b)} = H_i^{(b)}[\mathbf{m}^{a,(b)} = 1] \in \mathbb{R}^{P_b \times d}</script><h4 id="教师层对齐与时间对齐"><a href="#教师层对齐与时间对齐" class="headerlink" title="教师层对齐与时间对齐"></a>教师层对齐与时间对齐</h4><p>教师编码器第 $j$ 层隐藏状态为 $Z_j \in \mathbb{R}^{T_w \times d_w}$。每个学生适配层 $i$ 对应一个教师层 $m(i)$，默认采用低层一一映射 $m(i) = i$。</p>
+<p>由于教师以 segment batch 处理长音频，需先按样本重组、丢弃 padding 帧并沿时间拼接：</p>
+<script type="math/tex; mode=display">
+Z_{m(i)}^{(b)} = \text{Concat}_t\left(\bar{Z}_{m(i)}^{(b,s)}\right)_{s=1}^{K_b}</script><p>再对齐到学生音频 token 长度 $P_b$：</p>
+<script type="math/tex; mode=display">
+\tilde{Z}_{m(i)}^{(b)} = \mathcal{A}(Z_{m(i)}^{(b)}, P_b)</script><p>对齐函数 $\mathcal{A}$ 的定义：</p>
+<script type="math/tex; mode=display">
+\mathcal{A}(Z, P) = \begin{cases} \text{AvgPool}_P(Z), & T > P \\ Z, & T = P \\ \text{Interp}_P^{\text{linear}}(Z), & T < P \end{cases}</script><p>即当教师序列更长时用自适应平均池化下采样，更短时用线性插值上采样。</p>
+<h4 id="投影与蒸馏损失"><a href="#投影与蒸馏损失" class="headerlink" title="投影与蒸馏损失"></a>投影与蒸馏损失</h4><p>每层一个投影头 $g_i: \mathbb{R}^d \to \mathbb{R}^{d_w}$ 将学生隐藏状态映射到教师空间：</p>
+<script type="math/tex; mode=display">
+\hat{Z}_i = g_i(H_i^a) \in \mathbb{R}^{P \times d_w}</script><p>$g_i$ 的结构为：RMS Norm → Linear → GELU → Linear。</p>
+<p>逐层蒸馏损失结合余弦距离和均方误差：</p>
+<script type="math/tex; mode=display">
+\mathcal{L}_{\text{audio}}^{(i)} = \lambda_{\cos}\left(1 - \cos(\hat{Z}_i, \tilde{Z}_{m(i)})\right) + \lambda_{\text{mse}} \frac{1}{P d_w} \|\hat{Z}_i - \tilde{Z}_{m(i)}\|_F^2</script><ul>
+<li>余弦项对齐<strong>方向</strong>（语义对齐）</li>
+<li>MSE 项约束<strong>绝对尺度</strong>（稳定训练）</li>
+<li>$\lambda_{\cos} = 1.0$，$\lambda_{\text{mse}} = 0.1$</li>
+</ul>
+<p>最终音频蒸馏目标在所有适配层上取平均：</p>
+<script type="math/tex; mode=display">
+\mathcal{L}_{\text{audio}} = \frac{1}{N} \sum_{i=0}^{N-1} \mathcal{L}_{\text{audio}}^{(i)}</script><h3 id="2-5-训练与推理"><a href="#2-5-训练与推理" class="headerlink" title="2.5 训练与推理"></a>2.5 训练与推理</h3><ul>
+<li><strong>训练时</strong>：音频蒸馏损失 $\mathcal{L}_{\text{audio}}$ + 标准自回归交叉熵损失（在转录 token 上）联合优化</li>
+<li><strong>文本输入时</strong>：仍可正常使用交叉熵损失进行文本 QA</li>
+<li><strong>推理时</strong>：丢弃教师编码器和所有投影头 ${g_i}$，仅保留音频 patch 嵌入模块 + LoRA-adapted LLM</li>
+</ul>
+<hr>
+<h2 id="3-实验设置"><a href="#3-实验设置" class="headerlink" title="3. 实验设置"></a>3. 实验设置</h2><h3 id="3-1-数据"><a href="#3-1-数据" class="headerlink" title="3.1 数据"></a>3.1 数据</h3><ul>
+<li><strong>语音数据</strong>：10K CommonVoice 英文 ASR 样本（真实用户录制，多样化录音环境）</li>
+<li><strong>文本数据</strong>：10K VoRA-TextQA-Mixed QA 样本（保持 LLM 指令跟随能力）</li>
+<li>总训练数据仅 <strong>20K 样本</strong></li>
+</ul>
+<h3 id="3-2-模型配置"><a href="#3-2-模型配置" class="headerlink" title="3.2 模型配置"></a>3.2 模型配置</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LLM 主干</td>
+<td>Qwen2.5-7B-Instruct（冻结）</td>
+</tr>
+<tr>
+<td>ASR 教师</td>
+<td>Whisper-Large-v3 编码器（冻结）</td>
+</tr>
+<tr>
+<td>Mel 频谱</td>
+<td>128 bins，16kHz 采样，最长 30s</td>
+</tr>
+<tr>
+<td>Patch 大小</td>
+<td>$p = 16$ 帧</td>
+</tr>
+<tr>
+<td>LoRA 秩</td>
+<td>$r = 256$</td>
+</tr>
+<tr>
+<td>适配层数</td>
+<td>$N = 4$（前4层）</td>
+</tr>
+<tr>
+<td>适配目标</td>
+<td>attention ${q,k,v,o}$ + MLP ${up, gate, down}$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="3-3-训练细节"><a href="#3-3-训练细节" class="headerlink" title="3.3 训练细节"></a>3.3 训练细节</h3><ul>
+<li>3 个 epoch，全局 batch size 128</li>
+<li>学习率 $2 \times 10^{-4}$，前 100 步线性 warmup，之后恒定</li>
+<li>8× NVIDIA H20 GPU，约 1.5 小时完成训练</li>
+</ul>
+<h3 id="3-4-评测基准"><a href="#3-4-评测基准" class="headerlink" title="3.4 评测基准"></a>3.4 评测基准</h3><ul>
+<li><strong>HeySquad</strong>：基于 SQuAD 的口语问答，~1K 对，报告 PEDANTS 指标</li>
+<li><strong>SDQA (Spoken Dialect QA)</strong>：覆盖 11 种英语方言口音（美国、英国、菲律宾、印度南/北、爱尔兰、澳大利亚、新西兰、尼日利亚、南非、肯尼亚），494 题，报告 CFM 指标</li>
+</ul>
+<h3 id="3-5-基线系统"><a href="#3-5-基线系统" class="headerlink" title="3.5 基线系统"></a>3.5 基线系统</h3><ul>
+<li><strong>Cascade</strong>：Whisper-large-v3 → Qwen2.5-7B-Instruct</li>
+<li><strong>DiVA</strong>：基于 Llama-3-8B 的端到端蒸馏适配</li>
+<li><strong>BLSP</strong>：基于 Llama-2-7B 的行为对齐预训练</li>
+<li><strong>Qwen2-Audio</strong>：7B 规模音频原生模型</li>
+<li><strong>Qwen2.5-Omni</strong>：7B 规模全模态模型</li>
+</ul>
+<hr>
+<h2 id="4-实验结果"><a href="#4-实验结果" class="headerlink" title="4. 实验结果"></a>4. 实验结果</h2><h3 id="4-1-主实验"><a href="#4-1-主实验" class="headerlink" title="4.1 主实验"></a>4.1 主实验</h3><p><img src="/images/paper_figs/aura/fig3_tradeoff.png" srcset="/img/loading.gif" lazyload alt="图3：SDQA 上的精度-效率权衡"></p>
+<p><strong>SDQA 结果（CFM %）</strong>：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>AVG</th>
+<th>延迟(s)</th>
+<th>显存(GB)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cascade</td>
+<td>42.55</td>
+<td>0.94</td>
+<td>19.2</td>
+</tr>
+<tr>
+<td>Qwen2-Audio</td>
+<td>35.83</td>
+<td>0.57</td>
+<td>27.6</td>
+</tr>
+<tr>
+<td>Qwen2.5-Omni</td>
+<td>43.34</td>
+<td>0.52</td>
+<td>13.9</td>
+</tr>
+<tr>
+<td>BLSP</td>
+<td>37.25</td>
+<td>0.42</td>
+<td>26.5</td>
+</tr>
+<tr>
+<td>DiVA</td>
+<td>46.34</td>
+<td>0.63</td>
+<td>18.9</td>
+</tr>
+<tr>
+<td><strong>AuRA</strong></td>
+<td><strong>48.75</strong></td>
+<td><strong>0.40</strong></td>
+<td><strong>10.6</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>HeySquad 结果（PEDANTS %）</strong>：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>PEDANTS</th>
+<th>延迟(s)</th>
+<th>显存(GB)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Cascade</td>
+<td>47.95</td>
+<td>0.96</td>
+<td>19.2</td>
+</tr>
+<tr>
+<td>Qwen2.5-Omni</td>
+<td>47.20</td>
+<td>0.61</td>
+<td>13.9</td>
+</tr>
+<tr>
+<td>DiVA</td>
+<td>45.96</td>
+<td>0.71</td>
+<td>18.9</td>
+</tr>
+<tr>
+<td><strong>AuRA</strong></td>
+<td><strong>49.90</strong></td>
+<td><strong>0.37</strong></td>
+<td><strong>10.6</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键发现</strong>：</p>
+<ol>
+<li><strong>精度最优</strong>：AuRA 在两个基准上均获得最高分，SDQA 比最强基线 DiVA 高 +2.41%，HeySquad 比次优 Cascade 高 +1.95%</li>
+<li><strong>方言鲁棒性极强</strong>：11 种口音上得分集中在 48%–49%，方差极小</li>
+<li><strong>推理最快</strong>：0.37–0.40s/样本，所有方法中延迟最低</li>
+<li><strong>显存最省</strong>：仅 10.6GB，比 Qwen2.5-Omni 少 3.3GB，比 DiVA 少 8.3GB</li>
+</ol>
+<h3 id="4-2-消融实验"><a href="#4-2-消融实验" class="headerlink" title="4.2 消融实验"></a>4.2 消融实验</h3><h4 id="监督信号消融"><a href="#监督信号消融" class="headerlink" title="监督信号消融"></a>监督信号消融</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>设置</th>
+<th>SDQA AVG</th>
+<th>HeySquad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>仅蒸馏</td>
+<td>47.68</td>
+<td>48.92</td>
+</tr>
+<tr>
+<td>仅转录交叉熵</td>
+<td>47.39</td>
+<td>49.11</td>
+</tr>
+<tr>
+<td><strong>蒸馏 + 转录</strong></td>
+<td><strong>48.75</strong></td>
+<td><strong>49.90</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>两种信号互补：转录交叉熵提供输出级精确监督，逐层蒸馏提供中间表征的稠密监督。</p>
+<h4 id="对齐损失消融"><a href="#对齐损失消融" class="headerlink" title="对齐损失消融"></a>对齐损失消融</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>损失</th>
+<th>SDQA AVG</th>
+<th>HeySquad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>仅 MSE</td>
+<td>47.17</td>
+<td>46.33</td>
+</tr>
+<tr>
+<td>仅 Cosine</td>
+<td>47.52</td>
+<td>48.31</td>
+</tr>
+<tr>
+<td><strong>MSE + Cosine</strong></td>
+<td><strong>48.75</strong></td>
+<td><strong>49.90</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>余弦项单独已优于 MSE 项，说明方向对齐（语义一致性）比绝对尺度匹配更关键；两者组合效果最佳。</p>
+<h3 id="4-3-机制分析"><a href="#4-3-机制分析" class="headerlink" title="4.3 机制分析"></a>4.3 机制分析</h3><h4 id="教师-学生层映射"><a href="#教师-学生层映射" class="headerlink" title="教师-学生层映射"></a>教师-学生层映射</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>设置</th>
+<th>教师层</th>
+<th>SDQA</th>
+<th>HeySquad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$N=1$</td>
+<td>[1]</td>
+<td>47.20</td>
+<td>47.65</td>
+</tr>
+<tr>
+<td>$N=2$</td>
+<td>[1,2]</td>
+<td>47.45</td>
+<td>49.27</td>
+</tr>
+<tr>
+<td><strong>$N=4$</strong></td>
+<td><strong>[1,2,3,4]</strong></td>
+<td><strong>48.75</strong></td>
+<td><strong>49.90</strong></td>
+</tr>
+<tr>
+<td>$N=8$</td>
+<td>[1,…,8]</td>
+<td>47.08</td>
+<td>47.99</td>
+</tr>
+<tr>
+<td>Mid-level</td>
+<td>[15,16,17,18]</td>
+<td>48.55</td>
+<td>48.08</td>
+</tr>
+<tr>
+<td>High-level</td>
+<td>[29,30,31,32]</td>
+<td>47.80</td>
+<td>49.27</td>
+</tr>
+<tr>
+<td>Progressive</td>
+<td>[8,16,24,32]</td>
+<td>46.39</td>
+<td>47.68</td>
+</tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li>适配层从1增到4性能提升，但到8反而下降：过深的适配可能破坏与上层语义表征的协调</li>
+<li>低层教师监督最优；来自更深教师层的信号与浅层学生之间跨层 gap 过大</li>
+</ul>
+<h4 id="Gold-Transcript-对照"><a href="#Gold-Transcript-对照" class="headerlink" title="Gold-Transcript 对照"></a>Gold-Transcript 对照</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>输入</th>
+<th>SDQA</th>
+<th>HeySquad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Qwen2.5-7B</td>
+<td>金标文本</td>
+<td>48.49</td>
+<td>49.31</td>
+</tr>
+<tr>
+<td>AuRA</td>
+<td>语音</td>
+<td>48.75</td>
+<td>49.90</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>AuRA 的语音路径性能<strong>不逊于甚至超过</strong>直接输入金标转录文本的文本 LLM，表明：(1) 语音路径保留了任务相关信息；(2) LLM 推理能力未被语音适配显著削弱。</p>
+<h3 id="4-4-超参分析"><a href="#4-4-超参分析" class="headerlink" title="4.4 超参分析"></a>4.4 超参分析</h3><p>LoRA 秩和适配层数的网格搜索显示，rank 256 + 4 层是最优平衡点。更大 rank（512）或更深适配（24层）不会单调提升性能，甚至可能显著退化（如 rank 512 + 24 层在 HeySquad 上仅 43.90%）。</p>
+<h3 id="4-5-主干缩放"><a href="#4-5-主干缩放" class="headerlink" title="4.5 主干缩放"></a>4.5 主干缩放</h3><p>在 Qwen2.5-3B-Instruct 上测试，AuRA 仍优于对应 Cascade 基线：</p>
+<ul>
+<li>HeySquad: 45.82 vs 44.36（延迟 0.46s vs 1.01s）</li>
+<li>SDQA AVG: 43.40 vs 39.83</li>
+</ul>
+<p>说明该方法不绑定于特定规模的 LLM 主干。</p>
+<hr>
+<h2 id="5-局限性"><a href="#5-局限性" class="headerlink" title="5. 局限性"></a>5. 局限性</h2><ul>
+<li>教师仅为 ASR 导向的 Whisper-large-v3，蒸馏能力主要覆盖<strong>转录和声学表征</strong></li>
+<li>副语言信息（情绪、语气、韵律）可能在蒸馏中丢失</li>
+<li>框架本身不限于 ASR 教师，引入更丰富的语音教师或多任务监督是明确的扩展方向</li>
+</ul>
+<hr>
+<h2 id="6-总结与评论"><a href="#6-总结与评论" class="headerlink" title="6. 总结与评论"></a>6. 总结与评论</h2><p>AuRA 提出了一个简洁而有效的 speech-to-LLM 适配范式：<strong>将语音理解能力蒸馏内化为 LLM 浅层的 LoRA 适配器</strong>，推理时完全去掉语音编码器。这带来三重收益：</p>
+<ol>
+<li><strong>精度</strong>：在 SDQA 和 HeySquad 上超越所有基线（含大规模端到端模型）</li>
+<li><strong>效率</strong>：推理延迟最低（0.37s）、显存最省（10.6GB）</li>
+<li><strong>轻量</strong>：仅需 20K 样本、1.5 小时训练</li>
+</ol>
+<p>从方法论角度看，AuRA 与近期 VoRA（Vision as LoRA）的思路一脉相承——将跨模态理解从”外部编码器→投影→LLM”的串行架构，转变为”模态知识内化到 LLM 自身参数”的范式。这种思路的可扩展性值得关注：当教师从 ASR 扩展到情感、说话人、环境音理解时，同一框架能否继续生效？这是 AuRA 留下的最有价值的开放问题。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/LoRA/" class="print-no-link">#LoRA</a>
+      
+        <a href="/tags/Speech-Language-Model/" class="print-no-link">#Speech-Language Model</a>
+      
+        <a href="/tags/Knowledge-Distillation/" class="print-no-link">#Knowledge Distillation</a>
+      
+        <a href="/tags/Parameter-Efficient-Fine-Tuning/" class="print-no-link">#Parameter-Efficient Fine-Tuning</a>
+      
+        <a href="/tags/Audio-Understanding/" class="print-no-link">#Audio Understanding</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>AuRA: 将音频理解能力蒸馏内化为 LLM 的 LoRA 适配器</div>
+      <div>https://smallsmartao.github.io/2026/06/10/aura-internalizing-audio-understanding-into-llms-as-lora/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年6月10日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年6月10日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/06/10/paper-mfia-full-duplex-interactivity/" title="论文解读：Multi-Faceted Interactivity Alignment in Full-Duplex Speech Models">
+                        <span class="hidden-mobile">论文解读：Multi-Faceted Interactivity Alignment in Full-Duplex Speech Models</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
