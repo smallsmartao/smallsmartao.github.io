@@ -20,9 +20,9 @@
     
     <tags>
       
-      <tag>LoRA</tag>
-      
       <tag>Speech-Language Model</tag>
+      
+      <tag>LoRA</tag>
       
       <tag>Knowledge Distillation</tag>
       
@@ -119,13 +119,13 @@
     
     <tags>
       
-      <tag>语音对话</tag>
-      
       <tag>音频大模型</tag>
       
       <tag>流式推理</tag>
       
       <tag>多模态交互</tag>
+      
+      <tag>语音对话</tag>
       
     </tags>
     
@@ -150,48 +150,15 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
       
+      <tag>论文解读</tag>
+      
       <tag>Few-shot</tag>
       
       <tag>Reinforcement Learning</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
-    <title>SVHalluc: 音视频大语言模型中语音-视觉幻觉的系统性基准评测</title>
-    <link href="/2026/06/03/svhalluc-speech-vision-hallucination-benchmark/"/>
-    <url>/2026/06/03/svhalluc-speech-vision-hallucination-benchmark/</url>
-    
-    <content type="html"><![CDATA[<h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul><li><strong>标题</strong>: SVHalluc: Benchmarking Speech-Vision Hallucination in Audio-Visual Large Language Models</li><li><strong>作者</strong>: Chenshuang Zhang, Kyeong Seon Kim, Chengxin Liu, Tae-Hyun Oh (KAIST)</li><li><strong>arXiv</strong>: <a href="https://arxiv.org/abs/2606.02642">2606.02642</a></li><li><strong>项目主页</strong>: <a href="https://chenshuang-zhang.github.io/projects/svhalluc/">https://chenshuang-zhang.github.io/projects/svhalluc/</a></li></ul><hr><h2 id="1-研究动机与问题定位"><a href="#1-研究动机与问题定位" class="headerlink" title="1. 研究动机与问题定位"></a>1. 研究动机与问题定位</h2><p>音视频大语言模型（Audio-Visual LLMs）在多模态理解任务中取得了显著进展，但其幻觉（hallucination）问题——即模型生成看似合理但缺乏输入依据的输出——仍然是亟待解决的安全隐患。</p><p>现有音视频幻觉基准（如 AVHBench、DAVE）主要关注<strong>环境声</strong>（如狗吠、警笛），将其用作事件发生的指示信号。这些基准存在以下局限：</p><ol><li><strong>语义简单</strong>：仅能回答”某个声音是否对应某个事件”这类粗粒度问题；</li><li><strong>时间维度单一</strong>：环境声仅指示其发生的当下时刻，不涉及过去或未来；</li><li><strong>忽视人类语音</strong>：人类语音承载着远比环境声丰富的语义和时间结构。</li></ol><p>本文指出，<strong>人类语音内容可以诱导音视频 LLM 产生幻觉</strong>，且这一幻觉模式是既往基准无法捕获的。为此，作者提出 <strong>SVHalluc</strong>——首个系统性评测音视频 LLM 中语音-视觉幻觉的综合基准。</p><p><img src="/images/paper_figs/svhalluc/teaser.png" alt="Teaser：本文与既往基准的核心差异"></p><hr><h2 id="2-SVHalluc-基准设计"><a href="#2-SVHalluc-基准设计" class="headerlink" title="2. SVHalluc 基准设计"></a>2. SVHalluc 基准设计</h2><h3 id="2-1-任务分类体系"><a href="#2-1-任务分类体系" class="headerlink" title="2.1 任务分类体系"></a>2.1 任务分类体系</h3><p>SVHalluc 从两个关键且互补的维度诊断语音-视觉幻觉：</p><div class="table-container"><table><thead><tr><th>维度</th><th>核心问题</th><th>任务数</th></tr></thead><tbody><tr><td><strong>语义幻觉 (Semantic)</strong></td><td>语音中的<em>什么</em>内容与视觉证据语义对应</td><td>3</td></tr><tr><td><strong>时间幻觉 (Temporal)</strong></td><td>语音描述的事件<em>何时</em>在视频中视觉发生</td><td>3</td></tr></tbody></table></div><p>所有任务均采用统一的问答格式（二选一或多选），遵循已有幻觉基准范式。</p><p><img src="/images/paper_figs/svhalluc/tasks.png" alt="任务总览图"></p><hr><h3 id="2-2-语音-视觉语义幻觉"><a href="#2-2-语音-视觉语义幻觉" class="headerlink" title="2.2 语音-视觉语义幻觉"></a>2.2 语音-视觉语义幻觉</h3><p>语义幻觉任务评测模型能否正确识别语音内容与视觉场景之间的对应关系，避免幻觉不存在的实体。设计了由粗到细的三个互补任务：</p><h4 id="Task-1-Global-Semantic-Alignment-GSA"><a href="#Task-1-Global-Semantic-Alignment-GSA" class="headerlink" title="Task 1: Global Semantic Alignment (GSA)"></a>Task 1: Global Semantic Alignment (GSA)</h4><p>评测模型能否判断整段语音是否在语义上与视觉场景匹配。</p><blockquote><p><strong>Q</strong>: Does the speech describe the visual events in the video?<br><strong>(A) Yes  (B) No</strong></p></blockquote><ul><li>正样本：原始对齐的语音-视频对 $(A_i, V_i)$</li><li>负样本：随机替换语音形成错配对 $(A_j, V_i)$</li></ul><h4 id="Task-2-Fine-Grained-Semantic-Alignment-FGSA"><a href="#Task-2-Fine-Grained-Semantic-Alignment-FGSA" class="headerlink" title="Task 2: Fine-Grained Semantic Alignment (FGSA)"></a>Task 2: Fine-Grained Semantic Alignment (FGSA)</h4><p>评测模型能否判断语音中提及的<strong>特定物体</strong>是否在视频中可见。</p><blockquote><p><strong>Q</strong>: Is the [object] visible in the video?<br><strong>(A) Yes  (B) No</strong></p></blockquote><ul><li>正样本：语音提及且视频中可见的物体</li><li>负样本：语音提及但视频中不可见的物体</li></ul><h4 id="Task-3-Cross-Modal-Semantic-Binding-CMSB"><a href="#Task-3-Cross-Modal-Semantic-Binding-CMSB" class="headerlink" title="Task 3: Cross-Modal Semantic Binding (CMSB)"></a>Task 3: Cross-Modal Semantic Binding (CMSB)</h4><p>评测模型是否会将语音中的动作与视频中的物体（或反之）<strong>错误绑定</strong>，幻觉出不存在的事件。</p><blockquote><p><strong>Q</strong>: Is the following event visible in the video: [event]?<br><strong>(A) Yes  (B) No</strong></p></blockquote><p>负样本构造方式：</p><ul><li>(语音中的动作, 视觉中的物体) → 组合为视频中从未发生的事件</li><li>(视觉中的动作, 语音中的物体) → 同理</li></ul><hr><h3 id="2-3-语音-视觉时间幻觉"><a href="#2-3-语音-视觉时间幻觉" class="headerlink" title="2.3 语音-视觉时间幻觉"></a>2.3 语音-视觉时间幻觉</h3><p>时间幻觉任务评测模型能否正确判断语音描述的事件相对于语音被说出的时刻，在视频中<strong>何时</strong>视觉发生。</p><h4 id="Task-4-Temporal-Alignment-TA"><a href="#Task-4-Temporal-Alignment-TA" class="headerlink" title="Task 4: Temporal Alignment (TA)"></a>Task 4: Temporal Alignment (TA)</h4><blockquote><p><strong>Q</strong>: When the speech is heard, is the described event happening at the same time in the video?<br><strong>(A) Yes  (B) No</strong></p></blockquote><h4 id="Task-5-Temporal-Forecasting-TF"><a href="#Task-5-Temporal-Forecasting-TF" class="headerlink" title="Task 5: Temporal Forecasting (TF)"></a>Task 5: Temporal Forecasting (TF)</h4><blockquote><p><strong>Q</strong>: Relative to the moment when the speech is heard, when does the narrated event occur in the video?<br><strong>(A) Past  (B) Present  (C) Future</strong></p></blockquote><h4 id="Task-6-Cross-Modal-Temporal-Binding-CMTB"><a href="#Task-6-Cross-Modal-Temporal-Binding-CMTB" class="headerlink" title="Task 6: Cross-Modal Temporal Binding (CMTB)"></a>Task 6: Cross-Modal Temporal Binding (CMTB)</h4><blockquote><p><strong>Q</strong>: When the speech is heard, what visual action is occurring in the video?<br><strong>(A)</strong> [语音描述的事件，但发生在不同时间]<br><strong>(B)</strong> [说话时刻正在发生的视觉事件]<br><strong>(C)</strong> [来自其他视频的干扰事件]</p></blockquote><hr><h3 id="2-4-数据集构建流程"><a href="#2-4-数据集构建流程" class="headerlink" title="2.4 数据集构建流程"></a>2.4 数据集构建流程</h3><p><strong>视频来源</strong>：YouCook2 数据集验证集，包含与视觉动作良好对齐的人类语音旁白。</p><p><strong>预处理</strong>：</p><ol><li>基于 YouCook2 标注将视频切分为程序段落；</li><li>使用 Whisper 模型进行自动语音识别 (ASR) 获取转录文本。</li></ol><p><strong>语义任务样本构造</strong>：</p><ul><li>GSA: 原始对齐对为正样本，随机交换语音形成负样本</li><li>FGSA: 由 GPT 模型基于视频与语音标注提取可见/不可见物体</li><li>CMSB: 由 GPT 提取跨模态专属的动作和物体，构造未发生的组合事件</li></ul><p><strong>时间任务样本构造</strong>：</p><ul><li>定义 $t_{\text{speak}}$ 为语音被说出的时刻，$t_{\text{visual}}$ 为叙述事件视觉发生的时刻</li><li>若 $t_{\text{speak}} \approx t_{\text{visual}}$：时间对齐（present）</li><li>若 $t_{\text{visual}} \ll t_{\text{speak}}$：事件发生在过去（past）</li><li>若 $t_{\text{visual}} \gg t_{\text{speak}}$：事件发生在未来（future）</li></ul><p><strong>质量控制</strong>：GPT 自动过滤 + 人工验证。</p><h3 id="2-5-数据集统计"><a href="#2-5-数据集统计" class="headerlink" title="2.5 数据集统计"></a>2.5 数据集统计</h3><div class="table-container"><table><thead><tr><th>类别</th><th>任务</th><th>缩写</th><th>样本数</th></tr></thead><tbody><tr><td>语义</td><td>Global Semantic Alignment</td><td>GSA</td><td>444</td></tr><tr><td>语义</td><td>Fine-Grained Semantic Alignment</td><td>FGSA</td><td>444</td></tr><tr><td>语义</td><td>Cross-Modal Semantic Binding</td><td>CMSB</td><td>534</td></tr><tr><td></td><td><strong>语义幻觉总计</strong></td><td></td><td><strong>1422</strong></td></tr><tr><td>时间</td><td>Temporal Alignment</td><td>TA</td><td>368</td></tr><tr><td>时间</td><td>Temporal Forecasting</td><td>TF</td><td>276</td></tr><tr><td>时间</td><td>Cross-Modal Temporal Binding</td><td>CMTB</td><td>339</td></tr><tr><td></td><td><strong>时间幻觉总计</strong></td><td></td><td><strong>983</strong></td></tr><tr><td></td><td><strong>总计</strong></td><td></td><td><strong>2405</strong></td></tr></tbody></table></div><p>每个任务的选项数量保持均衡以确保公平评测。</p><p><img src="/images/paper_figs/svhalluc/svhalluc_video_sentence_wordcloud.png" alt="动作与物体分布词云"></p><hr><h2 id="3-实验"><a href="#3-实验" class="headerlink" title="3. 实验"></a>3. 实验</h2><h3 id="3-1-实验设置"><a href="#3-1-实验设置" class="headerlink" title="3.1 实验设置"></a>3.1 实验设置</h3><p><strong>评测模型</strong>（6 个 SOTA 音视频 LLM）：</p><div class="table-container"><table><thead><tr><th>类别</th><th>模型</th></tr></thead><tbody><tr><td>开源</td><td>Qwen3-Omni, Qwen2.5-Omni, video-SALMONN 2, VideoLLaMA 2</td></tr><tr><td>商用</td><td>Gemini 2.5 Pro</td></tr><tr><td>早期开源</td><td>video-SALMONN</td></tr></tbody></table></div><p>所有模型以 zero-shot 方式评测，无额外训练。</p><p><strong>评测指标</strong>：</p><ul><li>二选一任务：Accuracy, Precision, Recall, F1（以 “Yes” 为正类）</li><li>多选任务：Accuracy</li></ul><hr><h3 id="3-2-主要结果"><a href="#3-2-主要结果" class="headerlink" title="3.2 主要结果"></a>3.2 主要结果</h3><h4 id="语义幻觉任务结果"><a href="#语义幻觉任务结果" class="headerlink" title="语义幻觉任务结果"></a>语义幻觉任务结果</h4><div class="table-container"><table><thead><tr><th>模型</th><th>GSA Acc.</th><th>GSA F1</th><th>FGSA Acc.</th><th>FGSA F1</th><th>CMSB Acc.</th><th>CMSB F1</th></tr></thead><tbody><tr><td><strong>Gemini 2.5 Pro</strong></td><td><strong>93.10</strong></td><td><strong>93.33</strong></td><td><strong>86.06</strong></td><td><strong>87.32</strong></td><td><strong>78.56</strong></td><td><strong>82.77</strong></td></tr><tr><td>Qwen3-Omni</td><td>55.10</td><td>69.16</td><td>79.50</td><td>82.76</td><td>74.34</td><td>79.52</td></tr><tr><td>Qwen2.5-Omni</td><td>77.70</td><td>79.42</td><td>81.08</td><td>82.20</td><td>72.28</td><td>78.17</td></tr><tr><td>video-SALMONN 2</td><td>53.92</td><td>30.03</td><td>79.58</td><td>79.68</td><td>72.77</td><td>77.77</td></tr><tr><td>VideoLLaMA 2</td><td>50.00</td><td>66.67</td><td>67.57</td><td>72.29</td><td>73.03</td><td>80.00</td></tr><tr><td>video-SALMONN</td><td>52.05</td><td>67.43</td><td>49.84</td><td>65.71</td><td>61.10</td><td>70.92</td></tr><tr><td>Random Choice</td><td>50.00</td><td>50.00</td><td>50.00</td><td>50.00</td><td>50.00</td><td>50.00</td></tr></tbody></table></div><p><strong>关键发现</strong>：</p><ul><li><strong>GSA 任务</strong>：多数开源模型准确率约 50%，接近随机猜测。模型倾向于”相信”语音描述了视觉场景（高 Recall 但低 Precision），暴露出严重的<strong>对齐偏差 (alignment bias)</strong>。</li><li><strong>FGSA 任务</strong>：Qwen2.5-Omni 和 Qwen3-Omni 表现接近 Gemini 2.5 Pro，展现出较好的细粒度跨模态定位能力。</li><li><strong>CMSB 任务</strong>：所有模型均弱于 FGSA，表明跨模态绑定（动作+物体组合判断）对模型构成更大挑战。</li></ul><h4 id="时间幻觉任务结果"><a href="#时间幻觉任务结果" class="headerlink" title="时间幻觉任务结果"></a>时间幻觉任务结果</h4><div class="table-container"><table><thead><tr><th>模型</th><th>TA Acc.</th><th>TA F1</th><th>TF Acc.</th><th>CMTB Acc.</th></tr></thead><tbody><tr><td><strong>Gemini 2.5 Pro</strong></td><td><strong>85.17</strong></td><td><strong>85.71</strong></td><td><strong>53.89</strong></td><td><strong>69.25</strong></td></tr><tr><td>Qwen3-Omni</td><td>51.11</td><td>67.41</td><td>30.60</td><td>61.75</td></tr><tr><td>Qwen2.5-Omni</td><td>50.27</td><td>49.86</td><td>31.52</td><td>53.10</td></tr><tr><td>video-SALMONN 2</td><td>50.00</td><td>66.67</td><td>33.33</td><td>48.58</td></tr><tr><td>VideoLLaMA 2</td><td>50.00</td><td>66.67</td><td>32.25</td><td>45.72</td></tr><tr><td>video-SALMONN</td><td>50.00</td><td>63.53</td><td>32.81</td><td>37.39</td></tr><tr><td>Random Choice</td><td>50.00</td><td>50.00</td><td>33.33</td><td>33.33</td></tr></tbody></table></div><p><strong>关键发现</strong>：</p><ul><li>所有开源模型在 TA 和 TF 任务上均接近随机表现，表明它们无法识别语音内容与视觉事件之间的时间对应关系。</li><li>Gemini 2.5 Pro 在所有时间任务上显著领先，开源与商用模型之间存在巨大差距。</li><li>Qwen3-Omni 在 CMTB 上相较前代有明显进步（61.75 vs. 前代约 45-50）。</li></ul><hr><h3 id="3-3-深入分析"><a href="#3-3-深入分析" class="headerlink" title="3.3 深入分析"></a>3.3 深入分析</h3><p>作者进一步分析了开源模型在 SVHalluc 上失败的根本原因。</p><h4 id="分析-1-语音识别能力是否为瓶颈？"><a href="#分析-1-语音识别能力是否为瓶颈？" class="headerlink" title="分析 1: 语音识别能力是否为瓶颈？"></a>分析 1: 语音识别能力是否为瓶颈？</h4><p>对 Qwen3-Omni 进行 ASR 评测：</p><ul><li>Word Error Rate (WER) = <strong>0.0915</strong>（低，表示识别准确）</li><li>Word Information Preserved (WIP) = <strong>0.8863</strong></li></ul><p><strong>结论</strong>：语音识别能力并非性能瓶颈。模型能准确识别语音内容，但无法将其与视觉证据整合。</p><h4 id="分析-2-语言线索（文本转录）能否缓解幻觉？"><a href="#分析-2-语言线索（文本转录）能否缓解幻觉？" class="headerlink" title="分析 2: 语言线索（文本转录）能否缓解幻觉？"></a>分析 2: 语言线索（文本转录）能否缓解幻觉？</h4><p>将 Whisper 转录的语音文本作为额外输入拼接到 prompt 中：</p><div class="table-container"><table><thead><tr><th>条件</th><th>GSA</th><th>FGSA</th><th>CMSB</th><th>TA</th><th>TF</th><th>CMTB</th></tr></thead><tbody><tr><td>原始 Qwen3-Omni</td><td>55.10</td><td>79.50</td><td>74.34</td><td>51.11</td><td>30.60</td><td>61.75</td></tr><tr><td>+ 语音转录文本</td><td>53.29</td><td><strong>83.14</strong></td><td><strong>76.40</strong></td><td>50.56</td><td>33.21</td><td><strong>49.70</strong> ↓</td></tr></tbody></table></div><ul><li>FGSA 和 CMSB 有所提升，说明文本格式的语音内容有助于理解；</li><li>CMTB 反而下降，因为语音描述的是不同时间的事件，文本转录加剧了时间维度的幻觉干扰；</li><li>GSA、TA、TF 无明显变化，说明这些任务的挑战超越了语音识别本身。</li></ul><h4 id="分析-3-模型能否识别语音发生的时间？"><a href="#分析-3-模型能否识别语音发生的时间？" class="headerlink" title="分析 3: 模型能否识别语音发生的时间？"></a>分析 3: 模型能否识别语音发生的时间？</h4><p>评测 Qwen3-Omni 的语音时间定位能力（与 Silero-VAD 对比）：</p><ul><li>mIoU = <strong>0.8844</strong></li></ul><p><strong>结论</strong>：模型具有较强的语音时间定位能力，时间幻觉并非源于无法定位语音片段。</p><h4 id="分析-4-模型如何利用各模态信息？"><a href="#分析-4-模型如何利用各模态信息？" class="headerlink" title="分析 4: 模型如何利用各模态信息？"></a>分析 4: 模型如何利用各模态信息？</h4><p>移除单一模态输入的消融实验：</p><div class="table-container"><table><thead><tr><th>输入条件</th><th>GSA</th><th>FGSA</th><th>CMSB</th><th>TA</th><th>TF</th><th>CMTB</th></tr></thead><tbody><tr><td>原始（视频+音频）</td><td>55.10</td><td>79.50</td><td>74.34</td><td>51.11</td><td>30.60</td><td>61.75</td></tr><tr><td>仅视频</td><td>49.77</td><td><strong>84.91</strong></td><td><strong>87.08</strong></td><td>50.27</td><td>33.21</td><td>47.18</td></tr><tr><td>仅音频</td><td>50.45</td><td>49.32</td><td>80.34</td><td>50.42</td><td>24.54</td><td>50.45</td></tr><tr><td>Random</td><td>50.00</td><td>50.00</td><td>50.00</td><td>50.00</td><td>33.33</td><td>33.33</td></tr></tbody></table></div><p><strong>核心洞察</strong>：</p><ul><li>仅视频输入在 FGSA 和 CMSB 上反而<strong>优于</strong>完整输入，表明语音在这些任务中充当了<strong>干扰项</strong>；</li><li>CMTB 在移除任一模态后均下降，因为该任务需要语音进行时间定位；</li><li>GSA、TA、TF 在移除模态后变化有限，揭示了当前模型在<strong>跨模态对齐推理</strong>上的根本缺陷。</li></ul><hr><h2 id="4-相关工作概述"><a href="#4-相关工作概述" class="headerlink" title="4. 相关工作概述"></a>4. 相关工作概述</h2><ul><li><strong>多模态大语言模型</strong>：从 LLaVA 的视觉-语言框架到 Qwen2.5-Omni、Qwen3-Omni 等全模态模型；</li><li><strong>MLLM 评测基准</strong>：AV-Odyssey Bench（简单音视频任务）、AVTRUSTBENCH（鲁棒性）、WorldSense（全模态理解）；</li><li><strong>MLLM 幻觉研究</strong>：POPE/BEAF 等视觉-语言幻觉基准 → AVHBench 等音视频幻觉基准 → 本文首次关注<strong>语音内容诱导</strong>的幻觉。</li></ul><hr><h2 id="5-结论与启示"><a href="#5-结论与启示" class="headerlink" title="5. 结论与启示"></a>5. 结论与启示</h2><ol><li><strong>新型幻觉模式</strong>：SVHalluc 揭示了一种此前未被研究的幻觉类型——语音内容诱导的视觉幻觉，涵盖语义和时间两个维度；</li><li><strong>开源模型的根本缺陷</strong>：当前 SOTA 开源音视频 LLM 在多个任务上接近随机表现，尽管其单模态能力（ASR、时间定位）表现良好；</li><li><strong>核心瓶颈在于跨模态整合</strong>：模型无法可靠地将语音信息与视觉证据进行跨模态整合推理；</li><li><strong>开源与商用差距巨大</strong>：Gemini 2.5 Pro 显著优于所有开源模型，表明该问题是可解的；</li><li><strong>未来方向</strong>：需要发展更可靠的语音-视频理解能力，特别是跨模态对齐与时间推理。</li></ol><hr><h2 id="个人评论"><a href="#个人评论" class="headerlink" title="个人评论"></a>个人评论</h2><p>本文的贡献在于识别并系统化了一个此前被完全忽视的幻觉维度。其实验设计简洁但诊断性强——六个由粗到细的任务能够精确定位模型失败的具体环节。消融分析部分尤其有价值：单模态感知能力完好但跨模态推理崩溃，这一发现为后续模型改进指明了明确方向。数据集基于 YouCook2 构建，领域覆盖偏向烹饪场景，未来可扩展到更多样化的语音-视觉交互场景。</p>]]></content>
-    
-    
-    <categories>
-      
-      <category>论文解读</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>论文解读</tag>
-      
-      <tag>LLM</tag>
-      
-      <tag>Hallucination</tag>
-      
-      <tag>Multimodal</tag>
-      
-      <tag>Audio-Visual</tag>
       
     </tags>
     
@@ -216,15 +183,48 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
       
+      <tag>论文解读</tag>
+      
       <tag>TTS</tag>
       
       <tag>Synthetic Data</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>SVHalluc: 音视频大语言模型中语音-视觉幻觉的系统性基准评测</title>
+    <link href="/2026/06/03/svhalluc-speech-vision-hallucination-benchmark/"/>
+    <url>/2026/06/03/svhalluc-speech-vision-hallucination-benchmark/</url>
+    
+    <content type="html"><![CDATA[<h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul><li><strong>标题</strong>: SVHalluc: Benchmarking Speech-Vision Hallucination in Audio-Visual Large Language Models</li><li><strong>作者</strong>: Chenshuang Zhang, Kyeong Seon Kim, Chengxin Liu, Tae-Hyun Oh (KAIST)</li><li><strong>arXiv</strong>: <a href="https://arxiv.org/abs/2606.02642">2606.02642</a></li><li><strong>项目主页</strong>: <a href="https://chenshuang-zhang.github.io/projects/svhalluc/">https://chenshuang-zhang.github.io/projects/svhalluc/</a></li></ul><hr><h2 id="1-研究动机与问题定位"><a href="#1-研究动机与问题定位" class="headerlink" title="1. 研究动机与问题定位"></a>1. 研究动机与问题定位</h2><p>音视频大语言模型（Audio-Visual LLMs）在多模态理解任务中取得了显著进展，但其幻觉（hallucination）问题——即模型生成看似合理但缺乏输入依据的输出——仍然是亟待解决的安全隐患。</p><p>现有音视频幻觉基准（如 AVHBench、DAVE）主要关注<strong>环境声</strong>（如狗吠、警笛），将其用作事件发生的指示信号。这些基准存在以下局限：</p><ol><li><strong>语义简单</strong>：仅能回答”某个声音是否对应某个事件”这类粗粒度问题；</li><li><strong>时间维度单一</strong>：环境声仅指示其发生的当下时刻，不涉及过去或未来；</li><li><strong>忽视人类语音</strong>：人类语音承载着远比环境声丰富的语义和时间结构。</li></ol><p>本文指出，<strong>人类语音内容可以诱导音视频 LLM 产生幻觉</strong>，且这一幻觉模式是既往基准无法捕获的。为此，作者提出 <strong>SVHalluc</strong>——首个系统性评测音视频 LLM 中语音-视觉幻觉的综合基准。</p><p><img src="/images/paper_figs/svhalluc/teaser.png" alt="Teaser：本文与既往基准的核心差异"></p><hr><h2 id="2-SVHalluc-基准设计"><a href="#2-SVHalluc-基准设计" class="headerlink" title="2. SVHalluc 基准设计"></a>2. SVHalluc 基准设计</h2><h3 id="2-1-任务分类体系"><a href="#2-1-任务分类体系" class="headerlink" title="2.1 任务分类体系"></a>2.1 任务分类体系</h3><p>SVHalluc 从两个关键且互补的维度诊断语音-视觉幻觉：</p><div class="table-container"><table><thead><tr><th>维度</th><th>核心问题</th><th>任务数</th></tr></thead><tbody><tr><td><strong>语义幻觉 (Semantic)</strong></td><td>语音中的<em>什么</em>内容与视觉证据语义对应</td><td>3</td></tr><tr><td><strong>时间幻觉 (Temporal)</strong></td><td>语音描述的事件<em>何时</em>在视频中视觉发生</td><td>3</td></tr></tbody></table></div><p>所有任务均采用统一的问答格式（二选一或多选），遵循已有幻觉基准范式。</p><p><img src="/images/paper_figs/svhalluc/tasks.png" alt="任务总览图"></p><hr><h3 id="2-2-语音-视觉语义幻觉"><a href="#2-2-语音-视觉语义幻觉" class="headerlink" title="2.2 语音-视觉语义幻觉"></a>2.2 语音-视觉语义幻觉</h3><p>语义幻觉任务评测模型能否正确识别语音内容与视觉场景之间的对应关系，避免幻觉不存在的实体。设计了由粗到细的三个互补任务：</p><h4 id="Task-1-Global-Semantic-Alignment-GSA"><a href="#Task-1-Global-Semantic-Alignment-GSA" class="headerlink" title="Task 1: Global Semantic Alignment (GSA)"></a>Task 1: Global Semantic Alignment (GSA)</h4><p>评测模型能否判断整段语音是否在语义上与视觉场景匹配。</p><blockquote><p><strong>Q</strong>: Does the speech describe the visual events in the video?<br><strong>(A) Yes  (B) No</strong></p></blockquote><ul><li>正样本：原始对齐的语音-视频对 $(A_i, V_i)$</li><li>负样本：随机替换语音形成错配对 $(A_j, V_i)$</li></ul><h4 id="Task-2-Fine-Grained-Semantic-Alignment-FGSA"><a href="#Task-2-Fine-Grained-Semantic-Alignment-FGSA" class="headerlink" title="Task 2: Fine-Grained Semantic Alignment (FGSA)"></a>Task 2: Fine-Grained Semantic Alignment (FGSA)</h4><p>评测模型能否判断语音中提及的<strong>特定物体</strong>是否在视频中可见。</p><blockquote><p><strong>Q</strong>: Is the [object] visible in the video?<br><strong>(A) Yes  (B) No</strong></p></blockquote><ul><li>正样本：语音提及且视频中可见的物体</li><li>负样本：语音提及但视频中不可见的物体</li></ul><h4 id="Task-3-Cross-Modal-Semantic-Binding-CMSB"><a href="#Task-3-Cross-Modal-Semantic-Binding-CMSB" class="headerlink" title="Task 3: Cross-Modal Semantic Binding (CMSB)"></a>Task 3: Cross-Modal Semantic Binding (CMSB)</h4><p>评测模型是否会将语音中的动作与视频中的物体（或反之）<strong>错误绑定</strong>，幻觉出不存在的事件。</p><blockquote><p><strong>Q</strong>: Is the following event visible in the video: [event]?<br><strong>(A) Yes  (B) No</strong></p></blockquote><p>负样本构造方式：</p><ul><li>(语音中的动作, 视觉中的物体) → 组合为视频中从未发生的事件</li><li>(视觉中的动作, 语音中的物体) → 同理</li></ul><hr><h3 id="2-3-语音-视觉时间幻觉"><a href="#2-3-语音-视觉时间幻觉" class="headerlink" title="2.3 语音-视觉时间幻觉"></a>2.3 语音-视觉时间幻觉</h3><p>时间幻觉任务评测模型能否正确判断语音描述的事件相对于语音被说出的时刻，在视频中<strong>何时</strong>视觉发生。</p><h4 id="Task-4-Temporal-Alignment-TA"><a href="#Task-4-Temporal-Alignment-TA" class="headerlink" title="Task 4: Temporal Alignment (TA)"></a>Task 4: Temporal Alignment (TA)</h4><blockquote><p><strong>Q</strong>: When the speech is heard, is the described event happening at the same time in the video?<br><strong>(A) Yes  (B) No</strong></p></blockquote><h4 id="Task-5-Temporal-Forecasting-TF"><a href="#Task-5-Temporal-Forecasting-TF" class="headerlink" title="Task 5: Temporal Forecasting (TF)"></a>Task 5: Temporal Forecasting (TF)</h4><blockquote><p><strong>Q</strong>: Relative to the moment when the speech is heard, when does the narrated event occur in the video?<br><strong>(A) Past  (B) Present  (C) Future</strong></p></blockquote><h4 id="Task-6-Cross-Modal-Temporal-Binding-CMTB"><a href="#Task-6-Cross-Modal-Temporal-Binding-CMTB" class="headerlink" title="Task 6: Cross-Modal Temporal Binding (CMTB)"></a>Task 6: Cross-Modal Temporal Binding (CMTB)</h4><blockquote><p><strong>Q</strong>: When the speech is heard, what visual action is occurring in the video?<br><strong>(A)</strong> [语音描述的事件，但发生在不同时间]<br><strong>(B)</strong> [说话时刻正在发生的视觉事件]<br><strong>(C)</strong> [来自其他视频的干扰事件]</p></blockquote><hr><h3 id="2-4-数据集构建流程"><a href="#2-4-数据集构建流程" class="headerlink" title="2.4 数据集构建流程"></a>2.4 数据集构建流程</h3><p><strong>视频来源</strong>：YouCook2 数据集验证集，包含与视觉动作良好对齐的人类语音旁白。</p><p><strong>预处理</strong>：</p><ol><li>基于 YouCook2 标注将视频切分为程序段落；</li><li>使用 Whisper 模型进行自动语音识别 (ASR) 获取转录文本。</li></ol><p><strong>语义任务样本构造</strong>：</p><ul><li>GSA: 原始对齐对为正样本，随机交换语音形成负样本</li><li>FGSA: 由 GPT 模型基于视频与语音标注提取可见/不可见物体</li><li>CMSB: 由 GPT 提取跨模态专属的动作和物体，构造未发生的组合事件</li></ul><p><strong>时间任务样本构造</strong>：</p><ul><li>定义 $t_{\text{speak}}$ 为语音被说出的时刻，$t_{\text{visual}}$ 为叙述事件视觉发生的时刻</li><li>若 $t_{\text{speak}} \approx t_{\text{visual}}$：时间对齐（present）</li><li>若 $t_{\text{visual}} \ll t_{\text{speak}}$：事件发生在过去（past）</li><li>若 $t_{\text{visual}} \gg t_{\text{speak}}$：事件发生在未来（future）</li></ul><p><strong>质量控制</strong>：GPT 自动过滤 + 人工验证。</p><h3 id="2-5-数据集统计"><a href="#2-5-数据集统计" class="headerlink" title="2.5 数据集统计"></a>2.5 数据集统计</h3><div class="table-container"><table><thead><tr><th>类别</th><th>任务</th><th>缩写</th><th>样本数</th></tr></thead><tbody><tr><td>语义</td><td>Global Semantic Alignment</td><td>GSA</td><td>444</td></tr><tr><td>语义</td><td>Fine-Grained Semantic Alignment</td><td>FGSA</td><td>444</td></tr><tr><td>语义</td><td>Cross-Modal Semantic Binding</td><td>CMSB</td><td>534</td></tr><tr><td></td><td><strong>语义幻觉总计</strong></td><td></td><td><strong>1422</strong></td></tr><tr><td>时间</td><td>Temporal Alignment</td><td>TA</td><td>368</td></tr><tr><td>时间</td><td>Temporal Forecasting</td><td>TF</td><td>276</td></tr><tr><td>时间</td><td>Cross-Modal Temporal Binding</td><td>CMTB</td><td>339</td></tr><tr><td></td><td><strong>时间幻觉总计</strong></td><td></td><td><strong>983</strong></td></tr><tr><td></td><td><strong>总计</strong></td><td></td><td><strong>2405</strong></td></tr></tbody></table></div><p>每个任务的选项数量保持均衡以确保公平评测。</p><p><img src="/images/paper_figs/svhalluc/svhalluc_video_sentence_wordcloud.png" alt="动作与物体分布词云"></p><hr><h2 id="3-实验"><a href="#3-实验" class="headerlink" title="3. 实验"></a>3. 实验</h2><h3 id="3-1-实验设置"><a href="#3-1-实验设置" class="headerlink" title="3.1 实验设置"></a>3.1 实验设置</h3><p><strong>评测模型</strong>（6 个 SOTA 音视频 LLM）：</p><div class="table-container"><table><thead><tr><th>类别</th><th>模型</th></tr></thead><tbody><tr><td>开源</td><td>Qwen3-Omni, Qwen2.5-Omni, video-SALMONN 2, VideoLLaMA 2</td></tr><tr><td>商用</td><td>Gemini 2.5 Pro</td></tr><tr><td>早期开源</td><td>video-SALMONN</td></tr></tbody></table></div><p>所有模型以 zero-shot 方式评测，无额外训练。</p><p><strong>评测指标</strong>：</p><ul><li>二选一任务：Accuracy, Precision, Recall, F1（以 “Yes” 为正类）</li><li>多选任务：Accuracy</li></ul><hr><h3 id="3-2-主要结果"><a href="#3-2-主要结果" class="headerlink" title="3.2 主要结果"></a>3.2 主要结果</h3><h4 id="语义幻觉任务结果"><a href="#语义幻觉任务结果" class="headerlink" title="语义幻觉任务结果"></a>语义幻觉任务结果</h4><div class="table-container"><table><thead><tr><th>模型</th><th>GSA Acc.</th><th>GSA F1</th><th>FGSA Acc.</th><th>FGSA F1</th><th>CMSB Acc.</th><th>CMSB F1</th></tr></thead><tbody><tr><td><strong>Gemini 2.5 Pro</strong></td><td><strong>93.10</strong></td><td><strong>93.33</strong></td><td><strong>86.06</strong></td><td><strong>87.32</strong></td><td><strong>78.56</strong></td><td><strong>82.77</strong></td></tr><tr><td>Qwen3-Omni</td><td>55.10</td><td>69.16</td><td>79.50</td><td>82.76</td><td>74.34</td><td>79.52</td></tr><tr><td>Qwen2.5-Omni</td><td>77.70</td><td>79.42</td><td>81.08</td><td>82.20</td><td>72.28</td><td>78.17</td></tr><tr><td>video-SALMONN 2</td><td>53.92</td><td>30.03</td><td>79.58</td><td>79.68</td><td>72.77</td><td>77.77</td></tr><tr><td>VideoLLaMA 2</td><td>50.00</td><td>66.67</td><td>67.57</td><td>72.29</td><td>73.03</td><td>80.00</td></tr><tr><td>video-SALMONN</td><td>52.05</td><td>67.43</td><td>49.84</td><td>65.71</td><td>61.10</td><td>70.92</td></tr><tr><td>Random Choice</td><td>50.00</td><td>50.00</td><td>50.00</td><td>50.00</td><td>50.00</td><td>50.00</td></tr></tbody></table></div><p><strong>关键发现</strong>：</p><ul><li><strong>GSA 任务</strong>：多数开源模型准确率约 50%，接近随机猜测。模型倾向于”相信”语音描述了视觉场景（高 Recall 但低 Precision），暴露出严重的<strong>对齐偏差 (alignment bias)</strong>。</li><li><strong>FGSA 任务</strong>：Qwen2.5-Omni 和 Qwen3-Omni 表现接近 Gemini 2.5 Pro，展现出较好的细粒度跨模态定位能力。</li><li><strong>CMSB 任务</strong>：所有模型均弱于 FGSA，表明跨模态绑定（动作+物体组合判断）对模型构成更大挑战。</li></ul><h4 id="时间幻觉任务结果"><a href="#时间幻觉任务结果" class="headerlink" title="时间幻觉任务结果"></a>时间幻觉任务结果</h4><div class="table-container"><table><thead><tr><th>模型</th><th>TA Acc.</th><th>TA F1</th><th>TF Acc.</th><th>CMTB Acc.</th></tr></thead><tbody><tr><td><strong>Gemini 2.5 Pro</strong></td><td><strong>85.17</strong></td><td><strong>85.71</strong></td><td><strong>53.89</strong></td><td><strong>69.25</strong></td></tr><tr><td>Qwen3-Omni</td><td>51.11</td><td>67.41</td><td>30.60</td><td>61.75</td></tr><tr><td>Qwen2.5-Omni</td><td>50.27</td><td>49.86</td><td>31.52</td><td>53.10</td></tr><tr><td>video-SALMONN 2</td><td>50.00</td><td>66.67</td><td>33.33</td><td>48.58</td></tr><tr><td>VideoLLaMA 2</td><td>50.00</td><td>66.67</td><td>32.25</td><td>45.72</td></tr><tr><td>video-SALMONN</td><td>50.00</td><td>63.53</td><td>32.81</td><td>37.39</td></tr><tr><td>Random Choice</td><td>50.00</td><td>50.00</td><td>33.33</td><td>33.33</td></tr></tbody></table></div><p><strong>关键发现</strong>：</p><ul><li>所有开源模型在 TA 和 TF 任务上均接近随机表现，表明它们无法识别语音内容与视觉事件之间的时间对应关系。</li><li>Gemini 2.5 Pro 在所有时间任务上显著领先，开源与商用模型之间存在巨大差距。</li><li>Qwen3-Omni 在 CMTB 上相较前代有明显进步（61.75 vs. 前代约 45-50）。</li></ul><hr><h3 id="3-3-深入分析"><a href="#3-3-深入分析" class="headerlink" title="3.3 深入分析"></a>3.3 深入分析</h3><p>作者进一步分析了开源模型在 SVHalluc 上失败的根本原因。</p><h4 id="分析-1-语音识别能力是否为瓶颈？"><a href="#分析-1-语音识别能力是否为瓶颈？" class="headerlink" title="分析 1: 语音识别能力是否为瓶颈？"></a>分析 1: 语音识别能力是否为瓶颈？</h4><p>对 Qwen3-Omni 进行 ASR 评测：</p><ul><li>Word Error Rate (WER) = <strong>0.0915</strong>（低，表示识别准确）</li><li>Word Information Preserved (WIP) = <strong>0.8863</strong></li></ul><p><strong>结论</strong>：语音识别能力并非性能瓶颈。模型能准确识别语音内容，但无法将其与视觉证据整合。</p><h4 id="分析-2-语言线索（文本转录）能否缓解幻觉？"><a href="#分析-2-语言线索（文本转录）能否缓解幻觉？" class="headerlink" title="分析 2: 语言线索（文本转录）能否缓解幻觉？"></a>分析 2: 语言线索（文本转录）能否缓解幻觉？</h4><p>将 Whisper 转录的语音文本作为额外输入拼接到 prompt 中：</p><div class="table-container"><table><thead><tr><th>条件</th><th>GSA</th><th>FGSA</th><th>CMSB</th><th>TA</th><th>TF</th><th>CMTB</th></tr></thead><tbody><tr><td>原始 Qwen3-Omni</td><td>55.10</td><td>79.50</td><td>74.34</td><td>51.11</td><td>30.60</td><td>61.75</td></tr><tr><td>+ 语音转录文本</td><td>53.29</td><td><strong>83.14</strong></td><td><strong>76.40</strong></td><td>50.56</td><td>33.21</td><td><strong>49.70</strong> ↓</td></tr></tbody></table></div><ul><li>FGSA 和 CMSB 有所提升，说明文本格式的语音内容有助于理解；</li><li>CMTB 反而下降，因为语音描述的是不同时间的事件，文本转录加剧了时间维度的幻觉干扰；</li><li>GSA、TA、TF 无明显变化，说明这些任务的挑战超越了语音识别本身。</li></ul><h4 id="分析-3-模型能否识别语音发生的时间？"><a href="#分析-3-模型能否识别语音发生的时间？" class="headerlink" title="分析 3: 模型能否识别语音发生的时间？"></a>分析 3: 模型能否识别语音发生的时间？</h4><p>评测 Qwen3-Omni 的语音时间定位能力（与 Silero-VAD 对比）：</p><ul><li>mIoU = <strong>0.8844</strong></li></ul><p><strong>结论</strong>：模型具有较强的语音时间定位能力，时间幻觉并非源于无法定位语音片段。</p><h4 id="分析-4-模型如何利用各模态信息？"><a href="#分析-4-模型如何利用各模态信息？" class="headerlink" title="分析 4: 模型如何利用各模态信息？"></a>分析 4: 模型如何利用各模态信息？</h4><p>移除单一模态输入的消融实验：</p><div class="table-container"><table><thead><tr><th>输入条件</th><th>GSA</th><th>FGSA</th><th>CMSB</th><th>TA</th><th>TF</th><th>CMTB</th></tr></thead><tbody><tr><td>原始（视频+音频）</td><td>55.10</td><td>79.50</td><td>74.34</td><td>51.11</td><td>30.60</td><td>61.75</td></tr><tr><td>仅视频</td><td>49.77</td><td><strong>84.91</strong></td><td><strong>87.08</strong></td><td>50.27</td><td>33.21</td><td>47.18</td></tr><tr><td>仅音频</td><td>50.45</td><td>49.32</td><td>80.34</td><td>50.42</td><td>24.54</td><td>50.45</td></tr><tr><td>Random</td><td>50.00</td><td>50.00</td><td>50.00</td><td>50.00</td><td>33.33</td><td>33.33</td></tr></tbody></table></div><p><strong>核心洞察</strong>：</p><ul><li>仅视频输入在 FGSA 和 CMSB 上反而<strong>优于</strong>完整输入，表明语音在这些任务中充当了<strong>干扰项</strong>；</li><li>CMTB 在移除任一模态后均下降，因为该任务需要语音进行时间定位；</li><li>GSA、TA、TF 在移除模态后变化有限，揭示了当前模型在<strong>跨模态对齐推理</strong>上的根本缺陷。</li></ul><hr><h2 id="4-相关工作概述"><a href="#4-相关工作概述" class="headerlink" title="4. 相关工作概述"></a>4. 相关工作概述</h2><ul><li><strong>多模态大语言模型</strong>：从 LLaVA 的视觉-语言框架到 Qwen2.5-Omni、Qwen3-Omni 等全模态模型；</li><li><strong>MLLM 评测基准</strong>：AV-Odyssey Bench（简单音视频任务）、AVTRUSTBENCH（鲁棒性）、WorldSense（全模态理解）；</li><li><strong>MLLM 幻觉研究</strong>：POPE/BEAF 等视觉-语言幻觉基准 → AVHBench 等音视频幻觉基准 → 本文首次关注<strong>语音内容诱导</strong>的幻觉。</li></ul><hr><h2 id="5-结论与启示"><a href="#5-结论与启示" class="headerlink" title="5. 结论与启示"></a>5. 结论与启示</h2><ol><li><strong>新型幻觉模式</strong>：SVHalluc 揭示了一种此前未被研究的幻觉类型——语音内容诱导的视觉幻觉，涵盖语义和时间两个维度；</li><li><strong>开源模型的根本缺陷</strong>：当前 SOTA 开源音视频 LLM 在多个任务上接近随机表现，尽管其单模态能力（ASR、时间定位）表现良好；</li><li><strong>核心瓶颈在于跨模态整合</strong>：模型无法可靠地将语音信息与视觉证据进行跨模态整合推理；</li><li><strong>开源与商用差距巨大</strong>：Gemini 2.5 Pro 显著优于所有开源模型，表明该问题是可解的；</li><li><strong>未来方向</strong>：需要发展更可靠的语音-视频理解能力，特别是跨模态对齐与时间推理。</li></ol><hr><h2 id="个人评论"><a href="#个人评论" class="headerlink" title="个人评论"></a>个人评论</h2><p>本文的贡献在于识别并系统化了一个此前被完全忽视的幻觉维度。其实验设计简洁但诊断性强——六个由粗到细的任务能够精确定位模型失败的具体环节。消融分析部分尤其有价值：单模态感知能力完好但跨模态推理崩溃，这一发现为后续模型改进指明了明确方向。数据集基于 YouCook2 构建，领域覆盖偏向烹饪场景，未来可扩展到更多样化的语音-视觉交互场景。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>论文解读</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
+      
+      <tag>Hallucination</tag>
+      
+      <tag>Multimodal</tag>
+      
+      <tag>Audio-Visual</tag>
       
     </tags>
     
@@ -284,9 +284,9 @@
       
       <tag>Speech LLM</tag>
       
-      <tag>Benchmark</tag>
-      
       <tag>Speech Understanding</tag>
+      
+      <tag>Benchmark</tag>
       
       <tag>Reproducibility</tag>
       
@@ -313,15 +313,15 @@
     
     <tags>
       
-      <tag>Audio-LLM</tag>
-      
-      <tag>RLHF</tag>
+      <tag>ASR</tag>
       
       <tag>论文解读</tag>
       
-      <tag>ASR</tag>
-      
       <tag>TTS</tag>
+      
+      <tag>Audio-LLM</tag>
+      
+      <tag>RLHF</tag>
       
     </tags>
     
@@ -348,11 +348,11 @@
       
       <tag>健身</tag>
       
-      <tag>训练科学</tag>
-      
       <tag>生活方式</tag>
       
       <tag>播客笔记</tag>
+      
+      <tag>训练科学</tag>
       
     </tags>
     
@@ -379,11 +379,11 @@
       
       <tag>健身</tag>
       
+      <tag>减脂</tag>
+      
       <tag>生活方式</tag>
       
       <tag>播客笔记</tag>
-      
-      <tag>减脂</tag>
       
     </tags>
     
@@ -437,15 +437,15 @@
     
     <tags>
       
+      <tag>ASR</tag>
+      
       <tag>论文解读</tag>
       
-      <tag>ASR</tag>
+      <tag>LoRA</tag>
       
       <tag>Whisper</tag>
       
       <tag>Speaker Diarization</tag>
-      
-      <tag>LoRA</tag>
       
     </tags>
     
@@ -540,11 +540,11 @@
     
     <tags>
       
+      <tag>论文解读</tag>
+      
       <tag>Audio-LLM</tag>
       
       <tag>RLHF</tag>
-      
-      <tag>论文解读</tag>
       
       <tag>Speech Reasoning</tag>
       
@@ -571,9 +571,9 @@
     
     <tags>
       
-      <tag>Audio-LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>Audio-LLM</tag>
       
       <tag>Uncertainty Estimation</tag>
       
@@ -600,11 +600,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>语音识别评估</tag>
       
@@ -633,9 +633,9 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Streaming</tag>
       
@@ -726,9 +726,9 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Speech LLM</tag>
       
@@ -788,11 +788,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Speech</tag>
       
@@ -825,11 +825,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Speech Encoder</tag>
       
@@ -860,11 +860,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Speech</tag>
       
@@ -926,9 +926,9 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>长文本</tag>
       
@@ -1023,13 +1023,13 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
       
       <tag>Chain-of-Thought</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Speech</tag>
       
@@ -1056,11 +1056,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Speech LM</tag>
       
@@ -1091,11 +1091,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>CIF</tag>
       
@@ -1126,11 +1126,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Streaming</tag>
       
@@ -1157,11 +1157,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Audio</tag>
       
@@ -1192,11 +1192,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Audio</tag>
       
@@ -1326,9 +1326,9 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Audio</tag>
       
@@ -1359,11 +1359,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Diarization</tag>
       
@@ -1392,9 +1392,9 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>VAD</tag>
       
@@ -1491,11 +1491,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>语音识别</tag>
       
@@ -1524,15 +1524,15 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
       
-      <tag>强化学习</tag>
+      <tag>论文解读</tag>
       
       <tag>TTS</tag>
+      
+      <tag>强化学习</tag>
       
     </tags>
     
@@ -1557,11 +1557,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>语音识别</tag>
       
@@ -1642,11 +1642,11 @@
   
   
   <entry>
-    <title>当我们谈论ASR我们在谈论什么</title>
-    <link href="/2022/08/09/asr_old/"/>
-    <url>/2022/08/09/asr_old/</url>
+    <title>BPE分词算法</title>
+    <link href="/2022/08/09/bpe/"/>
+    <url>/2022/08/09/bpe/</url>
     
-    <content type="html"><![CDATA[<p>最近带师弟给师弟将一些端到端的ASR模型，自己也有一点感悟，自己以前虽然对模型啥的也比较熟悉，但是一直没有串起来的感觉，这里分享一下自己和师弟交流之后的一些感悟。</p><p>首先，ASR到底是什么，可以用公式这么表达：<br><img src="https://s2.loli.net/2023/11/23/3tOI5phmY7i4qGj.png" alt="image.png"></p><p>‘W’就是文本，我们需要找的是给定语音’X’下概率最大的文本’W’（后面的贝叶斯分解则是把他分成了声学文本两个部分，这里不详细描述），可见识别就是在搜索一个W，一个极端的方法就是我便利所有的W找到里面最大的就是识别结果，这样效率显然是非常低的，因此ASR的搜索’W’都是以beam search等方式，而我们在优化模型的时候，是知道正确答案的，也就是我们知道想要模型搜到什么结果，因此我们优化的目标就是让搜索的时候正确结果的得分高，但是我们训练时候不知道搜索是什么样的，因此我们就尽量让所有可能的正确搜索得分都高，这样最后反映到搜索（也就是解码）上，我们就能尽可能的得到搜索的正确结果。理解这点，我们觉得要搞清楚CTC，AED，RNN-T这些端到端模型的关键，就在于搞清楚训练和解码的关系，为什么训练的准则能够让模型在解码时候得到正确的结果。</p><h2 id="CTC"><a href="#CTC" class="headerlink" title="CTC"></a>CTC</h2><p>CTC就是典型的训练时候考虑所有正确的可能的路径，测试时候搜索最大路径，这种只考虑正确的路劲的准则也导致了尖峰现象的出现，实际优化到最后训练和搜索已经比较类似了，因为搜索的最大路径往往几乎等于全体路径的得分。</p><h2 id="RNN-T"><a href="#RNN-T" class="headerlink" title="RNN-T"></a>RNN-T</h2><p>RNN-T和CTC比较类似，但是不同在于他encoder之外还有一个输入token预测token的predictor，这就导致你要想在训练的时候遍历所有的路径就不能简单的直接计算，而是需要expand声学和文本两个部分，然后直接join成一个四维矩阵，这个矩阵就表示了所有的可能的对齐组合，这里直接文本expand也体现了端到端直接优化正确答案的特点，这个矩阵也只是表征了正确答案和音频的所有可能对齐，解码时候会发现beam和greedy的差距比较大也有这方面的影响。虽然predictor的引入让rnnt和CTC有了一些明显的区分，但是他们的共性仍然明显，比如尖峰现象从而导致最优路径占据大部分的分数，K2-loss就是基于这个现象来裁剪四维矩阵从而降低显存占用，提升模型表现。 rnnt的显存占用以前是一个大家比较关注的问题，现在好像关注比较少了，以前会有一些削减维度（下采样T，因素建模减小V，K2减小U）或者算子优化（softmax优化）的工作。</p><h2 id="AED"><a href="#AED" class="headerlink" title="AED"></a>AED</h2><p>这里讨论最标准的AED。AED算是另一个体系，完全非流式一次得到全部的声学表征，然后完全在token级别自回归，AED没有硬对齐将token长度预测这个回归任务当作一个分类任务，这产生了一些弊端，但不是这里的重点，再beam search那篇里面提了一下，大家感兴趣可以看一下，这里的重点还是他的训练和推理。AED训练还是标准的逻辑，甚至更加直接，直接计算正确路径的得分，让每一步正确答案的概率都最大，解码时候则是自回归的解码，预测下一个token的方式去做greedy和beam。</p>]]></content>
+    <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>最近在librispeech做实验，发现很多开源模型的bpe设置差别特别大，有点好奇这个划分建模单元的原理，为什么可以按照要求随心所欲的设置建模单元，于是学习了一点bpe的原理，总结在这里。</p><h3 id="英文分词"><a href="#英文分词" class="headerlink" title="英文分词"></a>英文分词</h3><p>英文和中文不同，如果按词建模，词典就会过大，而且oov完全无法处理，按照字符划分虽然不会oov但是力度太细，不好训练，其次还有short， shorter这种比较级，还是不同时态的动词等情况需要合理进行划分。<br>于是现在流行基于subword的方法，将一个词划分为多个部分，这个部分介于整个单词和单个字符之间，这个方法能够取得粒度的平衡，并且能够学习到一些词缀的关系。而BPE就可以看成生成这个中间建模单元词表的算法。</p><h3 id="BPE"><a href="#BPE" class="headerlink" title="BPE"></a>BPE</h3><p>bpe算法步骤如下：   </p><ol><li>确定建模单元数目</li><li>给每个单词开头加一个_标记来记录开头，并统计出现的频率。例如出现五次的smart就记录为’_smart:5’</li><li>所有的单词拆分为字符作为最初的词表，统计每个建模单元的出现次数。</li><li>选出字典中出现频率最高的字符对，将新字符加入词表，然后重新统计词表建模单元的个数。注意如果t,h的频率最高，将th加入词表后，分别统计t,h时要减去th 的个数。</li><li>重复4操作，直到达到要求的建模单元数或者最高频率的字符对只出现了一次。</li></ol><p>bpe有个缺陷是一个句子可能有不同的token序列，但是对asr来说只要转换的方式固定就不存在问题。</p>]]></content>
     
     
     <categories>
@@ -1661,11 +1661,11 @@
   
   
   <entry>
-    <title>BPE分词算法</title>
-    <link href="/2022/08/09/bpe/"/>
-    <url>/2022/08/09/bpe/</url>
+    <title>当我们谈论ASR我们在谈论什么</title>
+    <link href="/2022/08/09/asr_old/"/>
+    <url>/2022/08/09/asr_old/</url>
     
-    <content type="html"><![CDATA[<h3 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h3><p>最近在librispeech做实验，发现很多开源模型的bpe设置差别特别大，有点好奇这个划分建模单元的原理，为什么可以按照要求随心所欲的设置建模单元，于是学习了一点bpe的原理，总结在这里。</p><h3 id="英文分词"><a href="#英文分词" class="headerlink" title="英文分词"></a>英文分词</h3><p>英文和中文不同，如果按词建模，词典就会过大，而且oov完全无法处理，按照字符划分虽然不会oov但是力度太细，不好训练，其次还有short， shorter这种比较级，还是不同时态的动词等情况需要合理进行划分。<br>于是现在流行基于subword的方法，将一个词划分为多个部分，这个部分介于整个单词和单个字符之间，这个方法能够取得粒度的平衡，并且能够学习到一些词缀的关系。而BPE就可以看成生成这个中间建模单元词表的算法。</p><h3 id="BPE"><a href="#BPE" class="headerlink" title="BPE"></a>BPE</h3><p>bpe算法步骤如下：   </p><ol><li>确定建模单元数目</li><li>给每个单词开头加一个_标记来记录开头，并统计出现的频率。例如出现五次的smart就记录为’_smart:5’</li><li>所有的单词拆分为字符作为最初的词表，统计每个建模单元的出现次数。</li><li>选出字典中出现频率最高的字符对，将新字符加入词表，然后重新统计词表建模单元的个数。注意如果t,h的频率最高，将th加入词表后，分别统计t,h时要减去th 的个数。</li><li>重复4操作，直到达到要求的建模单元数或者最高频率的字符对只出现了一次。</li></ol><p>bpe有个缺陷是一个句子可能有不同的token序列，但是对asr来说只要转换的方式固定就不存在问题。</p>]]></content>
+    <content type="html"><![CDATA[<p>最近带师弟给师弟将一些端到端的ASR模型，自己也有一点感悟，自己以前虽然对模型啥的也比较熟悉，但是一直没有串起来的感觉，这里分享一下自己和师弟交流之后的一些感悟。</p><p>首先，ASR到底是什么，可以用公式这么表达：<br><img src="https://s2.loli.net/2023/11/23/3tOI5phmY7i4qGj.png" alt="image.png"></p><p>‘W’就是文本，我们需要找的是给定语音’X’下概率最大的文本’W’（后面的贝叶斯分解则是把他分成了声学文本两个部分，这里不详细描述），可见识别就是在搜索一个W，一个极端的方法就是我便利所有的W找到里面最大的就是识别结果，这样效率显然是非常低的，因此ASR的搜索’W’都是以beam search等方式，而我们在优化模型的时候，是知道正确答案的，也就是我们知道想要模型搜到什么结果，因此我们优化的目标就是让搜索的时候正确结果的得分高，但是我们训练时候不知道搜索是什么样的，因此我们就尽量让所有可能的正确搜索得分都高，这样最后反映到搜索（也就是解码）上，我们就能尽可能的得到搜索的正确结果。理解这点，我们觉得要搞清楚CTC，AED，RNN-T这些端到端模型的关键，就在于搞清楚训练和解码的关系，为什么训练的准则能够让模型在解码时候得到正确的结果。</p><h2 id="CTC"><a href="#CTC" class="headerlink" title="CTC"></a>CTC</h2><p>CTC就是典型的训练时候考虑所有正确的可能的路径，测试时候搜索最大路径，这种只考虑正确的路劲的准则也导致了尖峰现象的出现，实际优化到最后训练和搜索已经比较类似了，因为搜索的最大路径往往几乎等于全体路径的得分。</p><h2 id="RNN-T"><a href="#RNN-T" class="headerlink" title="RNN-T"></a>RNN-T</h2><p>RNN-T和CTC比较类似，但是不同在于他encoder之外还有一个输入token预测token的predictor，这就导致你要想在训练的时候遍历所有的路径就不能简单的直接计算，而是需要expand声学和文本两个部分，然后直接join成一个四维矩阵，这个矩阵就表示了所有的可能的对齐组合，这里直接文本expand也体现了端到端直接优化正确答案的特点，这个矩阵也只是表征了正确答案和音频的所有可能对齐，解码时候会发现beam和greedy的差距比较大也有这方面的影响。虽然predictor的引入让rnnt和CTC有了一些明显的区分，但是他们的共性仍然明显，比如尖峰现象从而导致最优路径占据大部分的分数，K2-loss就是基于这个现象来裁剪四维矩阵从而降低显存占用，提升模型表现。 rnnt的显存占用以前是一个大家比较关注的问题，现在好像关注比较少了，以前会有一些削减维度（下采样T，因素建模减小V，K2减小U）或者算子优化（softmax优化）的工作。</p><h2 id="AED"><a href="#AED" class="headerlink" title="AED"></a>AED</h2><p>这里讨论最标准的AED。AED算是另一个体系，完全非流式一次得到全部的声学表征，然后完全在token级别自回归，AED没有硬对齐将token长度预测这个回归任务当作一个分类任务，这产生了一些弊端，但不是这里的重点，再beam search那篇里面提了一下，大家感兴趣可以看一下，这里的重点还是他的训练和推理。AED训练还是标准的逻辑，甚至更加直接，直接计算正确路径的得分，让每一步正确答案的概率都最大，解码时候则是自回归的解码，预测下一个token的方式去做greedy和beam。</p>]]></content>
     
     
     <categories>
