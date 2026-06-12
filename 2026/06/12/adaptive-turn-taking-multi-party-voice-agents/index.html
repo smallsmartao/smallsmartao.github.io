@@ -1,0 +1,1297 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息 标题: Adaptive Turn-Taking for Real-time Multi-Party Voice Agents 作者: Soumyajit Mitra, Prabhat Pandey, Abhinav Jain, Shanmukha Sahith, K V Vijay Girish (Amazon AGI &#x2F; IIT Kharagpur) arXiv: 2606.1354">
+<meta property="og:type" content="article">
+<meta property="og:title" content="论文解读：Adaptive Turn-Taking for Real-time Multi-Party Voice Agents">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/06/12/adaptive-turn-taking-multi-party-voice-agents/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息 标题: Adaptive Turn-Taking for Real-time Multi-Party Voice Agents 作者: Soumyajit Mitra, Prabhat Pandey, Abhinav Jain, Shanmukha Sahith, K V Vijay Girish (Amazon AGI &#x2F; IIT Kharagpur) arXiv: 2606.1354">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/adaptive_turn_taking_index.png">
+<meta property="article:published_time" content="2026-06-12T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-06-12T02:05:56.535Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="Multi-Party Conversation">
+<meta property="article:tag" content="Speech LLM">
+<meta property="article:tag" content="Turn-Taking">
+<meta property="article:tag" content="Voice Agent">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/adaptive_turn_taking_index.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>论文解读：Adaptive Turn-Taking for Real-time Multi-Party Voice Agents - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/adaptive_turn_taking.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="论文解读：Adaptive Turn-Taking for Real-time Multi-Party Voice Agents"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-06-12 10:00" pubdate>
+          2026年6月12日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          27 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">论文解读：Adaptive Turn-Taking for Real-time Multi-Party Voice Agents</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年6月12日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>: Adaptive Turn-Taking for Real-time Multi-Party Voice Agents</li>
+<li><strong>作者</strong>: Soumyajit Mitra, Prabhat Pandey, Abhinav Jain, Shanmukha Sahith, K V Vijay Girish (Amazon AGI / IIT Kharagpur)</li>
+<li><strong>arXiv</strong>: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2606.13544v1">2606.13544v1</a></li>
+<li><strong>发表时间</strong>: 2026年6月11日</li>
+</ul>
+<hr>
+<h2 id="1-研究动机：为什么多人对话中的轮次管理如此困难？"><a href="#1-研究动机：为什么多人对话中的轮次管理如此困难？" class="headerlink" title="1. 研究动机：为什么多人对话中的轮次管理如此困难？"></a>1. 研究动机：为什么多人对话中的轮次管理如此困难？</h2><p>当前语音对话系统的主流范式建立在<strong>双人对话（dyadic conversation）</strong>假设之上：通过停顿时长、静音检测、句末标记等声学/语义线索判断何时接管话语权。然而，这一范式在<strong>多人对话（multi-party conversation）</strong>场景中严重失效。多人对话的核心难点在于：</p>
+<ol>
+<li><strong>重叠语音（overlapping speech）</strong>：多个说话者可能同时发言；</li>
+<li><strong>动态地板竞争（dynamic floor competition）</strong>：话语权不是轮流分配，而是在参与者间持续协商；</li>
+<li><strong>角色期望差异</strong>：不同场景下，用户对语音助手的期望从”被动倾听者”到”主动引导者”跨度极大。</li>
+</ol>
+<p>现有工作在<strong>文本领域</strong>探索了角色扮演语言智能体（Role-Playing Language Agents），聚焦于语言风格、人格特质与决策模式建模。但<strong>角色对实时语音轮次行为的影响</strong>几乎未被研究。</p>
+<p>本文的核心贡献在于：提出首个<strong>角色条件化（role-conditioned）</strong>的多人语音轮次管理系统——<strong>ModeratorLM</strong>，将”何时说话”与”是否介入”的决策显式地绑定到预定义角色上。</p>
+<hr>
+<h2 id="2-方法论（Methodology）"><a href="#2-方法论（Methodology）" class="headerlink" title="2. 方法论（Methodology）"></a>2. 方法论（Methodology）</h2><h3 id="2-1-ModeratorLM-系统架构"><a href="#2-1-ModeratorLM-系统架构" class="headerlink" title="2.1 ModeratorLM 系统架构"></a>2.1 ModeratorLM 系统架构</h3><p>ModeratorLM 由两个核心组件构成：</p>
+<ul>
+<li><strong>语音编码器（Speech Encoder）</strong>：逐块（chunk-wise）独立处理输入音频，生成块级嵌入（chunk-level embeddings）；</li>
+<li><strong>骨干 LLM（Backbone LLM）</strong>：接收经线性投影层映射到 LLM 嵌入空间的语音嵌入。</li>
+</ul>
+<h4 id="输入处理流程"><a href="#输入处理流程" class="headerlink" title="输入处理流程"></a>输入处理流程</h4><ol>
+<li>多通道音频输入下混（downmix）为单通道信号；</li>
+<li>语音编码器生成块级嵌入；</li>
+<li>嵌入经可训练线性投影层映射至 LLM 输入空间；</li>
+<li>以流式方式将块级嵌入顺序追加至 LLM 上下文；</li>
+<li>每个音频块的对应文本转录（含说话者标注）作为辅助输入。</li>
+</ol>
+<h4 id="关键设计决策"><a href="#关键设计决策" class="headerlink" title="关键设计决策"></a>关键设计决策</h4><ul>
+<li><strong>无外部 VAD 模块</strong>：与依赖独立语音活动检测模块确定轮次边界的方法不同，ModeratorLM 将轮次决策<strong>完全委托给 Speech LLM 自身</strong>；</li>
+<li><strong>动态训练块长度</strong>：每个块的时长在训练时随机采样，增强对不同 chunk 策略的鲁棒性。</li>
+</ul>
+<h4 id="输出类型"><a href="#输出类型" class="headerlink" title="输出类型"></a>输出类型</h4><p>对于每个输入音频块，LLM 产生两种输出之一：</p>
+<ol>
+<li><strong>Turn-taking + Response</strong>：模型发出控制令牌（表示助手接管话语权），后接助手的文本响应；</li>
+<li><strong>No-turn</strong>：空序列，表示当前块不执行轮次行为。</li>
+</ol>
+<h4 id="ModeratorLM-Think-变体"><a href="#ModeratorLM-Think-变体" class="headerlink" title="ModeratorLM-Think 变体"></a>ModeratorLM-Think 变体</h4><p>在潜在轮次点引入<strong>链式思维推理（Chain-of-Thought reasoning）</strong>：在发出决策前，LLM 先对对话上下文和分配角色进行显式推理。</p>
+<p><img src="/images/paper_figs/adaptive_turn_taking/fig1_architecture.png" srcset="/img/loading.gif" lazyload alt="ModeratorLM-Think 架构示意图"><br><em>图1：ModeratorLM-Think 的 LLM 输入-输出序列示例。Chunk 1 不产生推理 trace；Chunk 2 产生推理但不接管；Chunk 3 推理后接管话语权并生成响应。</em></p>
+<p>控制令牌设计：</p>
+<ul>
+<li><code>&lt;think&gt;</code> / <code>&lt;/think&gt;</code>：思维推理的起止标记</li>
+<li>Turn-taking 控制令牌：标记助手接管话语权</li>
+<li>EOS 令牌：序列终止</li>
+</ul>
+<p>由于本文聚焦轮次行为建模，助手响应以<strong>文本形式</strong>生成（可接入流式 TTS 或原生语音令牌生成模块）。</p>
+<hr>
+<h3 id="2-2-RolePlayConv-数据集构建"><a href="#2-2-RolePlayConv-数据集构建" class="headerlink" title="2.2 RolePlayConv 数据集构建"></a>2.2 RolePlayConv 数据集构建</h3><p>现有多人对话数据集的不足：</p>
+<ul>
+<li>文本领域有角色定义的对话数据集（如 COSER）不包含语音；</li>
+<li>语音领域的 MELD 有多人对话但无助手角色条件化；</li>
+<li>PaChat 聚焦个性化语音助手而非角色条件化。</li>
+</ul>
+<p>为填补这一空白，作者构建了 <strong>RolePlayConv</strong>——大规模合成多人对话数据集。</p>
+<h4 id="数据生成流程"><a href="#数据生成流程" class="headerlink" title="数据生成流程"></a>数据生成流程</h4><p><strong>第一阶段：角色定义</strong></p>
+<ul>
+<li>策划 125 个详细助手角色，例如：”一位 42 岁的印度 CEO，沟通风格自信果断，热衷战略规划与指导”；</li>
+<li>每个角色指定对话风格、语调等属性。</li>
+</ul>
+<p><strong>第二阶段：对话生成</strong></p>
+<ul>
+<li>为每段对话随机采样一个助手角色；</li>
+<li>使用 Amazon Nova Pro 生成 3-6 人的连贯多人对话；</li>
+<li>话题与子话题采样约束为与所选角色一致；</li>
+<li>每个对话轮次限制在 15 词以内，模拟口语交互特征。</li>
+</ul>
+<p><strong>第三阶段：推理 trace 增强</strong></p>
+<ul>
+<li>对所有助手轮次和部分非助手轮次，生成 LLM 推理 trace；</li>
+<li>描述中间决策过程：立场选择、响应规划、轮次考量；</li>
+<li>作为 ModeratorLM-Think 的监督信号。</li>
+</ul>
+<p><strong>第四阶段：语音合成</strong></p>
+<ul>
+<li>为每个说话者分配性别、年龄组、口音属性，映射至参考语音池；</li>
+<li>训练集和评估集使用<strong>不同的说话者池</strong>，避免说话者泄露；</li>
+<li>使用 Zonos-v0.1 TTS 模型逐轮合成语音；</li>
+<li>合成音频段以从真实对话数据估计的静音间隔分布拼接，逼近自然轮次时序。</li>
+</ul>
+<p><strong>数据集规模</strong>：约 75K 训练对话，平均时长约 2 分钟。</p>
+<hr>
+<h2 id="3-实验设置（Experimental-Setup）"><a href="#3-实验设置（Experimental-Setup）" class="headerlink" title="3. 实验设置（Experimental Setup）"></a>3. 实验设置（Experimental Setup）</h2><h3 id="3-1-训练设置"><a href="#3-1-训练设置" class="headerlink" title="3.1 训练设置"></a>3.1 训练设置</h3><h4 id="模型选择"><a href="#模型选择" class="headerlink" title="模型选择"></a>模型选择</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>选择</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>骨干 LLM（ModeratorLM）</td>
+<td>Qwen3-4B-Instruct-2507</td>
+</tr>
+<tr>
+<td>骨干 LLM（ModeratorLM-Think）</td>
+<td>Qwen3-4B-Thinking-2507</td>
+</tr>
+<tr>
+<td>语音编码器</td>
+<td>内部训练，支持可变前瞻的块级注意力</td>
+</tr>
+<tr>
+<td>对齐工具</td>
+<td>Montreal Forced Aligner</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="动态分块策略"><a href="#动态分块策略" class="headerlink" title="动态分块策略"></a>动态分块策略</h4><ul>
+<li>块长度在训练时随机采样于 <strong>0.5s 至 3s</strong>；</li>
+<li>保证部分块终止于说话者边界（对应自然轮次点）。</li>
+</ul>
+<h4 id="三阶段训练流程"><a href="#三阶段训练流程" class="headerlink" title="三阶段训练流程"></a>三阶段训练流程</h4><p><strong>阶段一：Speech–LLM 对齐</strong></p>
+<ul>
+<li>任务：自动语音识别（ASR）</li>
+<li>数据：约 90K 小时公开语音数据（VoxPopuli、MLS、Common Voice、People’s Speech）</li>
+<li>更新范围：<strong>仅投影层</strong>，其余参数冻结</li>
+</ul>
+<p><strong>阶段二：对话预训练</strong></p>
+<ul>
+<li>数据：公开多人对话数据集（AMI、Fisher）</li>
+<li>模拟助手角色：由于公开语料无”助手”概念，将助手角色在<strong>除对话发起者外的所有说话者间轮转</strong></li>
+<li>对于 N 位参与者的对话，产生 N-1 个训练实例</li>
+</ul>
+<p><strong>阶段三：角色条件化训练</strong></p>
+<ul>
+<li>数据：仅 RolePlayConv 数据集</li>
+<li>角色信息通过 system prompt 提供</li>
+</ul>
+<h4 id="训练超参"><a href="#训练超参" class="headerlink" title="训练超参"></a>训练超参</h4><ul>
+<li>后两阶段使用 <strong>LoRA（低秩适应）</strong> 微调 LLM 参数</li>
+<li>语音编码器全程冻结</li>
+<li>可训练参数量：<strong>13.4M</strong></li>
+<li>优化器：Adam</li>
+<li>学习率调度：两阶段，峰值 $1 \times 10^{-5}$</li>
+</ul>
+<h3 id="3-2-评估设置"><a href="#3-2-评估设置" class="headerlink" title="3.2 评估设置"></a>3.2 评估设置</h3><h4 id="评估数据集"><a href="#评估数据集" class="headerlink" title="评估数据集"></a>评估数据集</h4><p><strong>NOTSOFAR-1 (NSF-1)</strong></p>
+<ul>
+<li>真实会议录音</li>
+<li>约 4 人/会，平均时长 6 分钟</li>
+<li>无角色标签 → 通过混合程序（LLM 排序 + 人类评估聚合）选定”助手”角色，再为其生成角色描述</li>
+</ul>
+<p><strong>RolePlayConv 评估集</strong></p>
+<ul>
+<li>使用训练中<strong>未见的零样本角色集合</strong></li>
+<li>使用<strong>不同的 LLM（QwQ-32B）</strong>生成，确保与训练条件严格分离</li>
+</ul>
+<h4 id="推理配置"><a href="#推理配置" class="headerlink" title="推理配置"></a>推理配置</h4><ul>
+<li>每个音频块视为潜在轮次点</li>
+<li>动态分块：块时长均匀采样于 0.5s-3s，分割始终在说话者边界</li>
+<li>由于动态分块引入非确定性，报告 <strong>10 次评估运行的平均指标</strong></li>
+<li>使用 teacher-forcing 提供真实对话上下文</li>
+<li>默认贪婪解码；发出 <code>&lt;think&gt;</code> 令牌后切换为采样模式</li>
+<li>采样参数：Temperature=0.7, TopP=0.8, TopK=20</li>
+</ul>
+<h4 id="评估指标"><a href="#评估指标" class="headerlink" title="评估指标"></a>评估指标</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Precision (@P)</td>
+<td>轮次预测精确率</td>
+</tr>
+<tr>
+<td>Recall (@R)</td>
+<td>轮次预测召回率</td>
+</tr>
+<tr>
+<td>F1-score (@F1)</td>
+<td>精确率与召回率的调和均值</td>
+</tr>
+<tr>
+<td>Macro-Accuracy (@A)</td>
+<td>宏平均准确率</td>
+</tr>
+<tr>
+<td>False Positive Rate (@FP)</td>
+<td>误报率（不该说话时说了）</td>
+</tr>
+<tr>
+<td>Reactive Miss Rate (@RM)</td>
+<td>被直接寻址时的漏答率</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>此外，使用 <strong>LLM-as-a-Judge</strong>（Claude-Sonnet-3.5）评估：</p>
+<ul>
+<li>轮次决策相对于角色的<strong>适当性</strong>（0-1 分）</li>
+<li>响应内容的<strong>角色忠实度</strong>（1-10 分）</li>
+<li>100 实例的人类评估与 LLM 评分的 Spearman 秩相关系数 $\rho = 0.87$</li>
+</ul>
+<h4 id="基线模型"><a href="#基线模型" class="headerlink" title="基线模型"></a>基线模型</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>基线</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Moshi（Moshika）</td>
+<td>双人对话设计，帧率 12.5 Hz，评估时使用 ±0.5s 容差窗口</td>
+</tr>
+<tr>
+<td>MP-Baseline</td>
+<td>在 RolePlayConv 上无角色条件化微调，用于隔离角色条件化的贡献</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="4-实验结果（Results）"><a href="#4-实验结果（Results）" class="headerlink" title="4. 实验结果（Results）"></a>4. 实验结果（Results）</h2><h3 id="4-1-主实验结果"><a href="#4-1-主实验结果" class="headerlink" title="4.1 主实验结果"></a>4.1 主实验结果</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th style="text-align:center">NOTSOFAR-1</th>
+<th style="text-align:center"></th>
+<th style="text-align:center"></th>
+<th style="text-align:center"></th>
+<th style="text-align:center"></th>
+<th style="text-align:center"></th>
+<th style="text-align:center">RolePlayConv</th>
+<th style="text-align:center"></th>
+<th style="text-align:center"></th>
+<th style="text-align:center"></th>
+<th style="text-align:center"></th>
+<th style="text-align:center"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td style="text-align:center">@P</td>
+<td style="text-align:center">@R</td>
+<td style="text-align:center">@F1</td>
+<td style="text-align:center">@A</td>
+<td style="text-align:center">@FP</td>
+<td style="text-align:center">@RM</td>
+<td style="text-align:center">@P</td>
+<td style="text-align:center">@R</td>
+<td style="text-align:center">@F1</td>
+<td style="text-align:center">@A</td>
+<td style="text-align:center">@FP</td>
+<td style="text-align:center">@RM</td>
+</tr>
+<tr>
+<td>Moshi</td>
+<td style="text-align:center">0.14</td>
+<td style="text-align:center">0.10</td>
+<td style="text-align:center">0.11</td>
+<td style="text-align:center">0.21</td>
+<td style="text-align:center">0.66</td>
+<td style="text-align:center">–</td>
+<td style="text-align:center">0.15</td>
+<td style="text-align:center">0.34</td>
+<td style="text-align:center">0.21</td>
+<td style="text-align:center">0.50</td>
+<td style="text-align:center">0.47</td>
+<td style="text-align:center">–</td>
+</tr>
+<tr>
+<td>MP-Baseline</td>
+<td style="text-align:center">0.58</td>
+<td style="text-align:center">0.33</td>
+<td style="text-align:center">0.38</td>
+<td style="text-align:center">0.69</td>
+<td style="text-align:center">0.05</td>
+<td style="text-align:center">–</td>
+<td style="text-align:center">0.40</td>
+<td style="text-align:center">0.48</td>
+<td style="text-align:center">0.42</td>
+<td style="text-align:center">0.67</td>
+<td style="text-align:center">0.14</td>
+<td style="text-align:center">–</td>
+</tr>
+<tr>
+<td>ModeratorLM</td>
+<td style="text-align:center">0.77</td>
+<td style="text-align:center">0.51</td>
+<td style="text-align:center">0.57</td>
+<td style="text-align:center">0.77</td>
+<td style="text-align:center">0.01</td>
+<td style="text-align:center">0.08</td>
+<td style="text-align:center">0.71</td>
+<td style="text-align:center">0.57</td>
+<td style="text-align:center">0.61</td>
+<td style="text-align:center">0.76</td>
+<td style="text-align:center">0.05</td>
+<td style="text-align:center">0.14</td>
+</tr>
+<tr>
+<td>ModeratorLM-Think</td>
+<td style="text-align:center"><strong>0.81</strong></td>
+<td style="text-align:center"><strong>0.74</strong></td>
+<td style="text-align:center"><strong>0.76</strong></td>
+<td style="text-align:center"><strong>0.86</strong></td>
+<td style="text-align:center"><strong>0.01</strong></td>
+<td style="text-align:center"><strong>0.02</strong></td>
+<td style="text-align:center"><strong>0.79</strong></td>
+<td style="text-align:center"><strong>0.82</strong></td>
+<td style="text-align:center"><strong>0.79</strong></td>
+<td style="text-align:center"><strong>0.91</strong></td>
+<td style="text-align:center"><strong>0.03</strong></td>
+<td style="text-align:center"><strong>0.03</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="关键发现"><a href="#关键发现" class="headerlink" title="关键发现"></a>关键发现</h4><ol>
+<li><strong>Moshi 在多人场景全面失败</strong>：双人对话训练的模型无法泛化到多说话者环境，召回率极低且误报率高达 0.66；</li>
+<li><strong>MP-Baseline 减少了打断但缺乏精度</strong>：在多人对话数据上训练但无角色条件化，无法实现角色适配的轮次行为；</li>
+<li><strong>ModeratorLM 实现高精度低误报</strong>：但策略偏保守，会错过部分有效响应机会；</li>
+<li><strong>ModeratorLM-Think 全面最优</strong>：链式思维推理提升召回率的同时维持低误报，特别是在被直接寻址的场景（@RM 仅 0.02-0.03），显式推理帮助模型更好地解读对话上下文和角色义务。</li>
+</ol>
+<p>NSF-1 上所有非角色条件化模型的召回率更低，原因在于真实人-人对话包含频繁的反馈语（backchannels）、打断和重叠语音，且没有参与者遵循明确的”助手式”轮次模式。</p>
+<h3 id="LLM-as-a-Judge-角色忠实度评估"><a href="#LLM-as-a-Judge-角色忠实度评估" class="headerlink" title="LLM-as-a-Judge 角色忠实度评估"></a>LLM-as-a-Judge 角色忠实度评估</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th style="text-align:center">Turn-Taking [0,1]</th>
+<th style="text-align:center">Response [0,10]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MP-Baseline</td>
+<td style="text-align:center">0.58</td>
+<td style="text-align:center">4.6</td>
+</tr>
+<tr>
+<td>ModeratorLM</td>
+<td style="text-align:center">0.68</td>
+<td style="text-align:center">6.9</td>
+</tr>
+<tr>
+<td>ModeratorLM-Think</td>
+<td style="text-align:center"><strong>0.72</strong></td>
+<td style="text-align:center"><strong>7.4</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>主观评估趋势与客观指标高度一致。ModeratorLM-Think 的显式推理阶段充当<strong>基础对齐层</strong>：先分析对话上下文与角色义务，确保”何时说话”的决策有认知依据，由此产生时机准确且风格一致的轮次。</p>
+<h3 id="推理-trace-的角色适应性示例"><a href="#推理-trace-的角色适应性示例" class="headerlink" title="推理 trace 的角色适应性示例"></a>推理 trace 的角色适应性示例</h3><p>论文展示了相同对话上下文下，不同角色如何产生不同的推理与决策：</p>
+<ul>
+<li><strong>角色 A</strong>（权威型新闻主播）：识别讨论开场为设定参数的机会，决定主动介入提供结构化引导；</li>
+<li><strong>角色 B</strong>（克制型新闻主播）：认为对话需要积累动量后再介入，选择沉默让想法自由发展。</li>
+</ul>
+<p>这一对比清晰展示了角色条件化如何通过推理链驱动截然不同的轮次行为。</p>
+<hr>
+<h3 id="4-2-消融实验"><a href="#4-2-消融实验" class="headerlink" title="4.2 消融实验"></a>4.2 消融实验</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>设置</th>
+<th style="text-align:center">ModeratorLM</th>
+<th style="text-align:center"></th>
+<th style="text-align:center"></th>
+<th style="text-align:center">ModeratorLM-Think</th>
+<th style="text-align:center"></th>
+<th style="text-align:center"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td></td>
+<td style="text-align:center">@P</td>
+<td style="text-align:center">@R</td>
+<td style="text-align:center">@A</td>
+<td style="text-align:center">@P</td>
+<td style="text-align:center">@R</td>
+<td style="text-align:center">@A</td>
+</tr>
+<tr>
+<td>Default（动态分块）</td>
+<td style="text-align:center">0.71</td>
+<td style="text-align:center">0.57</td>
+<td style="text-align:center">0.76</td>
+<td style="text-align:center">0.79</td>
+<td style="text-align:center">0.82</td>
+<td style="text-align:center">0.91</td>
+</tr>
+<tr>
+<td>No Transcription</td>
+<td style="text-align:center">0.42</td>
+<td style="text-align:center">0.14</td>
+<td style="text-align:center">0.57</td>
+<td style="text-align:center">0.39</td>
+<td style="text-align:center">0.42</td>
+<td style="text-align:center">0.57</td>
+</tr>
+<tr>
+<td>ASR Hypotheses</td>
+<td style="text-align:center">0.68</td>
+<td style="text-align:center">0.56</td>
+<td style="text-align:center">0.76</td>
+<td style="text-align:center">0.75</td>
+<td style="text-align:center">0.80</td>
+<td style="text-align:center">0.90</td>
+</tr>
+<tr>
+<td>GT Thoughts</td>
+<td style="text-align:center">–</td>
+<td style="text-align:center">–</td>
+<td style="text-align:center">–</td>
+<td style="text-align:center">0.95</td>
+<td style="text-align:center">0.95</td>
+<td style="text-align:center">0.97</td>
+</tr>
+<tr>
+<td>Fixed (2s)</td>
+<td style="text-align:center">0.88</td>
+<td style="text-align:center">0.78</td>
+<td style="text-align:center">0.88</td>
+<td style="text-align:center">0.82</td>
+<td style="text-align:center">0.82</td>
+<td style="text-align:center">0.91</td>
+</tr>
+<tr>
+<td>Turn-Fixed</td>
+<td style="text-align:center">0.84</td>
+<td style="text-align:center">0.60</td>
+<td style="text-align:center">0.80</td>
+<td style="text-align:center">0.75</td>
+<td style="text-align:center">0.81</td>
+<td style="text-align:center">0.91</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="分块策略分析"><a href="#分块策略分析" class="headerlink" title="分块策略分析"></a>分块策略分析</h4><p>三种分块策略的定义：</p>
+<ul>
+<li><strong>Dynamic（默认）</strong>：每块时长随机采样 0.5-3s；</li>
+<li><strong>Fixed (2s)</strong>：所有块统一 2s 固定长度；</li>
+<li><strong>Turn-Fixed</strong>：同一说话者轮次内固定，跨轮次可变。</li>
+</ul>
+<p><strong>关键洞察</strong>：</p>
+<ol>
+<li>ModeratorLM 在 Fixed/Turn-Fixed 设置下精度反而更高 → 说明该模型<strong>依赖块长度作为隐式线索</strong>做轮次决策；</li>
+<li>ModeratorLM-Think 对分块策略<strong>显著不敏感</strong>，因其依赖显式推理 trace 而非统计线索；</li>
+<li>但固定分块在现实推理场景中<strong>不可用</strong>：真实部署时无法获取 ground-truth 话语边界，固定策略会延迟或掩盖块内出现的轮次信号。</li>
+</ol>
+<h4 id="转录信息影响"><a href="#转录信息影响" class="headerlink" title="转录信息影响"></a>转录信息影响</h4><ol>
+<li><strong>无转录</strong>：性能灾难性下降（Recall 0.14/0.42），证明模型<strong>重度依赖文本信息</strong>进行轮次决策；</li>
+<li><strong>ASR 假设</strong>（Kyutai-STT-2.6B，WER 6.7%）：仅轻微下降，证明对现实转录噪声的鲁棒性。</li>
+</ol>
+<h4 id="Ground-Truth-推理-trace"><a href="#Ground-Truth-推理-trace" class="headerlink" title="Ground-Truth 推理 trace"></a>Ground-Truth 推理 trace</h4><p>提供 GT 推理 trace 时 ModeratorLM-Think 达到近乎完美的性能（0.95/0.95/0.97），进一步验证推理质量是性能瓶颈。</p>
+<hr>
+<h2 id="5-结论与未来方向"><a href="#5-结论与未来方向" class="headerlink" title="5. 结论与未来方向"></a>5. 结论与未来方向</h2><p>本文的核心贡献：</p>
+<ol>
+<li><strong>首个角色条件化的多人语音轮次管理系统</strong>：将轮次决策显式绑定到分配角色；</li>
+<li><strong>RolePlayConv 数据集</strong>：75K 合成多人对话，覆盖 125 种助手角色；</li>
+<li><strong>链式思维推理增强（ModeratorLM-Think）</strong>：通过显式推理提升角色忠实度和轮次决策质量；</li>
+<li><strong>动态分块训练的重要性</strong>：避免模型过拟合到块长度特征。</li>
+</ol>
+<p>未来方向：</p>
+<ul>
+<li>全双工多人语音智能体（同时听说）</li>
+<li>在同时监听和发言条件下的轮次管理</li>
+</ul>
+<hr>
+<h2 id="个人评论"><a href="#个人评论" class="headerlink" title="个人评论"></a>个人评论</h2><p>这篇工作的亮点在于将”角色”这一高层语用概念直接注入到低层轮次决策系统中，避免了传统流水线中多模块间信息丢失的问题。特别值得关注的是 ModeratorLM-Think 的消融结果：当模型不依赖统计捷径（如块长度）而是通过显式推理决策时，系统对推理环境变化的鲁棒性大幅提升。这提示我们，在交互式 AI 系统中，<strong>推理能力可能比特征工程更具泛化价值</strong>。</p>
+<p>数据集构建的”角色轮转”技巧（在无助手标注的公开语料中轮转 N-1 个训练实例）和评估集与训练集的严格分离（不同角色集+不同生成LLM）也值得借鉴。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech LLM</a>
+      
+        <a href="/tags/Turn-Taking/" class="print-no-link">#Turn-Taking</a>
+      
+        <a href="/tags/Voice-Agent/" class="print-no-link">#Voice Agent</a>
+      
+        <a href="/tags/Multi-Party-Conversation/" class="print-no-link">#Multi-Party Conversation</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>论文解读：Adaptive Turn-Taking for Real-time Multi-Party Voice Agents</div>
+      <div>https://smallsmartao.github.io/2026/06/12/adaptive-turn-taking-multi-party-voice-agents/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年6月12日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年6月12日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/06/12/adaptive-turn-taking-moderatorlm/" title="论文解读：Adaptive Turn-Taking for Real-time Multi-Party Voice Agents (ModeratorLM)">
+                        <span class="hidden-mobile">论文解读：Adaptive Turn-Taking for Real-time Multi-Party Voice Agents (ModeratorLM)</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
