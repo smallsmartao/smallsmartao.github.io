@@ -1,0 +1,1300 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文概览本文来自 NVIDIA，发表于 arXiv 2024（2406.19954）。作者提出了 BESTOW（BEst of TwO Worlds）架构，将 GPT-style 和 T5-style SpeechLLM 的优势融合到一个统一模型中，同时实现了高效推理和流式多任务能力。这是首个开源的支持流式（Streaming）+ 多任务（Multitask，超越 ASR）的 SpeechLLM">
+<meta property="og:type" content="article">
+<meta property="og:title" content="BESTOW: Efficient and Streamable Speech Language Model with the Best of Two Worlds in GPT and T5">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/06/17/bestow-streaming-speech-llm/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文概览本文来自 NVIDIA，发表于 arXiv 2024（2406.19954）。作者提出了 BESTOW（BEst of TwO Worlds）架构，将 GPT-style 和 T5-style SpeechLLM 的优势融合到一个统一模型中，同时实现了高效推理和流式多任务能力。这是首个开源的支持流式（Streaming）+ 多任务（Multitask，超越 ASR）的 SpeechLLM">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/bestow_cover.png">
+<meta property="article:published_time" content="2026-06-17T09:10:00.000Z">
+<meta property="article:modified_time" content="2026-06-17T09:00:54.871Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="Speech LLM">
+<meta property="article:tag" content="Streaming">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/bestow_cover.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>BESTOW: Efficient and Streamable Speech Language Model with the Best of Two Worlds in GPT and T5 - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/bestow_cover.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="BESTOW: Efficient and Streamable Speech Language Model with the Best of Two Worlds in GPT and T5"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-06-17 17:10" pubdate>
+          2026年6月17日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          25 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">BESTOW: Efficient and Streamable Speech Language Model with the Best of Two Worlds in GPT and T5</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年6月17日 下午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="论文概览"><a href="#论文概览" class="headerlink" title="论文概览"></a>论文概览</h2><p>本文来自 NVIDIA，发表于 arXiv 2024（2406.19954）。作者提出了 <strong>BESTOW</strong>（<strong>BE</strong>st of <strong>T</strong>w<strong>O</strong> <strong>W</strong>orlds）架构，将 GPT-style 和 T5-style SpeechLLM 的优势融合到一个统一模型中，同时实现了<strong>高效推理</strong>和<strong>流式多任务</strong>能力。这是首个开源的支持流式（Streaming）+ 多任务（Multitask，超越 ASR）的 SpeechLLM 方案。</p>
+<p><strong>作者</strong>: Zhehuai Chen, He Huang, Oleksii Hrinchuk, Krishna C. Puvvada, Nithin Rao Koluguri, Piotr Żelasko, Jagadeesh Balam, Boris Ginsburg</p>
+<hr>
+<h2 id="1-Introduction"><a href="#1-Introduction" class="headerlink" title="1. Introduction"></a>1. Introduction</h2><h3 id="1-1-背景与动机"><a href="#1-1-背景与动机" class="headerlink" title="1.1 背景与动机"></a>1.1 背景与动机</h3><p>大语言模型（LLM）的成功推动了多模态理解研究，尤其是将语音理解能力融入预训练 LLM（即 SpeechLLM）。当前主流框架是 Speech-LLaMA 系列：将语音 prompt 拼接到文本 prompt 前面作为 decoder-only LLM 的输入。该设计具备模块化优势，支持 LLM 知识向语音任务迁移，在 ASR 和 AST 上表现优异。</p>
+<h3 id="1-2-现有方法的缺陷"><a href="#1-2-现有方法的缺陷" class="headerlink" title="1.2 现有方法的缺陷"></a>1.2 现有方法的缺陷</h3><p>然而 Speech-LLaMA 式架构存在两个核心问题：</p>
+<ol>
+<li><strong>效率问题</strong>：Self-attention 对拼接后的长序列（语音嵌入远长于文本）的二次复杂度导致计算开销巨大。即使通过大幅下采样语音嵌入来缓解，也不可避免地造成信息损失。</li>
+<li><strong>流式不可行</strong>：整段语音嵌入作为 prompt 必须全部预置，无法支持流式 ASR、同声传译等应用。</li>
+</ol>
+<h3 id="1-3-本文贡献"><a href="#1-3-本文贡献" class="headerlink" title="1.3 本文贡献"></a>1.3 本文贡献</h3><ul>
+<li>首个开源的同时支持<strong>流式 + 多任务</strong>（超越 ASR）的 SpeechLLM 方案</li>
+<li>基于 cross-attention 和 read-write policy 的新型骨干架构，统一离线/流式模式</li>
+<li>在 ASR、AST、SQA、DynamicSuperb 等大规模多任务基准上达到 SOTA</li>
+<li>端到端可优化，训练/推理成本更低，支持 LLM 知识迁移</li>
+</ul>
+<hr>
+<h2 id="2-Related-Work"><a href="#2-Related-Work" class="headerlink" title="2. Related Work"></a>2. Related Work</h2><h3 id="2-1-语音基础模型（Speech-Foundational-Model）"><a href="#2-1-语音基础模型（Speech-Foundational-Model）" class="headerlink" title="2.1 语音基础模型（Speech Foundational Model）"></a>2.1 语音基础模型（Speech Foundational Model）</h3><p>近期进展包括：</p>
+<ul>
+<li>大规模多语言自监督/半监督学习（XLSR、USM）</li>
+<li>大规模多任务监督训练（Whisper 系列、SeamlessM4T）</li>
+<li>更强大高效的语音编码器设计（Conformer 及变体）</li>
+<li>多语言多任务评测基准（XTREME、ML-SUPERB）</li>
+</ul>
+<h3 id="2-2-SpeechLLM-架构分类"><a href="#2-2-SpeechLLM-架构分类" class="headerlink" title="2.2 SpeechLLM 架构分类"></a>2.2 SpeechLLM 架构分类</h3><p>根据语音嵌入类型可分为：</p>
+<ol>
+<li><strong>离散 token 方法</strong>（SpeechGPT、AudioPaLM）：将语音量化为离散 token 与文本共享词表。受限于语音量化模型质量。</li>
+<li><strong>连续特征方法</strong>：使用预训练语音编码器提取特征，投影到 LLM 词嵌入空间。本文属于此类。</li>
+</ol>
+<p>在连续特征方法中，又可按架构分为：</p>
+<ul>
+<li><strong>GPT-style</strong>：直接拼接语音和文本 prompt 作为 decoder-only LLM 输入（Speech-LLaMA、SALMONN、QWEN-audio）</li>
+<li><strong>T5-style</strong>（Flamingo 系列）：在预训练 GPT-based LLM 的每一层/块中加入跨模态 cross-attention，文本作 query</li>
+</ul>
+<h3 id="2-3-流式语音模型"><a href="#2-3-流式语音模型" class="headerlink" title="2.3 流式语音模型"></a>2.3 流式语音模型</h3><ul>
+<li><strong>流式 ASR</strong>：在 Transformer 上引入有限上下文或流式训练，通常基于 Transducer，难以利用预训练 LLM</li>
+<li><strong>同声传译</strong>：研究固定和自适应 read-write policy（Wait-k、EMMA、ITST）</li>
+</ul>
+<hr>
+<h2 id="3-Why-Streaming-SpeechLLM-is-Hard"><a href="#3-Why-Streaming-SpeechLLM-is-Hard" class="headerlink" title="3. Why Streaming SpeechLLM is Hard"></a>3. Why Streaming SpeechLLM is Hard</h2><p>现有流式 SpeechLLM 方案（如 Speech RealLM、Tsunoo et al.）通过将 block-wise 语音特征与文本交错排列来更新 prompt 格式。这类方法存在以下局限：</p>
+<ol>
+<li><strong>Prompt 格式不匹配</strong>：交错格式（注入 BLANK/WAIT token）与 LLM 文本预训练格式不同，阻碍 LLM 文本知识迁移。先前研究无法展示利用预训练 LLM 的额外收益，且能力局限于 ASR。</li>
+<li><strong>非端到端可优化</strong>：引入的对齐阶段（如 CTC 对齐）使得系统无法端到端训练，难以泛化到 AST、SQA 等多任务。</li>
+<li><strong>更高推理成本</strong>：源于新 prompt 格式中更长的文本预测长度或需要 beam search。</li>
+</ol>
+<p>BESTOW 的解决方案保持 LLM prompt 格式不变，统一离线与流式学习框架，实现：LLM 知识迁移、多任务支持、端到端可优化、更低训练/推理成本。</p>
+<hr>
+<h2 id="4-BESTOW-A-Streamable-SpeechLLM"><a href="#4-BESTOW-A-Streamable-SpeechLLM" class="headerlink" title="4. BESTOW: A Streamable SpeechLLM"></a>4. BESTOW: A Streamable SpeechLLM</h2><h3 id="4-1-统一的离线-流式框架"><a href="#4-1-统一的离线-流式框架" class="headerlink" title="4.1 统一的离线-流式框架"></a>4.1 统一的离线-流式框架</h3>
+<p><img src="/images/paper_figs/bestow_fig_p2_1.png" srcset="/img/loading.gif" lazyload alt="图1：将流式 SpeechLLM 重新表述为 read-write policy 问题"></p>
+<p>核心思想：将流式 SpeechLLM 问题重新表述为同声传译中的 <strong>read-write policy</strong> 问题。在每个 LLM 步骤中，模型决定是等待更多语音输入特征（<strong>READ</strong>）还是预测目标词（<strong>WRITE</strong>）。</p>
+<p>该方案保持 LLM prompt 格式不变，前提是将 READ 和 WRITE 操作从 LLM 中解耦，由独立的 <strong>cross-attention 特征提取器</strong> 建模（Section 4.2）。之后流式只需简单两步即可实现（Section 4.3）。</p>
+<h3 id="4-2-通过-Cross-Attention-引入语音模态"><a href="#4-2-通过-Cross-Attention-引入语音模态" class="headerlink" title="4.2 通过 Cross-Attention 引入语音模态"></a>4.2 通过 Cross-Attention 引入语音模态</h3><p><img src="/images/paper_figs/bestow_fig_p3_1.png" srcset="/img/loading.gif" lazyload alt="图2：SALM vs BESTOW 架构对比"></p>
+<p><strong>与现有方法的本质区别</strong>：不再简单拼接语音和文本 prompt，而是在 LLM 输入前注入可训练的 transformer-like self-attention + cross-attention 层，让文本 prompt attend 到语音 prompt 的不同区域，提取与当前 LLM 步骤最相关的特征。</p>
+<p><strong>具体设计</strong>：</p>
+<ul>
+<li><strong>Keys/Values</strong>：语音编码器输出的语音特征</li>
+<li><strong>Queries</strong>：输入文本（文本 prompt + 已预测 token）经 LLM 输入嵌入矩阵编码</li>
+<li><strong>Causal Self-Attention</strong>：在 LLM 输入嵌入和 cross-attention 之间注入因果自注意力层，使 query 能考虑当前步骤和历史上下文</li>
+<li><strong>Residual Connection</strong>：将文本 prompt 直接加到 cross-attention 输出上，确保模型可退化为原始文本 LLM（在非语音步骤学习忽略 cross-attention 输出）</li>
+</ul>
+<p>最终设计本质上是 [Vaswani et al., 2017] 中的一个 cross-attention transformer 层，重复 $X$ 次。消融实验表明 $X=2$ 即可。</p>
+<p><strong>训练</strong>：标准 next-token-prediction loss。<br><strong>推理</strong>：LLM 接受文本 prompt 逐步生成 token，唯一不同是每个预测 token 同时回馈到 LLM 输入和上方的 cross-attention 模块。</p>
+<h3 id="4-3-从离线到流式"><a href="#4-3-从离线到流式" class="headerlink" title="4.3 从离线到流式"></a>4.3 从离线到流式</h3><p>有了 cross-attention 特征提取器后，每个 decoder 步骤所需的语音上下文长度独立于 LLM backbone，完全由 cross-attention 模块的 read-write policy 决定。流式化只需两步：</p>
+<p><strong>第一步：设计 Read-Write Policy</strong></p>
+<p>采用最经典的固定策略 <strong>Wait-k</strong>：</p>
+<ul>
+<li>确定固定 pre-decision ratio $L$，对应步长为 $L \times P \times 10\text{ms}$（$P$ 为语音编码器下采样率）</li>
+<li>LLM 接收文本上下文 prompt（无 cross-attention），然后 cross-attend 前 $K \times L$ 个语音嵌入步来预测第一个 subword</li>
+<li>之后每收到 $L$ 个新语音嵌入即预测一个 subword</li>
+</ul>
+<p><strong>第二步：使语音编码器流式工作</strong></p>
+<p>两种方式：</p>
+<ol>
+<li><strong>BESTOW-S-bidi</strong>：保持双向编码器，推理时每收到新语音块重新计算所有可用编码器状态。引入固定右上下文 13 帧来补偿训练/推理不匹配。</li>
+<li><strong>BESTOW-S-unid</strong>：使用单向编码器重训模型。采用 cache-aware streaming model 更新 FastConformer pre-encoder 层，使用因果卷积，左右上下文窗口（帧）：$[[70,13],[70,6],[70,1],[70,0]]$，推理时可选。</li>
+</ol>
+<p><strong>训练策略</strong>：</p>
+<ul>
+<li>从离线 BESTOW 初始化 BESTOW-S，在相同数据上继续训练</li>
+<li>训练时随机采样 $K$ 范围，推理时可选择任意 $K$ 实现延迟-质量权衡</li>
+</ul>
+<h3 id="4-4-BESTOW-vs-GPT-style-vs-T5-style"><a href="#4-4-BESTOW-vs-GPT-style-vs-T5-style" class="headerlink" title="4.4 BESTOW vs GPT-style vs T5-style"></a>4.4 BESTOW vs GPT-style vs T5-style</h3><p><strong>与 GPT-style（Speech-LLaMA）的效率对比</strong>：</p>
+<p>设 $L_t$ 为文本 token 长度，$L_a$ 为语音特征长度：</p>
+<ul>
+<li>GPT-style 复杂度：$(L_t + L_a)^2 = L_t^2 + L_a^2 + 2L_aL_t$</li>
+<li>BESTOW 复杂度：$L_tL_a + L_t^2$</li>
+</ul>
+<p>由于通常 $L_a \gg L_t$，理论加速约 $L_a$ 倍——<strong>语音越长加速越显著</strong>。这在宽且深的 LLM 中尤为重要，因为语音编码器和 cross-attention 的计算可从 LLM forward/backward 中剥离。</p>
+<p><strong>与 T5-style（Flamingo、Whisper-LLaMA）的对比</strong>：</p>
+<p>T5-style 在 LLM 每一层都加 cross-attention，引入大量参数。BESTOW 仅需 <strong>LLM 输入前的 2 层 cross-attention</strong> 即可达到 SOTA。模态特有设计仅在 LLM 输入侧，允许对 LLM 参数使用 LoRA 等参数高效微调。</p>
+<hr>
+<h2 id="5-Experiments"><a href="#5-Experiments" class="headerlink" title="5. Experiments"></a>5. Experiments</h2><h3 id="5-1-数据集与实验设置"><a href="#5-1-数据集与实验设置" class="headerlink" title="5.1 数据集与实验设置"></a>5.1 数据集与实验设置</h3><p><strong>训练数据</strong>：</p>
+<ul>
+<li>31K 小时公开语音数据 + 54K 小时内部数据（ASR/AST）<ul>
+<li>英语 67.4K 小时、德语 6.1K 小时、西班牙语 6.6K 小时、法语 5.1K 小时</li>
+</ul>
+</li>
+<li>2K 小时 MSMARCO 语音合成版（SQA）</li>
+<li>DynamicSuperb 训练集</li>
+</ul>
+<p><strong>评估指标</strong>：</p>
+<ul>
+<li>ASR：WER（LibriSpeech test-other、Gigaspeech、MCV-16.1、Open ASR Leaderboard）</li>
+<li>AST：BLEU（CoVoST、FLEURS）</li>
+<li>SQA：ROUGE-L</li>
+<li>DynamicSuperb：Accuracy（6 类别：CNT, SPK, SEM, DEG, PRL, AUD）</li>
+<li>流式延迟：non-computation-aware LAAL</li>
+</ul>
+<p><strong>模型配置</strong>：</p>
+<ul>
+<li>框架：PyTorch + NeMo Toolkit</li>
+<li>训练：128× A100 (80G) GPUs，60k steps，一天完成</li>
+<li>Batch duration：360 sec/GPU</li>
+<li>语音编码器：初始化自 Canary-1B</li>
+<li>LLM：初始化自 TinyLlama-1.1B-chat</li>
+<li>Cross-attention：2 层 Transformer 模块</li>
+<li>总参数量：约 1.8B（默认全参数训练）</li>
+<li>LoRA：1024 维（消融实验中使用）</li>
+<li>优化器：Distributed Fused Adam + Cosine Annealing</li>
+<li>学习率：$1\times10^{-4}$，权重衰减 $1\times10^{-3}$，梯度裁剪 1.0</li>
+</ul>
+<p><strong>流式设置</strong>：</p>
+<ul>
+<li>$L=4$，$P=8$，默认 $K=10$（ASR 使用 $K=6$）</li>
+<li>训练时 $K$ 从 3 到 12 随机采样</li>
+<li>BESTOW-S-unid 先用 wav2vec2 在 librilight 上预训练 FastConformer cache-aware 编码器</li>
+<li>推理时固定右上下文 13 帧</li>
+</ul>
+<h3 id="5-2-BESTOW-S-实现流式与多任务"><a href="#5-2-BESTOW-S-实现流式与多任务" class="headerlink" title="5.2 BESTOW-S 实现流式与多任务"></a>5.2 BESTOW-S 实现流式与多任务</h3><p><strong>Table 1：与其他多任务 SpeechLLM 的对比</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>ASR LS↓</th>
+<th>ASR Giga↓</th>
+<th>AST en-de↑</th>
+<th>AST de-en↑</th>
+<th>AST es-en↑</th>
+<th>AST fr-en↑</th>
+<th>SQA↑</th>
+<th>LAAL↓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QWEN-audio</td>
+<td>4.2</td>
+<td>10.2</td>
+<td>25.1</td>
+<td>33.9</td>
+<td>39.7</td>
+<td>38.5</td>
+<td>39.7</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>SALMONN</td>
+<td>4.9</td>
+<td>10.0</td>
+<td>18.6</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>48.8</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td><strong>BESTOW</strong></td>
+<td><strong>3.2</strong></td>
+<td><strong>9.9</strong></td>
+<td><strong>39.0</strong></td>
+<td><strong>39.0</strong></td>
+<td><strong>41.1</strong></td>
+<td><strong>41.0</strong></td>
+<td><strong>59.8</strong></td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>BESTOW-S-bidi</td>
+<td>3.5</td>
+<td>10.4</td>
+<td>39.2</td>
+<td>37.9</td>
+<td>40.1</td>
+<td>40.3</td>
+<td>52.3</td>
+<td>3.0/3.9</td>
+</tr>
+<tr>
+<td>BESTOW-S-unid</td>
+<td>4.3</td>
+<td>10.8</td>
+<td>36.6</td>
+<td>34.9</td>
+<td>37.7</td>
+<td>37.6</td>
+<td>47.7</td>
+<td>2.9/3.9</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>DynamicSuperb (unseen) 各类别准确率：</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>CNT</th>
+<th>SPK</th>
+<th>SEM</th>
+<th>DEG</th>
+<th>PRL</th>
+<th>AUD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Whisper-LLM</td>
+<td>8.7</td>
+<td>60.6</td>
+<td>20.9</td>
+<td>59.0</td>
+<td>6.6</td>
+<td>15.9</td>
+</tr>
+<tr>
+<td>BESTOW</td>
+<td>100.0</td>
+<td>81.0</td>
+<td>75.0</td>
+<td>43.5</td>
+<td>46.0</td>
+<td>2.0</td>
+</tr>
+<tr>
+<td>BESTOW-S-bidi</td>
+<td>94.0</td>
+<td>59.5</td>
+<td>76.5</td>
+<td>39.0</td>
+<td>47.0</td>
+<td>1.0</td>
+</tr>
+<tr>
+<td>BESTOW-S-unid</td>
+<td>97.5</td>
+<td>79.5</td>
+<td>76.5</td>
+<td>76.5</td>
+<td>39.0</td>
+<td>2.5</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键结论</strong>：</p>
+<ul>
+<li>BESTOW-S 是唯一同时支持流式 + 多任务的开源 SpeechLLM</li>
+<li>离线和流式 BESTOW 在 ASR/AST 上均显著超越其他模型</li>
+<li>流式模式以约 3.9s LAAL 延迟实现了有竞争力的多任务性能</li>
+<li>SQA 级联基线（110M FastConformer-large ASR + LoRA TinyLlama）ROUGE-L=56.2，BESTOW 达到 59.8（离线）/52.3（流式）</li>
+<li>BESTOW-S-bidi 整体优于 BESTOW-S-unid</li>
+</ul>
+<h3 id="5-3-BESTOW-作为离线-SpeechLLM-的表现"><a href="#5-3-BESTOW-作为离线-SpeechLLM-的表现" class="headerlink" title="5.3 BESTOW 作为离线 SpeechLLM 的表现"></a>5.3 BESTOW 作为离线 SpeechLLM 的表现</h3><p><strong>Table 2：与 SOTA 模型在 ASR/AST 上的对比</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Data</th>
+<th>HF-Lead↓</th>
+<th>En↓</th>
+<th>De↓</th>
+<th>Es↓</th>
+<th>Fr↓</th>
+<th>En→De↑</th>
+<th>En→Es↑</th>
+<th>En→Fr↑</th>
+<th>De→En↑</th>
+<th>Es→En↑</th>
+<th>Fr→En↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SeamlessM4T-medium (1.2B)</td>
+<td>4M</td>
+<td>—</td>
+<td>10.25</td>
+<td>9.32</td>
+<td>7.25</td>
+<td>11.07</td>
+<td>28.30</td>
+<td>21.05</td>
+<td>37.36</td>
+<td>33.39</td>
+<td>21.68</td>
+<td>31.02</td>
+</tr>
+<tr>
+<td>SeamlessM4T-large-v2 (2.3B)</td>
+<td>4M</td>
+<td>—</td>
+<td>7.47</td>
+<td>5.82</td>
+<td>4.82</td>
+<td>7.75</td>
+<td>33.17</td>
+<td>23.72</td>
+<td>43.05</td>
+<td>37.06</td>
+<td>25.41</td>
+<td>30.94</td>
+</tr>
+<tr>
+<td>Whisper-large-v3 (1.5B)</td>
+<td>5M</td>
+<td>7.16</td>
+<td>9.92</td>
+<td>6.17</td>
+<td>4.94</td>
+<td>11.18</td>
+<td>—</td>
+<td>—</td>
+<td>—</td>
+<td>33.40</td>
+<td>22.70</td>
+<td>33.70</td>
+</tr>
+<tr>
+<td>Canary-1b (1B)</td>
+<td>85K</td>
+<td>6.67</td>
+<td>7.97</td>
+<td>4.61</td>
+<td>3.99</td>
+<td>6.53</td>
+<td>32.15</td>
+<td>22.66</td>
+<td>40.77</td>
+<td>33.99</td>
+<td>21.80</td>
+<td>30.95</td>
+</tr>
+<tr>
+<td><strong>BESTOW (1.8B)</strong></td>
+<td><strong>87K</strong></td>
+<td><strong>6.50</strong></td>
+<td><strong>7.31</strong></td>
+<td><strong>4.16</strong></td>
+<td><strong>3.77</strong></td>
+<td><strong>6.18</strong></td>
+<td>31.98</td>
+<td><strong>23.08</strong></td>
+<td><strong>41.90</strong></td>
+<td><strong>35.75</strong></td>
+<td><strong>23.86</strong></td>
+<td><strong>35.10</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>BESTOW 在 Open ASR Leaderboard 和四种语言的多语言 ASR 上均表现最优。AST 方面在 5 个语言对中获得 1 个第一和 4 个第二，而训练数据量仅为 SeamlessM4T-large-v2 的 2%。值得注意的是，BESTOW 建立在 Canary-1b 之上，但在所有任务上显著提升了 ASR 和 AST 性能——证明 BESTOW 架构能有效利用 LLM 文本知识改善语音任务。</p>
+<p><strong>Table 3：架构效率与精度对比</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Speed (step/s)↑</th>
+<th>Memory (%)↓</th>
+<th>ASR en↓</th>
+<th>ASR de↓</th>
+<th>AST en-de↑</th>
+<th>AST de-en↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prepend (Speech-LLaMA)</td>
+<td>0.50</td>
+<td>69</td>
+<td>7.2</td>
+<td>4.1</td>
+<td>32.1</td>
+<td>36.0</td>
+</tr>
+<tr>
+<td>X-Attn (BESTOW)</td>
+<td>0.59</td>
+<td>58</td>
+<td>7.3</td>
+<td>4.1</td>
+<td>32.0</td>
+<td>35.8</td>
+</tr>
+<tr>
+<td>X-Attn + LoRA</td>
+<td>0.60</td>
+<td>—</td>
+<td>7.0</td>
+<td>4.1</td>
+<td>31.6</td>
+<td>36.2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Cross-attention 方式相比 Prepend 实现了 <strong>18% 训练速度提升</strong>和 <strong>16% 显存节省</strong>，精度持平。LoRA 微调精度相近但收敛更慢（170k vs 60k steps）。</p>
+<p><strong>Table 4：Cross-Attention 架构消融实验</strong>（LibriSpeech test-other WER）</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Architecture</th>
+<th>Details</th>
+<th>Trainable Params</th>
+<th>WER</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>X-Attn</td>
+<td>8×(Self-Attn + X-Attn)</td>
+<td>276M</td>
+<td>5.6</td>
+</tr>
+<tr>
+<td>X-Attn</td>
+<td>2×(Self-Attn + X-Attn)</td>
+<td>175M</td>
+<td>5.6</td>
+</tr>
+<tr>
+<td>X-Attn</td>
+<td>1×(Self-Attn + X-Attn)</td>
+<td>158M</td>
+<td>5.8</td>
+</tr>
+<tr>
+<td>X-Attn</td>
+<td>1×X-Attn (no Self-Attn)</td>
+<td>154M</td>
+<td>6.1</td>
+</tr>
+<tr>
+<td>RNN+X-Attn</td>
+<td>2×RNN + 1×X-Attn</td>
+<td>203M</td>
+<td>5.7</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键发现</strong>：</p>
+<ul>
+<li>2 层即可达到与 8 层相同的最优性能（5.6 WER）</li>
+<li>去掉 Self-Attention 导致显著退化（5.6→6.1），因为 self-attention 对建模历史文本 token 至关重要（作为后续 cross-attention 的 query）</li>
+<li>RNN 替代 self-attention 可有效恢复性能（5.7），类似 LAS 架构</li>
+</ul>
+<h3 id="5-4-流式延迟-质量权衡"><a href="#5-4-流式延迟-质量权衡" class="headerlink" title="5.4 流式延迟-质量权衡"></a>5.4 流式延迟-质量权衡</h3><p><img src="/images/paper_figs/bestow_fig_p6_1.png" srcset="/img/loading.gif" lazyload alt="图3：流式 ASR 延迟-质量权衡曲线"></p>
+<p><img src="/images/paper_figs/bestow_fig_p6_2.png" srcset="/img/loading.gif" lazyload alt="图4：同声传译延迟-质量权衡曲线"></p>
+<p>通过在推理时变化 $K$ 值，可以灵活控制延迟-质量权衡。趋势与 ASR 和 AST 的 SOTA bespoke 系统一致。</p>
+<hr>
+<h2 id="6-Conclusions"><a href="#6-Conclusions" class="headerlink" title="6. Conclusions"></a>6. Conclusions</h2><p>BESTOW 提出了首个开源的同时支持流式和多任务（超越 ASR）的 SpeechLLM 方案。核心创新在于基于 cross-attention 和 read-write policy 的新型骨干架构，统一离线/流式模式，在多个大规模多任务语音-文本基准上达到 SOTA，同时降低训练和推理成本。该工作为下一代 SpeechLLM 的骨干设计提供了新方向。</p>
+<hr>
+<h2 id="个人思考"><a href="#个人思考" class="headerlink" title="个人思考"></a>个人思考</h2><ol>
+<li><strong>架构简洁性</strong>：仅 2 层 cross-attention 放在 LLM 输入前即可匹配甚至超越 Speech-LLaMA，同时解锁流式能力，设计非常优雅。</li>
+<li><strong>Read-Write Policy 框架的通用性</strong>：将流式 SpeechLLM 统一到同声传译的 read-write policy 框架下，使得该领域的大量研究（Wait-k、EMMA 等）可直接复用。</li>
+<li><strong>效率优势在长语音场景更突出</strong>：$O(L_tL_a)$ vs $O((L_t+L_a)^2)$ 的差异随语音长度增加而放大，对长对话、播客、会议等场景尤为重要。</li>
+<li><strong>局限与未来方向</strong>：当前仅验证了固定 Wait-k 策略，自适应策略（EMMA）的集成是重要后续工作；双向/单向编码器的差距仍需弥合；computation-aware latency 优化尚未完成。</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech LLM</a>
+      
+        <a href="/tags/Streaming/" class="print-no-link">#Streaming</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>BESTOW: Efficient and Streamable Speech Language Model with the Best of Two Worlds in GPT and T5</div>
+      <div>https://smallsmartao.github.io/2026/06/17/bestow-streaming-speech-llm/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年6月17日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年6月17日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/06/17/transducer-llama-integrating-llm-streamable-asr/" title="Transducer-Llama: Integrating LLMs into Streamable Transducer-based Speech Recognition">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Transducer-Llama: Integrating LLMs into Streamable Transducer-based Speech Recognition</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/06/17/mel-llm-encoder-free-speech-language-modeling/" title="LLM can Read Spectrogram: Encoder-free Speech-Language Modeling">
+                        <span class="hidden-mobile">LLM can Read Spectrogram: Encoder-free Speech-Language Modeling</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

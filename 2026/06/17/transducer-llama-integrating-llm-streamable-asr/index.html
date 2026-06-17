@@ -1,0 +1,1326 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息 标题: Transducer-Llama: Integrating LLMs into Streamable Transducer-based Speech Recognition 作者: Keqi Deng, Jinxi Guo, Yingyi Ma, Niko Moritz, Philip C. Woodland, Ozlem Kalinli, Mike Seltzer 机构: Me">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Transducer-Llama: Integrating LLMs into Streamable Transducer-based Speech Recognition">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/06/17/transducer-llama-integrating-llm-streamable-asr/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息 标题: Transducer-Llama: Integrating LLMs into Streamable Transducer-based Speech Recognition 作者: Keqi Deng, Jinxi Guo, Yingyi Ma, Niko Moritz, Philip C. Woodland, Ozlem Kalinli, Mike Seltzer 机构: Me">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/transducer_llama_cover.png">
+<meta property="article:published_time" content="2026-06-17T09:20:00.000Z">
+<meta property="article:modified_time" content="2026-06-17T09:00:28.656Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="RNN-T">
+<meta property="article:tag" content="Streaming ASR">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/transducer_llama_cover.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Transducer-Llama: Integrating LLMs into Streamable Transducer-based Speech Recognition - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/transducer_llama_cover.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Transducer-Llama: Integrating LLMs into Streamable Transducer-based Speech Recognition"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-06-17 17:20" pubdate>
+          2026年6月17日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          23 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Transducer-Llama: Integrating LLMs into Streamable Transducer-based Speech Recognition</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年6月17日 下午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>: Transducer-Llama: Integrating LLMs into Streamable Transducer-based Speech Recognition</li>
+<li><strong>作者</strong>: Keqi Deng, Jinxi Guo, Yingyi Ma, Niko Moritz, Philip C. Woodland, Ozlem Kalinli, Mike Seltzer</li>
+<li><strong>机构</strong>: Meta AI, University of Cambridge</li>
+<li><strong>arXiv</strong>: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2412.16464">2412.16464</a></li>
+</ul>
+<h2 id="摘要"><a href="#摘要" class="headerlink" title="摘要"></a>摘要</h2><p>大语言模型（LLMs）在自动语音识别（ASR）领域的应用日益广泛，但如何使模型具备流式（streaming）能力仍然是一大挑战。本文提出了一种新型模型架构 <strong>Transducer-Llama</strong>，将 LLM 集成到 Factorized Transducer（FT）模型中，天然地支持流式识别。此外，针对 LLM 大词表带来的数据稀疏与训练成本问题，本文引入了高效的<strong>词表适配（Vocabulary Adaptation）</strong>技术。实验表明，直接用强预训练 LLM 作为 predictor 优化 RNN-T loss 仅能带来有限的提升，因此本文进一步提出 <strong>Weak-to-Strong LM Swap</strong> 策略：训练时使用弱 LM predictor，解码时替换为强 LLM，并结合 MWER loss 进行微调。在 LibriSpeech 和大规模多语言 MLS 数据集上，Transducer-Llama 相对于强 FT 基线实现了 <strong>17% 的相对 WER 降低</strong>，相对于 RNN-T 基线实现了 <strong>32% 的相对 WER 降低</strong>。</p>
+<hr>
+<h2 id="I-引言-Introduction"><a href="#I-引言-Introduction" class="headerlink" title="I. 引言 (Introduction)"></a>I. 引言 (Introduction)</h2><p>端到端（E2E）ASR 直接将语音转写为文本，简化了传统的 pipeline 方法。在很多实际场景中，流式 ASR 对于低延迟至关重要。RNN-T 是流式 ASR 中广泛使用的方法，但其 prediction network 虽然结构类似语言模型，却并不能作为显式 LM 使用，这使得预训练 LM 的融合变得困难。</p>
+<p>Factorized Transducer (FT) 将 LM 组件从 neural transducer 中分离出来（如 non-blank predictor），但即便如此，使用强内部 LM 在通用数据集上的提升仍然有限。近期 [8] 提出了有效的内部 LM 融合与训练策略，显著提升了 FT 模型性能。</p>
+<p>另一方面，基于文本的 LLM 取得了巨大成功。一些研究将 LLM 扩展到处理语音输入（speech LLMs），将语音 prompt 前置于文本序列。但这种 decoder-only 架构天然<strong>不支持流式操作</strong>，因为语音 prompt 必须在文本输入之前完整给出。此外，LLM 的大词表（如 Llama3 的 128K tokens）在 ASR 系统训练中会导致数据稀疏和高昂的训练成本。</p>
+<p>本文提出 <strong>Transducer-Llama</strong> 架构，基于 FT 模型，使用 LLM 作为 non-blank predictor，自然地支持 LLM-based 的流式 ASR。核心贡献包括：</p>
+<ol>
+<li><strong>词表适配技术</strong>：将 LLM 对齐到专用的 ASR 词表</li>
+<li><strong>Weak-to-Strong LM Swap 策略</strong>：训练时使用弱 LM，解码时替换为强 LLM</li>
+<li><strong>MWER 微调</strong>：在 LM 替换后使用 MWER loss 优化 LLM predictor 的集成</li>
+</ol>
+<hr>
+<h2 id="II-相关工作-Related-Work"><a href="#II-相关工作-Related-Work" class="headerlink" title="II. 相关工作 (Related Work)"></a>II. 相关工作 (Related Work)</h2><h3 id="流式-LLM-based-语音系统"><a href="#流式-LLM-based-语音系统" class="headerlink" title="流式 LLM-based 语音系统"></a>流式 LLM-based 语音系统</h3><p>由于 speech LLMs 将语音输入作为 prompt 前置于文本序列，在线操作需要基于已知的 speech-text alignment 来限制每个文本 token 可见的语音范围：</p>
+<ul>
+<li><strong>[23] Speech ReaLLM</strong>: 使用外部 CTC 模型提供对齐，但破坏了 E2E 模型的 flat-start 优势</li>
+<li><strong>[24]</strong>: 训练时通过 CTC greedy search 实时获取对齐，但降低了训练效率</li>
+<li><strong>[16] BESTOW</strong>: 使用 Wait-k 策略提供硬编码对齐，但不适合低延迟场景</li>
+</ul>
+<p>本文的 Transducer-Llama 提供了一种<strong>自然的解决方案</strong>，支持 LLM-based 在线 ASR，且可以从 flat-start 高效训练。</p>
+<h3 id="Factorized-Transducer-结构"><a href="#Factorized-Transducer-结构" class="headerlink" title="Factorized Transducer 结构"></a>Factorized Transducer 结构</h3><p>本文使用基于 [8] 的改进 FT 结构（见图 1 灰色部分），使用分离的 predictor：</p>
+<ul>
+<li><strong>Blank predictor</strong>: embedding layer，与 encoder 输出在 joint network 中结合，通过 sigmoid 产生 blank 概率 $P_b$</li>
+<li><strong>Non-blank predictor (Internal LM)</strong>: 输出 non-blank 概率</li>
+</ul>
+<p>Non-blank 概率 $P_{nb}$ 的计算通过将声学编码器输出 $\log P_{ac}$ 与内部 LM 输出 $\log P_{ilm}$ 相加并归一化：</p>
+<script type="math/tex; mode=display">P_{nb} = (1 - P_b) \cdot \text{softmax}(\log P_{ac} + \log P_{ilm})</script><p>解码时使用修改后的 non-blank token 评分：</p>
+<script type="math/tex; mode=display">\log\left((1 - P_b) \cdot \text{softmax}(\log P_{ac} + \alpha \log P_{ilm})\right) + \beta \log P_{ilm} \tag{1}</script><p>其中 $\alpha$ 和 $\beta$ 为超参数。</p>
+<hr>
+<h2 id="III-Transducer-Llama-方法"><a href="#III-Transducer-Llama-方法" class="headerlink" title="III. Transducer-Llama 方法"></a>III. Transducer-Llama 方法</h2><p><img src="/images/paper_figs/transducer_llama_fig1.png" srcset="/img/loading.gif" lazyload alt="Transducer-Llama 架构图"><br><em>图 1: Transducer-Llama 框架示意图。⊕ 表示加法。LLM 参数冻结（frozen）。红色标注的 output layer 和 embedding layer 基于词表适配方法初始化。</em></p>
+<p>Transducer-Llama 使用 FT 架构，将 <strong>LLM 作为 non-blank predictor</strong> 在解码时建模因果依赖关系。Embedding layer 用作 blank predictor。整体框架结合词表适配、weak-to-strong LM swap 策略和 MWER 训练，实现高效训练并充分利用 LLM 提升 ASR 性能。</p>
+<h3 id="III-A-LLM-词表适配-LLM-Vocabulary-Adaptation"><a href="#III-A-LLM-词表适配-LLM-Vocabulary-Adaptation" class="headerlink" title="III-A. LLM 词表适配 (LLM Vocabulary Adaptation)"></a>III-A. LLM 词表适配 (LLM Vocabulary Adaptation)</h3><p>LLM 拥有庞大的词表（如 Llama3 为 128K），不适合语音系统直接使用。RNN-T loss 的输出是一个包含词表维度的 <strong>4 维张量</strong>，大词表会导致巨大的显存消耗和训练速度下降。</p>
+<p>本文设计了词表适配方法，将 LLM 适配到 ASR 系统词表（通常为 5000 tokens，远小于 LLM 词表）。训练时 LLM 的 Transformer 层<strong>冻结不变</strong>，只更新 embedding layer 和 output layer。</p>
+<p><strong>初始化策略</strong>：假设新的权重矩阵为 $W_{new} \in \mathbb{R}^{|V| \times d}$，其中 $V$ 为 ASR 词表，$d$ 为 embedding 维度。LLM 原始词表为 $U$，对应权重矩阵为 $W_{llm} \in \mathbb{R}^{|U| \times d}$。对于每个 token $t_i \in V$：</p>
+<ol>
+<li><strong>若 $t_i \in V \cap U$</strong>：直接复制，$W_i^{new} = W_j^{llm}$，其中 $j$ 为 $t_i$ 在 LLM 词表中的索引</li>
+<li><strong>若 $t_i \notin U$</strong>：使用 LLM tokenizer 将 $t_i$ 进一步分词，$W_i^{new}$ 初始化为对应子词 embedding 的<strong>平均值</strong></li>
+<li><strong>若无法分解</strong>：随机初始化</li>
+</ol>
+<p>注意：embedding layer 和 output layer 的权重矩阵是<strong>独立训练</strong>的（不共享）。</p>
+<h3 id="III-B-Weak-to-Strong-LM-Swap"><a href="#III-B-Weak-to-Strong-LM-Swap" class="headerlink" title="III-B. Weak-to-Strong LM Swap"></a>III-B. Weak-to-Strong LM Swap</h3><p>初步实验表明，使用 RNN-T loss 训练时，引入更强的 LM 作为 non-blank predictor 只能带来<strong>相对有限的 ASR 提升</strong>（这与之前的研究 [7], [9] 一致）。</p>
+<p>为解决这一问题，本文提出 <strong>Weak-to-Strong LM Swap</strong> 策略：</p>
+<ul>
+<li><strong>训练时</strong>：使用弱 LM（如 stateless predictor，即 embedding layer，功能类似 bigram LM）</li>
+<li><strong>解码时</strong>：替换为强 LLM</li>
+</ul>
+<p>这一策略的核心思想：</p>
+<ol>
+<li><strong>防止模型过度依赖强 LM 的准确预测</strong>，确保声学信息被充分优化和利用</li>
+<li><strong>大幅加速训练过程</strong>（弱 LM 计算开销极小）</li>
+</ol>
+<h3 id="III-C-训练与解码流程-Proposed-Training-and-Decoding"><a href="#III-C-训练与解码流程-Proposed-Training-and-Decoding" class="headerlink" title="III-C. 训练与解码流程 (Proposed Training and Decoding)"></a>III-C. 训练与解码流程 (Proposed Training and Decoding)</h3><p>完整流程如下：</p>
+<ol>
+<li><strong>阶段一</strong>：从头训练 FT 模型，使用弱 LM（embedding layer）作为 non-blank predictor，训练使用 RNN-T loss + ILM loss [8]</li>
+<li><strong>LM 替换</strong>：模型收敛后，将弱 LM 替换为 LLM，FT 模型变为 Transducer-Llama</li>
+<li><strong>阶段二</strong>：使用内部 LM-aware <strong>MWER loss</strong> [8] 微调 Transducer-Llama</li>
+</ol>
+<p>MWER 训练直接优化 LLM predictor 集成，以 word-level edit distance 为目标进行序列判别训练。N-best hypotheses 根据公式 (1) 生成，MWER 训练时的 $\alpha$、$\beta$ 值在推理时也同样使用。</p>
+<p>实验表明，相比 RNN-T loss，<strong>MWER loss 能更有效地利用强 LM 来提升 ASR 性能</strong>。</p>
+<p>这一框架与传统的 NN-HMM hybrid 序列判别训练策略 [31]-[33] 或外部 LM 融合 [34] 有诸多相似之处。</p>
+<hr>
+<h2 id="IV-实验-Experiments"><a href="#IV-实验-Experiments" class="headerlink" title="IV. 实验 (Experiments)"></a>IV. 实验 (Experiments)</h2><h3 id="IV-A-数据集-Corpus"><a href="#IV-A-数据集-Corpus" class="headerlink" title="IV-A. 数据集 (Corpus)"></a>IV-A. 数据集 (Corpus)</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>数据集</th>
+<th>语言</th>
+<th>训练数据量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LibriSpeech</td>
+<td>en</td>
+<td>960h</td>
+</tr>
+<tr>
+<td>MLS-en</td>
+<td>en</td>
+<td>44.7k hrs</td>
+</tr>
+<tr>
+<td>MLS-fr</td>
+<td>fr</td>
+<td>1.1k hrs</td>
+</tr>
+<tr>
+<td>MLS-it</td>
+<td>it</td>
+<td>0.2k hrs</td>
+</tr>
+<tr>
+<td>MLS-nl</td>
+<td>nl</td>
+<td>1.6k hrs</td>
+</tr>
+</tbody>
+</table>
+</div>
+<ul>
+<li><strong>LibriSpeech LM 数据</strong>: 800M words + 训练数据 transcripts</li>
+<li><strong>MLS LM 数据</strong>: LibriSpeech LM (En) + French (146M words) + Italian (41M words) + Dutch (46M words)</li>
+</ul>
+<h3 id="IV-B-模型配置-Model-Descriptions"><a href="#IV-B-模型配置-Model-Descriptions" class="headerlink" title="IV-B. 模型配置 (Model Descriptions)"></a>IV-B. 模型配置 (Model Descriptions)</h3><p><strong>通用设置</strong>：</p>
+<ul>
+<li>ASR 词表大小：5000 tokens + blank token</li>
+<li>解码 beam size：10</li>
+</ul>
+<p><strong>LibriSpeech 编码器</strong>：</p>
+<ul>
+<li>20 层 Emformer，160ms segment size</li>
+<li>512 attention dimensions, 2048 feed-forward dimensions, 8 heads</li>
+<li>参数量：63M</li>
+</ul>
+<p><strong>MLS 编码器</strong>：</p>
+<ul>
+<li>30 层 streaming Conformer (190M 参数)</li>
+<li>chunk-based mask, 320ms 平均延迟</li>
+</ul>
+<p><strong>输入特征</strong>：80 维 filterbank, 10ms 帧率, 1/4 下采样</p>
+<p><strong>基线模型</strong>：</p>
+<ul>
+<li><strong>RNN-T</strong>: 2 层 LSTM predictor, 2048 hidden dimensions</li>
+<li><strong>FT baseline</strong>: 同结构的 non-blank predictor，在纯文本数据上预训练后冻结</li>
+</ul>
+<p><strong>Transducer-Llama 设置</strong>：</p>
+<ul>
+<li>$\alpha = 0.6$, $\beta = 0.6$（公式 1）</li>
+<li>训练时使用 embedding layer 作为 non-blank predictor</li>
+<li>LLM 选择：<strong>Llama2-0.5b</strong> 和 <strong>Llama3-8b</strong></li>
+<li>FFT Llama2：Transformer 层也参与更新</li>
+</ul>
+<p><strong>训练配置</strong>：</p>
+<ul>
+<li>LibriSpeech: 40 epochs</li>
+<li>MLS: 200k steps, total batch size 5.3M</li>
+<li>MWER: 几千步</li>
+<li>LM 训练: 最多 40 epochs</li>
+<li>LLM 词表适配: 通常几个 epoch 后即 early stop</li>
+</ul>
+<h3 id="IV-C-实验结果"><a href="#IV-C-实验结果" class="headerlink" title="IV-C. 实验结果"></a>IV-C. 实验结果</h3><h4 id="IV-C1-LibriSpeech-主要结果"><a href="#IV-C1-LibriSpeech-主要结果" class="headerlink" title="IV-C1. LibriSpeech 主要结果"></a>IV-C1. LibriSpeech 主要结果</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>流式模型</th>
+<th>Test-clean</th>
+<th>Test-other</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RNN-T</td>
+<td>3.65</td>
+<td>8.96</td>
+</tr>
+<tr>
+<td>Factorized Transducer [8]</td>
+<td>2.97</td>
+<td>7.77</td>
+</tr>
+<tr>
+<td><strong>Transducer-Llama</strong></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>— w/ LSTM LM predictor</td>
+<td>2.86</td>
+<td>7.33</td>
+</tr>
+<tr>
+<td>— w/ Llama2 predictor</td>
+<td>2.76</td>
+<td>7.07</td>
+</tr>
+<tr>
+<td>— w/ FFT Llama2 predictor</td>
+<td>2.54</td>
+<td>6.59</td>
+</tr>
+<tr>
+<td>— w/ Llama3 predictor</td>
+<td><strong>2.47</strong></td>
+<td><strong>6.53</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键发现</strong>：</p>
+<ol>
+<li>FT 基线优于 RNN-T 基线（与 [8] 一致）</li>
+<li>随着 LM 能力增强，Transducer-Llama 的 WER 持续下降</li>
+<li>相比 FT 基线，Llama3 predictor 在 test-clean 上实现 <strong>16.8% WERR</strong>，test-other 上实现 <strong>16.0% WERR</strong></li>
+<li>Llama3（冻结 Transformer）略优于 FFT Llama2，同时保留了下游任务的潜力</li>
+<li>仅使用 LSTM LM + weak-to-strong swap 就能比 FT 基线获得 <strong>6% WERR</strong></li>
+</ol>
+<h4 id="IV-C2-Weak-to-Strong-LM-Swap-消融实验"><a href="#IV-C2-Weak-to-Strong-LM-Swap-消融实验" class="headerlink" title="IV-C2. Weak-to-Strong LM Swap 消融实验"></a>IV-C2. Weak-to-Strong LM Swap 消融实验</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>训练时 Non-blank Predictor</th>
+<th>测试时 Non-blank Predictor</th>
+<th>MWER</th>
+<th>Test-clean</th>
+<th>Test-other</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LSTM LM</td>
+<td>LSTM LM</td>
+<td>✗</td>
+<td>3.11</td>
+<td>7.83</td>
+</tr>
+<tr>
+<td>LSTM LM</td>
+<td>LSTM LM</td>
+<td>✓</td>
+<td>2.97</td>
+<td>7.77</td>
+</tr>
+<tr>
+<td>Stateless</td>
+<td>LSTM LM</td>
+<td>✗</td>
+<td>3.20</td>
+<td>7.59</td>
+</tr>
+<tr>
+<td>Stateless</td>
+<td>LSTM LM</td>
+<td>✓</td>
+<td>2.86</td>
+<td>7.33</td>
+</tr>
+<tr>
+<td>LSTM LM</td>
+<td>Llama2</td>
+<td>✗</td>
+<td>2.95</td>
+<td>7.45</td>
+</tr>
+<tr>
+<td>LSTM LM</td>
+<td>Llama2</td>
+<td>✓</td>
+<td>2.82</td>
+<td>7.41</td>
+</tr>
+<tr>
+<td>Stateless</td>
+<td>Llama2</td>
+<td>✗</td>
+<td>3.39</td>
+<td>7.47</td>
+</tr>
+<tr>
+<td><strong>Stateless</strong></td>
+<td><strong>Llama2</strong></td>
+<td><strong>✓</strong></td>
+<td><strong>2.76</strong></td>
+<td><strong>7.07</strong></td>
+</tr>
+<tr>
+<td>Llama2</td>
+<td>Llama2</td>
+<td>✗</td>
+<td>3.03</td>
+<td>7.63</td>
+</tr>
+<tr>
+<td>Llama2</td>
+<td>Llama2</td>
+<td>✓</td>
+<td>2.90</td>
+<td>7.41</td>
+</tr>
+<tr>
+<td>LSTM LM</td>
+<td>FFT Llama2</td>
+<td>✗</td>
+<td>2.67</td>
+<td>6.95</td>
+</tr>
+<tr>
+<td>LSTM LM</td>
+<td>FFT Llama2</td>
+<td>✓</td>
+<td>2.61</td>
+<td>6.94</td>
+</tr>
+<tr>
+<td>Stateless</td>
+<td>FFT Llama2</td>
+<td>✗</td>
+<td>3.00</td>
+<td>6.91</td>
+</tr>
+<tr>
+<td><strong>Stateless</strong></td>
+<td><strong>FFT Llama2</strong></td>
+<td><strong>✓</strong></td>
+<td><strong>2.54</strong></td>
+<td><strong>6.59</strong></td>
+</tr>
+<tr>
+<td>FFT Llama2</td>
+<td>FFT Llama2</td>
+<td>✗</td>
+<td>2.86</td>
+<td>7.51</td>
+</tr>
+<tr>
+<td>FFT Llama2</td>
+<td>FFT Llama2</td>
+<td>✓</td>
+<td>2.72</td>
+<td>7.25</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键分析</strong>：</p>
+<ol>
+<li><strong>直接使用强 LLM 训练效果有限</strong>：使用 FFT Llama2 在训练和测试时（无 MWER），相比 LSTM LM 仅在 test-other 上有约 4% WERR</li>
+<li><strong>Weak-to-Strong swap 效果显著</strong>：使用 LSTM LM 训练 + FFT Llama2 解码，在 test-clean 上获得 14% WERR，test-other 上获得 11% WERR</li>
+<li><strong>Stateless predictor + MWER 最优</strong>：虽然 stateless predictor swap 后直接效果不如 LSTM LM swap（因为弱 LM 与强 LLM 的 gap 更大），但经过 MWER 训练后达到最佳结果（最高 <strong>18.6% WERR</strong>）</li>
+<li><strong>MWER 的核心作用</strong>：解决 swap 后弱 LM 与强 LLM 之间的 gap，优化 LLM predictor 的集成</li>
+<li><strong>弱 LM 训练的优势</strong>：加速训练 + 防止模型依赖强 LM 的准确预测 → 确保声学编码器被充分训练</li>
+</ol>
+<h4 id="IV-C3-词表适配消融实验"><a href="#IV-C3-词表适配消融实验" class="headerlink" title="IV-C3. 词表适配消融实验"></a>IV-C3. 词表适配消融实验</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>Tokenizer</th>
+<th>训练速度</th>
+<th>Test-clean</th>
+<th>Test-other</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Transducer-Llama</td>
+<td>Llama3 (128K)</td>
+<td>1×</td>
+<td>3.02</td>
+<td>7.44</td>
+</tr>
+<tr>
+<td>Transducer-Llama</td>
+<td>ASR (5K)</td>
+<td><strong>×8.05</strong></td>
+<td><strong>2.76</strong></td>
+<td><strong>7.36</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><em>注：未使用 weak-to-strong swap 和 MWER 训练</em></p>
+<p><strong>关键发现</strong>：</p>
+<ol>
+<li>Llama3 词表（128K）是 ASR 词表（5K）的约 26 倍，导致 RNN-T 输出张量的显存消耗大幅增加</li>
+<li>使用 ASR 词表可<strong>加速训练 8 倍</strong></li>
+<li>ASR 词表 + ASR tokenizer 在 test-clean 上还有 <strong>8.6% WERR</strong> 的性能提升</li>
+</ol>
+<h4 id="IV-C4-多语言-MLS-结果"><a href="#IV-C4-多语言-MLS-结果" class="headerlink" title="IV-C4. 多语言 MLS 结果"></a>IV-C4. 多语言 MLS 结果</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>en</th>
+<th>fr</th>
+<th>it</th>
+<th>nl</th>
+<th>Avg</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Factorized Transducer [8]</td>
+<td>8.19</td>
+<td>7.33</td>
+<td>14.02</td>
+<td>13.37</td>
+<td>10.73</td>
+</tr>
+<tr>
+<td><strong>Transducer-Llama</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>— w/ LSTM LM predictor</td>
+<td>8.26</td>
+<td>6.28</td>
+<td>12.30</td>
+<td>12.39</td>
+<td>9.80</td>
+</tr>
+<tr>
+<td>— w/ FFT Llama2 predictor</td>
+<td>7.57</td>
+<td>5.80</td>
+<td>11.59</td>
+<td>12.17</td>
+<td>9.28</td>
+</tr>
+<tr>
+<td>— w/ Llama3 predictor</td>
+<td>7.35</td>
+<td>5.79</td>
+<td>11.76</td>
+<td>12.05</td>
+<td><strong>9.24</strong></td>
+</tr>
+<tr>
+<td><em>离线模型对比</em></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Offline Mono-lingual CTC w/ LM [22]</td>
+<td>5.9</td>
+<td>5.6</td>
+<td>10.5</td>
+<td>12.0</td>
+<td>8.50</td>
+</tr>
+<tr>
+<td>Offline Speech LLM [14]</td>
+<td>6.2</td>
+<td>5.5</td>
+<td>10.8</td>
+<td>11.3</td>
+<td>8.45</td>
+</tr>
+<tr>
+<td><strong>Offline Transducer-Llama</strong></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>— w/ FFT Llama2</td>
+<td>5.76</td>
+<td>5.00</td>
+<td>10.38</td>
+<td>10.28</td>
+<td>7.86</td>
+</tr>
+<tr>
+<td>— w/ Llama3</td>
+<td><strong>5.59</strong></td>
+<td><strong>4.96</strong></td>
+<td><strong>10.43</strong></td>
+<td><strong>10.22</strong></td>
+<td><strong>7.80</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键结论</strong>：</p>
+<ol>
+<li>结论与 LibriSpeech 一致：Transducer-Llama 在多语言流式 ASR 上依然有效</li>
+<li>LSTM LM predictor 相比 FT 基线：<strong>8.7% WERR</strong>（平均）</li>
+<li>Llama3 predictor 相比 FT 基线：<strong>13.8% WERR</strong>（平均）</li>
+<li>Llama3 略优于 FFT Llama2，且冻结 Transformer 层保留了多任务潜力</li>
+<li><strong>Offline Transducer-Llama 超越 speech LLM [14]</strong>：7.7% WERR，也超越 monolingual + LM baseline 8.2% WERR</li>
+</ol>
+<hr>
+<h2 id="V-结论-Conclusions"><a href="#V-结论-Conclusions" class="headerlink" title="V. 结论 (Conclusions)"></a>V. 结论 (Conclusions)</h2><p>本文提出的 Transducer-Llama 框架将 LLM 自然地集成到在线 ASR 中，主要贡献：</p>
+<ol>
+<li><strong>词表适配技术</strong>：保留 ASR 专用 tokenizer 的灵活性，同时利用 LLM 的预训练知识</li>
+<li><strong>Weak-to-Strong LM Swap</strong>：充分利用 LLM 提升 ASR 性能，同时保持良好的训练速度</li>
+<li><strong>MWER 训练</strong>：在 LM 替换后进一步优化 Transducer-Llama 的集成效果</li>
+</ol>
+<p>实验在 LibriSpeech 和 MLS 数据集上验证了方法的有效性：</p>
+<ul>
+<li>相比强 FT 基线：<strong>17% 相对 WER 降低</strong></li>
+<li>相比 RNN-T 基线：<strong>32% 相对 WER 降低</strong></li>
+</ul>
+<hr>
+<h2 id="个人思考"><a href="#个人思考" class="headerlink" title="个人思考"></a>个人思考</h2><p>Transducer-Llama 的核心洞察在于：<strong>强 LM 在 RNN-T loss 训练中无法被充分利用</strong>（模型会”偷懒”，过度依赖 LM 预测而忽视声学信息），而 weak-to-strong swap + MWER 的两阶段策略巧妙地绕过了这一瓶颈。这与传统 hybrid 系统中 LM 的使用方式（CE 训练 + 序列判别训练 + LM 融合）异曲同工，说明 E2E 模型与传统方法在方法论层面正在逐步收敛。</p>
+<p>词表适配带来的 8x 训练加速尤为实用——在 LLM 时代，如何高效地将 LLM 的文本知识注入到语音系统中，同时避免大词表的计算瓶颈，是工程落地的关键问题。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/RNN-T/" class="print-no-link">#RNN-T</a>
+      
+        <a href="/tags/Streaming-ASR/" class="print-no-link">#Streaming ASR</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Transducer-Llama: Integrating LLMs into Streamable Transducer-based Speech Recognition</div>
+      <div>https://smallsmartao.github.io/2026/06/17/transducer-llama-integrating-llm-streamable-asr/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年6月17日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年6月17日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/06/17/nim4-asr-scalable-multitask-contextual-biasing/" title="NIM4-ASR: Towards Efficient, Robust, and Customizable Real-Time LLM-Based ASR">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">NIM4-ASR: Towards Efficient, Robust, and Customizable Real-Time LLM-Based ASR</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/06/17/bestow-streaming-speech-llm/" title="BESTOW: Efficient and Streamable Speech Language Model with the Best of Two Worlds in GPT and T5">
+                        <span class="hidden-mobile">BESTOW: Efficient and Streamable Speech Language Model with the Best of Two Worlds in GPT and T5</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

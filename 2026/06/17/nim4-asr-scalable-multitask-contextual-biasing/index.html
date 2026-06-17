@@ -1,0 +1,1675 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息 标题: NIM4-ASR: Towards Efficient, Robust, and Customizable Real-Time LLM-Based ASR 作者: Yuan Xie, Jiaqi Song, Guang Qiu, Xianliang Wang, Kai Qiao, Junfeng Yuan, Shengqing Liu, Yi Zhang, Bowen Chen,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="NIM4-ASR: Towards Efficient, Robust, and Customizable Real-Time LLM-Based ASR">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/06/17/nim4-asr-scalable-multitask-contextual-biasing/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息 标题: NIM4-ASR: Towards Efficient, Robust, and Customizable Real-Time LLM-Based ASR 作者: Yuan Xie, Jiaqi Song, Guang Qiu, Xianliang Wang, Kai Qiao, Junfeng Yuan, Shengqing Liu, Yi Zhang, Bowen Chen,">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/nim4_asr_cover.png">
+<meta property="article:published_time" content="2026-06-17T09:30:00.000Z">
+<meta property="article:modified_time" content="2026-06-17T09:02:56.081Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="Contextual Biasing">
+<meta property="article:tag" content="RAG">
+<meta property="article:tag" content="RL">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/nim4_asr_cover.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>NIM4-ASR: Towards Efficient, Robust, and Customizable Real-Time LLM-Based ASR - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/nim4_asr_cover.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="NIM4-ASR: Towards Efficient, Robust, and Customizable Real-Time LLM-Based ASR"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-06-17 17:30" pubdate>
+          2026年6月17日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          22 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">NIM4-ASR: Towards Efficient, Robust, and Customizable Real-Time LLM-Based ASR</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年6月17日 下午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>: NIM4-ASR: Towards Efficient, Robust, and Customizable Real-Time LLM-Based ASR</li>
+<li><strong>作者</strong>: Yuan Xie, Jiaqi Song, Guang Qiu, Xianliang Wang, Kai Qiao, Junfeng Yuan, Shengqing Liu, Yi Zhang, Bowen Chen, Ming Lei, Jie Gao, Jie Wu</li>
+<li><strong>机构</strong>: Advanced Intelligent Systems Group, NIO (蔚来)</li>
+<li><strong>arXiv</strong>: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2604.18105">2604.18105</a></li>
+<li><strong>发表时间</strong>: 2026年4月</li>
+</ul>
+<hr>
+<h2 id="1-引言-Introduction"><a href="#1-引言-Introduction" class="headerlink" title="1. 引言 (Introduction)"></a>1. 引言 (Introduction)</h2><p>近年来，将大语言模型 (LLM) 集成到自动语音识别 (ASR) 中已成为主流范式。从经典的 CTC/Attention 架构（Graves et al., 2006; Chorowski et al., 2015; Chan et al., 2016）到 encoder–adaptor–LLM 框架（Bai et al., 2024a; An et al., 2025），一系列 LLM-based ASR 模型如 Seed-ASR、Fun-ASR、FireRedASR、Voxtral、Index-ASR、Qwen3-ASR 等在公开基准上取得了显著成绩。</p>
+<p>然而，现有 LLM-based ASR 在实际部署中仍面临<strong>三大核心挑战</strong>：</p>
+<h3 id="1-1-有限的向下扩展性-Limited-Downward-Scalability"><a href="#1-1-有限的向下扩展性-Limited-Downward-Scalability" class="headerlink" title="1.1 有限的向下扩展性 (Limited Downward Scalability)"></a>1.1 有限的向下扩展性 (Limited Downward Scalability)</h3><p>轻量化 LLM-based ASR（如 Qwen3-ASR-0.6B、Fun-ASR-nano）相较其全量版本存在显著性能差距。除了模型缩减本身的降级外，LLM-based ASR 还承担额外的<strong>模态税 (modality tax)</strong>（Aghajanyan et al., 2023; Zhang et al., 2026）：大量参数用于跨模态对齐而非 ASR 任务本身，导致轻量 LLM 的有效容量进一步减少，产生不成比例的性能退化。</p>
+<h3 id="1-2-幻觉-Hallucination"><a href="#1-2-幻觉-Hallucination" class="headerlink" title="1.2 幻觉 (Hallucination)"></a>1.2 幻觉 (Hallucination)</h3><p>除了自回归 LLM 固有的幻觉倾向外，encoder–adaptor–LLM 联合训练范式引入了额外风险。在联合优化过程中，encoder 在 LLM 更强梯度和语言先验的影响下逐渐向 LLM 的文本特征空间漂移（即<strong>表征漂移, representation drift</strong>）。结果是 encoder 越来越依赖语言捷径而牺牲细粒度声学保真度，在声学模糊条件下加剧幻觉。在车载任务导向语音交互场景中，幻觉可能级联到下游管线并触发非预期操作。</p>
+<h3 id="1-3-缺乏生产级热词定制-Lack-of-Production-Ready-Hotword-Customization"><a href="#1-3-缺乏生产级热词定制-Lack-of-Production-Ready-Hotword-Customization" class="headerlink" title="1.3 缺乏生产级热词定制 (Lack of Production-Ready Hotword Customization)"></a>1.3 缺乏生产级热词定制 (Lack of Production-Ready Hotword Customization)</h3><p>现有 LLM-based ASR 缺乏与经典 ASR 系统中广泛采用的 N-gram 语言模型重打分方法相匹配的成熟热词定制方案。对于发音相似的个性化实体（同音地名、媒体标题、新兴专有名词等），热词定制不可或缺。</p>
+<p><strong>NIM4-ASR (NOMI Intelligence Model 4.0-ASR)</strong> 正是为解决上述问题而提出的面向生产的 LLM-based ASR 框架，仅使用 <strong>2.3B 参数</strong>即在多个公开基准上达到 SOTA 性能。</p>
+<hr>
+<h2 id="2-方法论-Methodology"><a href="#2-方法论-Methodology" class="headerlink" title="2. 方法论 (Methodology)"></a>2. 方法论 (Methodology)</h2><h3 id="2-1-架构-Architecture"><a href="#2-1-架构-Architecture" class="headerlink" title="2.1 架构 (Architecture)"></a>2.1 架构 (Architecture)</h3><p><img src="/images/paper_figs/nim4_asr_page3_render.png" srcset="/img/loading.gif" lazyload alt="NIM4-ASR 整体架构"></p>
+<p>NIM4-ASR 采用模块化的 encoder–adaptor–LLM 架构，包含四个核心组件。输入原始语音首先被转换为 80 维 log-Mel 频谱图（25ms 窗口，10ms 帧移），然后进行全局均值和方差归一化。</p>
+<h4 id="2-1-1-流式语音编码器-Streaming-Speech-Encoder"><a href="#2-1-1-流式语音编码器-Streaming-Speech-Encoder" class="headerlink" title="2.1.1 流式语音编码器 (Streaming Speech Encoder)"></a>2.1.1 流式语音编码器 (Streaming Speech Encoder)</h4><ul>
+<li><strong>架构</strong>: 采用 FireRedASR-AED 的 Conformer encoder 架构</li>
+<li><strong>结构</strong>: 4x 下采样卷积模块 + Conformer blocks 堆叠</li>
+<li><strong>参数量</strong>: 约 600M</li>
+<li><strong>帧率</strong>: 25 Hz（40ms 时间分辨率）</li>
+<li><strong>流式支持</strong>: 通过在训练中模拟流式约束，将其转换为基于 chunk 的流式编码器</li>
+</ul>
+<h4 id="2-1-2-语音适配器-Speech-Adaptor"><a href="#2-1-2-语音适配器-Speech-Adaptor" class="headerlink" title="2.1.2 语音适配器 (Speech Adaptor)"></a>2.1.2 语音适配器 (Speech Adaptor)</h4><ul>
+<li><strong>结构</strong>: 两层 MLP</li>
+<li><strong>功能</strong>: 将 encoder 表征映射到 LLM 输入嵌入空间</li>
+<li><strong>下采样</strong>: 投影前进行 4x 下采样（沿特征维度拼接 4 个连续帧）</li>
+<li><strong>下采样后帧率</strong>: 6.25 Hz（每个 token 对应 160ms 时间分辨率）</li>
+</ul>
+<h4 id="2-1-3-音素级-CTC-头与-RAG-模块"><a href="#2-1-3-音素级-CTC-头与-RAG-模块" class="headerlink" title="2.1.3 音素级 CTC 头与 RAG 模块"></a>2.1.3 音素级 CTC 头与 RAG 模块</h4><ul>
+<li><strong>CTC 头</strong>: 三层 MLP，将 encoder 表征通过贪心解码转为音素假设</li>
+<li><strong>RAG 模块</strong>: 基于音素假设搜索热词数据库，检索匹配条目并注入 LLM prompt 作为上下文提示</li>
+</ul>
+<h4 id="2-1-4-LLM-解码器"><a href="#2-1-4-LLM-解码器" class="headerlink" title="2.1.4 LLM 解码器"></a>2.1.4 LLM 解码器</h4><ul>
+<li><strong>初始化</strong>: Qwen3-1.7B</li>
+<li><strong>功能</strong>: 基于语音嵌入和可选的检索热词提示生成最终转录</li>
+</ul>
+<hr>
+<h3 id="2-2-训练方案-Training-Recipe"><a href="#2-2-训练方案-Training-Recipe" class="headerlink" title="2.2 训练方案 (Training Recipe)"></a>2.2 训练方案 (Training Recipe)</h3><p><img src="/images/paper_figs/nim4_asr_page4_render.png" srcset="/img/loading.gif" lazyload alt="训练流程对比"></p>
+<p>NIM4-ASR 的方法论进展集中在<strong>六个核心训练阶段</strong>：encoder 预训练、对齐 (alignment)、IA-SFT、后期联合 SFT (late joint SFT)、上下文 SFT (context SFT) 和 RL。</p>
+<h4 id="2-2-1-Stage-1-Encoder-预训练"><a href="#2-2-1-Stage-1-Encoder-预训练" class="headerlink" title="2.2.1 Stage 1: Encoder 预训练"></a>2.2.1 Stage 1: Encoder 预训练</h4><p>为减小 encoder 表征与 LLM 嵌入空间之间的模态差距，采用改进的 CTC 变体——<strong>CR-CTC</strong> (Yao et al., 2024) 作为预训练目标。</p>
+<p><strong>核心设计理念</strong>：</p>
+<ol>
+<li><p><strong>CTC vs AED</strong>: 与先前工作常用的 Attention-based Encoder-Decoder (AED) 不同，CTC 鼓励 encoder 产生<strong>低熵、音素判别性</strong>的表征，这与 LLM 嵌入空间更自然地对齐，减少跨模态对齐开销，为 ASR 任务保留更多模型容量。</p>
+</li>
+<li><p><strong>音素级监督</strong>: 将监督标签从字符级转为<strong>音素级</strong> (Yusuyin et al., 2025)，明确将 encoder 容量专注于声学-音素映射而非过早的语义锚定，鼓励 LLM 更多关注语义推理。这实现了声学建模与语义推理的更清晰解耦，提升了两个模块的角色专业化。</p>
+</li>
+<li><p><strong>动态 chunk 机制</strong>: 训练时引入 dynamic-chunk 机制（Zhang et al., 2020），encoder 在 chunk-wise 流式约束下处理完整语句，chunk 大小和可见左上下文 chunk 数对每个 batch 动态采样，使 encoder 能适应不同延迟预算的灵活部署场景。</p>
+</li>
+</ol>
+<h4 id="2-2-2-Stage-2-对齐-Alignment-与-Stage-3-IA-SFT"><a href="#2-2-2-Stage-2-对齐-Alignment-与-Stage-3-IA-SFT" class="headerlink" title="2.2.2 Stage 2: 对齐 (Alignment) 与 Stage 3: IA-SFT"></a>2.2.2 Stage 2: 对齐 (Alignment) 与 Stage 3: IA-SFT</h4><p>NIM4-ASR 提出了一种<strong>encoder 迭代机制</strong>，允许对齐在预训练完成之前就开始，而 IA-SFT 在对齐完成后启动并与剩余预训练过程异步进行。</p>
+<p><strong>CKA 监控机制</strong>：使用 Centered Kernel Alignment (CKA) (Kornblith et al., 2019) 跟踪 encoder 表征动态，决定何时初始化或更新用于对齐和 IA-SFT 的 encoder。给定两组 encoder 表征 $E^{(a)}$, $E^{(b)}$：</p>
+<script type="math/tex; mode=display">CKA(E^{(a)}, E^{(b)}) = \frac{\langle \tilde{K}^{(a)}, \tilde{K}^{(b)} \rangle_F}{\sqrt{\langle \tilde{K}^{(a)}, \tilde{K}^{(a)} \rangle_F \cdot \langle \tilde{K}^{(b)}, \tilde{K}^{(b)} \rangle_F}}</script><p>其中 $\tilde{K}^{(x)} = C E^{(x)} {E^{(x)}}^\top C$，中心化矩阵 $C = I_L - \frac{1}{L} J_L$。CKA 测量表征空间的几何一致性，对正交变换和各向同性缩放不变。</p>
+<p><strong>Stage 2 对齐流程</strong>：</p>
+<ul>
+<li>预训练达到 500k steps 后开始监控</li>
+<li>每 10k 预训练步评估一次 CKA</li>
+<li>当 CKA 分数首次低于预设阈值（本文设为 0.975）时，快照对应 encoder 初始化对齐</li>
+<li>对齐阶段：encoder 和 LLM 冻结，仅训练 adaptor</li>
+<li>实际触发点：约 1.01M 预训练步，对齐运行 1.3M steps</li>
+</ul>
+<p><strong>Stage 3 IA-SFT 流程</strong>：</p>
+<p>IA-SFT 保持 encoder 冻结，在异步预训练产生的一系列 encoder 快照上训练 adaptor–LLM 堆栈：</p>
+<ol>
+<li><strong>初始化与监控</strong>: 对齐完成后开始 IA-SFT，使用对齐继承的 encoder 训练 1M steps，同时 encoder 预训练在并行继续</li>
+<li><strong>CKA 触发更新</strong>: 当 CKA 分数低于阈值时，将当前预训练 encoder 快照热替换到 IA-SFT 分支</li>
+<li><strong>最终更新</strong>: 预训练达到 2M 步最大值时执行最终 encoder 更新，IA-SFT 运行最后 2M steps</li>
+</ol>
+<p>实际实现中，IA-SFT 共训练 4M steps，跨三个 encoder 版本：</p>
+<ul>
+<li>1M steps（encoder @ 1.01M 预训练步）</li>
+<li>1M steps（encoder @ 1.32M 预训练步）</li>
+<li>2M steps（完全预训练的 encoder）</li>
+</ul>
+<p><strong>IA-SFT 的关键优势</strong>：</p>
+<ul>
+<li>encoder 冻结但周期性更新，维持声学根基</li>
+<li>深化跨模态对齐而无表征漂移风险</li>
+<li>从课程学习角度，渐进暴露 LLM 于精炼的 encoder 表征</li>
+<li>与预训练异步运行，保持训练流水线时间效率</li>
+</ul>
+<h4 id="2-2-3-Stage-4-后期联合-SFT-Late-Joint-SFT"><a href="#2-2-3-Stage-4-后期联合-SFT-Late-Joint-SFT" class="headerlink" title="2.2.3 Stage 4: 后期联合 SFT (Late Joint SFT)"></a>2.2.3 Stage 4: 后期联合 SFT (Late Joint SFT)</h4><p>encoder 预训练和 IA-SFT 均完成后，已建立稳健的初始跨模态映射。此阶段 encoder、adaptor 和 LLM <strong>端到端联合优化</strong>。</p>
+<p><strong>为何安全</strong>：前序阶段已最小化模态差距，LLM 梯度引发表征漂移的风险大幅降低。从几何角度看，前序对齐阶段已建立稳定的跨模态流形，将后续优化置于损失景观的<strong>低曲率区域</strong>。在此体制下，梯度更新作为对决策边界和流形几何的局部精化，而非诱导大规模拓扑重构。</p>
+<p>后续所有训练阶段（包括 context SFT 和 RL）均以全端到端方式进行。</p>
+<h4 id="2-2-4-Stage-5-上下文-SFT-Context-SFT"><a href="#2-2-4-Stage-5-上下文-SFT-Context-SFT" class="headerlink" title="2.2.4 Stage 5: 上下文 SFT (Context SFT)"></a>2.2.4 Stage 5: 上下文 SFT (Context SFT)</h4><p>联合 SFT 后引入上下文 SFT 以增强模型利用上下文信息的能力——这是 LLM-based ASR 热词定制的关键。</p>
+<p><strong>关键词集构建</strong>：</p>
+<ol>
+<li>从训练语料中提取候选短语</li>
+<li>使用 Qwen3-30B-A3B-Instruct 过滤，保留命名实体（人名、POI、媒体名、专有名词）</li>
+</ol>
+<p><strong>Prompt 模板</strong>：</p>
+<figure class="highlight smalltalk"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs smalltalk">&lt;|im_start|&gt;system<br><span class="hljs-type">You</span> are a <span class="hljs-type">Multilingual</span> <span class="hljs-type">Speech</span> <span class="hljs-type">Recognition</span> <span class="hljs-type">Model</span>.&lt;|im_end|&gt;<br>&lt;|im_start|&gt;user<br><span class="hljs-type">Transcribe</span> the speech into text &lt;speech&gt;.<br><span class="hljs-type">Contextual</span> hints: &#123;context&#125;.&lt;|im_end|&gt;<br>&lt;|im_start|&gt;assistant<br>&lt;transcription&gt;&lt;|im_end|&gt;<br></code></pre></td></tr></table></figure>
+<p><strong>训练策略</strong>：</p>
+<ul>
+<li>增加长时语句的采样比例</li>
+<li>概率性注入从关键词集 $S$ 采样的关键词到 prompt</li>
+<li>对每个关键词，以一定概率检索发音相同或高度相似的词作为<strong>干扰上下文 (distractor)</strong></li>
+<li>干扰词防止 LLM 过度依赖上下文线索而忽视语义合理性</li>
+<li>此阶段 encoder、adaptor 和 LLM 联合训练</li>
+</ul>
+<p><strong>设计重点</strong>：聚焦<strong>短语级</strong>上下文线索（非句子/对话级），专为热词定制设计。对于多轮场景，可将对话历史中提取的关键词附加到当前 prompt。</p>
+<h4 id="2-2-5-Stage-6-ASR-专用-RL"><a href="#2-2-5-Stage-6-ASR-专用-RL" class="headerlink" title="2.2.5 Stage 6: ASR 专用 RL"></a>2.2.5 Stage 6: ASR 专用 RL</h4><p>基于 <strong>GRPO (Group Relative Policy Optimization)</strong> (Shao et al., 2024) 引入 ASR 专用 RL 阶段，使用可验证奖励直接优化序列级转录行为。</p>
+<p>给定输入音频 $q$、真值 $y$，策略模型独立采样一组 $K$ 个候选假设 ${\tau_1, \ldots, \tau_K} \sim \pi_\theta(\cdot | q)$，使用以下 ASR 专用奖励函数评估：</p>
+<p><strong>准确率奖励 (Accuracy Reward)</strong>：</p>
+<script type="math/tex; mode=display">R_{acc}(\tau, y) = \exp(-\alpha \cdot CER(\tau, y))</script><p>其中 $\alpha = 2.0$。奖励值在 $(0, 1]$ 内，指数形式放大低 CER 假设间的差异，鼓励对接近正确的转录进行细粒度优化。</p>
+<p><strong>幻觉奖励 (Hallucination Reward)</strong>：</p>
+<p>对假设和真值进行混合粒度分词（中文字符级，英文词级），计算长度：</p>
+<script type="math/tex; mode=display">R_{hallu}(\tau, y) = \begin{cases} -1 & \text{if } len(\tau) > 2 \times len(y) \text{ or } len(\tau) < 0.5 \times len(y) \\ 0 & \text{otherwise} \end{cases}</script><p><strong>上下文奖励 (Context Reward)</strong>：</p>
+<p>使用 Qwen3-30B-A3B-Instruct 标注每个样本 0-2 个实体关键词。训练时随机选择子集注入 prompt。对每个关键词：命中 +0.5，未命中 -0.5。累积分数取平均得到样本级 $R_{context}(\tau, y)$。此外定义重要关键词列表，无论是否在 prompt 中提供都参与奖励计算。</p>
+<p><strong>总奖励</strong>：</p>
+<script type="math/tex; mode=display">R(\tau, y) = R_{acc}(\tau, y) + 0.5 R_{hallu}(\tau, y) + 0.5 R_{context}(\tau, y)</script><p><strong>GRPO 算法</strong>：</p>
+<p>组归一化优势：</p>
+<script type="math/tex; mode=display">\hat{A}_{i,t} = \frac{R(\tau_i, y) - \text{mean}(\{R(\tau_j, y)\}_{j=1}^K)}{\text{std}(\{R(\tau_j, y)\}_{j=1}^K) + \epsilon}</script><p>GRPO 目标函数：</p>
+<script type="math/tex; mode=display">J_{GRPO} = \frac{1}{K} \sum_{i=1}^{K} \frac{1}{|\tau_i|} \sum_{t=1}^{|\tau_i|} \min\left( r_{i,t}(\theta) \hat{A}_{i,t}, \text{clip}(r_{i,t}(\theta), 1-\varepsilon, 1+\varepsilon) \hat{A}_{i,t} \right) - \beta D_{KL}(\pi_\theta \| \pi_{ref})</script><p>其中：</p>
+<script type="math/tex; mode=display">r_{i,t}(\theta) = \frac{\pi_\theta(\tau_{i,t} | q, \tau_{i,<t})}{\pi_{\theta_{old}}(\tau_{i,t} | q, \tau_{i,<t})}</script><p><strong>RL 训练框架实现细节</strong>：</p>
+<ul>
+<li>对每个 batch，策略模型编码输入语句为语音嵌入，在 rollout 生成和策略模型 log-probability 计算间复用</li>
+<li>使用 <strong>vLLM</strong> 高效采样 $K$ 个假设</li>
+<li>策略优化在 <strong>DeepSpeed ZeRO</strong> 分布式训练设置下进行</li>
+<li>参考模型全程冻结，提供稳定的 KL 正则化锚点</li>
+<li>每步优化后将更新权重同步到 vLLM rollout 引擎，保持 on-policy 采样</li>
+<li><strong>温度退火</strong>: 采用余弦退火温度调度，从 1.0 渐衰至 0.7（早期高温鼓励多样假设生成，后期强化 top-1 路径质量）</li>
+</ul>
+<h4 id="2-2-6-附加阶段-音素头训练-Phoneme-Head-Training-for-RAG"><a href="#2-2-6-附加阶段-音素头训练-Phoneme-Head-Training-for-RAG" class="headerlink" title="2.2.6 附加阶段: 音素头训练 (Phoneme Head Training for RAG)"></a>2.2.6 附加阶段: 音素头训练 (Phoneme Head Training for RAG)</h4><p>RL 阶段完成后主训练流水线结束。额外训练 RAG 模块所需的音素头：</p>
+<ul>
+<li>encoder 继承 post-RL checkpoint 权重并冻结</li>
+<li>音素头从预训练 CTC 头初始化，保持可训练</li>
+<li>训练目标与配置与预训练一致</li>
+</ul>
+<hr>
+<h3 id="2-3-训练设置-Training-Setup"><a href="#2-3-训练设置-Training-Setup" class="headerlink" title="2.3 训练设置 (Training Setup)"></a>2.3 训练设置 (Training Setup)</h3><h4 id="噪声和静音条件下的鲁棒性增强"><a href="#噪声和静音条件下的鲁棒性增强" class="headerlink" title="噪声和静音条件下的鲁棒性增强"></a>噪声和静音条件下的鲁棒性增强</h4><p>在前五个训练阶段中：</p>
+<ul>
+<li>标准 SpecAugmentation 和速度扰动</li>
+<li>20% 干净样本随机注入真实声学干扰（babble noise、车辆噪声、背景音乐）</li>
+<li>SNR 从正态分布 $\mathcal{N}(10, 5^2)$ dB 采样</li>
+<li><strong>Padding-before-noise 策略</strong>: 对选中样本，在噪声注入前在语句前后拼接短静音段，静音时长从偏斜的 $\text{Beta}(1, 3)$ 分布采样（0-1秒）</li>
+</ul>
+<p>此策略有效缓解离线和流式推理中的幻觉，尤其对流式场景有益（词/短语间的停顿可能使单个 chunk 包含大量非语音帧）。</p>
+<h4 id="训练超参数"><a href="#训练超参数" class="headerlink" title="训练超参数"></a>训练超参数</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>训练数据</th>
+<th>最大学习率</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stage 1 Encoder 预训练</td>
+<td>560k 小时</td>
+<td>$5 \times 10^{-4}$</td>
+</tr>
+<tr>
+<td>Stage 2 对齐</td>
+<td>50k 小时</td>
+<td>$1 \times 10^{-3}$</td>
+</tr>
+<tr>
+<td>Stage 3 IA-SFT</td>
+<td>560k 小时</td>
+<td>$1 \times 10^{-5}$</td>
+</tr>
+<tr>
+<td>Stage 4 Late Joint SFT</td>
+<td>560k 小时</td>
+<td>$1 \times 10^{-5}$</td>
+</tr>
+<tr>
+<td>Stage 5 Context SFT</td>
+<td>50k 小时</td>
+<td>$1 \times 10^{-6}$</td>
+</tr>
+<tr>
+<td>Stage 6 RL</td>
+<td>20k 样本</td>
+<td>$2 \times 10^{-6}$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>优化器：Adam，余弦退火，10k-step warm-up（RL 除外）。训练语料仅包含普通话、中国方言、英语和中英混合语码转换数据。</p>
+<hr>
+<h3 id="2-4-推理-Inference"><a href="#2-4-推理-Inference" class="headerlink" title="2.4 推理 (Inference)"></a>2.4 推理 (Inference)</h3><h4 id="2-4-1-优化的流式推理管线"><a href="#2-4-1-优化的流式推理管线" class="headerlink" title="2.4.1 优化的流式推理管线"></a>2.4.1 优化的流式推理管线</h4><p>NIM4-ASR 采用<strong>解耦推理架构</strong>，不同模块可部署在不同加速器上：</p>
+<ul>
+<li><strong>语音编码器</strong>: 部署在 Triton Inference Server，支持跨并发音频流的动态批处理</li>
+<li><strong>Adaptor + LLM 解码器</strong>: 使用基于 vLLM 的推理引擎，高效 KV-cache 管理</li>
+<li><strong>音素 CTC 头 + RAG 模块</strong>: 在 CPU 上运行</li>
+</ul>
+<p><strong>Prompt 结构优化</strong>（固定顺序）：</p>
+<ol>
+<li>静态指令前缀（系统 prompt）→ 推理前预计算并缓存在 KV-cache</li>
+<li>流式语音嵌入 → 随音频 chunk 到达增量追加</li>
+<li>动态上下文信息（RAG 检索热词）→ prompt 末尾注入</li>
+</ol>
+<p><strong>流式推理范式</strong>：NIM4-ASR 采用<strong>增量上下文扩展</strong>的流式推理范式（区别于假设刷新范式）：</p>
+<ul>
+<li>流式 encoder 以 <strong>640ms chunk</strong> 处理输入语音</li>
+<li>每个 chunk 立即编码，通过 streaming chunked prefill 追加到 LLM 上下文</li>
+<li>encoder 缓存前 4 个 chunk 的表征，当前 chunk 可关注有限左上下文</li>
+<li>采用 <strong>cache-aware 流式策略</strong>，中间表征跨 chunk 复用</li>
+<li>VAD 检测到语音结束时，LLM 解码器执行<strong>单次最终解码</strong></li>
+<li>由于 KV-cache prefill 在语音处理期间增量完成，解码器可立即开始生成</li>
+</ul>
+<p><strong>与假设刷新范式的权衡</strong>：</p>
+<ul>
+<li>假设刷新：更好的 TTFT，适合长时转录（会议、直播）</li>
+<li>NIM4-ASR：优先稳定流式推理，显著降低尾部延迟，适合短指令式实时语音交互</li>
+</ul>
+<h4 id="2-4-2-基于音素的-RAG-热词定制"><a href="#2-4-2-基于音素的-RAG-热词定制" class="headerlink" title="2.4.2 基于音素的 RAG 热词定制"></a>2.4.2 基于音素的 RAG 热词定制</h4><p><strong>热词数据库构建</strong>：</p>
+<ol>
+<li>将每个热词文本预转换为音素-token 序列</li>
+<li>存储为键值对（key: 音素序列, value: 热词文本）</li>
+<li>音素序列转为基于音素词表的离散索引</li>
+<li>重构为带失败链接的 <strong>Aho-Corasick 自动机</strong> trie</li>
+</ol>
+<p><strong>推理流程</strong>：</p>
+<ol>
+<li>音素头通过贪心解码生成音素假设</li>
+<li>转为索引序列并由自动机单次扫描</li>
+<li>当部分匹配无法扩展时，自动机跟随失败链接到最长有效后缀状态</li>
+<li>所有候选热词以<strong>线性时间复杂度</strong>（仅依赖查询长度而非数据库大小）检索</li>
+</ol>
+<p><strong>最长匹配过滤</strong>：短匹配如被长匹配完全覆盖则丢弃（例如同时匹配 “NIO” 和 “NIO House” 时仅保留后者）。</p>
+<p><strong>硬匹配策略</strong>：采用精确匹配而非近似匹配或最小编辑距离。原因：</p>
+<ul>
+<li>检索遗漏通常比检索错误危害更小（LLM 仍可从内部语言知识恢复正确实体）</li>
+<li>软匹配更易引入相似但错误的热词，干扰解码</li>
+<li>精确匹配 + Aho-Corasick 允许数据库扩展到百万级而无额外检索开销</li>
+</ul>
+<p><strong>性能指标</strong>：支持百万级热词定制，<strong>亚毫秒级检索延迟</strong>。</p>
+<hr>
+<h2 id="3-评估-Evaluation"><a href="#3-评估-Evaluation" class="headerlink" title="3. 评估 (Evaluation)"></a>3. 评估 (Evaluation)</h2><h3 id="3-1-评估设置"><a href="#3-1-评估设置" class="headerlink" title="3.1 评估设置"></a>3.1 评估设置</h3><p><strong>基线系统</strong>：Fun-ASR-Nano (0.8B)、GLM-ASR-Nano (1.5B)、Qwen3-ASR-1.7B (2.0B)、FireRedASR2S-LLM (8B+)、Step-Audio2-Mini (8B+)、Qwen3-Omni-Instruct (30B-A3B)</p>
+<p><strong>评估指标</strong>：英文用 WER，中文/方言/歌词/中英混合用 CER。使用 WeTextProcessing (WFST-based) 文本归一化。</p>
+<p><strong>公开基准</strong> (15个)：</p>
+<ul>
+<li>英文：LibriSpeech, VoxPopuli, MLS-English</li>
+<li>中文：AISHELL-1, AISHELL-2, AISHELL-2021-Eval, WeNetSpeech, SpeechIO</li>
+<li>方言：WeNetSpeech-Chuan, WeNetSpeech-Yue, KeSpeech</li>
+<li>中英混合：CS-Dialogue, ASCEND</li>
+<li>歌词：M4Singer</li>
+</ul>
+<p><strong>内部基准</strong> (10个)：POI（4城市）、媒体（音乐/视频/电台）、设备控制、对话（车域/多域）</p>
+<h3 id="3-2-评估结果"><a href="#3-2-评估结果" class="headerlink" title="3.2 评估结果"></a>3.2 评估结果</h3><h4 id="3-2-1-公开基准结果"><a href="#3-2-1-公开基准结果" class="headerlink" title="3.2.1 公开基准结果"></a>3.2.1 公开基准结果</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>基准</th>
+<th>Fun-ASR Nano (0.8B)</th>
+<th>GLM-ASR Nano (1.5B)</th>
+<th>Qwen3-ASR 1.7B (2.0B)</th>
+<th>FireRedASR2S LLM (8B+)</th>
+<th>Step-Audio2 Mini (8B+)</th>
+<th>Qwen3-Omni (30B-A3B)</th>
+<th><strong>NIM4-ASR Offline (2.3B)</strong></th>
+<th><strong>NIM4-ASR Stream (2.3B)</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AISHELL-1 dev\</td>
+<td>test</td>
+<td>1.59\</td>
+<td>1.81</td>
+<td>2.40\</td>
+<td>2.41</td>
+<td>1.40\</td>
+<td>1.51</td>
+<td>0.60\</td>
+<td>0.64</td>
+<td>0.76\</td>
+<td>0.81</td>
+<td>0.86\</td>
+<td>0.92</td>
+<td>**0.43\</td>
+<td>0.57**</td>
+<td>0.43\</td>
+<td>0.60</td>
+</tr>
+<tr>
+<td>AISHELL-2-ios dev\</td>
+<td>test</td>
+<td>2.62\</td>
+<td>2.73</td>
+<td>3.21\</td>
+<td>3.45</td>
+<td>2.41\</td>
+<td>2.60</td>
+<td>2.07\</td>
+<td>2.08</td>
+<td>2.24\</td>
+<td>2.29</td>
+<td>2.11\</td>
+<td>2.31</td>
+<td>2.28\</td>
+<td>2.43</td>
+<td>2.33\</td>
+<td>2.49</td>
+</tr>
+<tr>
+<td>AISHELL-2021 A\</td>
+<td>C\</td>
+<td>D</td>
+<td>4.75\</td>
+<td>4.29\</td>
+<td>2.33</td>
+<td>7.25\</td>
+<td>9.48\</td>
+<td>3.40</td>
+<td>4.22\</td>
+<td>3.51\</td>
+<td>1.82</td>
+<td>13.40\</td>
+<td>3.92\</td>
+<td>4.68</td>
+<td>4.54\</td>
+<td>3.69\</td>
+<td>2.34</td>
+<td>5.19\</td>
+<td>3.34\</td>
+<td>1.66</td>
+<td>**3.12\</td>
+<td>1.51\</td>
+<td>1.81**</td>
+<td>3.28\</td>
+<td>1.63\</td>
+<td>2.22</td>
+</tr>
+<tr>
+<td>WeNetSpeech meet\</td>
+<td>net</td>
+<td>4.68\</td>
+<td>5.22</td>
+<td>6.87\</td>
+<td>5.72</td>
+<td>4.00\</td>
+<td>4.13</td>
+<td>**3.36\</td>
+<td>3.52**</td>
+<td>4.23\</td>
+<td>4.63</td>
+<td>3.92\</td>
+<td>3.85</td>
+<td>4.91\</td>
+<td>4.72</td>
+<td>5.71\</td>
+<td>5.00</td>
+</tr>
+<tr>
+<td>SpeechIO</td>
+<td>2.78</td>
+<td>3.17</td>
+<td>2.55</td>
+<td><strong>2.20</strong></td>
+<td>3.41</td>
+<td>2.33</td>
+<td>2.61</td>
+<td>2.84</td>
+</tr>
+<tr>
+<td>WS-Chuan easy\</td>
+<td>hard</td>
+<td>13.21\</td>
+<td>23.76</td>
+<td>20.95\</td>
+<td>33.61</td>
+<td>11.18\</td>
+<td>20.35</td>
+<td>**10.36\</td>
+<td>20.07**</td>
+<td>13.99\</td>
+<td>25.35</td>
+<td>14.13\</td>
+<td>25.16</td>
+<td>10.51\</td>
+<td>20.58</td>
+<td>11.22\</td>
+<td>20.37</td>
+</tr>
+<tr>
+<td>WS-Yue short\</td>
+<td>long</td>
+<td>7.31\</td>
+<td>10.02</td>
+<td>16.78\</td>
+<td>13.97</td>
+<td>5.79\</td>
+<td>8.00</td>
+<td><strong>5.05</strong>\</td>
+<td>10.45</td>
+<td>7.78\</td>
+<td>8.44</td>
+<td>6.97\</td>
+<td>8.60</td>
+<td>5.12\</td>
+<td><strong>8.58</strong></td>
+<td>5.39\</td>
+<td>9.62</td>
+</tr>
+<tr>
+<td>KeSpeech</td>
+<td>7.18</td>
+<td>9.59</td>
+<td>4.98</td>
+<td><strong>3.05</strong></td>
+<td>3.98</td>
+<td>6.00</td>
+<td>4.40</td>
+<td>5.08</td>
+</tr>
+<tr>
+<td>LS-dev clean\</td>
+<td>other</td>
+<td>1.63\</td>
+<td>4.06</td>
+<td>1.82\</td>
+<td>3.93</td>
+<td>1.54\</td>
+<td>3.14</td>
+<td>1.27\</td>
+<td>2.63</td>
+<td>1.06\</td>
+<td>2.48</td>
+<td>**1.08\</td>
+<td>2.10**</td>
+<td>1.13\</td>
+<td>2.45</td>
+<td>1.18\</td>
+<td>2.86</td>
+</tr>
+<tr>
+<td>LS-test clean\</td>
+<td>other</td>
+<td>1.63\</td>
+<td>4.35</td>
+<td>1.96\</td>
+<td>4.29</td>
+<td>1.56\</td>
+<td>3.49</td>
+<td>1.29\</td>
+<td>2.97</td>
+<td>1.22\</td>
+<td>2.61</td>
+<td>**1.15\</td>
+<td>2.38**</td>
+<td>1.19\</td>
+<td>2.53</td>
+<td>1.29\</td>
+<td>2.92</td>
+</tr>
+<tr>
+<td>VoxPopuli dev\</td>
+<td>test</td>
+<td>7.86\</td>
+<td>7.70</td>
+<td>8.78\</td>
+<td>8.52</td>
+<td>7.58\</td>
+<td>7.42</td>
+<td>9.38\</td>
+<td>9.24</td>
+<td>8.86\</td>
+<td>8.37</td>
+<td>6.86\</td>
+<td>6.75</td>
+<td>**6.18\</td>
+<td>6.08**</td>
+<td>6.26\</td>
+<td>6.22</td>
+</tr>
+<tr>
+<td>MLS-English</td>
+<td>6.80</td>
+<td>5.32</td>
+<td>4.93</td>
+<td>4.71</td>
+<td>4.37</td>
+<td><strong>4.04</strong></td>
+<td>4.77</td>
+<td>5.04</td>
+</tr>
+<tr>
+<td>CS-Dialogue</td>
+<td>5.37</td>
+<td>6.15</td>
+<td>5.44</td>
+<td><strong>4.63</strong></td>
+<td>9.46</td>
+<td>8.51</td>
+<td>4.70</td>
+<td>4.91</td>
+</tr>
+<tr>
+<td>ASCEND</td>
+<td>11.91</td>
+<td>12.29</td>
+<td>10.87</td>
+<td><strong>10.22</strong></td>
+<td>13.50</td>
+<td>18.68</td>
+<td>11.46</td>
+<td>11.85</td>
+</tr>
+<tr>
+<td>M4Singer</td>
+<td><strong>5.25</strong></td>
+<td>18.45</td>
+<td>5.72</td>
+<td>N/A</td>
+<td>9.68</td>
+<td>8.40</td>
+<td>6.39</td>
+<td>6.94</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>NIM4-ASR offline vs 基线胜负比</strong>: 23:2 (Fun-ASR), 25:0 (GLM-ASR), 18:7 (Qwen3-ASR), 12:12 (FireRedASR2S), 17:8 (Step-Audio2), 14:11 (Qwen3-Omni)</p>
+<p><strong>关键发现</strong>：</p>
+<ul>
+<li>NIM4-ASR 以 2.3B 参数持续超越更小模型，对 8B+ 系统取得可比或优越结果</li>
+<li>流式模式相较离线仅有有限退化（得益于 CTC 的严格局部对齐和动态 chunk 训练策略）</li>
+<li>主要弱点在会议场景（WeNetSpeech Meeting），因系统主要优化为流式交互场景</li>
+</ul>
+<h4 id="3-2-2-内部基准结果"><a href="#3-2-2-内部基准结果" class="headerlink" title="3.2.2 内部基准结果"></a>3.2.2 内部基准结果</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>基准</th>
+<th>Fun-ASR Nano</th>
+<th>GLM-ASR Nano</th>
+<th>Qwen3-ASR 1.7B</th>
+<th>FireRedASR2S</th>
+<th>Step-Audio2</th>
+<th>Qwen3-Omni</th>
+<th><strong>NIM4-ASR Offline</strong></th>
+<th><strong>NIM4-ASR Stream</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POI City A</td>
+<td>7.07</td>
+<td>14.68</td>
+<td>9.14</td>
+<td>8.54</td>
+<td>9.41</td>
+<td>9.67</td>
+<td><strong>3.86</strong></td>
+<td>3.85</td>
+</tr>
+<tr>
+<td>POI City B</td>
+<td>8.50</td>
+<td>15.75</td>
+<td>10.59</td>
+<td>10.43</td>
+<td>11.67</td>
+<td>11.73</td>
+<td><strong>4.86</strong></td>
+<td>4.94</td>
+</tr>
+<tr>
+<td>POI City C</td>
+<td>7.60</td>
+<td>17.55</td>
+<td>10.01</td>
+<td>10.17</td>
+<td>11.35</td>
+<td>12.18</td>
+<td><strong>3.77</strong></td>
+<td>3.81</td>
+</tr>
+<tr>
+<td>POI City D</td>
+<td>7.42</td>
+<td>17.91</td>
+<td>9.77</td>
+<td>9.51</td>
+<td>11.55</td>
+<td>10.86</td>
+<td><strong>4.10</strong></td>
+<td>4.17</td>
+</tr>
+<tr>
+<td>音乐</td>
+<td>12.60</td>
+<td>24.25</td>
+<td>12.67</td>
+<td>12.13</td>
+<td>14.94</td>
+<td>15.89</td>
+<td><strong>5.75</strong></td>
+<td>5.78</td>
+</tr>
+<tr>
+<td>视频</td>
+<td>8.27</td>
+<td>20.35</td>
+<td>9.69</td>
+<td>9.38</td>
+<td>12.30</td>
+<td>15.33</td>
+<td><strong>2.99</strong></td>
+<td>3.03</td>
+</tr>
+<tr>
+<td>电台</td>
+<td>13.69</td>
+<td>19.82</td>
+<td>10.51</td>
+<td>11.84</td>
+<td>14.21</td>
+<td>17.91</td>
+<td><strong>1.21</strong></td>
+<td>1.17</td>
+</tr>
+<tr>
+<td>车辆控制</td>
+<td>4.74</td>
+<td>8.78</td>
+<td>5.31</td>
+<td>4.52</td>
+<td>4.97</td>
+<td>4.18</td>
+<td><strong>1.88</strong></td>
+<td>1.78</td>
+</tr>
+<tr>
+<td>车域聊天 easy\</td>
+<td>hard</td>
+<td>3.75\</td>
+<td>5.92</td>
+<td>5.63\</td>
+<td>10.12</td>
+<td>3.31\</td>
+<td>5.96</td>
+<td>2.93\</td>
+<td>5.61</td>
+<td><strong>2.35</strong>\</td>
+<td>7.63</td>
+<td>5.98\</td>
+<td>6.60</td>
+<td>2.70\</td>
+<td><strong>4.88</strong></td>
+<td>2.76\</td>
+<td>4.83</td>
+</tr>
+<tr>
+<td>多域聊天</td>
+<td>1.65</td>
+<td>1.89</td>
+<td>1.33</td>
+<td><strong>1.27</strong></td>
+<td>1.49</td>
+<td>5.34</td>
+<td>1.55</td>
+<td>1.75</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>NIM4-ASR 在实体密集型场景 (POI、媒体) 上展现出压倒性优势（CER 降低 50%+），在车辆控制和车域聊天上也有显著提升。在多域聊天（开放域）上虽不领先但保持竞争力，展示了强泛化能力。</p>
+<h4 id="3-2-3-热词定制有效性"><a href="#3-2-3-热词定制有效性" class="headerlink" title="3.2.3 热词定制有效性"></a>3.2.3 热词定制有效性</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>设置</th>
+<th>City A POI (CER / Recall)</th>
+<th>City B POI (CER / Recall)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Streaming</td>
+<td>3.85 / 82.63%</td>
+<td>4.94 / 77.48%</td>
+</tr>
+<tr>
+<td>Streaming + RAG</td>
+<td><strong>3.33 / 88.07%</strong></td>
+<td><strong>4.31 / 83.60%</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>在百万级 POI 热词数据库上，RAG 带来一致的流式性能提升（City A: CER 3.85→3.33, Recall 82.63%→88.07%）。</p>
+<h4 id="3-2-4-幻觉抑制有效性"><a href="#3-2-4-幻觉抑制有效性" class="headerlink" title="3.2.4 幻觉抑制有效性"></a>3.2.4 幻觉抑制有效性</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>中文</th>
+<th>方言</th>
+<th>英文</th>
+<th>中英混合</th>
+<th>歌词</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fun-ASR-nano</td>
+<td>0.018%</td>
+<td>0.217%</td>
+<td>0.014%</td>
+<td>0.397%</td>
+<td>0.153%</td>
+</tr>
+<tr>
+<td>GLM-ASR-nano</td>
+<td>0.030%</td>
+<td>0.201%</td>
+<td>0.014%</td>
+<td>0.315%</td>
+<td>0.580%</td>
+</tr>
+<tr>
+<td>Qwen3-ASR-1.7B</td>
+<td>0.018%</td>
+<td>0.120%</td>
+<td>0.014%</td>
+<td>0.345%</td>
+<td>0.249%</td>
+</tr>
+<tr>
+<td>FireRedASR2S-LLM</td>
+<td>0.165%</td>
+<td>0.298%</td>
+<td>0.014%</td>
+<td>0.335%</td>
+<td>1.775%</td>
+</tr>
+<tr>
+<td>Step-Audio2-mini</td>
+<td>0.020%</td>
+<td>0.194%</td>
+<td>0.014%</td>
+<td>1.255%</td>
+<td>0.390%</td>
+</tr>
+<tr>
+<td>Qwen3-Omni-Inst</td>
+<td>0.013%</td>
+<td>0.370%</td>
+<td>0.007%</td>
+<td>1.778%</td>
+<td>0.129%</td>
+</tr>
+<tr>
+<td><strong>NIM4-ASR (w/o RL)</strong></td>
+<td>0.003%</td>
+<td>0.122%</td>
+<td>0.007%</td>
+<td><strong>0.261%</strong></td>
+<td>0.215%</td>
+</tr>
+<tr>
+<td><strong>NIM4-ASR (w/ RL)</strong></td>
+<td><strong>0.002%</strong></td>
+<td><strong>0.117%</strong></td>
+<td><strong>0.007%</strong></td>
+<td><strong>0.261%</strong></td>
+<td><strong>0.081%</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>NIM4-ASR 在所有五个场景中达到最低平均幻觉率。中文基准上仅 0.002%，远低于所有基线。RL 阶段进一步降低幻觉率（歌词场景从 0.215% 降至 0.081%）。</p>
+<h4 id="3-2-5-RL-有效性"><a href="#3-2-5-RL-有效性" class="headerlink" title="3.2.5 RL 有效性"></a>3.2.5 RL 有效性</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>w/o RL Offline</th>
+<th>w/o RL Stream</th>
+<th>w/ RL Offline</th>
+<th>w/ RL Stream</th>
+<th>RL 增益 Offline</th>
+<th>RL 增益 Stream</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>开源中文 Avg.</td>
+<td>2.71</td>
+<td>2.80</td>
+<td>2.44</td>
+<td>2.65</td>
+<td>-0.27</td>
+<td>-0.15</td>
+</tr>
+<tr>
+<td>开源英文 Avg.</td>
+<td>3.55</td>
+<td>3.76</td>
+<td>3.48</td>
+<td>3.68</td>
+<td>-0.07</td>
+<td>-0.08</td>
+</tr>
+<tr>
+<td>中英混合 Avg.</td>
+<td>8.39</td>
+<td>8.62</td>
+<td>8.08</td>
+<td>8.38</td>
+<td>-0.31</td>
+<td>-0.24</td>
+</tr>
+<tr>
+<td>内部中文 Avg.</td>
+<td>3.57</td>
+<td>3.69</td>
+<td>3.41</td>
+<td>3.44</td>
+<td>-0.16</td>
+<td>-0.25</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>RL 在离线和流式设置下均带来一致改进，在中文和语码转换基准上增益最显著。关键因素：</p>
+<ul>
+<li>同音/近同音混淆在这些场景中高度普遍</li>
+<li>token 级 teacher-forcing 无法有效惩罚此类错误</li>
+<li>RL 优化序列级奖励，显式惩罚句子级错误传播，强化实体和短语级一致性</li>
+</ul>
+<hr>
+<h2 id="4-结论-Conclusion"><a href="#4-结论-Conclusion" class="headerlink" title="4. 结论 (Conclusion)"></a>4. 结论 (Conclusion)</h2><p>NIM4-ASR 从部署导向视角重新审视 LLM-based ASR，通过以下核心设计解决三大实际障碍：</p>
+<ol>
+<li><strong>多阶段训练范式</strong>: 音素级 CTC 预训练 + IA-SFT 异步机制，减少模态差距并抑制表征漂移</li>
+<li><strong>实时流式推理</strong>: encoder 原生流式能力 + 解耦推理 + 增量上下文扩展</li>
+<li><strong>音素级 RAG</strong>: Aho-Corasick 自动机实现百万级热词亚毫秒检索</li>
+</ol>
+<p>以仅 <strong>2.3B 参数</strong>在 25 个基准（15 公开 + 10 内部）上实现多项 SOTA，同时保持低延迟流式能力和实体密集场景的显著优势。</p>
+<hr>
+<h2 id="5-局限性与未来工作"><a href="#5-局限性与未来工作" class="headerlink" title="5. 局限性与未来工作"></a>5. 局限性与未来工作</h2><ol>
+<li>当前仅支持普通话、英语和有限中国方言，多语言扩展为重要方向</li>
+<li>仅使用检索热词作上下文输入，尚未融入对话历史</li>
+<li>RL 收益尚不够稳定，需进一步优化算法和奖励设计</li>
+<li>未来将聚焦：更多语言/方言支持、对话历史融入、流式推理效率提升、RL 精化</li>
+</ol>
+<hr>
+<h2 id="个人点评"><a href="#个人点评" class="headerlink" title="个人点评"></a>个人点评</h2><p>NIM4-ASR 的核心贡献在于将 LLM-based ASR 的训练范式从”数据驱动的经验微调”提升为”基于模块功能边界的原则性设计”。几个特别值得关注的创新点：</p>
+<ol>
+<li><strong>IA-SFT 的异步迭代机制</strong>：这是一个工程上非常巧妙的设计——通过 CKA 监控在预训练尚未完成时就启动下游对齐，既保持了训练效率又避免了表征漂移。</li>
+<li><strong>音素级预训练目标</strong>：将 encoder 的角色明确限定为”声学-音素映射”，与 LLM 的”语义推理”角色实现清晰解耦。</li>
+<li><strong>硬匹配 RAG 策略</strong>：在大规模热词场景下”宁可漏检不可误检”的设计哲学，体现了对工业级系统可靠性的深刻理解。</li>
+</ol>
+<p>这篇论文展示了蔚来在车载语音交互领域的深厚积累，2.3B 参数在内部实体密集场景上大幅超越 30B+ 模型，证明了”小而精”的系统设计在特定垂直领域的巨大价值。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/RAG/" class="print-no-link">#RAG</a>
+      
+        <a href="/tags/Contextual-Biasing/" class="print-no-link">#Contextual Biasing</a>
+      
+        <a href="/tags/RL/" class="print-no-link">#RL</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>NIM4-ASR: Towards Efficient, Robust, and Customizable Real-Time LLM-Based ASR</div>
+      <div>https://smallsmartao.github.io/2026/06/17/nim4-asr-scalable-multitask-contextual-biasing/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年6月17日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年6月17日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/06/17/transducer-llama-integrating-llm-streamable-asr/" title="Transducer-Llama: Integrating LLMs into Streamable Transducer-based Speech Recognition">
+                        <span class="hidden-mobile">Transducer-Llama: Integrating LLMs into Streamable Transducer-based Speech Recognition</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
