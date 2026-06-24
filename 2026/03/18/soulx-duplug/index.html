@@ -28,7 +28,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/mj/cover_uzvv81jg.png">
 <meta property="article:published_time" content="2026-03-18T05:30:00.000Z">
-<meta property="article:modified_time" content="2026-06-24T11:09:27.788Z">
+<meta property="article:modified_time" content="2026-06-24T11:36:55.013Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="全双工">
 <meta property="article:tag" content="即插即用">
@@ -453,7 +453,8 @@
 <li>用户说”我要买那个…” → 模型先 ASR 出”那个” → 结合上下文判断”还没说完，<code>&lt;incomplete&gt;</code>“</li>
 </ul>
 <p><strong>传统 VAD 只看声学能量</strong>，听到停顿就判断说完了；SoulX 是<strong>先理解了你说了什么</strong>，再判断你说完没有。本质上就是：<strong>每 160ms，先把这段音频”翻译”成文字，再基于文字判断对话状态</strong>。交错排列确保了信息流的因果顺序正确。</p>
-<h4 id="训练-vs-推理的区别"><a href="#训练-vs-推理的区别" class="headerlink" title="训练 vs 推理的区别"></a>训练 vs 推理的区别</h4><div class="table-container">
+<h4 id="训练-vs-推理的区别"><a href="#训练-vs-推理的区别" class="headerlink" title="训练 vs 推理的区别"></a>训练 vs 推理的区别</h4><p>两个阶段对文本 token <strong>都采用 teacher forcing</strong>，区别仅在于文本来源：</p>
+<div class="table-container">
 <table>
 <thead>
 <tr>
@@ -470,18 +471,18 @@
 </tr>
 <tr>
 <td>$T_t$</td>
-<td>模型自己预测（端到端学）</td>
-<td><strong>外部 ASR（SenseVoice Small）直接给答案</strong>（teacher forcing）</td>
+<td><strong>Ground-truth 转录</strong>（teacher forcing）</td>
+<td><strong>外部 ASR（SenseVoice Small）输出</strong>（teacher forcing）</td>
 </tr>
 <tr>
 <td>$S_t$</td>
-<td>模型自己预测</td>
-<td>模型自己预测</td>
+<td>模型预测（有监督 loss）</td>
+<td>模型预测</td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>推理时用外部 ASR 的原因：保证文本准确性，状态预测的输入质量更高。训练时端到端学 ASR 是为了让模型内部学到语义表示，但部署时直接用更强的 ASR 模型喂文本效果更好（类似 knowledge distillation 的思路）。</p>
+<p>模型从头到尾都没有”自回归生成文本再拿去预测状态”的过程——文本始终是外部给定的。训练时对文本 token 施加 cross-entropy loss 的意义在于：迫使模型内部学到语义表征，从而让状态预测受益于文本理解能力。推理时则用更强的外部 ASR 提供高质量文本输入，保证状态预测的准确性。</p>
 <h4 id="一句话总结"><a href="#一句话总结" class="headerlink" title="一句话总结"></a>一句话总结</h4><blockquote>
 <p>一个 LLM 做 next token prediction，只不过 token 类型有三种（音频/文本/状态），严格交替排列。模型同时干三件事：听音频、转文字、判状态——但因为交错设计，判状态时已经知道用户说了什么。</p>
 </blockquote>
