@@ -28,7 +28,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/mj/cover_3997xgcs.png">
 <meta property="article:published_time" content="2026-03-13T10:39:00.000Z">
-<meta property="article:modified_time" content="2026-04-08T08:41:45.805Z">
+<meta property="article:modified_time" content="2026-06-24T10:54:42.219Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="LLM">
@@ -247,7 +247,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2.2k 字
+          2.6k 字
         
       </span>
     
@@ -258,7 +258,7 @@
         
         
         
-          19 分钟
+          23 分钟
         
       </span>
     
@@ -309,7 +309,7 @@
               <p id="updated-time" class="note note-info" style="">
                 
                   
-                    本文最后更新于 2026年4月8日 下午
+                    本文最后更新于 2026年6月24日 晚上
                   
                 
               </p>
@@ -380,12 +380,31 @@
 </ul>
 <p>这些前端或后端模块增加了训练流水线和进程间通信的复杂性。本文设计了<strong>交替 GPU 利用框架</strong>，不同组件交替占用 GPU 资源。</p>
 <p><img src="/images/mj/rl-asr-tts-framework.png" srcset="/img/loading.gif" lazyload alt="RL 训练框架"></p>
-<h3 id="3-2-ASR-训练流程"><a href="#3-2-ASR-训练流程" class="headerlink" title="3.2 ASR 训练流程"></a>3.2 ASR 训练流程</h3><ol>
-<li><strong>PyTorch 音频编码器</strong>占用 GPU，并行提取所有输入音频的 embedding</li>
-<li><strong>SGLang LLM</strong> 生成多组假设，基于音频 embedding 和指令文本 token 计算奖励</li>
-<li><strong>FSDP LLM</strong> 策略模型使用 audio embedding 和生成的假设计算输出概率，执行策略优化</li>
-<li>每次更新后，将策略同步回 rollout engine，确保 on-policy 训练</li>
-</ol>
+<h3 id="3-2-ASR-训练流程"><a href="#3-2-ASR-训练流程" class="headerlink" title="3.2 ASR 训练流程"></a>3.2 ASR 训练流程</h3><blockquote>
+<p><strong>背景</strong>：这里的 ASR 不是传统 CTC/RNN-T，而是用 LLM 做 ASR——给 LLM 喂音频 embedding + 指令”请转录这段音频”，LLM 自回归输出文本。现在要用 RL（GRPO）让这个 LLM 转录得更准。</p>
+</blockquote>
+<p><strong>Step 1：音频编码器提取 embedding</strong></p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs css">一批音频 → Whisper/音频编码器 → <span class="hljs-selector-tag">audio</span> embeddings（向量序列）<br></code></pre></td></tr></table></figure>
+<p>把 .wav 变成 LLM 能理解的向量表示。这步纯前向推理，占 GPU 但很快。</p>
+<p><strong>Step 2：SGLang LLM 生成多组转录假设 + 计算奖励</strong></p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs css"><span class="hljs-selector-attr">[audio embedding]</span> + <span class="hljs-selector-attr">[指令: <span class="hljs-string">&quot;请转录&quot;</span>]</span> → LLM → 生成 N 组转录文本（采样多次）<br></code></pre></td></tr></table></figure>
+<ul>
+<li>同一段音频，采样生成 N 个不同的转录结果（比如 N=8）</li>
+<li>然后拿每个转录跟 ground truth 比，算奖励：WER 越低奖励越高，有幻觉直接 -1</li>
+<li><strong>为什么要多组</strong>：GRPO 的核心是”组内相对排序”——同一个输入生成一批候选，好的给正奖励，差的给负奖励，这样策略梯度才有方向</li>
+</ul>
+<p><strong>Step 3：FSDP 策略模型执行优化</strong></p>
+<figure class="highlight stata"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs stata">输入：audio embedding + 每组生成的 <span class="hljs-keyword">token</span> 序列 + 对应的奖励分数<br>→ 计算每个 <span class="hljs-keyword">token</span> 的输出概率（<span class="hljs-keyword">log</span> <span class="hljs-keyword">prob</span>）<br>→ 用 GRPO 公式更新策略参数<br></code></pre></td></tr></table></figure>
+<ul>
+<li>SGLang 是高速推理引擎（负责生成/采样），但不能反传梯度</li>
+<li>所以需要另一个 FSDP 包裹的相同 LLM 来做梯度计算和参数更新</li>
+<li>相当于：<strong>SGLang 负责”做题”，FSDP 负责”学习”</strong></li>
+</ul>
+<p><strong>Step 4：同步参数回 rollout engine</strong></p>
+<p>FSDP 更新后的权重同步回 SGLang 推理引擎，确保下一轮采样用的是最新策略（on-policy），不然就变成拿旧策略生成的样本训练新策略了。</p>
+<blockquote>
+<p><strong>一句话总结</strong>：音频→embedding → LLM采样N组转录 → 跟答案比算奖励 → 好的转录加强、差的转录抑制 → 更新权重 → 循环。本质就是让 LLM 自己试着转录很多次，做对了奖励、做错了惩罚，逐渐学会转录得更准。RL 的价值在于不需要人标注”怎么转才对”的过程，只需要一个评分函数（WER）。</p>
+</blockquote>
 <h3 id="3-3-TTS-训练流程"><a href="#3-3-TTS-训练流程" class="headerlink" title="3.3 TTS 训练流程"></a>3.3 TTS 训练流程</h3><ol>
 <li>SGLang 直接生成 acoustic token 序列</li>
 <li>PyTorch flow-matching 模型和 vocoder 生成 Mel 频谱图和波形</li>
@@ -697,7 +716,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>更新于</div>
-          <div>2026年4月8日</div>
+          <div>2026年6月24日</div>
         </div>
       
       
