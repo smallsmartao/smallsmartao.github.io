@@ -28,7 +28,7 @@
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/mj/cover_uzvv81jg.png">
 <meta property="article:published_time" content="2026-03-18T05:30:00.000Z">
-<meta property="article:modified_time" content="2026-04-08T08:41:45.805Z">
+<meta property="article:modified_time" content="2026-06-24T11:09:27.788Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="全双工">
 <meta property="article:tag" content="即插即用">
@@ -247,7 +247,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.4k 字
+          2k 字
         
       </span>
     
@@ -258,7 +258,7 @@
         
         
         
-          12 分钟
+          17 分钟
         
       </span>
     
@@ -309,7 +309,7 @@
               <p id="updated-time" class="note note-info" style="">
                 
                   
-                    本文最后更新于 2026年4月8日 下午
+                    本文最后更新于 2026年6月24日 晚上
                   
                 
               </p>
@@ -415,20 +415,77 @@
 <li><strong>总感受野</strong>：1160ms，每步提取 15 个 Token</li>
 </ul>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 音频处理示例</span><br>audio_tokens = speech_encoder(audio_input)  <span class="hljs-comment"># 12.5 Hz 采样</span><br><span class="hljs-comment"># 每个 chunk: 15 个 token, 160ms 音频</span><br></code></pre></td></tr></table></figure>
-<h3 id="3-4-文本引导的状态预测"><a href="#3-4-文本引导的状态预测" class="headerlink" title="3.4 文本引导的状态预测"></a>3.4 文本引导的状态预测</h3><p>这是 SoulX 的核心创新点：</p>
-<p><strong>传统方式的问题</strong>：</p>
+<h3 id="3-4-文本引导的状态预测（交错-Token-前向过程详解）"><a href="#3-4-文本引导的状态预测（交错-Token-前向过程详解）" class="headerlink" title="3.4 文本引导的状态预测（交错 Token 前向过程详解）"></a>3.4 文本引导的状态预测（交错 Token 前向过程详解）</h3><p>这是 SoulX 的核心创新点。下面完整拆解前向过程。</p>
+<h4 id="整体序列结构"><a href="#整体序列结构" class="headerlink" title="整体序列结构"></a>整体序列结构</h4><p>论文公式(1)定义的模型输入/输出序列为：</p>
+<script type="math/tex; mode=display">\{A_1, T_1, S_1, A_2, T_2, S_2, \ldots, A_T, T_T, S_T\}</script><p>每个时间步 $t$（对应 160ms 音频 chunk）有三组 token <strong>严格按顺序排列</strong>：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>符号</th>
+<th>含义</th>
+<th>具体内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$A_t$</td>
+<td>音频 token</td>
+<td>当前 chunk 的 2 个离散音频 token（GLM-4-Voice tokenizer 提取）</td>
+</tr>
+<tr>
+<td>$T_t$</td>
+<td>文本 token</td>
+<td>这段音频对应的流式 ASR 输出（可能是 0~N 个汉字/子词）</td>
+</tr>
+<tr>
+<td>$S_t$</td>
+<td>状态 token</td>
+<td>1 个状态判断（idle/nonidle/complete/incomplete/backchannel）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="单步前向过程（处理第-t-个-chunk）"><a href="#单步前向过程（处理第-t-个-chunk）" class="headerlink" title="单步前向过程（处理第 t 个 chunk）"></a>单步前向过程（处理第 t 个 chunk）</h4><figure class="highlight coq"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs coq">已有序列：[A₁ T₁ S₁ | <span class="hljs-type">A</span>₂ T₂ S₂ | <span class="hljs-type">... | A</span>ₜ₋₁ Tₜ₋₁ Sₜ₋₁ | <span class="hljs-type">A</span>ₜ]<br>                                                              ↑ 刚喂入<br><br><span class="hljs-keyword">Step</span> <span class="hljs-number">1</span>: 模型看到 Aₜ 后，自回归生成 Tₜ（文本 token）<br>        P(Tₜ | <span class="hljs-type">A</span>≤t, T&lt;t, S&lt;t)<br>        → 比如用户这段说了<span class="hljs-string">&quot;今天&quot;</span>，就生成 [<span class="hljs-string">&quot;今&quot;</span>, <span class="hljs-string">&quot;天&quot;</span>]<br>        → 如果这段是静音，生成 &lt;asr_eos&gt;<br><br><span class="hljs-keyword">Step</span> <span class="hljs-number">2</span>: 文本生成完后，模型再生成 Sₜ（状态 token）<br>        P(Sₜ | <span class="hljs-type">A</span>≤t, T≤t, S&lt;t)<br>                       ↑ 注意：T≤t，包含刚生成的文本！<br>        → 判断：用户在说话？说完了？还是停顿没说完？<br><br>等下一个 <span class="hljs-number">160</span>ms chunk 到来，喂入 Aₜ₊₁，重复...<br></code></pre></td></tr></table></figure>
+<h4 id="为什么这个交错设计是关键"><a href="#为什么这个交错设计是关键" class="headerlink" title="为什么这个交错设计是关键"></a>为什么这个交错设计是关键</h4><p><strong>核心</strong>：预测状态 $S_t$ 时，模型已经”看到”了 $T_t$（当前 chunk 的文本内容）。</p>
 <ul>
-<li>VAD 只看声学特征，不理解语义</li>
-<li>“我…我…”和”我要买这个”可能被同样处理</li>
+<li>用户说”我要买这个” → 模型先 ASR 出”这个” → 再判断”语义完整，<code>&lt;complete&gt;</code>“</li>
+<li>用户说”我要买那个…” → 模型先 ASR 出”那个” → 结合上下文判断”还没说完，<code>&lt;incomplete&gt;</code>“</li>
 </ul>
-<p><strong>SoulX-Duplug 的方案</strong>：</p>
-<ul>
-<li>联合流式 ASR + 状态预测</li>
-<li>预测状态 Token 时已经看到了对应的文本</li>
-<li>本质上是一个<strong>语义 VAD</strong></li>
-</ul>
+<p><strong>传统 VAD 只看声学能量</strong>，听到停顿就判断说完了；SoulX 是<strong>先理解了你说了什么</strong>，再判断你说完没有。本质上就是：<strong>每 160ms，先把这段音频”翻译”成文字，再基于文字判断对话状态</strong>。交错排列确保了信息流的因果顺序正确。</p>
+<h4 id="训练-vs-推理的区别"><a href="#训练-vs-推理的区别" class="headerlink" title="训练 vs 推理的区别"></a>训练 vs 推理的区别</h4><div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>训练</th>
+<th>推理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$A_t$</td>
+<td>音频编码器提取</td>
+<td>音频编码器提取</td>
+</tr>
+<tr>
+<td>$T_t$</td>
+<td>模型自己预测（端到端学）</td>
+<td><strong>外部 ASR（SenseVoice Small）直接给答案</strong>（teacher forcing）</td>
+</tr>
+<tr>
+<td>$S_t$</td>
+<td>模型自己预测</td>
+<td>模型自己预测</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>推理时用外部 ASR 的原因：保证文本准确性，状态预测的输入质量更高。训练时端到端学 ASR 是为了让模型内部学到语义表示，但部署时直接用更强的 ASR 模型喂文本效果更好（类似 knowledge distillation 的思路）。</p>
+<h4 id="一句话总结"><a href="#一句话总结" class="headerlink" title="一句话总结"></a>一句话总结</h4><blockquote>
+<p>一个 LLM 做 next token prediction，只不过 token 类型有三种（音频/文本/状态），严格交替排列。模型同时干三件事：听音频、转文字、判状态——但因为交错设计，判状态时已经知道用户说了什么。</p>
+</blockquote>
 <p><img src="/images/mj/paper_p5_0.png" srcset="/img/loading.gif" lazyload alt="流式推理示例"></p>
-<figure class="highlight nestedtext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs nestedtext"><span class="hljs-attribute">传统 VAD</span><span class="hljs-punctuation">:</span> <span class="hljs-string"> 音频特征 ──► 能量检测 ──► 有/无语音</span><br><br><span class="hljs-attribute">SoulX-Duplug</span><span class="hljs-punctuation">:</span> <span class="hljs-string"> 音频特征 + ASR文本 ──► 语义理解 ──► 状态判断</span><br>                                              ↑<br>                                         （关键区别）<br></code></pre></td></tr></table></figure>
 <h2 id="四、实验结果"><a href="#四、实验结果" class="headerlink" title="四、实验结果"></a>四、实验结果</h2><h3 id="4-1-与现有方法对比"><a href="#4-1-与现有方法对比" class="headerlink" title="4.1 与现有方法对比"></a>4.1 与现有方法对比</h3><div class="table-container">
 <table>
 <thead>
@@ -592,7 +649,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>更新于</div>
-          <div>2026年4月8日</div>
+          <div>2026年6月24日</div>
         </div>
       
       
