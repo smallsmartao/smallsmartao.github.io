@@ -4,6 +4,39 @@
   
   
   <entry>
+    <title>MoChA：单调分块注意力机制——在线解码与软注意力的完美折中</title>
+    <link href="/2026/06/30/mocha-monotonic-chunkwise-attention/"/>
+    <url>/2026/06/30/mocha-monotonic-chunkwise-attention/</url>
+    
+    <content type="html"><![CDATA[<h1 id="MoChA：单调分块注意力机制——在线解码与软注意力的完美折中"><a href="#MoChA：单调分块注意力机制——在线解码与软注意力的完美折中" class="headerlink" title="MoChA：单调分块注意力机制——在线解码与软注意力的完美折中"></a>MoChA：单调分块注意力机制——在线解码与软注意力的完美折中</h1><blockquote><p><strong>论文</strong>：Monotonic Chunkwise Attention (ICLR 2018)<br><strong>作者</strong>：Chung-Cheng Chiu, Colin Raffel (Google Brain)<br><strong>链接</strong>：<a href="https://arxiv.org/abs/1712.05382">arXiv:1712.05382</a><br><strong>代码</strong>：<a href="https://github.com/craffel/mocha">github.com/craffel/mocha</a></p></blockquote><hr><h2 id="1-核心问题：在线解码-vs-软注意力"><a href="#1-核心问题：在线解码-vs-软注意力" class="headerlink" title="1. 核心问题：在线解码 vs. 软注意力"></a>1. 核心问题：在线解码 vs. 软注意力</h2><p>标准 Seq2Seq 模型中的 <strong>Soft Attention</strong>（Bahdanau et al., 2015）在每个解码步都需要遍历完整的编码器记忆序列，带来两个根本问题：</p><ol><li><strong>解码复杂度为 $O(TU)$</strong>（$T$ 为输入长度，$U$ 为输出长度），时间空间均为二次</li><li><strong>无法在线解码</strong>——必须等待整个输入序列处理完才能开始输出</li></ol><p>对于语音识别这类天然具有<strong>单调对齐</strong>特性且需要实时响应的任务，这些限制极为致命。</p><p>Raffel et al. (2017) 提出了 <strong>Hard Monotonic Attention</strong>，实现了在线 + 线性时间解码，但代价是：</p><ul><li>每个解码步只能看到<strong>一个</strong>记忆项（hard assignment）</li><li>强制严格单调，表达力受限</li><li>实验中性能显著落后于 Soft Attention</li></ul><p><strong>MoChA 的核心思想</strong>：在 Hard Monotonic Attention 确定的位置上，额外允许对一个小窗口（chunk）进行 Soft Attention——兼得在线解码与软对齐的优势。</p><hr><h2 id="2-方法详解"><a href="#2-方法详解" class="headerlink" title="2. 方法详解"></a>2. 方法详解</h2><h3 id="2-1-背景回顾：标准-Soft-Attention"><a href="#2-1-背景回顾：标准-Soft-Attention" class="headerlink" title="2.1 背景回顾：标准 Soft Attention"></a>2.1 背景回顾：标准 Soft Attention</h3><p>给定编码器隐状态序列 $\mathbf{h} = {h_1, \ldots, h_T}$ 和解码器状态 $s_{i-1}$，标准 Soft Attention 计算：</p><script type="math/tex; mode=display">e_{i,j} = \text{Energy}(h_j, s_{i-1}) = v^\top \tanh(W_h h_j + W_s s_{i-1} + b)</script><script type="math/tex; mode=display">\alpha_{i,j} = \frac{\exp(e_{i,j})}{\sum_{k=1}^T \exp(e_{i,k})} = \text{softmax}(e_{i,:})_j</script><script type="math/tex; mode=display">c_i = \sum_{j=1}^T \alpha_{i,j} h_j</script><p>问题：计算 $c_i$ 需要所有 $h_j$（$j=1,\ldots,T$），无法在线。</p><h3 id="2-2-Hard-Monotonic-Attention"><a href="#2-2-Hard-Monotonic-Attention" class="headerlink" title="2.2 Hard Monotonic Attention"></a>2.2 Hard Monotonic Attention</h3><p>Hard Monotonic Attention 的解码过程：从上一步停下的位置 $t_{i-1}$ 开始，从左向右逐个检查记忆项，计算”选择概率”：</p><script type="math/tex; mode=display">e_{i,j} = \text{MonotonicEnergy}(s_{i-1}, h_j)</script><script type="math/tex; mode=display">p_{i,j} = \sigma(e_{i,j})</script><script type="math/tex; mode=display">z_{i,j} \sim \text{Bernoulli}(p_{i,j})</script><p>一旦 $z_{i,j} = 1$，停止扫描，设 $t_i = j$，$c_i = h_{t_i}$。</p><p><strong>复杂度</strong>：$O(\max(T, U))$（线性），支持在线。</p><p><strong>训练时</strong>：使用期望值替代采样，通过注意力概率分布的递推关系高效计算：</p><script type="math/tex; mode=display">\alpha_{i,j} = p_{i,j} \left( \frac{(1-p_{i,j-1})\alpha_{i,j-1}}{p_{i,j-1}} + \alpha_{i-1,j} \right)</script><p>通过变量替换 $q_{i,j} = \alpha_{i,j}/p_{i,j}$，可以用并行的 <code>cumprod</code> 和 <code>cumsum</code> 高效求解。</p><p><strong>鼓励离散化</strong>：训练时向 sigmoid 输入加高斯噪声 $\epsilon \sim \mathcal{N}(0,1)$，迫使模型学习产生接近二值的 $p_{i,j}$。</p><p><strong>能量函数</strong>修改为：</p><script type="math/tex; mode=display">\text{MonotonicEnergy}(s_{i-1}, h_j) = g \frac{v^\top}{\|v\|} \tanh(W_s s_{i-1} + W_h h_j + b) + r</script><p>其中 $g, r$ 为可学习标量，缓解 sigmoid 的饱和与偏移问题。</p><h3 id="2-3-MoChA：单调分块注意力"><a href="#2-3-MoChA：单调分块注意力" class="headerlink" title="2.3 MoChA：单调分块注意力"></a>2.3 MoChA：单调分块注意力</h3><p>MoChA 的核心改进：Hard Monotonic 选定位置 $t_i$ 后，<strong>不再直接取 $h_{t_i}$，而是对 $t_i$ 前的长度为 $w$ 的窗口做 Soft Attention</strong>：</p><script type="math/tex; mode=display">v = t_i - w + 1</script><script type="math/tex; mode=display">u_{i,k} = \text{ChunkEnergy}(s_{i-1}, h_k), \quad k \in \{v, v+1, \ldots, t_i\}</script><script type="math/tex; mode=display">c_i = \sum_{k=v}^{t_i} \frac{\exp(u_{i,k})}{\sum_{l=v}^{t_i} \exp(u_{i,l})} h_k</script><p>其中 <code>ChunkEnergy(·)</code> 是独立于 <code>MonotonicEnergy(·)</code> 的第二个能量函数。</p><p><strong>关键性质</strong>：</p><ul><li><strong>仍为在线解码</strong>：仅需 $h_1, \ldots, h_{t_i}$</li><li><strong>线性复杂度</strong>：只多了常数因子 $w$</li><li><strong>允许局部重排序</strong>：chunk 内的注意力权重可以非单调</li><li><strong>参数增量极小</strong>：仅多一个 ChunkEnergy（~1% 参数增加）</li><li><strong>$w=1$ 时退化为 Hard Monotonic Attention</strong></li></ul><p><img src="/images/paper_figs/mocha/page_2.png" alt="图1：三种注意力机制对比"></p><h3 id="2-4-训练时的高效计算"><a href="#2-4-训练时的高效计算" class="headerlink" title="2.4 训练时的高效计算"></a>2.4 训练时的高效计算</h3><p>训练时需要计算 MoChA 诱导的概率分布 $\beta_{i,j}$：</p><script type="math/tex; mode=display">\beta_{i,j} = \sum_{k=j}^{j+w-1} \alpha_{i,k} \frac{\exp(u_{i,j})}{\sum_{l=k-w+1}^{k} \exp(u_{i,l})}</script><p>直接计算含嵌套求和，效率低。论文给出高效并行方案——定义 <strong>MovingSum</strong> 操作：</p><script type="math/tex; mode=display">\text{MovingSum}(x, b, f)_n := \sum_{m=n-(b-1)}^{n+f-1} x_m</script><p>（可通过与全 1 序列卷积实现）</p><p>则 $\beta_{i,:}$ 可以一步并行计算：</p><script type="math/tex; mode=display">\beta_{i,:} = \exp(u_{i,:}) \cdot \text{MovingSum}\left(\frac{\alpha_{i,:}}{\text{MovingSum}(\exp(u_{i,:}), w, 1)}, 1, w\right)</script><p><strong>完整训练算法</strong>（每个解码步 $i$）：</p><ol><li>$e_{i,j} = \text{MonotonicEnergy}(s_{i-1}, h_j)$</li><li>$p_{i,j} = \sigma(e_{i,j} + \epsilon)$，$\epsilon \sim \mathcal{N}(0,1)$</li><li>$\alpha_{i,:}$ 通过 cumprod/cumsum 并行计算</li><li>$u_{i,j} = \text{ChunkEnergy}(s_{i-1}, h_j)$</li><li>$\beta_{i,:}$ 通过 MovingSum 并行计算</li><li>$c_i = \sum_{j=1}^T \beta_{i,j} h_j$</li></ol><h3 id="2-5-测试时解码算法"><a href="#2-5-测试时解码算法" class="headerlink" title="2.5 测试时解码算法"></a>2.5 测试时解码算法</h3><p>测试时的解码过程清晰直观（Algorithm 1）：</p><figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">while 未输出 EndOfSequence:<br>    从 t_&#123;i<span class="hljs-number">-1</span>&#125; 开始向右扫描记忆:<br>        计算 p_&#123;i,<span class="hljs-keyword">j&#125; </span>= σ(MonotonicEnergy(s_&#123;i<span class="hljs-number">-1</span>&#125;, h_j))<br>        if p_&#123;i,<span class="hljs-keyword">j&#125; </span>≥ <span class="hljs-number">0</span>.<span class="hljs-number">5</span>:<br>            在 [<span class="hljs-keyword">j-w+1, </span><span class="hljs-keyword">j] </span>范围内做 softmax attention<br>            计算 c_i = chunk 加权平均<br>            记录 t_i = <span class="hljs-keyword">j</span><br><span class="hljs-keyword"></span>            <span class="hljs-keyword">break</span><br><span class="hljs-keyword"></span>    更新解码器状态，输出 y_i<br></code></pre></td></tr></table></figure><hr><h2 id="3-实验结果"><a href="#3-实验结果" class="headerlink" title="3. 实验结果"></a>3. 实验结果</h2><h3 id="3-1-在线语音识别（WSJ）"><a href="#3-1-在线语音识别（WSJ）" class="headerlink" title="3.1 在线语音识别（WSJ）"></a>3.1 在线语音识别（WSJ）</h3><p>在 Wall Street Journal 语料上的在线语音识别实验：</p><div class="table-container"><table><thead><tr><th>方法</th><th>Best WER</th><th>Average WER</th></tr></thead><tbody><tr><td>CTC baseline (Raffel et al., 2017)</td><td>33.4%</td><td>—</td></tr><tr><td>Reinforcement Learning (Luo et al., 2016)</td><td>27.0%</td><td>—</td></tr><tr><td>CTC (Wang et al., 2016)</td><td>22.7%</td><td>—</td></tr><tr><td>Hard Monotonic Attention (Raffel et al., 2017)</td><td>17.4%</td><td>—</td></tr><tr><td><strong>Soft Attention (offline)</strong></td><td>14.2%</td><td>14.6 ± 0.3%</td></tr><tr><td><strong>MoChA, w=2</strong></td><td><strong>13.9%</strong></td><td>15.0 ± 0.6%</td></tr></tbody></table></div><p><strong>关键发现</strong>：</p><ul><li>MoChA 以 $w=2$ 这么小的窗口就追平了 offline Soft Attention 的性能</li><li>相比之前最优的在线方法（Hard Monotonic 17.4%），<strong>相对提升 20%</strong></li><li>$w \in {2, 3, 4, 6, 8}$ 表现相当，说明即使极小的 chunk 也足够</li><li>这是<strong>首次</strong>在线注意力机制追平离线 Soft Attention</li></ul><p><strong>控制实验排除混淆因素</strong>：</p><ul><li>增加 Monotonic Attention 的能量函数隐层维度（匹配参数量）→ 无显著提升</li><li>减小 MoChA 能量函数隐层维度（减少参数量）→ 仅增 0.2% WER</li><li>增加卷积前端的时间感受野 → 无显著提升</li></ul><p>这些实验确认收益确实来自 chunk 内的 soft attention，而非其他副作用。</p><p><img src="/images/paper_figs/mocha/page_7.png" alt="图2：注意力对齐可视化"></p><h3 id="3-2-文档摘要（CNN-Daily-Mail）"><a href="#3-2-文档摘要（CNN-Daily-Mail）" class="headerlink" title="3.2 文档摘要（CNN/Daily Mail）"></a>3.2 文档摘要（CNN/Daily Mail）</h3><p>在不具备单调对齐的文档摘要任务上测试 MoChA 的极限：</p><div class="table-container"><table><thead><tr><th>方法</th><th>ROUGE-1</th><th>ROUGE-2</th></tr></thead><tbody><tr><td>Soft Attention (offline)</td><td>39.11</td><td>15.76</td></tr><tr><td>Hard Monotonic Attention</td><td>31.14</td><td>11.16</td></tr><tr><td><strong>MoChA, w=8</strong></td><td><strong>35.46</strong></td><td><strong>13.55</strong></td></tr></tbody></table></div><ul><li>Hard Monotonic 相比 Soft 下降了近 8 个 ROUGE-1 点（严格单调对文档摘要太强）</li><li>MoChA 有效弥合了约 <strong>一半</strong> 的差距</li><li>仅用 $w=8$ 的小窗口就实现了显著改善</li></ul><hr><h2 id="4-相关工作对比"><a href="#4-相关工作对比" class="headerlink" title="4. 相关工作对比"></a>4. 相关工作对比</h2><div class="table-container"><table><thead><tr><th>方法</th><th>在线</th><th>线性时间</th><th>软对齐</th><th>自适应chunk</th></tr></thead><tbody><tr><td>Soft Attention</td><td>❌</td><td>❌</td><td>✅</td><td>N/A</td></tr><tr><td>Hard Monotonic</td><td>✅</td><td>✅</td><td>❌</td><td>N/A</td></tr><tr><td>Neural Transducer (Jaitly 2015)</td><td>✅</td><td>✅</td><td>✅ (chunk内)</td><td>❌ (等分)</td></tr><tr><td>Chorowski 2015 (windowed)</td><td>❌ (窗口=150)</td><td>❌</td><td>✅</td><td>❌</td></tr><tr><td>CTC / RNN-T</td><td>✅</td><td>✅</td><td>❌</td><td>N/A</td></tr><tr><td><strong>MoChA</strong></td><td>✅</td><td>✅</td><td>✅ (chunk内)</td><td>✅</td></tr></tbody></table></div><p>MoChA 与 Neural Transducer 的关键区别：MoChA 的 chunk 边界由 hard monotonic attention <strong>自适应</strong>决定，而非固定等分。</p><hr><h2 id="5-总结与影响"><a href="#5-总结与影响" class="headerlink" title="5. 总结与影响"></a>5. 总结与影响</h2><h3 id="核心贡献"><a href="#核心贡献" class="headerlink" title="核心贡献"></a>核心贡献</h3><ol><li>提出 MoChA，在 Hard Monotonic Attention 的基础上加入 chunk 内 soft attention，<strong>以极小代价换取显著性能提升</strong></li><li>给出高效训练算法（MovingSum trick），可用标准反向传播训练</li><li>在语音识别上首次让在线注意力追平离线 Soft Attention</li><li>证明即使 $w=2$ 这样极小的 chunk 也能带来巨大收益</li></ol><h3 id="后续影响"><a href="#后续影响" class="headerlink" title="后续影响"></a>后续影响</h3><p>MoChA 是流式 Seq2Seq ASR 领域的里程碑工作。后续的 Triggered Attention、MMA (Monotonic Multi-head Attention) 等工作都直接建立在 MoChA 的思想之上。它清楚地表明：<strong>在具有单调对齐特性的任务上，不需要全局 Soft Attention 就能获得同等性能</strong>——只需要在正确的位置看一小块就够了。</p><h3 id="局限与未来方向"><a href="#局限与未来方向" class="headerlink" title="局限与未来方向"></a>局限与未来方向</h3><ul><li>chunk size $w$ 是固定超参数，论文提出可以让其自适应变化</li><li>训练仍为 offline（使用期望值近似），训练-测试存在 mismatch</li><li>在需要长距离重排序的任务（如翻译）上仍有差距</li></ul><hr><blockquote><p>💡 <strong>一句话总结</strong>：MoChA = 用 Hard Monotonic Attention 决定”在哪里看”，再用 Soft Attention 决定”怎么看”——既快又准。</p></blockquote>]]></content>
+    
+    
+    <categories>
+      
+      <category>论文解读</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>ASR</tag>
+      
+      <tag>论文解读</tag>
+      
+      <tag>Attention</tag>
+      
+      <tag>Seq2Seq</tag>
+      
+      <tag>流式解码</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>攀岩新手迅速提高的七条原则</title>
     <link href="/2026/06/30/climbing-7-principles-for-beginners/"/>
     <url>/2026/06/30/climbing-7-principles-for-beginners/</url>
@@ -175,11 +208,11 @@
     
     <tags>
       
+      <tag>Speech LLM</tag>
+      
       <tag>ASR</tag>
       
       <tag>论文解读</tag>
-      
-      <tag>Speech LLM</tag>
       
       <tag>CTC</tag>
       
@@ -270,11 +303,11 @@
     
     <tags>
       
+      <tag>Speech LLM</tag>
+      
       <tag>ASR</tag>
       
       <tag>论文解读</tag>
-      
-      <tag>Speech LLM</tag>
       
       <tag>Streaming</tag>
       
@@ -301,11 +334,11 @@
     
     <tags>
       
+      <tag>Speech LLM</tag>
+      
       <tag>ASR</tag>
       
       <tag>论文解读</tag>
-      
-      <tag>Speech LLM</tag>
       
       <tag>TTS</tag>
       
@@ -334,9 +367,9 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>Speech LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Turn-Taking</tag>
       
@@ -398,11 +431,11 @@
     
     <tags>
       
+      <tag>Reinforcement Learning</tag>
+      
       <tag>Full-Duplex</tag>
       
       <tag>Turn-Taking</tag>
-      
-      <tag>Reinforcement Learning</tag>
       
       <tag>Spoken Dialogue</tag>
       
@@ -433,9 +466,9 @@
     
     <tags>
       
-      <tag>Chain-of-Thought</tag>
-      
       <tag>Speech LLM</tag>
+      
+      <tag>Chain-of-Thought</tag>
       
       <tag>Entity Binding</tag>
       
@@ -565,9 +598,9 @@
       
       <tag>论文解读</tag>
       
-      <tag>Hallucination</tag>
-      
       <tag>Multimodal</tag>
+      
+      <tag>Hallucination</tag>
       
       <tag>Audio-Visual</tag>
       
@@ -627,11 +660,11 @@
     
     <tags>
       
-      <tag>Speech LLM</tag>
-      
       <tag>Speech Understanding</tag>
       
       <tag>Benchmark</tag>
+      
+      <tag>Speech LLM</tag>
       
       <tag>Reproducibility</tag>
       
@@ -662,11 +695,11 @@
       
       <tag>论文解读</tag>
       
-      <tag>TTS</tag>
-      
       <tag>Audio-LLM</tag>
       
       <tag>RLHF</tag>
+      
+      <tag>TTS</tag>
       
     </tags>
     
@@ -1009,11 +1042,11 @@
     
     <tags>
       
-      <tag>论文解读</tag>
+      <tag>Benchmark</tag>
       
       <tag>Speech LLM</tag>
       
-      <tag>Benchmark</tag>
+      <tag>论文解读</tag>
       
       <tag>Voice Agent</tag>
       
@@ -1040,9 +1073,9 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>Speech LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>RAG</tag>
       
@@ -1071,11 +1104,11 @@
     
     <tags>
       
+      <tag>Speech LLM</tag>
+      
       <tag>ASR</tag>
       
       <tag>论文解读</tag>
-      
-      <tag>Speech LLM</tag>
       
       <tag>Contextual Biasing</tag>
       
@@ -1271,9 +1304,9 @@
     
     <tags>
       
-      <tag>论文解读</tag>
-      
       <tag>Speech LLM</tag>
+      
+      <tag>论文解读</tag>
       
       <tag>Full-Duplex</tag>
       
@@ -1372,9 +1405,9 @@
       
       <tag>LLM</tag>
       
-      <tag>Chain-of-Thought</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>Chain-of-Thought</tag>
       
       <tag>Speech</tag>
       
