@@ -1,0 +1,1338 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息 标题: Rethinking Speech-LLM Integration for ASR: Effective Joint Speech-Text Training by Interleaving 作者: Ruchao Fan, Yiming Wang, Rui Zhao, Liliang Ren, Keqi Deng, Xiaoyang Chen, Ali Zare, Bo Ren,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JSTIP: Rethinking Speech-LLM Integration for ASR">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/07/06/JSTIP-Rethinking-Speech-LLM-Integration-for-ASR/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息 标题: Rethinking Speech-LLM Integration for ASR: Effective Joint Speech-Text Training by Interleaving 作者: Ruchao Fan, Yiming Wang, Rui Zhao, Liliang Ren, Keqi Deng, Xiaoyang Chen, Ali Zare, Bo Ren,">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/jstip_cover.png">
+<meta property="article:published_time" content="2026-07-06T04:45:00.000Z">
+<meta property="article:modified_time" content="2026-07-06T04:51:16.126Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="Interleaved Pretraining">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="Speech-LLM">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/jstip_cover.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>JSTIP: Rethinking Speech-LLM Integration for ASR - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/jstip_cover.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="JSTIP: Rethinking Speech-LLM Integration for ASR"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-07-06 12:45" pubdate>
+          2026年7月6日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          30 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">JSTIP: Rethinking Speech-LLM Integration for ASR</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年7月6日 下午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>: Rethinking Speech-LLM Integration for ASR: Effective Joint Speech-Text Training by Interleaving</li>
+<li><strong>作者</strong>: Ruchao Fan, Yiming Wang, Rui Zhao, Liliang Ren, Keqi Deng, Xiaoyang Chen, Ali Zare, Bo Ren, Yuxuan Hu, Junkun Chen, Yan Huang, Yelong Shen, Jinyu Li</li>
+<li><strong>机构</strong>: Microsoft, USA</li>
+<li><strong>链接</strong>: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2607.01733">arXiv:2607.01733</a></li>
+</ul>
+<hr>
+<h2 id="一、WHY：问题的根源在哪里？"><a href="#一、WHY：问题的根源在哪里？" class="headerlink" title="一、WHY：问题的根源在哪里？"></a>一、WHY：问题的根源在哪里？</h2><h3 id="1-1-LLM预训练的文本先验为何在ASR中”失效”？"><a href="#1-1-LLM预训练的文本先验为何在ASR中”失效”？" class="headerlink" title="1.1 LLM预训练的文本先验为何在ASR中”失效”？"></a>1.1 LLM预训练的文本先验为何在ASR中”失效”？</h3><p>大语言模型（LLM）经由数万亿文本token预训练，天然具备强大的语言建模能力和广泛的世界知识。将LLM集成到语音系统中（Speech-LLM）的核心期望是：<strong>LLM的文本先验能弥补有监督ASR数据在稀有词、领域术语和长尾实体上的不足</strong>。然而，本文的核心观察揭示了一个尴尬的现实：</p>
+<blockquote>
+<p>随着有监督ASR训练数据量的增加，LLM先验的贡献变得不再明显。ASR准确率主要由语音-文本监督信号主导，而实体识别的提升更多与ASR数据覆盖度相关，而非来自LLM先验。</p>
+</blockquote>
+<p>更具体地说，在传统的Speech-LLM训练范式下：</p>
+<ul>
+<li><strong>ASR-only训练</strong>使解码器过度特化于语音条件下的解码，削弱了文本预训练阶段学到的生成式先验</li>
+<li><strong>简单的语音-文本联合训练</strong>（即把文本数据混进来）虽然能改善文本侧的预测能力，但这些文本侧的收益<strong>无法有效迁移到语音条件下的ASR</strong></li>
+</ul>
+<p>本文用MMLU基准量化了这一”模态鸠沟”（modality gap）：ASR-only训练后，MMLU-S2T（语音到文本）仅为35.68%，而LLM本身的文本MMLU为78%。这意味着经过ASR适配后，模型在语音输入条件下几乎丧失了文本推理能力。</p>
+<h3 id="1-2-为什么简单的联合训练不够？"><a href="#1-2-为什么简单的联合训练不够？" class="headerlink" title="1.2 为什么简单的联合训练不够？"></a>1.2 为什么简单的联合训练不够？</h3><p>在decoder-only架构下，纳入文本数据训练非常简单——只需在语音编码器输入为零时送入文本batch即可。但实验证明（表I中 ASR+PubMed 行）：</p>
+<ul>
+<li>MMLU-T2T从43.01%提升到64.1%（文本侧大幅改善）</li>
+<li>MMLU-S2T仅从35.68%提升到43.77%（语音侧改善有限）</li>
+<li>Medical-AVG EER仅从7.97%降至7.49%</li>
+</ul>
+<p><strong>根本原因</strong>：文本-only序列和语音-文本ASR序列的建模行为是割裂的。文本序列更新了LLM参数，但由于解码器在处理语音输入时的行为模式与处理文本输入时截然不同，文本侧的知识无法桥接到语音条件下。</p>
+<hr>
+<h2 id="二、WHAT：JSTIP的核心设计"><a href="#二、WHAT：JSTIP的核心设计" class="headerlink" title="二、WHAT：JSTIP的核心设计"></a>二、WHAT：JSTIP的核心设计</h2><h3 id="2-1-核心思想：交错构造序列"><a href="#2-1-核心思想：交错构造序列" class="headerlink" title="2.1 核心思想：交错构造序列"></a>2.1 核心思想：交错构造序列</h3><p>JSTIP（Joint Speech-Text Interleaved Pre-Training）的核心洞察是：</p>
+<blockquote>
+<p>如果我们想让解码器在语音输入条件下也能利用文本先验，就必须让它在训练时<strong>反复经历”在语音上下文之后预测文本”和”在文本上下文之后预测文本”这两种模式的交替</strong>。</p>
+</blockquote>
+<p>具体做法：给定一个对齐的语音-文本对 $(A, T)$，首先获取词级或段级对齐信息 $(A, T) = {(A_1, T_1), (A_2, T_2), \ldots, (A_n, T_n)}$，然后构造<strong>交错序列</strong>，交替选取语音段和文本段：</p>
+<ul>
+<li>变体1: $(A_1, T_2, A_3, T_4, \ldots, T_n)$</li>
+<li>变体2: $(T_1, A_2, T_3, A_4, \ldots, T_n)$</li>
+</ul>
+<p>两种变体中，序列的最后一段始终是文本，文本段作为训练目标。这使得同一个解码器在同一条训练样本中同时练习了”语音→文本”和”文本→文本”的预测，模态鸿沟在序列内部就被桥接了。</p>
+<p><img src="/images/paper_figs/jstip_fig1.png" srcset="/img/loading.gif" lazyload alt="JSTIP框架图"><br><em>图1：传统Speech-LLM集成（左）与JSTIP联合语音-文本交错预训练（右）的框架对比。</em></p>
+<h3 id="2-2-词级交错（Word-Level-Interleave）"><a href="#2-2-词级交错（Word-Level-Interleave）" class="headerlink" title="2.2 词级交错（Word-Level Interleave）"></a>2.2 词级交错（Word-Level Interleave）</h3><p>词级交错以<strong>每个词</strong>为最小对齐单元：每个 $T_i$ 对应一个词，$A_i$ 对应其对齐的声学区域。构造的序列交替频率最高，且<strong>跳过了语音段和文本段之间的特殊token</strong>，强制实现更紧密的跨模态耦合。</p>
+<p><strong>工程挑战与解决方案</strong>：当使用连续语音token作为输入时，词级交错面临严重的计算效率问题——大量短声学片段如果独立送入语音编码器，会产生巨大的zero-padding开销并导致GPU OOM。解决方案：</p>
+<ol>
+<li>在输入层将所有语音片段拼接为一个长序列</li>
+<li>通过语音编码器和adapter前向计算后，再将输出放回原始的交错位置</li>
+</ol>
+<p>这一策略使词级交错在大规模训练中变得可行。</p>
+<h3 id="2-3-段级交错（Segment-Level-Interleave）"><a href="#2-3-段级交错（Segment-Level-Interleave）" class="headerlink" title="2.3 段级交错（Segment-Level Interleave）"></a>2.3 段级交错（Segment-Level Interleave）</h3><p>段级交错以<strong>短语或句子</strong>为对齐单元。构造的序列格式为：</p>
+<script type="math/tex; mode=display">\langle s \rangle, A_1, \langle N \rangle, T_2, \langle N \rangle, A_3, \langle N \rangle, T_4, \ldots, \langle N \rangle, T_n, \langle /s \rangle</script><p>其中 $\langle N \rangle$ 是一个前导token，用于与纯ASR任务区分。段边界的确定有两种策略：</p>
+<ul>
+<li><strong>仅声学静音（silence）</strong>：基于语音中的停顿切分</li>
+<li><strong>静音+标点（silence + punctuation）</strong>：同时利用文本标点信号切分</li>
+</ul>
+<h3 id="2-4-混合交错（Mixed-Level-Interleave）"><a href="#2-4-混合交错（Mixed-Level-Interleave）" class="headerlink" title="2.4 混合交错（Mixed-Level Interleave）"></a>2.4 混合交错（Mixed-Level Interleave）</h3><p>实验证明，将词级和段级交错混合使用效果最优——词级提供了ASR特定的细粒度跨模态耦合，段级提供了更强的模态鸿沟消除能力。</p>
+<h3 id="2-5-Loss-Masking策略"><a href="#2-5-Loss-Masking策略" class="headerlink" title="2.5 Loss Masking策略"></a>2.5 Loss Masking策略</h3><p>所有训练格式统一使用交叉熵loss，但仅对<strong>文本token</strong>计算loss：</p>
+<ul>
+<li>ASR-only：loss在转录token上</li>
+<li>Text-only：loss在文本token上</li>
+<li>交错训练：loss在构造的交错序列中所有出现的文本token上</li>
+<li>语音位置始终被loss mask忽略</li>
+<li>特殊token仅作为任务/模态指示器，不参与loss计算</li>
+</ul>
+<p>多个样本通过packed SFT打包到同一个8k上下文中，使用FlashAttention的<code>cu_seqlens</code>确保注意力在样本边界重置，无跨样本泄漏。</p>
+<h3 id="2-6-统一的训练目标"><a href="#2-6-统一的训练目标" class="headerlink" title="2.6 统一的训练目标"></a>2.6 统一的训练目标</h3><p>最终，ASR-only、段级交错、词级交错和text-only四种数据在统一的next-token prediction目标下共同训练。与传统ASR训练的公式 $P(t_i | A, t_{&lt;i})$ 不同，JSTIP使模型暴露于如下分布：</p>
+<script type="math/tex; mode=display">P(T_j | A_i, T_{i+1}, \ldots)</script><p>即在混合了语音和文本上下文的条件下预测文本，从而保持文本建模行为并实现知识迁移。</p>
+<hr>
+<h2 id="三、实验设置"><a href="#三、实验设置" class="headerlink" title="三、实验设置"></a>三、实验设置</h2><h3 id="3-1-训练数据"><a href="#3-1-训练数据" class="headerlink" title="3.1 训练数据"></a>3.1 训练数据</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>数据类型</th>
+<th>规模</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ASR数据</td>
+<td>38k小时（~2.3B tokens）</td>
+<td>匿名英文内部数据，token率12.5Hz</td>
+</tr>
+<tr>
+<td>交错数据</td>
+<td>2.3B tokens</td>
+<td>基于38k ASR数据构造，与ASR数据量平衡</td>
+</tr>
+<tr>
+<td>文本数据</td>
+<td>2.3B tokens（PubMed）+ 0.1B tokens（TTS转录）</td>
+<td>清洗后截断至8k上下文</td>
+</tr>
+<tr>
+<td>合成领域ASR</td>
+<td>9k小时</td>
+<td>GPT生成医学实体密集转录 + 内部TTS合成音频</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>对齐方法：使用HMM-based混合ASR系统在38k小时数据上获取词级对齐。对齐失败的utterance被移除，未基于对齐置信度做额外过滤。</p>
+<h3 id="3-2-模型架构"><a href="#3-2-模型架构" class="headerlink" title="3.2 模型架构"></a>3.2 模型架构</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>规格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>语音编码器</td>
+<td>400M参数 Conformer，时间下采样因子8</td>
+</tr>
+<tr>
+<td>输入特征</td>
+<td>80维log Mel filterbank，10ms帧移 → 有效80ms token率</td>
+</tr>
+<tr>
+<td>LLM解码器</td>
+<td>内部7B参数LLM，5T文本token预训练</td>
+</tr>
+<tr>
+<td>Adapter</td>
+<td>~20M参数轻量级投影层</td>
+</tr>
+<tr>
+<td>上下文长度</td>
+<td>8k tokens</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="3-3-两阶段训练"><a href="#3-3-两阶段训练" class="headerlink" title="3.3 两阶段训练"></a>3.3 两阶段训练</h3><ul>
+<li><strong>Stage 1</strong>：仅更新adapter参数，使用ASR数据稳定跨模态对齐。学习率 $1 \times 10^{-4}$，线性衰减，AdamW优化，覆盖总ASR tokens的10%</li>
+<li><strong>Stage 2</strong>：所有参数（编码器+adapter+LLM）联合优化。学习率 $4 \times 10^{-5}$，线性衰减，AdamW优化</li>
+</ul>
+<h3 id="3-4-评估体系"><a href="#3-4-评估体系" class="headerlink" title="3.4 评估体系"></a>3.4 评估体系</h3><ul>
+<li><strong>通用ASR</strong>: Token Error Rate (TER)，含大小写和标点。两个测试集：conversation（自发短对话）、dictation（长篇听写）</li>
+<li><strong>领域实体</strong>: Entity Error Rate (EER) = 1 − recall，在8个医学领域 + 1个银行领域评估。Medical-AVG含261条utterance/49.281小时，Banking含36条/5.567小时。EER在文本规范化前计算，格式、大小写、标点、拼写均被考量</li>
+<li><strong>模态鸠沟量化</strong>: Speech版MMLU，5-shot，比较T2T与S2T的差异</li>
+<li><strong>零样本SQA</strong>: LLaMA-QA、TriviaQA、WebQA子集，报告平均准确率</li>
+</ul>
+<hr>
+<h2 id="四、实验结果"><a href="#四、实验结果" class="headerlink" title="四、实验结果"></a>四、实验结果</h2><h3 id="4-1-主实验结果"><a href="#4-1-主实验结果" class="headerlink" title="4.1 主实验结果"></a>4.1 主实验结果</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>ASR</th>
+<th>Interleave</th>
+<th>Text</th>
+<th>Conv TER↓</th>
+<th>Dict TER↓</th>
+<th>Med-AVG EER↓</th>
+<th>Banking EER↓</th>
+<th>MMLU-T2T↑</th>
+<th>MMLU-S2T↑</th>
+<th>SQA-T2T↑</th>
+<th>SQA-S2T↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LLM-7b</td>
+<td>×</td>
+<td>×</td>
+<td>✓</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>78</td>
+<td>-</td>
+<td>60.17</td>
+<td>-</td>
+</tr>
+<tr>
+<td>ASR-only</td>
+<td>✓</td>
+<td>×</td>
+<td>×</td>
+<td>23.63</td>
+<td>11.06</td>
+<td>7.97</td>
+<td>11.57</td>
+<td>43.01</td>
+<td>35.68</td>
+<td>9.41</td>
+<td>0.05</td>
+</tr>
+<tr>
+<td>+Interleave</td>
+<td>✓</td>
+<td>✓</td>
+<td>×</td>
+<td>22.65</td>
+<td>10.81</td>
+<td>7.32</td>
+<td>11.29</td>
+<td>51.26</td>
+<td>51.77</td>
+<td>45.37</td>
+<td>41.92</td>
+</tr>
+<tr>
+<td>ASR+PubMed</td>
+<td>✓</td>
+<td>×</td>
+<td>✓</td>
+<td>23.32</td>
+<td>10.81</td>
+<td>7.49</td>
+<td>11.29</td>
+<td>64.1</td>
+<td>43.77</td>
+<td>43.97</td>
+<td>10.1</td>
+</tr>
+<tr>
+<td>+Interleave</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>22.35</td>
+<td>10.74</td>
+<td>6.87</td>
+<td>9.98</td>
+<td>64.16</td>
+<td>58.98</td>
+<td>44.95</td>
+<td>41.03</td>
+</tr>
+<tr>
+<td>ASR+TTS-pairs</td>
+<td>✓</td>
+<td>×</td>
+<td>×</td>
+<td>22.71</td>
+<td>10.73</td>
+<td>6.86</td>
+<td>10.8</td>
+<td>48.17</td>
+<td>36.96</td>
+<td>36.47</td>
+<td>7.6</td>
+</tr>
+<tr>
+<td>+Interleave</td>
+<td>✓</td>
+<td>✓</td>
+<td>×</td>
+<td>22.22</td>
+<td>10.54</td>
+<td>6.72</td>
+<td>10.53</td>
+<td>54.98</td>
+<td>53.89</td>
+<td>44.59</td>
+<td>41.12</td>
+</tr>
+<tr>
+<td>ASR+TTS-trans.</td>
+<td>✓</td>
+<td>×</td>
+<td>✓</td>
+<td>23.69</td>
+<td>11.27</td>
+<td>7.85</td>
+<td>11.02</td>
+<td>54.44</td>
+<td>37.95</td>
+<td>42.63</td>
+<td>6.27</td>
+</tr>
+<tr>
+<td>+Interleave</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>22.3</td>
+<td>10.49</td>
+<td>6.81</td>
+<td>10.47</td>
+<td>57.02</td>
+<td>53.26</td>
+<td>43.81</td>
+<td>40.39</td>
+</tr>
+<tr>
+<td><strong>JSTIP-Best-EER</strong></td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+<td>22.42</td>
+<td>10.48</td>
+<td><strong>6.60</strong></td>
+<td>10.75</td>
+<td>64.09</td>
+<td>58.7</td>
+<td>44.92</td>
+<td>42.07</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键发现</strong>：</p>
+<ol>
+<li><p><strong>交错训练的纯净效果</strong>：仅加入交错数据（无额外文本），Medical-AVG EER从7.97%降至7.32%（相对提升8.2%），SQA-S2T从0.05%飙升至41.92%。这是因为交错序列保留了NTP行为。</p>
+</li>
+<li><p><strong>模态鸠沟的量化证据</strong>：ASR-only后MMLU-S2T为35.68%，加入交错后升至51.77%，缩小了与T2T的差距。</p>
+</li>
+<li><p><strong>文本数据+交错的协同效应</strong>：ASR+PubMed无交错时，MMLU-S2T仅43.77%；加入交错后跃至58.98%。说明交错是让文本知识迁移到语音侧的关键桥梁。</p>
+</li>
+<li><p><strong>领域转录文本替代合成TTS</strong>：无交错时，TTS-transcription几乎无效（7.97%→7.85%）；有交错时，效果直逼合成TTS-pairs（6.81% vs 6.86%）。这大幅简化了领域适配——不再需要为每条文本合成语音。</p>
+</li>
+<li><p><strong>最佳配置</strong>：JSTIP-Best-EER组合38k ASR + 交错 + TTS-Interleave + PubMed + TTS-transcription，Medical-AVG EER达6.60%，相比ASR-only的7.97%实现<strong>17.2%</strong>的相对提升。</p>
+</li>
+</ol>
+<h3 id="4-2-与开源模型对比"><a href="#4-2-与开源模型对比" class="headerlink" title="4.2 与开源模型对比"></a>4.2 与开源模型对比</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Medical-AVG EER↓</th>
+<th>Banking EER↓</th>
+<th>AVG-All↓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Whisper Large-V3</td>
+<td>6.94</td>
+<td>8.88</td>
+<td>7.16</td>
+</tr>
+<tr>
+<td>Qwen3-ASR-1.7B</td>
+<td>6.67</td>
+<td>9.81</td>
+<td>7.02</td>
+</tr>
+<tr>
+<td>Qwen2.5-Omni-7B</td>
+<td>12.22</td>
+<td>19.13</td>
+<td>12.99</td>
+</tr>
+<tr>
+<td>Qwen3-Omni-30BA3B</td>
+<td>5.84</td>
+<td>9.87</td>
+<td>6.29</td>
+</tr>
+<tr>
+<td>Voxtral-Mini-3B</td>
+<td>7.40</td>
+<td>10.25</td>
+<td>7.71</td>
+</tr>
+<tr>
+<td>Voxtral-Small-24B</td>
+<td>6.04</td>
+<td>9.38</td>
+<td>6.41</td>
+</tr>
+<tr>
+<td>Gemma-3n-E4B</td>
+<td>10.62</td>
+<td>17.21</td>
+<td>11.35</td>
+</tr>
+<tr>
+<td><strong>JSTIP (Ours)</strong></td>
+<td><strong>6.60</strong></td>
+<td>10.75</td>
+<td>7.06</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>JSTIP仅使用38k小时ASR数据，在Medical-AVG上超越了使用百万小时数据训练的Whisper-large-v3（6.60% vs 6.94%）、Qwen3-ASR-1.7B（6.67%）和Voxtral-Mini-3B（7.40%）。但在Banking领域（无领域文本支持）表现较弱，说明收益来源确实是LLM先验+领域文本的迁移。</p>
+<h3 id="4-3-消融实验：交错序列构造策略"><a href="#4-3-消融实验：交错序列构造策略" class="headerlink" title="4.3 消融实验：交错序列构造策略"></a>4.3 消融实验：交错序列构造策略</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>交错类型</th>
+<th>策略</th>
+<th>EER-Medical↓</th>
+<th>MMLU-T2T↑</th>
+<th>MMLU-S2T↑</th>
+<th>Δ(S2T−T2T)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ASR only</td>
+<td>-</td>
+<td>7.97</td>
+<td>43.01</td>
+<td>35.68</td>
+<td>-7.33</td>
+</tr>
+<tr>
+<td>+ Word-IL</td>
+<td>-</td>
+<td>7.64</td>
+<td>46.83</td>
+<td>39.94</td>
+<td>-6.89</td>
+</tr>
+<tr>
+<td>+ Segment-IL</td>
+<td>silence</td>
+<td>7.79</td>
+<td>54.37</td>
+<td>49.92</td>
+<td>-4.45</td>
+</tr>
+<tr>
+<td>+ Segment-IL</td>
+<td>sil.+punc.</td>
+<td>7.69</td>
+<td>53.59</td>
+<td>52.82</td>
+<td>-0.77</td>
+</tr>
+<tr>
+<td>+ Mixed-IL</td>
+<td>silence</td>
+<td>7.55</td>
+<td>56.27</td>
+<td>52.16</td>
+<td>-4.11</td>
+</tr>
+<tr>
+<td>+ Mixed-IL</td>
+<td>sil.+punc.</td>
+<td><strong>7.32</strong></td>
+<td>51.26</td>
+<td>51.77</td>
+<td><strong>+0.61</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键发现</strong>：</p>
+<ol>
+<li><strong>Word-IL</strong>：实体识别提升最大（7.97→7.64），但模态鸠沟消除能力较弱（Δ仅从-7.33缩至-6.89）</li>
+<li><strong>Segment-IL</strong>：模态鸠沟消除效果显著（加标点后Δ仅-0.77），但单独EER改善有限</li>
+<li><strong>Mixed-IL</strong>（最优）：结合两者优势，EER降至7.32%，且Δ达到+0.61%（S2T反超T2T！）</li>
+<li><strong>标点分割的重要性</strong>：纯声学静音可能导致极长段（部分utterance中静音稀疏），标点创造了更均衡的段长度分布</li>
+</ol>
+<p><img src="/images/paper_figs/jstip_fig2.png" srcset="/img/loading.gif" lazyload alt="段长度分布"><br><em>图2：仅用声学静音分割（左）与同时使用声学+语义线索分割（右）的段长度分布对比。加入标点后段长度更集中于短区间，监督信号更均衡。</em></p>
+<h3 id="4-4-领域转录数据的消融"><a href="#4-4-领域转录数据的消融" class="headerlink" title="4.4 领域转录数据的消融"></a>4.4 领域转录数据的消融</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>配置</th>
+<th>EER-Medical↓</th>
+<th>MMLU-S2T↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ASR+TTS-pair（无交错）</td>
+<td>6.86</td>
+<td>36.96</td>
+</tr>
+<tr>
+<td>ASR+TTS-trans.（无交错）</td>
+<td>7.85</td>
+<td>37.95</td>
+</tr>
+<tr>
+<td>ASR+TTS-trans. + Mixed-IL (silence)</td>
+<td>7.27</td>
+<td>55.27</td>
+</tr>
+<tr>
+<td>ASR+TTS-trans. + Mixed-IL (sil.+punc.)</td>
+<td>6.81</td>
+<td>53.26</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>无交错时，仅有转录文本（不含合成音频）几乎无法改善ASR的实体识别（7.85% vs 基线7.97%）。加入交错后，纯转录文本的效果（6.81%）几乎追平合成TTS-pairs（6.86%）。这一结论具有重大工程意义：<strong>领域适配不再需要昂贵的TTS合成，只需领域转录文本即可</strong>。</p>
+<hr>
+<h2 id="五、零样本语音问答（SQA）作为机制诊断"><a href="#五、零样本语音问答（SQA）作为机制诊断" class="headerlink" title="五、零样本语音问答（SQA）作为机制诊断"></a>五、零样本语音问答（SQA）作为机制诊断</h2><p>SQA结果不是JSTIP的任务目标，而是作为<strong>诊断证据</strong>——验证交错训练确实保留了LLM的生成式先验：</p>
+<ul>
+<li>ASR-only：SQA-S2T仅0.05%（LLM生成能力在语音侧几乎完全丧失）</li>
+<li>+Interleave（无文本）：SQA-S2T达41.92%（生成能力恢复）</li>
+<li>JSTIP-Best：SQA-S2T达42.07%</li>
+</ul>
+<p>这说明交错训练使模型在语音输入下仍能执行开放式生成任务，而非仅限于转录。这正是实体识别提升的底层机制——模型保留了对实体知识的访问能力。</p>
+<hr>
+<h2 id="六、与先前工作的区分"><a href="#六、与先前工作的区分" class="headerlink" title="六、与先前工作的区分"></a>六、与先前工作的区分</h2><p>JSTIP与现有工作的三个核心区别：</p>
+<ol>
+<li><strong>目标不同</strong>：将交错视为<strong>保留和迁移LLM先验到ASR</strong>的机制，而非通用多模态数据配方</li>
+<li><strong>场景不同</strong>：聚焦于大规模有监督数据场景（38k小时），在这种条件下传统ASR适配已经学到了很强的语音-文本映射，LLM先验的价值最难体现</li>
+<li><strong>粒度不同</strong>：隔离了构造粒度（词级 vs 段级）对模态鸠沟和实体识别的影响，包括一个针对连续语音表示的可扩展词级交错实现</li>
+</ol>
+<p>与Spirit-LM（离散语音token）和Xie et al.（段级行为模仿）不同，JSTIP处理的是连续语音表示下的decoder-only ASR，且直接分析实体识别和模态鸠沟。</p>
+<hr>
+<h2 id="七、局限性"><a href="#七、局限性" class="headerlink" title="七、局限性"></a>七、局限性</h2><ol>
+<li><strong>内部数据和模型</strong>：主要训练数据、领域评估集和骨干组件均为内部资源，结论应解读为受控系统内的一致性改进</li>
+<li><strong>对齐质量依赖</strong>：词级交错对对齐边界误差敏感；对替代对齐器（如CTC对齐）的鲁棒性留待未来研究</li>
+<li><strong>LLM规模</strong>：使用7B LLM，在Medical上仍弱于Qwen-30BA3B和Voxtral-24B等更大模型</li>
+<li><strong>确定性交替</strong>：当前使用确定性交替策略，随机或基于词类型的自适应模态选择未探索</li>
+</ol>
+<hr>
+<h2 id="八、总结"><a href="#八、总结" class="headerlink" title="八、总结"></a>八、总结</h2><p>JSTIP揭示了一个重要且被忽视的问题：在大规模有监督ASR数据下，传统Speech-LLM训练使LLM的文本先验变得”不可达”——不是因为先验不存在，而是因为模态鸠沟阻断了访问路径。交错预训练通过在训练序列内部交替呈现语音和文本上下文，让同一个解码器持续练习”跨模态之后预测文本”的能力，从而将这条路径重新打通。其工程启示同样重要：<strong>领域适配不再需要合成语音，仅需转录文本即可通过交错机制注入领域知识</strong>。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech-LLM</a>
+      
+        <a href="/tags/Interleaved-Pretraining/" class="print-no-link">#Interleaved Pretraining</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>JSTIP: Rethinking Speech-LLM Integration for ASR</div>
+      <div>https://smallsmartao.github.io/2026/07/06/JSTIP-Rethinking-Speech-LLM-Integration-for-ASR/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年7月6日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年7月6日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/07/06/vLLM-Based-Inference-Pipeline-for-Unified-Audio-Understanding-and-Generation/" title="An Efficient vLLM-Based Inference Pipeline for Unified Audio Understanding and Generation">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">An Efficient vLLM-Based Inference Pipeline for Unified Audio Understanding and Generation</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/07/06/SpeechCombine-Instruction-Following-SLM-Without-Instruction-Tuning/" title="SpeechCombine: Instruction-Following Speech Language Models without Instruction Tuning">
+                        <span class="hidden-mobile">SpeechCombine: Instruction-Following Speech Language Models without Instruction Tuning</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
