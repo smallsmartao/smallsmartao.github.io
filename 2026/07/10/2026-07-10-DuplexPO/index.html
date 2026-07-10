@@ -1,0 +1,1170 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息 标题: Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning 作者: Yuxin Li, Donghang Wu, Guan-Ting Lin, Hung-yi Lee, Chengwei Qin, Zhehuai Chen, Chen Chen 机构:">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/07/10/2026-07-10-DuplexPO/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息 标题: Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning 作者: Yuxin Li, Donghang Wu, Guan-Ting Lin, Hung-yi Lee, Chengwei Qin, Zhehuai Chen, Chen Chen 机构:">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/duplexpo_cover.png">
+<meta property="article:published_time" content="2026-07-09T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-10T02:43:05.611Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="Full-Duplex">
+<meta property="article:tag" content="Reinforcement Learning">
+<meta property="article:tag" content="Speech LLM">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/duplexpo_cover.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/duplexpo_cover.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-07-10 00:00" pubdate>
+          2026年7月10日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          540 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          5 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年7月10日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>: Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning</li>
+<li><strong>作者</strong>: Yuxin Li, Donghang Wu, Guan-Ting Lin, Hung-yi Lee, Chengwei Qin, Zhehuai Chen, Chen Chen</li>
+<li><strong>机构</strong>: NTU, NTU (Taiwan), HKUST, NVIDIA</li>
+<li><strong>arXiv</strong>: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2607.07148">2607.07148</a></li>
+<li><strong>Demo</strong>: <a target="_blank" rel="noopener" href="https://liyuxin44.github.io/DuplexPO/">https://liyuxin44.github.io/DuplexPO/</a></li>
+</ul>
+<hr>
+<h2 id="1-为什么需要-DuplexPO？——Intelligence-Dynamics-Trade-off"><a href="#1-为什么需要-DuplexPO？——Intelligence-Dynamics-Trade-off" class="headerlink" title="1. 为什么需要 DuplexPO？——Intelligence-Dynamics Trade-off"></a>1. 为什么需要 DuplexPO？——Intelligence-Dynamics Trade-off</h2><p>全双工（Full-Duplex）语音对话模型允许智能体在聆听用户语音的同时生成回复，实现低延迟响应、反向通道（backchannel）与打断处理（barge-in handling）。然而，当前全双工模型在交互动态性上的进步，往往以牺牲推理和指令遵循能力为代价——Moshi、SALM-Duplex 等模型在 QA 和推理基准上显著落后于半双工对应物。</p>
+<p>作者从两个视角剖析了这一权衡：</p>
+<ol>
+<li><strong>建模层面</strong>：深层逻辑推理需要长程、结构化的解码轨迹来支撑多步推断；而全双工交互要求模型持续处理碎片化、快速变化的上下文，做出局部实时决策（说、停、静默）。这种时间控制偏向短程交互状态，使得维持推理所需的长程依赖更加困难。</li>
+<li><strong>数据层面</strong>：对话动态行为的训练依赖人类对话语料（如 Fisher），这些数据以闲聊和非目标导向交流为主，与构建有帮助的指令遵循助手目标不一致。</li>
+</ol>
+<p><strong>核心洞察</strong>：上述冲突的根源在于将”说什么”（what to say）和”何时说”（when to speak）耦合在单一学习目标中。前者是语义内容生成问题，后者是实时时间决策问题——两者本质不同，无需在同一数据分布上联合学习。</p>
+<hr>
+<h2 id="2-DuplexPO-方法概述"><a href="#2-DuplexPO-方法概述" class="headerlink" title="2. DuplexPO 方法概述"></a>2. DuplexPO 方法概述</h2>
+<p><img src="/images/paper_figs/duplexpo/model_structure.png" srcset="/img/loading.gif" lazyload alt="DuplexPO 框架总览"></p>
+<p>DuplexPO 是一个强化学习框架，将对话动态性作为独立优化目标。框架包含三个核心组件：</p>
+<ol>
+<li><strong>Dynamics-Critical Window Sampling</strong>：从长对话中采样动态关键窗口</li>
+<li><strong>Factorized Conversational Dynamics Reward (FCDR)</strong>：分解式对话动态奖励</li>
+<li><strong>GRPO-style Policy Optimization</strong>：基于组归一化优势的策略优化</li>
+</ol>
+<hr>
+<h2 id="3-问题形式化"><a href="#3-问题形式化" class="headerlink" title="3. 问题形式化"></a>3. 问题形式化</h2><p>将全双工对话动态学习形式化为帧级策略优化。设 $x_{1:T}$ 为用户音频流，$y_{1:T}$ 为智能体实时交互决策，帧间隔为 $\Delta$。每帧策略预测：</p>
+<script type="math/tex; mode=display">\pi_\theta(y_t \mid y_{<t}, x_{\leq t})</script><p>其中 $y_t$ 表示智能体交互状态（静默、说话、轮次起始、让步等）。</p>
+<p>DuplexPO 不优化整段对话，而是在动态关键窗口 $\mathcal{W} = {W_i}_{i=1}^M$ 上操作。对窗口 $W_i$（时间支撑 $[s_i, e_i)$），策略仅在窗口内采样动作，历史部分教师强制：</p>
+<script type="math/tex; mode=display">R_i = R(W_i, y_{[s_i, e_i)})</script><hr>
+<h2 id="4-Dynamics-Critical-Window-Sampling"><a href="#4-Dynamics-Critical-Window-Sampling" class="headerlink" title="4. Dynamics-Critical Window Sampling"></a>4. Dynamics-Critical Window Sampling</h2><p>先行研究表明，对话轮次转换通常由可能响应点附近的局部时间和韵律线索决定，而非均匀分布于整段对话。DuplexPO 选取短但重要的局部窗口——轮次转换、反向通道、打断——作为优化单元。</p>
+<p>设 $(a_i, b_i)$ 为第 $i$ 个标注智能体片段的起止时间，$c_i$ 为事件元数据。窗口定义为：</p>
+<script type="math/tex; mode=display">W_i = (s_i, e_i, g_i, h_i, c_i)</script><p>参考说话区间离散化：</p>
+<script type="math/tex; mode=display">g_i = \lfloor a_i / \Delta \rfloor, \quad h_i = \lfloor b_i / \Delta \rfloor</script><p>采样窗口包含前导时间 $L$ 和缓冲时间 $B$：</p>
+<script type="math/tex; mode=display">s_i = \max(e_{i-1}, \lfloor (a_i - L) / \Delta \rfloor), \quad \bar{e}_i = \lfloor (b_i + B) / \Delta \rfloor</script><p>边界裁剪防止相邻事件重叠：</p>
+<script type="math/tex; mode=display">e_i = \min(\bar{e}_i, \lfloor (a_{i+1} - L) / \Delta \rfloor, T)</script><hr>
+<h2 id="5-Factorized-Conversational-Dynamics-Reward-FCDR"><a href="#5-Factorized-Conversational-Dynamics-Reward-FCDR" class="headerlink" title="5. Factorized Conversational Dynamics Reward (FCDR)"></a>5. Factorized Conversational Dynamics Reward (FCDR)</h2><p>FCDR 是本文的核心贡献之一，实现了事件级的细粒度时间信用分配。对窗口 $W_i$ 中采样的继续序列，设 $\hat{S}_i \subseteq [s_i, e_i]$ 为智能体说话帧集合。若 $\hat{S}_i \neq \emptyset$，预测起始为 $\hat{g}_i = \min \hat{S}_i$，起始延迟为：</p>
+<script type="math/tex; mode=display">\tau_i = \Delta(\hat{g}_i - g_i)</script><p>三个二值掩码 $m_i^{\text{on}}, m_i^{\text{bc}}, m_i^{\text{off}}$ 分别指示轮次起始、反向通道和打断让步是否激活。</p>
+<p>最终 FCDR 为加权和：</p>
+<script type="math/tex; mode=display">R_{\text{FCD}}(W_i, \hat{S}_i) = \lambda_{\text{on}} m_i^{\text{on}} R_i^{\text{on}} + \lambda_{\text{bc}} m_i^{\text{bc}} R_i^{\text{bc}} + \lambda_{\text{off}} m_i^{\text{off}} R_i^{\text{off}} + \lambda_{\text{reg}} R_i^{\text{reg}}</script><p>各分量定义如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>分量</th>
+<th>目标行为</th>
+<th>函数形式</th>
+<th>范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$R_i^{\text{on}}$</td>
+<td>轮次起始</td>
+<td>$\mathbb{I}[\hat{S}_i \neq \emptyset] \exp\left(-\frac{\tau_i^2}{2\sigma_{\text{on}}(\tau_i)^2}\right)$</td>
+<td>$[0, 1]$</td>
+</tr>
+<tr>
+<td>$R_i^{\text{bc}}$</td>
+<td>反向通道</td>
+<td>$\mathbb{I}[\hat{S}_i \neq \emptyset] \max_{t \in \hat{S}_i} \mathbb{I}[t \in B_i] + \mathbb{I}[t \notin B_i] e^{-\alpha d(t, B_i)}$</td>
+<td>$[0, 1]$</td>
+</tr>
+<tr>
+<td>$R_i^{\text{off}}$</td>
+<td>打断后让步</td>
+<td>$-\text{clip}\left(\frac{\max(0, \ell_i - \ell^*)}{H_{\text{off}}}, 0, 1\right)$</td>
+<td>$[-1, 0]$</td>
+</tr>
+<tr>
+<td>$R_i^{\text{reg}}$</td>
+<td>模式正则化</td>
+<td>$-\text{clip}\left(\sum_{k=1}^K \beta_k \mathbb{I}[e_{i,k}], 0, 1\right)$</td>
+<td>$[-1, 0]$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="6-Group-based-Policy-Optimization"><a href="#6-Group-based-Policy-Optimization" class="headerlink" title="6. Group-based Policy Optimization"></a>6. Group-based Policy Optimization</h2><p>DuplexPO 使用 GRPO 风格目标优化。对窗口 $i$，跨采样续写归一化奖励得到裁剪组优势：</p>
+<script type="math/tex; mode=display">A_{i,k} = \text{clip}\left(\frac{r_{i,k} - \mu_i}{\sigma_i + \epsilon}, -5, 5\right)</script><p>策略梯度损失仅施加于窗口内的采样 token，并附带 KL 惩罚以约束相对参考 SFT 模型的策略漂移：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{GRPO}} = \mathcal{L}_{\text{policy}} + \beta \mathcal{L}_{\text{KL}}</script><hr>
+<h2 id="7-数据与训练"><a href="#7-数据与训练" class="headerlink" title="7. 数据与训练"></a>7. 数据与训练</h2><h3 id="7-1-数据来源"><a href="#7-1-数据来源" class="headerlink" title="7.1 数据来源"></a>7.1 数据来源</h3><ul>
+<li><strong>Fisher</strong>：对称点对点对话，含词级时间对齐</li>
+<li><strong>Seamless-Naturalistic-HQ</strong>：角色不对称问答交互</li>
+<li>训练集：24.6K Fisher 样本 + 43.1K Seamless 样本</li>
+<li>评估集与训练集在对话级别严格分离</li>
+</ul>
+<h3 id="7-2-训练流水线"><a href="#7-2-训练流水线" class="headerlink" title="7.2 训练流水线"></a>7.2 训练流水线</h3><p>四阶段训练：</p>
+<ol>
+<li><strong>Pre-training</strong>：530K 小时语音续写数据</li>
+<li><strong>SFT</strong>：70K 小时指令遵循 QA + ASR-QA + 合成打断数据</li>
+<li><strong>RL (DuplexPO)</strong>：动态关键窗口上的策略优化</li>
+<li><strong>Speech-synthesis SFT</strong>：冻结除语音生成模块外所有参数</li>
+</ol>
+<p>模型骨干：Qwen2.5-7B-Instruct + 600M Parakeet 流式语音编码器 + CosyVoice2 语音合成。训练使用 64 × A800 80GB GPU。</p>
+<hr>
+<h2 id="8-实验结果"><a href="#8-实验结果" class="headerlink" title="8. 实验结果"></a>8. 实验结果</h2><h3 id="8-1-对话动态性评估"><a href="#8-1-对话动态性评估" class="headerlink" title="8.1 对话动态性评估"></a>8.1 对话动态性评估</h3><p><strong>Fisher &amp; Seamless 窗口级性能：</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>数据集</th>
+<th>Onset MAE↓</th>
+<th>TT Init↑</th>
+<th>TT Yield↑</th>
+<th>BC Init↑</th>
+<th>BC Yield↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Moshi</td>
+<td>Fisher</td>
+<td>1.99</td>
+<td>87.7%</td>
+<td>76.5%</td>
+<td>83.9%</td>
+<td>66.7%</td>
+</tr>
+<tr>
+<td>PersonaPlex</td>
+<td>Fisher</td>
+<td>1.50</td>
+<td>98.6%</td>
+<td>80.3%</td>
+<td>91.4%</td>
+<td>69.2%</td>
+</tr>
+<tr>
+<td>SFT Baseline</td>
+<td>Fisher</td>
+<td>0.98</td>
+<td>97.8%</td>
+<td>92.1%</td>
+<td>95.7%</td>
+<td>57.1%</td>
+</tr>
+<tr>
+<td>SFT Dynamics</td>
+<td>Fisher</td>
+<td>1.14</td>
+<td>97.1%</td>
+<td>78.9%</td>
+<td>91.4%</td>
+<td>57.1%</td>
+</tr>
+<tr>
+<td><strong>DuplexPO</strong></td>
+<td><strong>Fisher</strong></td>
+<td><strong>0.69</strong></td>
+<td><strong>100.0%</strong></td>
+<td><strong>98.7%</strong></td>
+<td><strong>97.8%</strong></td>
+<td><strong>100.0%</strong></td>
+</tr>
+<tr>
+<td>Moshi</td>
+<td>Seamless</td>
+<td>2.16</td>
+<td>80.1%</td>
+<td>69.0%</td>
+<td>76.2%</td>
+<td>71.3%</td>
+</tr>
+<tr>
+<td>SFT Baseline</td>
+<td>Seamless</td>
+<td>1.22</td>
+<td>91.8%</td>
+<td>78.5%</td>
+<td>92.2%</td>
+<td>79.4%</td>
+</tr>
+<tr>
+<td><strong>DuplexPO</strong></td>
+<td><strong>Seamless</strong></td>
+<td><strong>1.03</strong></td>
+<td><strong>98.0%</strong></td>
+<td><strong>93.6%</strong></td>
+<td><strong>99.5%</strong></td>
+<td><strong>93.3%</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>FDB-v3 评估：</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>Turn-Take↑</th>
+<th>Latency↓</th>
+<th>VIR↓</th>
+<th>Yield↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPT-Realtime</td>
+<td>96.0%</td>
+<td>2.65s</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Gemini Live 3.1</td>
+<td>78.0%</td>
+<td>1.59s</td>
+<td>–</td>
+<td>–</td>
+</tr>
+<tr>
+<td>Moshi</td>
+<td>100.0%</td>
+<td>0.44s</td>
+<td>12.0%</td>
+<td>71.9%</td>
+</tr>
+<tr>
+<td>SFT Baseline</td>
+<td>99.0%</td>
+<td>7.33s</td>
+<td>8.0%</td>
+<td>64.8%</td>
+</tr>
+<tr>
+<td><strong>DuplexPO</strong></td>
+<td><strong>100.0%</strong></td>
+<td><strong>0.24s</strong></td>
+<td><strong>5.0%</strong></td>
+<td><strong>100.0%</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>DuplexPO 打破了延迟-打断权衡：在所有模型中实现最低延迟（0.24s）和最高 Yield Rate（100%），同时保持低 VIR。</p>
+<h3 id="8-2-模型智能评估"><a href="#8-2-模型智能评估" class="headerlink" title="8.2 模型智能评估"></a>8.2 模型智能评估</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th style="text-align:center">FD</th>
+<th>LlamaQ</th>
+<th>WebQ</th>
+<th>TriQA</th>
+<th>SDQA</th>
+<th>AlpacaE</th>
+<th>ComE</th>
+<th>OBQA</th>
+<th>MMSU</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Moshi</td>
+<td style="text-align:center">✓</td>
+<td>54.5</td>
+<td>22.1</td>
+<td>16.7</td>
+<td>15.6</td>
+<td>2.01</td>
+<td>1.60</td>
+<td>25.9</td>
+<td>24.0</td>
+</tr>
+<tr>
+<td>SALMONN-omni</td>
+<td style="text-align:center">✓</td>
+<td>73.6</td>
+<td>43.7</td>
+<td>56.0</td>
+<td>-</td>
+<td>3.22</td>
+<td>-</td>
+<td>-</td>
+<td>30.0</td>
+</tr>
+<tr>
+<td>Kimi-Audio</td>
+<td style="text-align:center">✗</td>
+<td>68.3</td>
+<td>37.3</td>
+<td>51.2</td>
+<td>63.1</td>
+<td>4.46</td>
+<td>3.97</td>
+<td>83.5</td>
+<td>62.2</td>
+</tr>
+<tr>
+<td>SFT Baseline</td>
+<td style="text-align:center">✓</td>
+<td>72.0</td>
+<td>44.3</td>
+<td>48.1</td>
+<td>47.2</td>
+<td>3.43</td>
+<td>3.48</td>
+<td>72.2</td>
+<td>54.9</td>
+</tr>
+<tr>
+<td><strong>DuplexPO</strong></td>
+<td style="text-align:center">✓</td>
+<td><strong>75.3</strong></td>
+<td><strong>44.5</strong></td>
+<td><strong>49.9</strong></td>
+<td><strong>49.8</strong></td>
+<td><strong>3.68</strong></td>
+<td><strong>3.74</strong></td>
+<td><strong>73.7</strong></td>
+<td><strong>56.2</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>DuplexPO 在所有智能指标上不仅没有退化，还略有提升。这验证了核心假设：解耦”何时说”与”说什么”可以避免 intelligence-dynamics trade-off。</p>
+<h3 id="8-3-LLM-as-Judge-对话级评估"><a href="#8-3-LLM-as-Judge-对话级评估" class="headerlink" title="8.3 LLM-as-Judge 对话级评估"></a>8.3 LLM-as-Judge 对话级评估</h3><p><img src="/images/paper_figs/duplexpo/gemini.png" srcset="/img/loading.gif" lazyload alt="Gemini 配对评估"></p>
+<p>Gemini 3.0 Pro 配对评估中，DuplexPO 在 Fisher 上 76.9% 胜率，Seamless 上 69.3% 胜率（排除平局）。在轮次转换、反向通道和打断处理三个维度上全面领先。</p>
+<hr>
+<h2 id="9-分析与消融"><a href="#9-分析与消融" class="headerlink" title="9. 分析与消融"></a>9. 分析与消融</h2><h3 id="9-1-Suppressed-Intent-分析"><a href="#9-1-Suppressed-Intent-分析" class="headerlink" title="9.1 Suppressed Intent 分析"></a>9.1 Suppressed Intent 分析</h3><p><img src="/images/paper_figs/duplexpo/EOS_Urge_Trajectory.png" srcset="/img/loading.gif" lazyload alt="EOS 冲动轨迹"></p>
+<p>DuplexPO 并非全局抑制说话意图，而是在边界控制决策附近有选择地释放潜在的 <code>&lt;BOS&gt;</code> 和 <code>&lt;EOS&gt;</code> 冲动。SRR（Suppression Release Ratio）显示 DuplexPO 将 70.6% 的被抑制 <code>&lt;BOS&gt;</code> 冲动在正确时刻释放。</p>
+<h3 id="9-2-注意力分析"><a href="#9-2-注意力分析" class="headerlink" title="9.2 注意力分析"></a>9.2 注意力分析</h3><p><img src="/images/paper_figs/duplexpo/attention.jpg" srcset="/img/loading.gif" lazyload alt="注意力分布"></p>
+<p>与 Moshi 7B 相比，DuplexPO 将更少的注意力分配给 <code>&lt;BOS&gt;</code> sink（14.5% vs 70.2%），更多注意力分配给 PAD 状态位（77.5% vs 28.0%）和真实文本位（22.5% vs 1.8%），表明模型学会了利用实际上下文进行时间决策。</p>
+<h3 id="9-3-窗口边界消融"><a href="#9-3-窗口边界消融" class="headerlink" title="9.3 窗口边界消融"></a>9.3 窗口边界消融</h3><p><img src="/images/paper_figs/duplexpo/window_ablation.png" srcset="/img/loading.gif" lazyload alt="窗口消融"></p>
+<p>前导时间 $L$ 对 RL 奖励影响显著（过长 lead time 导致奖励骤降），而缓冲时间 $B$ 影响较小。这表明动态关键窗口采样主要依赖于做出说话决策所需的预见性上下文量。</p>
+<h3 id="9-4-奖励训练动态"><a href="#9-4-奖励训练动态" class="headerlink" title="9.4 奖励训练动态"></a>9.4 奖励训练动态</h3><p><img src="/images/paper_figs/duplexpo/reward_training_dynamics.png" srcset="/img/loading.gif" lazyload alt="奖励训练动态"></p>
+<p><img src="/images/paper_figs/duplexpo/reward_component_relationships.png" srcset="/img/loading.gif" lazyload alt="奖励分量关系"></p>
+<p>总奖励单调上升后趋于平稳，各奖励分量呈现功能特化：stop reward 专门驱动让步行为，start reward 驱动轮次起始时间。</p>
+<h3 id="9-5-优化方法消融"><a href="#9-5-优化方法消融" class="headerlink" title="9.5 优化方法消融"></a>9.5 优化方法消融</h3><p>GRPO vs DPO：GRPO 在大多数动态指标上优于 DPO，特别是 yield rate。DPO 仅使用最高/最低奖励续写对，丢弃了有用的排序信息；GRPO 利用全部采样续写的组归一化优势，提供更密集稳定的优化信号。</p>
+<hr>
+<h2 id="10-Token-级行为模式"><a href="#10-Token-级行为模式" class="headerlink" title="10. Token 级行为模式"></a>10. Token 级行为模式</h2><p><img src="/images/paper_figs/duplexpo/conv_pattern.png" srcset="/img/loading.gif" lazyload alt="对话模式对比"></p>
+<p>上图对比了 SFT Baseline 和 DuplexPO 的 token 级对话模式。DuplexPO 在用户语音附近主动维持和释放 <code>&lt;BOS&gt;</code>/<code>&lt;EOS&gt;</code> 冲动，而 SFT Baseline 则倾向于停留在 PAD 状态。</p>
+<hr>
+<h2 id="11-局限性"><a href="#11-局限性" class="headerlink" title="11. 局限性"></a>11. 局限性</h2><ul>
+<li>FCDR 的分解式奖励可能遗漏微妙的语用因素（用户意图、话语内容、说话风格、文化特定时间偏好）</li>
+<li>人类时间标注并非唯一真值——轮次起始、反向通道和让步在不同说话者、语言和对话场景中存在变异</li>
+<li>策略更新被限制在局部窗口中，可能错过长程对话效应</li>
+</ul>
+<hr>
+<h2 id="12-总结"><a href="#12-总结" class="headerlink" title="12. 总结"></a>12. 总结</h2><p>DuplexPO 的核心贡献在于证明了一个重要观点：<strong>全双工语音模型中的 intelligence-dynamics trade-off 并非本质性的</strong>。通过将”何时说”与”说什么”解耦为独立优化目标，使用动态关键窗口采样 + FCDR 奖励 + GRPO 优化，DuplexPO 在显著提升对话动态性的同时完全保持了推理和指令遵循能力。这为构建既聪明又自然的全双工语音助手提供了一条可行路径。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/Reinforcement-Learning/" class="print-no-link">#Reinforcement Learning</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech LLM</a>
+      
+        <a href="/tags/Full-Duplex/" class="print-no-link">#Full-Duplex</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning</div>
+      <div>https://smallsmartao.github.io/2026/07/10/2026-07-10-DuplexPO/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年7月10日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年7月10日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" title="On the Role of Conversational Timing in Synthetic Training Data for ASR">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">On the Role of Conversational Timing in Synthetic Training Data for ASR</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/07/10/2026-07-10-SpeechKV/" title="Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs">
+                        <span class="hidden-mobile">Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

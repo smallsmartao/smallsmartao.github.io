@@ -1,0 +1,1270 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="为什么需要 SpeechKV？Speech LLM 面临一个根本性的效率瓶颈：语音序列远长于文本。英语 ASR 中，一个文本 token 对应约 300ms 语音，而常见语音编码器每 80ms 产生一帧——同等语义信息下，语音序列长度约为文本的 4 倍。在自回归解码阶段，模型需在每一步 attend 所有前序位置，KV cache 的线性增长直接导致延迟和显存消耗随序列长度线性增长。 现有方案的标">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/07/10/2026-07-10-SpeechKV/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="为什么需要 SpeechKV？Speech LLM 面临一个根本性的效率瓶颈：语音序列远长于文本。英语 ASR 中，一个文本 token 对应约 300ms 语音，而常见语音编码器每 80ms 产生一帧——同等语义信息下，语音序列长度约为文本的 4 倍。在自回归解码阶段，模型需在每一步 attend 所有前序位置，KV cache 的线性增长直接导致延迟和显存消耗随序列长度线性增长。 现有方案的标">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/speechkv_cover.png">
+<meta property="article:published_time" content="2026-07-09T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-07-10T02:43:24.864Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="KV Cache">
+<meta property="article:tag" content="Speech LLM">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/speechkv_cover.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/speechkv_cover.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-07-10 00:00" pubdate>
+          2026年7月10日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          850 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          8 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年7月10日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="为什么需要-SpeechKV？"><a href="#为什么需要-SpeechKV？" class="headerlink" title="为什么需要 SpeechKV？"></a>为什么需要 SpeechKV？</h2><p>Speech LLM 面临一个根本性的效率瓶颈：语音序列远长于文本。英语 ASR 中，一个文本 token 对应约 300ms 语音，而常见语音编码器每 80ms 产生一帧——同等语义信息下，语音序列长度约为文本的 4 倍。在自回归解码阶段，模型需在每一步 attend 所有前序位置，KV cache 的线性增长直接导致延迟和显存消耗随序列长度线性增长。</p>
+<p>现有方案的标准做法是在 adapter 层对语音进行早期下采样（CTC blank filtering、CIF 累积、Q-Former 等），但这种”先压缩后推理”的范式引入了不可逆信息损失——一旦在 LLM 之前丢弃了细粒度声学细节，后续层便无法恢复。</p>
+<p>SpeechKV 提出了一个优雅的替代思路：<strong>将压缩延迟到 LLM 内部</strong>，对中间层的语音 KV cache 施加学习式 pooling，让 LLM 自身决定保留哪些声学特征。</p>
+<span id="more"></span>
+<h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>: Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs</li>
+<li><strong>作者</strong>: Ke-Han Lu, Keqi Deng, Ruchao Fan, Rui Zhao, Jinyu Li (Microsoft)</li>
+<li><strong>arXiv</strong>: <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2607.06827">2607.06827</a></li>
+<li><strong>发表时间</strong>: 2026年7月</li>
+</ul>
+<hr>
+<h2 id="一、引言（Introduction）"><a href="#一、引言（Introduction）" class="headerlink" title="一、引言（Introduction）"></a>一、引言（Introduction）</h2><p>LLM 在 NLP 任务中展现了卓越能力，研究者将其扩展到语音模态，形成 Speech LLM 家族。典型架构包含三个组件：预训练语音编码器 → 模态适配器 → LLM backbone。</p>
+<p>核心挑战在于语音序列长度。以英语 ASR 为例，语音帧率约 80ms/帧，而文本 token 对应约 300ms，导致语音 KV cache 在解码阶段成为主要瓶颈。</p>
+<p>作者的初步实验观察到：Speech LLM 在浅层自然地将相邻语音信息合并，在深层产生近重复表示。基于此观察，SpeechKV 在中间层对语音 KV 序列施加学习式 pooling，允许 LLM 学习保留哪些特征、如何融合语音与文本。</p>
+<p><strong>主要贡献</strong>：</p>
+<ol>
+<li>提出 SpeechKV：在 Speech LLM 中间层对语音 KV cache 施加学习式 pooling 压缩</li>
+<li>将语音压缩到文本级粒度仍维持 baseline 性能，同时获得 1.49–2× 解码加速</li>
+<li>实证分析表明相邻语音表示在 LLM 层间逐渐变得冗余，为”在 LLM 内部压缩”提供理论动机</li>
+</ol>
+<hr>
+<h2 id="二、相关工作（Related-Work）"><a href="#二、相关工作（Related-Work）" class="headerlink" title="二、相关工作（Related Work）"></a>二、相关工作（Related Work）</h2><h3 id="2-1-Speech-LLMs-与语音序列压缩"><a href="#2-1-Speech-LLMs-与语音序列压缩" class="headerlink" title="2.1 Speech LLMs 与语音序列压缩"></a>2.1 Speech LLMs 与语音序列压缩</h3><p>Speech LLM 采用 encoder–adapter–LLM 范式。核心挑战是弥合连续语音与离散文本之间的模态和长度差异。</p>
+<p>现有预 LLM 压缩方案包括：</p>
+<ul>
+<li><strong>CTC-based</strong>：边界合并或 blank filtering</li>
+<li><strong>CIF-based</strong>：动态累积声学特征</li>
+<li><strong>Q-Former</strong>：提取固定数量的语音表示</li>
+</ul>
+<p>这些方法引入瓶颈，导致后续 LLM 层无法恢复已丢弃的信息。</p>
+<h3 id="2-2-LLM-中的-KV-Cache-压缩"><a href="#2-2-LLM-中的-KV-Cache-压缩" class="headerlink" title="2.2 LLM 中的 KV Cache 压缩"></a>2.2 LLM 中的 KV Cache 压缩</h3><p>KV cache 线性增长是长上下文 LLM 推理的已知瓶颈。现有方法分两大类：</p>
+<ul>
+<li><strong>Training-free</strong>：基于注意力统计或 recency 的 eviction（H2O、SnapKV、StreamingLLM），低比特量化（KVQuant）</li>
+<li><strong>Trainable</strong>：学习式合并或摘要上下文为更短的 KV cache（Dynamic Memory Compression 等）</li>
+</ul>
+<p>Training-free 方法不可避免地存在 train-test mismatch。SpeechKV 属于 trainable 方案，联合训练消除此问题。</p>
+<hr>
+<h2 id="三、方法（Method）"><a href="#三、方法（Method）" class="headerlink" title="三、方法（Method）"></a>三、方法（Method）</h2><h3 id="3-1-Speech-Language-Model-Baseline"><a href="#3-1-Speech-Language-Model-Baseline" class="headerlink" title="3.1 Speech Language Model Baseline"></a>3.1 Speech Language Model Baseline</h3><p>Baseline 遵循 encoder–adapter–LLM 范式：</p>
+<script type="math/tex; mode=display">Z = f_{\text{enc}}(x) \in \mathbb{R}^{T \times d_e} \tag{1}</script><p>其中 $T$ 为帧数，$d_e$ 为编码器隐藏维度。2 层 MLP adapter 投影到 LLM 嵌入空间（无时间下采样）：</p>
+<script type="math/tex; mode=display">A = f_{\text{adp}}(Z) \in \mathbb{R}^{T \times d} \tag{2}</script><p>拼接文本嵌入 $E \in \mathbb{R}^{N \times d}$ 后，输入 $L$ 层 decoder-only LLM，以 next-token prediction 训练：</p>
+<script type="math/tex; mode=display">\mathcal{L} = -\sum_{t=1}^{M} \log p(y_t \mid A, E, y_{<t}) \tag{3}</script><p>由于 $T \gg N + M$，语音 KV cache 主导每步注意力开销。</p>
+<h3 id="3-2-SpeechKV"><a href="#3-2-SpeechKV" class="headerlink" title="3.2 SpeechKV"></a>3.2 SpeechKV</h3><p><img src="/images/paper_figs/speechkv/figure1.png" srcset="/img/loading.gif" lazyload alt="SpeechKV 架构总览"></p>
+<p>从第 $l_0$ 层开始，对语音 KV 序列施加学习式 pooling 算子 $\mathcal{P}_R$（压缩比 $R$）。</p>
+<p><strong>核心操作</strong>：将 $T$ 个语音位置分割为大小为 $R$ 的非重叠窗口。在每个窗口内，学习线性门 $g: \mathbb{R}^{d_h} \to \mathbb{R}$ 对每个 key 向量产生标量 logit，softmax 归一化为权重：</p>
+<script type="math/tex; mode=display">\alpha_j = \frac{\exp(g(k_j))}{\sum_{j'=1}^{R} \exp(g(k_{j'}))}, \quad \hat{k} = \sum_{j=1}^{R} \alpha_j k_j, \quad \hat{v} = \sum_{j=1}^{R} \alpha_j v_j \tag{4}</script><p>门初始化为零，模型从均匀平均出发，逐渐学习强调窗口内的信息性位置。</p>
+<p>在每层 $l \geq l_0$，全分辨率 query attend 压缩后的 KV 序列：</p>
+<script type="math/tex; mode=display">\text{Attention}^{(l)} = \text{softmax}\left(\frac{Q^{(l)} \hat{K}^{(l)\top}}{\sqrt{d_h}}\right) \hat{V}^{(l)} \tag{5}</script><p>其中 $\hat{K}^{(l)} = \mathcal{P}_R(K^{(l)})$，$\hat{V}^{(l)} = \mathcal{P}_R(V^{(l)})$。注意力掩码相应调整以保持因果性。文本位置不受影响。</p>
+<p><strong>设计哲学</strong>：压缩操作刻意保持简洁轻量，依赖 LLM 自身的注意力机制有效处理压缩序列。</p>
+<h3 id="3-3-训练与推理"><a href="#3-3-训练与推理" class="headerlink" title="3.3 训练与推理"></a>3.3 训练与推理</h3><ul>
+<li><strong>训练阶段</strong>：SpeechKV 在前向传播中 on-the-fly 应用，与 next-token-prediction loss 联合优化，确保无 train-test mismatch。</li>
+<li><strong>推理阶段</strong>：压缩在 prefill 阶段一次性完成，压缩后的 KV 存入 cache，在每个解码步实现 $R$ 倍语音 KV cache 缩减，直接转化为更小显存占用和更快解码速度。</li>
+</ul>
+<hr>
+<h2 id="四、实验设置（Experiment-Setup）"><a href="#四、实验设置（Experiment-Setup）" class="headerlink" title="四、实验设置（Experiment Setup）"></a>四、实验设置（Experiment Setup）</h2><h3 id="4-1-模型配置"><a href="#4-1-模型配置" class="headerlink" title="4.1 模型配置"></a>4.1 模型配置</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LLM Backbone</td>
+<td>Qwen3-1.7B（28层 Transformer decoder）</td>
+</tr>
+<tr>
+<td>Speech Encoder</td>
+<td>预训练 encoder-decoder ASR 模型（3 conv + 24 conformer blocks，80ms 帧率）</td>
+</tr>
+<tr>
+<td>Adapter</td>
+<td>2层 MLP（无时间下采样）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>压缩方法对比</strong>：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>压缩位置</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Concat-MLP</td>
+<td>Adapter</td>
+<td>拼接 $R$ 相邻帧 → 2层 MLP</td>
+</tr>
+<tr>
+<td>Window Q-Former</td>
+<td>Adapter</td>
+<td>2层 Transformer cross-attention 合并 $R$ 帧</td>
+</tr>
+<tr>
+<td>HS Compression</td>
+<td>LLM 内部</td>
+<td>对第 $l_0$ 层整个 hidden state 做 pooling（含 query）</td>
+</tr>
+<tr>
+<td><strong>SpeechKV</strong></td>
+<td>LLM 内部</td>
+<td>仅压缩 key/value，保留全分辨率 query 和 residual stream</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="4-2-训练数据"><a href="#4-2-训练数据" class="headerlink" title="4.2 训练数据"></a>4.2 训练数据</h3><p>总计 71K 小时开源 ASR 数据：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Dataset</th>
+<th>Hours</th>
+<th>Utts (K)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Multilingual LibriSpeech (en)</td>
+<td>44,659.7</td>
+<td>10,808.0</td>
+</tr>
+<tr>
+<td>GigaSpeech</td>
+<td>13,714.4</td>
+<td>11,659.8</td>
+</tr>
+<tr>
+<td>SPGISpeech</td>
+<td>4,996.6</td>
+<td>1,965.3</td>
+</tr>
+<tr>
+<td>LibriSpeech</td>
+<td>1,920.0</td>
+<td>560.8</td>
+</tr>
+<tr>
+<td>LibriHeavy</td>
+<td>1,852.2</td>
+<td>469.4</td>
+</tr>
+<tr>
+<td>Common Voice 15</td>
+<td>1,688.3</td>
+<td>1,069.7</td>
+</tr>
+<tr>
+<td>VoxPopuli</td>
+<td>1,045.2</td>
+<td>365.0</td>
+</tr>
+<tr>
+<td>TED-LIUM 3</td>
+<td>907.6</td>
+<td>536.5</td>
+</tr>
+<tr>
+<td>Earnings-22</td>
+<td>287.2</td>
+<td>104.0</td>
+</tr>
+<tr>
+<td>AMI</td>
+<td>156.3</td>
+<td>217.0</td>
+</tr>
+<tr>
+<td>FLEURS</td>
+<td>15.0</td>
+<td>5.2</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>71,242.5</strong></td>
+<td><strong>27,760.8</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="4-3-训练细节"><a href="#4-3-训练细节" class="headerlink" title="4.3 训练细节"></a>4.3 训练细节</h3><ul>
+<li>优化器：AdamW，peak lr = 2×10⁻⁵，linear warmup 100 steps，warmup-decay schedule</li>
+<li>DeepSpeed ZeRO Stage 1</li>
+<li>有效 batch size ≈ 200K tokens</li>
+<li>训练 10,000 steps（覆盖全训练集约 1 epoch）</li>
+<li>LoRA rank 32，约 480M 可训练参数（总 2.2B）</li>
+<li>硬件：8× H100 GPU，约 1 天/run</li>
+</ul>
+<h3 id="4-4-评测"><a href="#4-4-评测" class="headerlink" title="4.4 评测"></a>4.4 评测</h3><p>三个测试套件：</p>
+<ol>
+<li><strong>OpenASR</strong>（7 个公开 benchmark）：domain 内 ASR 评估</li>
+<li><strong>In-house ASR</strong>（4 个内部测试集）：dictation、financial calls、broadcast、voicemail（domain 外）</li>
+<li><strong>In-house Entity Recognition</strong>（2 个实体密集测试集）：banking、medical domain，报告 Entity Error Rate (EER)</li>
+</ol>
+<hr>
+<h2 id="五、实验结果（Results）"><a href="#五、实验结果（Results）" class="headerlink" title="五、实验结果（Results）"></a>五、实验结果（Results）</h2><h3 id="5-1-主要结果"><a href="#5-1-主要结果" class="headerlink" title="5.1 主要结果"></a>5.1 主要结果</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>In-house ER ↓</th>
+<th>In-house ASR ↓</th>
+<th>OpenASR ↓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Open-sourced Models</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Whisper-L-v3</td>
+<td>8.41</td>
+<td>4.91</td>
+<td>7.95</td>
+</tr>
+<tr>
+<td>Phi4-mm</td>
+<td>11.36</td>
+<td>4.89</td>
+<td>6.60</td>
+</tr>
+<tr>
+<td><strong>Our Models</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>MLP (Baseline)</td>
+<td>14.41</td>
+<td>5.78</td>
+<td>6.12</td>
+</tr>
+<tr>
+<td><strong>R=4</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Concat-MLP</td>
+<td>15.84</td>
+<td>6.29</td>
+<td>6.07</td>
+</tr>
+<tr>
+<td>Window Q-Former</td>
+<td>14.70</td>
+<td>6.23</td>
+<td>6.02</td>
+</tr>
+<tr>
+<td>HS Compression</td>
+<td>15.22</td>
+<td>5.79</td>
+<td>6.06</td>
+</tr>
+<tr>
+<td><strong>SpeechKV</strong></td>
+<td><strong>13.46</strong></td>
+<td><strong>5.71</strong></td>
+<td><strong>5.98</strong></td>
+</tr>
+<tr>
+<td><strong>R=8</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Concat-MLP</td>
+<td>17.52</td>
+<td>6.63</td>
+<td>6.43</td>
+</tr>
+<tr>
+<td>Window Q-Former</td>
+<td>16.41</td>
+<td>6.50</td>
+<td>6.64</td>
+</tr>
+<tr>
+<td>HS Compression</td>
+<td>16.98</td>
+<td>6.22</td>
+<td>6.31</td>
+</tr>
+<tr>
+<td><strong>SpeechKV</strong></td>
+<td><strong>14.91</strong></td>
+<td><strong>5.95</strong></td>
+<td><strong>6.05</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><strong>关键发现</strong>：</p>
+<ul>
+<li><strong>R=4 时 SpeechKV 不仅不降反升</strong>：相对 baseline，In-house ER 提升 6.6%，In-house ASR 提升 1.2%，OpenASR 提升 2.3%。</li>
+<li><strong>R=8 时 SpeechKV 优雅退化</strong>：In-house ER 仅退化 3.5%，ASR 退化 2.9%，OpenASR 几乎持平。而竞争方法退化 8%–20%。</li>
+<li>作者推测原因：(1) 每层保留完整音频信息的访问路径；(2) 压缩粒度与 LLM 预训练的文本 token rate 对齐，形成结构性正则化。</li>
+</ul>
+<h3 id="5-2-逐层分析与消融实验"><a href="#5-2-逐层分析与消融实验" class="headerlink" title="5.2 逐层分析与消融实验"></a>5.2 逐层分析与消融实验</h3><p><img src="/images/paper_figs/speechkv/local_similarity_comparison.png" srcset="/img/loading.gif" lazyload alt="逐层局部相似度"></p>
+<p><strong>Local Similarity 分析</strong>：测量相邻语音位置间的 cosine similarity。</p>
+<ul>
+<li>Baseline 在前 4 层急剧上升（模型主动聚合局部声学特征），约第 5 层进入平台期（局部聚合基本完成，时间冗余自然出现）。</li>
+<li>SpeechKV(R=4) 的相似度曲线紧跟 baseline 自然上升趋势，说明压缩与模型本身的聚合行为一致。</li>
+<li>SpeechKV(R=8) 相似度在所有层都被抬高，模型需重构表示以适应更激进压缩。</li>
+</ul>
+<p><strong>起始层消融</strong>：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>$l_0$</th>
+<th>In-house ER</th>
+<th>In-house ASR</th>
+<th>OpenASR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MLP Baseline</td>
+<td>–</td>
+<td>14.41</td>
+<td>5.78</td>
+<td>6.12</td>
+</tr>
+<tr>
+<td>SpeechKV (R=4)</td>
+<td>3</td>
+<td>14.33</td>
+<td>5.87</td>
+<td>6.12</td>
+</tr>
+<tr>
+<td>SpeechKV (R=4)</td>
+<td><strong>5</strong></td>
+<td><strong>13.46</strong></td>
+<td><strong>5.71</strong></td>
+<td><strong>5.98</strong></td>
+</tr>
+<tr>
+<td>SpeechKV (R=4)</td>
+<td>7</td>
+<td>13.56</td>
+<td>6.23</td>
+<td>5.93</td>
+</tr>
+<tr>
+<td>SpeechKV (R=8)</td>
+<td>3</td>
+<td>16.70</td>
+<td>7.06</td>
+<td>6.53</td>
+</tr>
+<tr>
+<td>SpeechKV (R=8)</td>
+<td><strong>5</strong></td>
+<td><strong>14.91</strong></td>
+<td><strong>5.95</strong></td>
+<td><strong>6.05</strong></td>
+</tr>
+<tr>
+<td>SpeechKV (R=8)</td>
+<td>7</td>
+<td>15.25</td>
+<td>6.49</td>
+<td>6.08</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>最优起始层为 $l_0=5$：过早压缩（layer 3）在 local similarity 尚未收敛时介入；过晚（layer 7）时模型已开始高层处理的特化。</p>
+<h3 id="5-3-注意力分析"><a href="#5-3-注意力分析" class="headerlink" title="5.3 注意力分析"></a>5.3 注意力分析</h3><p><img src="/images/paper_figs/speechkv/KV_layer4_27.png" srcset="/img/loading.gif" lazyload alt="注意力图对比"></p>
+<p><strong>Baseline</strong>（左列）：</p>
+<ul>
+<li>浅层（Layer 4）：注意力弥散，模型仍在聚合局部声学特征</li>
+<li>深层（Layer 27）：出现清晰的单调对齐模式，但注意力分散在相邻近重复位置上</li>
+</ul>
+<p><strong>SpeechKV</strong>（右列）：</p>
+<ul>
+<li>浅层（Layer 4）：即使此层未施加压缩，已出现单调对齐——深层 KV 缩短迫使模型在更早层建立跨模态对应</li>
+<li>深层（Layer 27）：压缩后的 key 序列产生更尖锐、集中的注意力峰值，冗余位置已被合并</li>
+</ul>
+<p>这表明 SpeechKV 重塑了层间表示：浅层更早建立跨模态对应，深层更高效地在去重复 key 表示上操作。</p>
+<h3 id="5-4-解码速度"><a href="#5-4-解码速度" class="headerlink" title="5.4 解码速度"></a>5.4 解码速度</h3><p><img src="/images/paper_figs/speechkv/speedup.png" srcset="/img/loading.gif" lazyload alt="解码加速"></p>
+<p>在 A100 80GB GPU + vLLM 上的端到端解码加速：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Audio Length</th>
+<th>Baseline</th>
+<th>R=4</th>
+<th>R=8</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>30s</td>
+<td>1.00×</td>
+<td>1.49×</td>
+<td>1.62×</td>
+</tr>
+<tr>
+<td>5min</td>
+<td>1.00×</td>
+<td>1.88×</td>
+<td>1.87×</td>
+</tr>
+<tr>
+<td>10min</td>
+<td>1.00×</td>
+<td>2.02×</td>
+<td>2.03×</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>加速随音频长度增长：语音 KV cache 在总注意力开销中占比更大时，压缩收益更显著。R=8 相比 R=4 仅有边际额外加速，因为 feed-forward 层和文本 KV cache 成为新瓶颈。</p>
+<p><strong>R=4 是最佳实践点</strong>：精度匹配 baseline，解码速度 1.49–2× 提升。</p>
+<hr>
+<h2 id="六、结论（Conclusion）"><a href="#六、结论（Conclusion）" class="headerlink" title="六、结论（Conclusion）"></a>六、结论（Conclusion）</h2><p>SpeechKV 将语音 KV cache 压缩延迟到 LLM 中间层，通过保留全分辨率 query 和 residual stream，让 LLM 预训练参数自行决定保留哪些声学特征。</p>
+<p>在 71K 小时训练的 Qwen3-1.7B Speech LLM 上：</p>
+<ul>
+<li>R=4 压缩到文本粒度仍匹配甚至超越 baseline（实体识别相对提升 6.6%）</li>
+<li>至少 1.49× 解码加速，随音频长度扩展</li>
+<li>注意力分析揭示 SpeechKV 作为结构性正则化：浅层更早建立跨模态对应，深层注意力更集中</li>
+</ul>
+<p><strong>未来方向</strong>：扩展到 ASR 之外的语音任务、研究自适应跨层压缩比、进一步分析 Speech LLM 的逐层动态。</p>
+<hr>
+<h2 id="个人思考"><a href="#个人思考" class="headerlink" title="个人思考"></a>个人思考</h2><p>SpeechKV 的核心洞察极其简洁：语音在 LLM 浅层自然聚合后变得时间冗余，与其在 LLM 之前强制压缩（承担不可逆信息损失），不如让 LLM 先看完整信息再压缩 KV cache。这实际上是一种”先理解后摘要”的策略。</p>
+<p>更令人意外的是 R=4 压缩不仅无损反而增益——压缩后粒度恰好对齐文本 token rate，形成对 LLM 预训练分布的结构性正则化。这暗示 Speech LLM 的一个深层问题：未压缩时，深层大量冗余 key 实际上是在”稀释”注意力。</p>
+<p>从工程角度看，SpeechKV 的实现极为轻量（仅一个线性门 + softmax weighted sum），无需修改推理框架核心逻辑，与 vLLM 等系统的兼容性良好。这使其具有很强的实用部署价值。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech LLM</a>
+      
+        <a href="/tags/KV-Cache/" class="print-no-link">#KV Cache</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs</div>
+      <div>https://smallsmartao.github.io/2026/07/10/2026-07-10-SpeechKV/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年7月10日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年7月10日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/07/10/2026-07-10-DuplexPO/" title="Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/07/08/%E8%AE%A9%E4%BD%93%E8%84%8214%E6%88%90%E4%B8%BA%E5%B8%B8%E6%80%81%E7%9A%8410%E4%B8%AA%E6%89%8B%E8%89%BA/" title="让体脂14%成为常态——我积累的10个手艺">
+                        <span class="hidden-mobile">让体脂14%成为常态——我积累的10个手艺</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
