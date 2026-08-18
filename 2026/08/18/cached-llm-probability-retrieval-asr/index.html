@@ -1,0 +1,1280 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="1. 动机与背景：固定基座识别器下的语言模型适配困境在现代语音识别（ASR）系统的落地部署中，基础识别模型（如以弱监督大规模预训练为代表的 Whisper 系列、自监督表征编码器 wav2vec 2.0 &#x2F; HuBERT 以及成熟工具包 SpeechBrain 系统）越来越被当作不可轻易重新训练的“冻结黑盒（Frozen Recognizer）”。在绝大多数工业落地场景中，终端用户或业务方既没有足">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Cached LLM Probability Retrieval for Speech Recognition">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/08/18/cached-llm-probability-retrieval-asr/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="1. 动机与背景：固定基座识别器下的语言模型适配困境在现代语音识别（ASR）系统的落地部署中，基础识别模型（如以弱监督大规模预训练为代表的 Whisper 系列、自监督表征编码器 wav2vec 2.0 &#x2F; HuBERT 以及成熟工具包 SpeechBrain 系统）越来越被当作不可轻易重新训练的“冻结黑盒（Frozen Recognizer）”。在绝大多数工业落地场景中，终端用户或业务方既没有足">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cached_llm_retrieval.png">
+<meta property="article:published_time" content="2026-08-18T06:50:00.000Z">
+<meta property="article:modified_time" content="2026-08-18T06:47:38.754Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="LM Rescoring">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cached_llm_retrieval.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Cached LLM Probability Retrieval for Speech Recognition - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/cached_llm_retrieval.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Cached LLM Probability Retrieval for Speech Recognition"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-08-18 14:50" pubdate>
+          2026年8月18日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          29 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Cached LLM Probability Retrieval for Speech Recognition</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年8月18日 下午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="1-动机与背景：固定基座识别器下的语言模型适配困境"><a href="#1-动机与背景：固定基座识别器下的语言模型适配困境" class="headerlink" title="1. 动机与背景：固定基座识别器下的语言模型适配困境"></a>1. 动机与背景：固定基座识别器下的语言模型适配困境</h2><p>在现代语音识别（ASR）系统的落地部署中，基础识别模型（如以弱监督大规模预训练为代表的 Whisper 系列、自监督表征编码器 wav2vec 2.0 / HuBERT 以及成熟工具包 SpeechBrain 系统）越来越被当作不可轻易重新训练的“冻结黑盒（Frozen Recognizer）”。在绝大多数工业落地场景中，终端用户或业务方既没有足够的计算资源对声学模型进行全量重训，也难以重构识别器的解码流水线。</p>
+<p>因此，实际场景中最实用的适配路径是：<strong>直接作用于现有识别器已经生成的 $N$-best 候选列表（$N$-best list）、Beam 搜索空间或 Lattice，在免训练或极低开销的前提下注入强效的语言先验知识。</strong></p>
+<p>大语言模型（LLMs）具备极强的语言流畅度建模能力与世界知识，是充当 ASR 重打分语言先验的理想选择。然而，直接将因果自回归 LLM 串入 ASR 解码或重打分循环中面临着巨大的系统代价：</p>
+<ol>
+<li><strong>高昂的实时计算与延迟</strong>：针对识别器输出的每一个 $N$-best 候选序列，LLM 都需要从头或增量进行自回归前向计算来评估序列困惑度或联合概率；</li>
+<li><strong>显存与部署压力</strong>：在服务端或边缘端常驻一个数十亿参数的 LLM 仅用于打分，性价比极低；</li>
+<li><strong>参数微调与泛化负担</strong>：基于 LoRA 微调的生成式纠错（Generative Error Correction, GER）或知识蒸馏（KD）虽然可以缓解部分开销，但依然严重依赖成对的 ASR-文本监督数据，流程繁复且存在生成模型不可控的幻觉改写风险。</li>
+</ol>
+<p>为了解决这一矛盾，日本东京工业大学（Institute of Science Tokyo）与京都大学（Kyoto University）的 Sheng Li、Takahiro Shinozaki 与 Tatsuya Kawahara 等人在论文《Cached LLM Probability Retrieval for Speech Recognition》中提出了一种全新的范式——<strong>Cached LLM Probability Retrieval（基于缓存的 LLM 概率检索）</strong>。</p>
+<p><img src="/images/paper_figs/cached_llm_retrieval/flowchart.png" srcset="/img/loading.gif" lazyload alt="Cached LLM Probability Retrieval 总体框架图"></p>
+<p>该方案的核心思想在于：<strong>将 LLM 转化为一个可离线复用的本地概率检索资源</strong>。在离线阶段，利用本地教师 LLM 对非测试集文本（如训练集、验证集或领域日志）提取上下文-目标 token 对的条件概率并构建缓存；在在线测试阶段，针对现有识别器生成的 $N$-best 候选列表，通过纯字典查表（Lookup）、上下文截断退避（Backoff）以及高价值候选的按需选择性调用（Selective Substitution），以<strong>完全免训练（Training-Free）</strong>的方式完成极低延迟、高精度的 LLM 重打分。</p>
+<hr>
+<h2 id="2-核心方法详解-Methodology"><a href="#2-核心方法详解-Methodology" class="headerlink" title="2. 核心方法详解 (Methodology)"></a>2. 核心方法详解 (Methodology)</h2><p>系统的整体工作流如上图所示。整个流水线分为：离线概率缓存构建、在线查表与退避打分、关键歧义项的选择性替补打分、局部检索 $n$-gram 适配特征以及多特征线性插值融合。</p>
+<h3 id="2-1-基于缓存的概率打分-Cached-Probability-Scoring"><a href="#2-1-基于缓存的概率打分-Cached-Probability-Scoring" class="headerlink" title="2.1 基于缓存的概率打分 (Cached Probability Scoring)"></a>2.1 基于缓存的概率打分 (Cached Probability Scoring)</h3><p>设针对某语音输入 $x$，基座 ASR 识别器输出的 $N$-best 候选集为 $\mathcal{H}(x) = {y^{(1)}, y^{(2)}, \dots, y^{(N)}}$。每一个候选序列 $y$ 经过教师 LLM 的 Tokenizer 分词为 token 序列 $y = (y_1, y_2, \dots, y_T)$。</p>
+<p>设定最大上下文长度为 $K$，则候选序列 $y$ 的缓存 LLM 概率得分为：</p>
+<script type="math/tex; mode=display">
+S_K(y) = \sum_{t=1}^{T} \log p_    heta\left(y_t \mid y_{\max(1, t-K) : t-1}
+ight)</script><p>其中 $    heta$ 表示本地因果教师 LLM（如 Qwen2.5-0.5B 或 Qwen3-8B）。在系统实现中，每个缓存键（Cache Key）由上下文 token 序列与目标 token ID 共同构成：</p>
+<script type="math/tex; mode=display">
+    ext{Key} = \left([y_{t-K}, \dots, y_{t-1}], y_t
+ight) \quad \longrightarrow \quad     ext{Value} = \log p_    heta(y_t \mid y_{t-K:t-1})</script><ul>
+<li><strong>诊断性评估（Diagnostic Setting）</strong>：从评估集 $N$-best 列表中直接提取 key 并填充缓存，用于探究 LLM 概率对特定候选空间的理论重排序上限；</li>
+<li><strong>可落地部署评估（Deployable / Leakage-Free Setting）</strong>：严格禁止任何测试集泄漏，仅使用训练集、开发集、领域匹配文本构建缓存。</li>
+</ul>
+<h3 id="2-2-上下文退避策略与选择性替补-Backoff-and-Selective-Substitution"><a href="#2-2-上下文退避策略与选择性替补-Backoff-and-Selective-Substitution" class="headerlink" title="2.2 上下文退避策略与选择性替补 (Backoff and Selective Substitution)"></a>2.2 上下文退避策略与选择性替补 (Backoff and Selective Substitution)</h3><p>在严格无泄漏的测试场景下，测试集候选序列中的某些长上下文 token 组合必然会遭遇缓存未命中（Cache Miss）。为此，论文设计了两种互补策略：</p>
+<h4 id="1-本地分级截断退避（Local-Backoff-Policy）"><a href="#1-本地分级截断退避（Local-Backoff-Policy）" class="headerlink" title="1. 本地分级截断退避（Local Backoff Policy）"></a>1. 本地分级截断退避（Local Backoff Policy）</h4><p>当在最大上下文长度 $K$ 下查询未命中时，系统自动将上下文长度按 2 的幂次向下截断回退：</p>
+<script type="math/tex; mode=display">
+K \longrightarrow rac{K}{2} \longrightarrow rac{K}{4} \longrightarrow \dots \longrightarrow 1</script><p>如果从 $K$ 退避至 1 依然全部未命中，则赋予一个中性的兜底分数（Fallback Score）。该策略为<strong>纯本地计算</strong>，在推理阶段零调用 LLM，具有极高的吞吐与零推理开销。</p>
+<h4 id="2-选择性替补策略（Selective-Substitution-Policy）"><a href="#2-选择性替补策略（Selective-Substitution-Policy）" class="headerlink" title="2. 选择性替补策略（Selective Substitution Policy）"></a>2. 选择性替补策略（Selective Substitution Policy）</h4><p>为了在极度关键的决策边界获得 LLM 的精细判断，系统引入了一个基于置信度边界的触发机制：</p>
+<ul>
+<li>计算当前 Top-1 候选与 Top-2 候选之间的综合得分差距 $\Delta_{    ext{margin}}$；</li>
+<li>若 $\Delta_{    ext{margin}} &lt;     au$（$    au$ 为预设的置信度阈值），表明当前决策存在高度歧义；</li>
+<li>此时允许系统针对前 $M$ 个候选中的未命中项，实时调用本地教师 LLM 进行单步直接前向打分；</li>
+<li>若 $\Delta_{    ext{margin}} \ge     au$，则依然执行普通的本地退避策略。</li>
+</ul>
+<p>这种设计将昂贵的在线 LLM 计算严格限制在能够实质性改变重排序结果的关键样本上，做到了性能与延迟的完美平衡。</p>
+<h3 id="2-3-检索自适应局部特征-Retrieval-Adapted-Local-Scores"><a href="#2-3-检索自适应局部特征-Retrieval-Adapted-Local-Scores" class="headerlink" title="2.3 检索自适应局部特征 (Retrieval-Adapted Local Scores)"></a>2.3 检索自适应局部特征 (Retrieval-Adapted Local Scores)</h3><p>为了进一步捕捉特定领域的局部词汇与表达风格，论文还引入了一个极度轻量的局部检索 $n$-gram 特征作为辅助基线：</p>
+<ul>
+<li>以 ASR 第一遍解码输出的 Top-1 假说作为检索 Query，在非测试集语料库中检索 Top 相关文本切片；</li>
+<li>基于检索到的文本片段动态构建一个平滑的 5-gram 语言模型并对各候选打分，记为 $z_r(y)$。</li>
+</ul>
+<h3 id="2-4-对比基线：LoRA-Finetuned-GER"><a href="#2-4-对比基线：LoRA-Finetuned-GER" class="headerlink" title="2.4 对比基线：LoRA-Finetuned GER"></a>2.4 对比基线：LoRA-Finetuned GER</h3><p>为了建立一个强有力的参数微调参照，作者基于 LoRA 对 Qwen2.5-0.5B 和 Qwen3-8B 进行了生成式纠错（GER）微调：</p>
+<ul>
+<li><strong>数据构建</strong>：以 LibriSpeech <code>dev-other</code> 划分下六种 ASR 模型的 $N$-best 输出为输入，以真实 Ground Truth 文本为目标；同时加入 Ground Truth 文本的“自身复制”样本以防止模型无端过度改写；</li>
+<li><strong>训练配置</strong>：Qwen2.5-0.5B 使用 Rank=8 训练 1 个 epoch；Qwen3-8B 使用 4-bit 量化加载、Rank=4 训练 1 个 epoch；</li>
+<li><strong>严格受限评估</strong>：为了保证对比公平，GER 模型强制在识别器的 $N$-best 候选集合内进行选择（Rank Constraint），避免生成式模型脱离候选集生成幻觉文本。</li>
+</ul>
+<h3 id="2-5-特征标准化与多特征融合-Fusion"><a href="#2-5-特征标准化与多特征融合-Fusion" class="headerlink" title="2.5 特征标准化与多特征融合 (Fusion)"></a>2.5 特征标准化与多特征融合 (Fusion)</h3><p>所有参与重打分的特征在语料库内部进行 Z-score 标准化，并通过加权插值确定最终的最佳候选：</p>
+<script type="math/tex; mode=display">
+\hat{y} = rg\max_{y \in \mathcal{H}(x)} \left( \lambda_a z_a(y) + \lambda_q z_q(y) + \lambda_r z_r(y) 
+ight)</script><p>其中：</p>
+<ul>
+<li>$z_a(y)$：归一化后的基座 ASR 声学/解码得分；</li>
+<li>$z_q(y)$：归一化后的缓存 LLM 概率检索得分（Local 或 Selective）；</li>
+<li>$z_r(y)$：归一化后的局部检索 $n$-gram 得分；</li>
+<li>插值权重 $\lambda_a, \lambda_q, \lambda_r$ 在独立的开发集上通过网格搜索调优确定。</li>
+</ul>
+<hr>
+<h2 id="3-实验配置-Experimental-Setup"><a href="#3-实验配置-Experimental-Setup" class="headerlink" title="3. 实验配置 (Experimental Setup)"></a>3. 实验配置 (Experimental Setup)</h2><h3 id="3-1-数据集与评测指标"><a href="#3-1-数据集与评测指标" class="headerlink" title="3.1 数据集与评测指标"></a>3.1 数据集与评测指标</h3><ol>
+<li><strong>LibriSpeech</strong>：标准 <code>test-other</code> 测试集；</li>
+<li><strong>Noisy LibriSpeech (5 dB SNR)</strong>：人工混入 5 dB 信噪比噪声的 <code>test-other</code> 测试集，模拟真实恶劣声学环境；</li>
+<li><strong>AMI IHM</strong>：复杂多方会议场景（Individual Headset Microphone），包含大量口语化、重叠与口吃片段；</li>
+<li><strong>FLEURS 多语言基准</strong>：评估英语 (en)、德语 (de)、西班牙语 (es)、法语 (fr)（采用 WER 评估），以及普通话 (cmn) 和日语 (ja)（采用 CER 评估）。</li>
+</ol>
+<h3 id="3-2-覆盖的-ASR-基座与教师-LLM"><a href="#3-2-覆盖的-ASR-基座与教师-LLM" class="headerlink" title="3.2 覆盖的 ASR 基座与教师 LLM"></a>3.2 覆盖的 ASR 基座与教师 LLM</h3><ul>
+<li><strong>Whisper 家族</strong>：Whisper-base、Whisper-small、Whisper-large-v3（覆盖英文与多语言）；</li>
+<li><strong>自监督 CTC 家族</strong>：wav2vec 2.0 Base、HuBERT-large（英文）；</li>
+<li><strong>经典混合系统</strong>：SpeechBrain CRDNN/RNNLM（Beam-search 输出）；</li>
+<li><strong>教师 LLM</strong>：Qwen2.5-0.5B 与 Qwen3-8B。</li>
+</ul>
+<hr>
+<h2 id="4-实验结果与深度分析-Results-amp-Analysis"><a href="#4-实验结果与深度分析-Results-amp-Analysis" class="headerlink" title="4. 实验结果与深度分析 (Results &amp; Analysis)"></a>4. 实验结果与深度分析 (Results &amp; Analysis)</h2><h3 id="4-1-全量基准对比：免训练缓存-vs-1-Pass-ASR-vs-LoRA-GER"><a href="#4-1-全量基准对比：免训练缓存-vs-1-Pass-ASR-vs-LoRA-GER" class="headerlink" title="4.1 全量基准对比：免训练缓存 vs 1-Pass ASR vs LoRA-GER"></a>4.1 全量基准对比：免训练缓存 vs 1-Pass ASR vs LoRA-GER</h3><p>在最大上下文长度 $K=32$ 下，不同 ASR 模型、不同教师 LLM 在各大测试集上的详细重打分表现如下表所示（摘录核心实验结果）：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">ASR 模型</th>
+<th style="text-align:left">测试集</th>
+<th style="text-align:center">1-Pass 基线</th>
+<th style="text-align:center">Qwen2.5-0.5B (Local)</th>
+<th style="text-align:center">Qwen2.5-0.5B (Sel)</th>
+<th style="text-align:center">Qwen2.5-0.5B (GER)</th>
+<th style="text-align:center">Qwen3-8B (Local)</th>
+<th style="text-align:center">Qwen3-8B (Sel)</th>
+<th style="text-align:center">Qwen3-8B (GER)</th>
+<th style="text-align:center">Oracle 下界</th>
+<th style="text-align:center">指标</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Whisper-base</strong></td>
+<td style="text-align:left">LS test-other</td>
+<td style="text-align:center">21.01</td>
+<td style="text-align:center">22.03</td>
+<td style="text-align:center">22.05</td>
+<td style="text-align:center">20.27</td>
+<td style="text-align:center">21.47</td>
+<td style="text-align:center">21.53</td>
+<td style="text-align:center"><strong>20.15</strong></td>
+<td style="text-align:center">10.10</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">LS 5dB 噪声</td>
+<td style="text-align:center"><strong>55.31</strong></td>
+<td style="text-align:center">59.58</td>
+<td style="text-align:center">59.46</td>
+<td style="text-align:center">58.07</td>
+<td style="text-align:center">58.78</td>
+<td style="text-align:center">58.78</td>
+<td style="text-align:center">58.01</td>
+<td style="text-align:center">38.25</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">AMI IHM 会议</td>
+<td style="text-align:center"><strong>42.68</strong></td>
+<td style="text-align:center">46.11</td>
+<td style="text-align:center">46.90</td>
+<td style="text-align:center">64.89</td>
+<td style="text-align:center">46.10</td>
+<td style="text-align:center">46.66</td>
+<td style="text-align:center">64.17</td>
+<td style="text-align:center">18.89</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">FLEURS en</td>
+<td style="text-align:center">19.53</td>
+<td style="text-align:center"><strong>16.22</strong></td>
+<td style="text-align:center">16.24</td>
+<td style="text-align:center">17.97</td>
+<td style="text-align:center">16.79</td>
+<td style="text-align:center">16.78</td>
+<td style="text-align:center">17.74</td>
+<td style="text-align:center">9.92</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">FLEURS cmn</td>
+<td style="text-align:center">50.98</td>
+<td style="text-align:center">41.14</td>
+<td style="text-align:center"><strong>41.10</strong></td>
+<td style="text-align:center">58.55</td>
+<td style="text-align:center">41.33</td>
+<td style="text-align:center">41.48</td>
+<td style="text-align:center">58.45</td>
+<td style="text-align:center">30.12</td>
+<td style="text-align:center">CER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">FLEURS de</td>
+<td style="text-align:center">36.69</td>
+<td style="text-align:center">32.23</td>
+<td style="text-align:center"><strong>31.97</strong></td>
+<td style="text-align:center">34.71</td>
+<td style="text-align:center">32.39</td>
+<td style="text-align:center">32.19</td>
+<td style="text-align:center">34.29</td>
+<td style="text-align:center">22.53</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">FLEURS es</td>
+<td style="text-align:center">22.48</td>
+<td style="text-align:center">18.33</td>
+<td style="text-align:center">18.29</td>
+<td style="text-align:center">18.04</td>
+<td style="text-align:center">18.59</td>
+<td style="text-align:center">18.44</td>
+<td style="text-align:center"><strong>17.68</strong></td>
+<td style="text-align:center">10.66</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">FLEURS fr</td>
+<td style="text-align:center">46.83</td>
+<td style="text-align:center">40.48</td>
+<td style="text-align:center"><strong>40.37</strong></td>
+<td style="text-align:center">49.51</td>
+<td style="text-align:center">40.84</td>
+<td style="text-align:center">40.61</td>
+<td style="text-align:center">49.22</td>
+<td style="text-align:center">28.38</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">FLEURS ja</td>
+<td style="text-align:center">47.67</td>
+<td style="text-align:center">38.74</td>
+<td style="text-align:center"><strong>38.56</strong></td>
+<td style="text-align:center">52.18</td>
+<td style="text-align:center">40.56</td>
+<td style="text-align:center">40.50</td>
+<td style="text-align:center">52.07</td>
+<td style="text-align:center">27.89</td>
+<td style="text-align:center">CER</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Whisper-small</strong></td>
+<td style="text-align:left">LS test-other</td>
+<td style="text-align:center">15.32</td>
+<td style="text-align:center">9.72</td>
+<td style="text-align:center"><strong>9.70</strong></td>
+<td style="text-align:center">10.24</td>
+<td style="text-align:center">9.76</td>
+<td style="text-align:center">9.76</td>
+<td style="text-align:center">9.75</td>
+<td style="text-align:center">6.15</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">LS 5dB 噪声</td>
+<td style="text-align:center">38.95</td>
+<td style="text-align:center"><strong>30.09</strong></td>
+<td style="text-align:center">30.11</td>
+<td style="text-align:center">31.92</td>
+<td style="text-align:center">30.30</td>
+<td style="text-align:center">30.30</td>
+<td style="text-align:center">30.13</td>
+<td style="text-align:center">23.14</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">AMI IHM 会议</td>
+<td style="text-align:center">37.39</td>
+<td style="text-align:center">24.40</td>
+<td style="text-align:center">25.22</td>
+<td style="text-align:center">26.79</td>
+<td style="text-align:center"><strong>24.38</strong></td>
+<td style="text-align:center">25.32</td>
+<td style="text-align:center">25.20</td>
+<td style="text-align:center">16.03</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">FLEURS en</td>
+<td style="text-align:center">14.29</td>
+<td style="text-align:center">10.81</td>
+<td style="text-align:center">10.94</td>
+<td style="text-align:center">10.37</td>
+<td style="text-align:center">10.52</td>
+<td style="text-align:center">10.52</td>
+<td style="text-align:center"><strong>9.68</strong></td>
+<td style="text-align:center">6.87</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">FLEURS cmn</td>
+<td style="text-align:center">34.01</td>
+<td style="text-align:center"><strong>24.79</strong></td>
+<td style="text-align:center">24.88</td>
+<td style="text-align:center">29.25</td>
+<td style="text-align:center">25.12</td>
+<td style="text-align:center">25.20</td>
+<td style="text-align:center">28.19</td>
+<td style="text-align:center">16.61</td>
+<td style="text-align:center">CER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">FLEURS de</td>
+<td style="text-align:center">22.78</td>
+<td style="text-align:center">14.80</td>
+<td style="text-align:center">14.78</td>
+<td style="text-align:center">15.67</td>
+<td style="text-align:center">14.71</td>
+<td style="text-align:center"><strong>14.69</strong></td>
+<td style="text-align:center">14.79</td>
+<td style="text-align:center">11.50</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">FLEURS es</td>
+<td style="text-align:center">13.79</td>
+<td style="text-align:center">6.53</td>
+<td style="text-align:center">6.53</td>
+<td style="text-align:center">7.58</td>
+<td style="text-align:center"><strong>6.51</strong></td>
+<td style="text-align:center"><strong>6.51</strong></td>
+<td style="text-align:center">6.70</td>
+<td style="text-align:center">4.57</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">FLEURS fr</td>
+<td style="text-align:center">26.84</td>
+<td style="text-align:center">17.46</td>
+<td style="text-align:center">17.44</td>
+<td style="text-align:center">18.28</td>
+<td style="text-align:center">17.46</td>
+<td style="text-align:center">17.39</td>
+<td style="text-align:center"><strong>17.30</strong></td>
+<td style="text-align:center">13.38</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">FLEURS ja</td>
+<td style="text-align:center">25.12</td>
+<td style="text-align:center">17.34</td>
+<td style="text-align:center">17.35</td>
+<td style="text-align:center">19.14</td>
+<td style="text-align:center">17.29</td>
+<td style="text-align:center"><strong>17.28</strong></td>
+<td style="text-align:center">17.59</td>
+<td style="text-align:center">12.69</td>
+<td style="text-align:center">CER</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>wav2vec2-base</strong></td>
+<td style="text-align:left">LS test-other</td>
+<td style="text-align:center">8.45</td>
+<td style="text-align:center">8.39</td>
+<td style="text-align:center">8.39</td>
+<td style="text-align:center">8.39</td>
+<td style="text-align:center">8.48</td>
+<td style="text-align:center">8.48</td>
+<td style="text-align:center"><strong>8.27</strong></td>
+<td style="text-align:center">6.50</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">LS 5dB 噪声</td>
+<td style="text-align:center">76.90</td>
+<td style="text-align:center">76.66</td>
+<td style="text-align:center"><strong>76.62</strong></td>
+<td style="text-align:center">76.89</td>
+<td style="text-align:center">76.72</td>
+<td style="text-align:center">76.70</td>
+<td style="text-align:center">76.87</td>
+<td style="text-align:center">75.61</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">AMI IHM 会议</td>
+<td style="text-align:center">41.85</td>
+<td style="text-align:center"><strong>41.09</strong></td>
+<td style="text-align:center">41.29</td>
+<td style="text-align:center">41.68</td>
+<td style="text-align:center"><strong>41.09</strong></td>
+<td style="text-align:center">41.43</td>
+<td style="text-align:center">41.65</td>
+<td style="text-align:center">38.42</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">FLEURS en</td>
+<td style="text-align:center">21.29</td>
+<td style="text-align:center"><strong>20.57</strong></td>
+<td style="text-align:center"><strong>20.57</strong></td>
+<td style="text-align:center">21.22</td>
+<td style="text-align:center">20.71</td>
+<td style="text-align:center">20.69</td>
+<td style="text-align:center">20.98</td>
+<td style="text-align:center">19.01</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>HuBERT-large</strong></td>
+<td style="text-align:left">LS test-other</td>
+<td style="text-align:center">4.16</td>
+<td style="text-align:center">4.13</td>
+<td style="text-align:center">4.14</td>
+<td style="text-align:center">4.14</td>
+<td style="text-align:center">4.17</td>
+<td style="text-align:center">4.17</td>
+<td style="text-align:center"><strong>4.04</strong></td>
+<td style="text-align:center">2.71</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">LS 5dB 噪声</td>
+<td style="text-align:center">22.96</td>
+<td style="text-align:center"><strong>22.62</strong></td>
+<td style="text-align:center">22.63</td>
+<td style="text-align:center">22.86</td>
+<td style="text-align:center">22.77</td>
+<td style="text-align:center">22.77</td>
+<td style="text-align:center">22.74</td>
+<td style="text-align:center">21.08</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">AMI IHM 会议</td>
+<td style="text-align:center">35.83</td>
+<td style="text-align:center"><strong>35.19</strong></td>
+<td style="text-align:center">35.34</td>
+<td style="text-align:center">35.60</td>
+<td style="text-align:center"><strong>35.19</strong></td>
+<td style="text-align:center">35.63</td>
+<td style="text-align:center">35.59</td>
+<td style="text-align:center">32.35</td>
+<td style="text-align:center">WER</td>
+</tr>
+<tr>
+<td style="text-align:left"></td>
+<td style="text-align:left">FLEURS en</td>
+<td style="text-align:center">15.26</td>
+<td style="text-align:center"><strong>14.92</strong></td>
+<td style="text-align:center"><strong>14.92</strong></td>
+<td style="text-align:center">15.20</td>
+<td style="text-align:center">15.10</td>
+<td style="text-align:center">15.03</td>
+<td style="text-align:center">15.01</td>
+<td style="text-align:center">13.17</td>
+<td style="text-align:center">WER</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="核心结论提取："><a href="#核心结论提取：" class="headerlink" title="核心结论提取："></a>核心结论提取：</h4><ol>
+<li><strong>胜率显著</strong>：在全部 39 个实验配置中，Cached Retrieval 在 <strong>28 个配置中显著超越了 1-pass 原生解码</strong>，并在 <strong>25 个配置中取得了与 Oracle 最接近的最佳非 Oracle 错误率</strong>；</li>
+<li><strong>在中等规模模型上收益巨大</strong>：收益最明显的当属 <strong>Whisper-small</strong>——在所有 9 个测试集上全部实现大幅正向收益，平均绝对错误率下降达 <strong>8.13%</strong>！其中 AMI 会议集绝对 WER 降低 <strong>13.01%</strong>，FLEURS 中文 CER 绝对降低 <strong>9.22%</strong>，法语和德语均降低 <strong>7%~9%</strong>；</li>
+<li><strong>CTC 识别器全面普适</strong>：在 wav2vec 2.0 与 HuBERT-large 上，无参数微调的缓存重打分在所有测试集上均一致性超越第一遍解码；</li>
+<li><strong>与 LoRA-GER 的对比</strong>：虽然 LoRA-GER 经过了参数微调，但在大量配置下（尤其是 FLEURS 多语言和会议场景），零训练的 Cached Retrieval 得分表现反而优于甚至碾压 GER（例如在 FLEURS cmn 上，GER 产生了灾难性的跨语种幻觉，CER 高达 58.55%，而 Local Cache 将 CER 从 50.98% 压缩至 41.14%）。</li>
+</ol>
+<h3 id="4-2-上下文窗口长度消融：短上下文为何足够？"><a href="#4-2-上下文窗口长度消融：短上下文为何足够？" class="headerlink" title="4.2 上下文窗口长度消融：短上下文为何足够？"></a>4.2 上下文窗口长度消融：短上下文为何足够？</h3><p>作者对缓存最大上下文长度 $K \in {8, 16, 32, 64, 128, 256, 512, 1024}$ 进行了详尽扫描。</p>
+<p>| 教师 LLM | ASR 模型 | 数据集数 | 最优 $K$ 分布 | $\Delta_{32}$ (相比 1-pass 变化) | 平均命中率 (%) | 命中率区间 (%) | 长上下文差距 ($\max_{K&gt;32} \lvert E_K - E_{32}<br>vert$) |<br>| :—- | :—- | :—-: | :—-: | :—-: | :—-: | :—-: | :—-: |<br>| Qwen2.5-0.5B | HuBERT-large | 4 | 8:2, 16:2 | -0.301 | 21.51 | 0.00–31.72 | <strong>0.000</strong> |<br>| Qwen3-8B | HuBERT-large | 4 | 8:3, 32:1 | -0.235 | 21.43 | 0.00–31.72 | <strong>0.000</strong> |<br>| Qwen2.5-0.5B | wav2vec 2.0 | 4 | 8:1, 16:2, 32:1 | -0.416 | 18.00 | 0.00–31.31 | <strong>0.000</strong> |<br>| Qwen3-8B | wav2vec 2.0 | 4 | 8:4 | -0.356 | 17.84 | 0.00–31.20 | <strong>0.000</strong> |<br>| Qwen2.5-0.5B | Whisper-base | 9 | 8:7, 32:2 | -3.683 | 15.32 | 1.18–23.54 | <strong>0.000</strong> |<br>| Qwen3-8B | Whisper-base | 9 | 8:7, 16:2 | -3.112 | 14.57 | 1.03–21.46 | <strong>0.000</strong> |<br>| Qwen2.5-0.5B | Whisper-small| 9 | 8:8, 32:1 | -8.024 | 16.06 | 1.37–22.88 | <strong>0.000</strong> |<br>| Qwen3-8B | Whisper-small| 9 | 8:9 | -7.959 | 15.98 | 1.29–22.79 | <strong>0.000</strong> |</p>
+<h4 id="深度工程启示："><a href="#深度工程启示：" class="headerlink" title="深度工程启示："></a>深度工程启示：</h4><ul>
+<li><strong>没有一个实验组偏好 $K &gt; 32$</strong>：在全部 78 组扫描中，有 <strong>67 组在 $K=8$ 时就已经达到最优或并列最优</strong>；</li>
+<li>当 $K &gt; 32$ 时，相比于 $K=32$ 的错误率绝对变化最大仅为 <strong>0.004%</strong>（几乎为零）；</li>
+<li><strong>原因剖析</strong>：在句子级 $N$-best 重打分场景中，$N$-best 候选之间的区分度绝大多数集中在局部的词汇搭配和句法结构上（$K=8$ 已经提供了充裕的局部约束）。盲目增大 $K$ 只会急剧指数级膨胀 Key 的稀疏度，导致命中率断崖式下跌，且无法带来区分度的边际提升。</li>
+<li><strong>部署价值</strong>：因此在工业落地中，<strong>只需构建 $K \le 8$ 或 $K \le 16$ 的极轻量缓存</strong>，就能以极小的存储开销榨取绝大部分 LLM 先验红利。</li>
+</ul>
+<hr>
+<h2 id="5-总结与思考"><a href="#5-总结与思考" class="headerlink" title="5. 总结与思考"></a>5. 总结与思考</h2><p>《Cached LLM Probability Retrieval for Speech Recognition》为大模型时代的 ASR 语言模型重打分提供了一个极其务实且优雅的解法：</p>
+<ol>
+<li><strong>解耦了算力与先验</strong>：通过离线概率缓存，无需在推理集群部署笨重昂贵的 LLM 实例，即可让端侧或边缘识别器享受顶级开源大模型的语言知识；</li>
+<li><strong>轻量与可解释性</strong>：基于明确的 Key-Value 查表与上下文截断退避，整个过程完全透明可控，避免了生成式纠错（GER）难以抑制的非受控“自作主张”与幻觉风险；</li>
+<li><strong>明确的上下文经济学</strong>：证明了在 ASR 重排序中，短上下文缓存（$K=8$）最具性价比，长程依赖应交由极少量的选择性推理兜底。</li>
+</ol>
+<p>该工作非常适合作为现有工业 ASR 流水线中的“即插即用型低成本适配层”，在保证极低部署成本的同时有效打捞低置信度的声学假说。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
+      
+        <a href="/tags/LM-Rescoring/" class="print-no-link">#LM Rescoring</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Cached LLM Probability Retrieval for Speech Recognition</div>
+      <div>https://smallsmartao.github.io/2026/08/18/cached-llm-probability-retrieval-asr/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年8月18日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年8月18日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/08/18/the-null-token-knows-hallucination-asr-nmt/" title="The Null Token Knows: Reducing Message-Free Hallucination in ASR and NMT">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">The Null Token Knows: Reducing Message-Free Hallucination in ASR and NMT</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/08/18/speech-language-interface-evolution-8-papers/" title="从离散 Token 到原始频谱：Speech–LLM 接口的八篇论文演进综述">
+                        <span class="hidden-mobile">从离散 Token 到原始频谱：Speech–LLM 接口的八篇论文演进综述</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

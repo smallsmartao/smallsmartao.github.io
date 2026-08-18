@@ -1,0 +1,952 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="1. 动机与背景：无输入下的“自信幻觉”与静默决策失灵在基于注意力机制的 Encoder-Decoder（AED）系统（如语音识别领域的 Whisper、神经机器翻译领域的 NMT 模型）中，一直存在一个广为人知且破坏性极强的顽疾——无信息输入下的胡言乱语（Message-Free Hallucination）。 具体而言，当输入音频为纯静音（Silence）、环境底噪（Room Tone）、纯背">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The Null Token Knows: Reducing Message-Free Hallucination in ASR and NMT">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/08/18/the-null-token-knows-hallucination-asr-nmt/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="1. 动机与背景：无输入下的“自信幻觉”与静默决策失灵在基于注意力机制的 Encoder-Decoder（AED）系统（如语音识别领域的 Whisper、神经机器翻译领域的 NMT 模型）中，一直存在一个广为人知且破坏性极强的顽疾——无信息输入下的胡言乱语（Message-Free Hallucination）。 具体而言，当输入音频为纯静音（Silence）、环境底噪（Room Tone）、纯背">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/null_token_hallucination.png">
+<meta property="article:published_time" content="2026-08-18T06:55:00.000Z">
+<meta property="article:modified_time" content="2026-08-18T06:48:10.568Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="Hallucination">
+<meta property="article:tag" content="NMT">
+<meta property="article:tag" content="Whisper">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/null_token_hallucination.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>The Null Token Knows: Reducing Message-Free Hallucination in ASR and NMT - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/null_token_hallucination.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="The Null Token Knows: Reducing Message-Free Hallucination in ASR and NMT"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-08-18 14:55" pubdate>
+          2026年8月18日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          21 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">The Null Token Knows: Reducing Message-Free Hallucination in ASR and NMT</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年8月18日 下午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="1-动机与背景：无输入下的“自信幻觉”与静默决策失灵"><a href="#1-动机与背景：无输入下的“自信幻觉”与静默决策失灵" class="headerlink" title="1. 动机与背景：无输入下的“自信幻觉”与静默决策失灵"></a>1. 动机与背景：无输入下的“自信幻觉”与静默决策失灵</h2><p>在基于注意力机制的 Encoder-Decoder（AED）系统（如语音识别领域的 Whisper、神经机器翻译领域的 NMT 模型）中，一直存在一个广为人知且破坏性极强的顽疾——<strong>无信息输入下的胡言乱语（Message-Free Hallucination）</strong>。</p>
+<p>具体而言，当输入音频为纯静音（Silence）、环境底噪（Room Tone）、纯背景音乐（Music），或者输入源文本为无意义乱码时，模型依然能够极其自信、流畅地“脑补”并生成完整的句子（例如 Whisper 在静音下频繁输出“Thank you for watching”或宗教经文短句）。这种现象在医疗听写、会议转录、司法记录等关键领域会带来严重的误导与合规风险。</p>
+<p>更为严峻的是，这种失败<strong>并不会随着模型参数规模的扩大而自然消退</strong>。作者团队对 Whisper 全系列六个规模的模型进行系统性评测发现，随着 WER 显著下降，模型在非语音片段上的幻觉率反而呈现非单调甚至恶化的趋势。</p>
+<p>工业界以往针对该问题的常见防御手段主要包括：</p>
+<ol>
+<li><strong>外挂 VAD / Endpointing 模块</strong>：通过前端信号级能量检测或独立 VAD 模型硬切；但 VAD 在低信噪比、弱呼吸声或背景音乐下极易误判，造成正常语音的前后截断；</li>
+<li><strong>重训/微调注意力头与表征</strong>：通过对比学习、稀疏自编码器（SAE）或对齐蒸馏对编码器进行纠偏；但训练开销巨大且极易损伤模型在正常语音上的泛化识别能力。</li>
+</ol>
+<p>来自 Lab260、BitmanagerAI、MTUCI 与 ITMO 的研究团队（Kirill Borodin, Vasiliy Kudryavtsev, Ivan Viakhirev, Grach Mkrtchian）在论文《The Null Token Knows: Reducing Message-Free Hallucination in ASR and NMT》中提出了一种极其根本的诊断视角：</p>
+<blockquote>
+<p><strong>模型自身其实早就心知肚明——保留的“空标记（Null Token / EOT / EOS）”在内部表征与对数几率（Logit）中，早就蕴含了极其强烈的弃权信号（Abstention Signal）。只是原生的解码策略未能在第一步做出正确的决策！</strong></p>
+</blockquote>
+<p><img src="/images/paper_figs/null_token_hallucination/layersep.png" srcset="/img/loading.gif" lazyload alt="Whisper 解码器分层线性探测与非语音分离度"></p>
+<p>上图揭示了一个关键发现：在 Whisper 解码器的第 1 层（Block 1）之后，冻结的隐藏状态就已经在线性可分层面上<strong>完美将非语音（Non-Speech）与正常语音（Speech）彻底分离开来</strong>。模型并非“听不出这是静音”，而是生成输出的最终坐标选择失衡。</p>
+<hr>
+<h2 id="2-三大核心研究问题与形式化建模-Research-Questions-amp-Formulation"><a href="#2-三大核心研究问题与形式化建模-Research-Questions-amp-Formulation" class="headerlink" title="2. 三大核心研究问题与形式化建模 (Research Questions &amp; Formulation)"></a>2. 三大核心研究问题与形式化建模 (Research Questions &amp; Formulation)</h2><p>论文围绕以下三个核心问题展开了极其严谨的理论建模与跨架构审计：</p>
+<h3 id="2-1-RQ1：内部状态的分离度与原生输出读取-Developmental-Separation-and-Readout"><a href="#2-1-RQ1：内部状态的分离度与原生输出读取-Developmental-Separation-and-Readout" class="headerlink" title="2.1 RQ1：内部状态的分离度与原生输出读取 (Developmental Separation and Readout)"></a>2.1 RQ1：内部状态的分离度与原生输出读取 (Developmental Separation and Readout)</h3><h4 id="1-解码器隐层探测（Linear-Probing）"><a href="#1-解码器隐层探测（Linear-Probing）" class="headerlink" title="1. 解码器隐层探测（Linear Probing）"></a>1. 解码器隐层探测（Linear Probing）</h4><p>在包含 1060 个涵盖静音、噪声、音乐、重叠等极限工况的压力测试集（Stress Battery）上，作者对 Whisper 冻结的各层解码器隐状态 $h_l$ 训练线性探测器（Linear Prober）。结果表明：</p>
+<ul>
+<li>零层 Embedding 阶段完全处于随机猜测水平（接近 50%）；</li>
+<li>但<strong>仅仅经过第 1 个解码器 Block 后，非语音与正常语音的线性可分 AUC 就直接飙升至 0.98 以上</strong>。</li>
+<li>这证明编码器输出给解码器的 Cross-Attention 上下文中已经完整编码了“输入是否包含有效信息”的事实。</li>
+</ul>
+<h4 id="2-原生-Null-Token-对数几率审计"><a href="#2-原生-Null-Token-对数几率审计" class="headerlink" title="2. 原生 Null Token 对数几率审计"></a>2. 原生 Null Token 对数几率审计</h4><p>在自回归生成的第一步，模型原生赋予 <code>&lt;|endoftranscript|&gt;</code>（EOT）或 <code>&lt;eos&gt;</code> 的未归一化 Logit 记为 $z_{    ext{null}}$，最大非空 Token 的 Logit 记为 $z_{    ext{text}} = \max_{v<br>eq     ext{null}} z_v$。<br>定义原生判别裕度（Native Margin）：</p>
+<script type="math/tex; mode=display">
+\Delta_{    ext{native}} = z_{    ext{null}} - z_{    ext{text}}</script><p>统计表明，在发生幻觉的非语音样本上，尽管 $z_{    ext{text}} &gt; z_{    ext{null}}$ 导致模型最终选错了分支，但此时的 $\Delta_{    ext{native}}$ 依然显著高于正常语音样本。换言之，<strong>Null Token 的相对打分本身就是一个极其优良的连续弃权指示器</strong>。</p>
+<h3 id="2-2-RQ2：Null-坐标的干预手段与理论先验转移模型-Diagnostic-Audit-amp-Interventions"><a href="#2-2-RQ2：Null-坐标的干预手段与理论先验转移模型-Diagnostic-Audit-amp-Interventions" class="headerlink" title="2.2 RQ2：Null 坐标的干预手段与理论先验转移模型 (Diagnostic Audit &amp; Interventions)"></a>2.2 RQ2：Null 坐标的干预手段与理论先验转移模型 (Diagnostic Audit &amp; Interventions)</h3><p>既然 Null 坐标蕴含了真理，如何对其进行干预？作者形式化对比了三类不同侵入程度的干预机制：</p>
+<p><img src="/images/paper_figs/null_token_hallucination/logit_lens_summary.png" srcset="/img/loading.gif" lazyload alt="不同层级的 Null 坐标读取干预与 Logit 变化"></p>
+<h4 id="1-标量-Logit-偏置（Scalar-Logit-Shift-eta-Shift）"><a href="#1-标量-Logit-偏置（Scalar-Logit-Shift-eta-Shift）" class="headerlink" title="1. 标量 Logit 偏置（Scalar Logit Shift / $eta$-Shift）"></a>1. 标量 Logit 偏置（Scalar Logit Shift / $eta$-Shift）</h4><p>这是最轻量、零参数微调的干预方式：直接在第一步解码时为 Null Token 的 Logit 叠加一个全局常数偏置 $eta$：</p>
+<script type="math/tex; mode=display">
+    ilde{z}_{    ext{null}} = z_{    ext{null}} + eta</script><p>根据贝叶斯后验先验转移理论（Saerens et al., 2002）：当测试环境的无信息输入比例（Base Rate）发生漂移时，对输出 Logit 增加常数偏置在数学上等价于调整类别的先验几率（Prior Odds）：</p>
+<script type="math/tex; mode=display">
+\log rac{p(y=    ext{null} \mid x)}{p(y 
+eq     ext{null} \mid x)} = \log rac{p_{    ext{train}}(y=    ext{null} \mid x)}{p_{    ext{train}}(y 
+eq     ext{null} \mid x)} + \log rac{\pi_{    ext{test}}(    ext{null})}{\pi_{    ext{test}}(    ext{non-null})} - \log rac{\pi_{    ext{train}}(    ext{null})}{\pi_{    ext{train}}(    ext{non-null})}</script><h4 id="2-监督线性行嫁接（Analytic-Row-Graft）"><a href="#2-监督线性行嫁接（Analytic-Row-Graft）" class="headerlink" title="2. 监督线性行嫁接（Analytic Row-Graft）"></a>2. 监督线性行嫁接（Analytic Row-Graft）</h4><p>通过闭式解将输出投影矩阵 $W_{    ext{out}}$ 中对应 Null Token 的这一行向量 $w_{    ext{null}}$ 替换为由隐状态线性回归得到的权重向量 $w^*_{    ext{probe}}$，并保持其他所有词表行完全冻结。</p>
+<h4 id="3-训练行微调（Trained-Row）"><a href="#3-训练行微调（Trained-Row）" class="headerlink" title="3. 训练行微调（Trained Row）"></a>3. 训练行微调（Trained Row）</h4><p>在仅微调 $w_{    ext{null}}$ 单行权重的设定下进行有监督反向传播。</p>
+<h4 id="4-关键指标：抑制收益-vs-删除代价的严苛权衡"><a href="#4-关键指标：抑制收益-vs-删除代价的严苛权衡" class="headerlink" title="4. 关键指标：抑制收益 vs 删除代价的严苛权衡"></a>4. 关键指标：抑制收益 vs 删除代价的严苛权衡</h4><p>以往的研究往往只单向汇报“幻觉降低了多少”，却掩盖了正常语音被误杀的代价。论文强制引入双向评估指标：</p>
+<ul>
+<li><strong>Fabrication Rate（虚构生成率）</strong>：在无信息输入样本上，模型错误输出非空文本的比例（越低越好）；</li>
+<li><strong>Deletion Rate / Speech Cost（误删代价）</strong>：在真实有效语音样本上，模型因过度敏感而直接输出 Null（吞字/整句丢弃）的比例，以及有效音频的 WER 恶化幅度。</li>
+</ul>
+<hr>
+<h2 id="3-跨架构与跨语种泛化审计-Cross-Architecture-amp-Multi-System-Zoo"><a href="#3-跨架构与跨语种泛化审计-Cross-Architecture-amp-Multi-System-Zoo" class="headerlink" title="3. 跨架构与跨语种泛化审计 (Cross-Architecture &amp; Multi-System Zoo)"></a>3. 跨架构与跨语种泛化审计 (Cross-Architecture &amp; Multi-System Zoo)</h2><p>研究团队构建了涵盖 <strong>15 个工业级与开源顶级模型</strong>的评测动物园（Model Zoo），横跨三大体系：</p>
+<ol>
+<li><strong>AED 语音识别</strong>：Whisper 家族（tiny, base, small, medium, large-v2, large-v3）、Canary-1B、FireRedASR、SeamlessM4T；</li>
+<li><strong>CTC / RNN-T 对齐空白符</strong>：Conformer-CTC、Zipformer-RNNT（探究 CTC 的 <code>&lt;blank&gt;</code> 是否具备相同机制）；</li>
+<li><strong>神经机器翻译 (NMT)</strong>：NLLB-200 (600M, 1.3B, 3.3B)、M2M-100。</li>
+</ol>
+<p><img src="/images/paper_figs/null_token_hallucination/logit_lens_crossarch.png" srcset="/img/loading.gif" lazyload alt="跨架构 Logit Lens 探测对比"></p>
+<hr>
+<h2 id="4-核心实验发现与数据审计-Key-Findings"><a href="#4-核心实验发现与数据审计-Key-Findings" class="headerlink" title="4. 核心实验发现与数据审计 (Key Findings)"></a>4. 核心实验发现与数据审计 (Key Findings)</h2><h3 id="4-1-标量-eta-Shift-即可实现近乎完美的幻觉抑制"><a href="#4-1-标量-eta-Shift-即可实现近乎完美的幻觉抑制" class="headerlink" title="4.1 标量 $eta$-Shift 即可实现近乎完美的幻觉抑制"></a>4.1 标量 $eta$-Shift 即可实现近乎完美的幻觉抑制</h3><p>在 Whisper-small 的严格锁死（Locked Source-Disjoint）评估集上（300 个非语音样本 vs 300 个正常语音样本）：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">模型 / 干预配置</th>
+<th style="text-align:center">$eta$ 偏置值</th>
+<th style="text-align:center">非语音幻觉率 (Fabrication %) $\downarrow$</th>
+<th style="text-align:center">正常语音误删率 (Deletion %) $\downarrow$</th>
+<th style="text-align:center">正常语音 WER (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Whisper-small (原生 Default)</strong></td>
+<td style="text-align:center">$0.0$</td>
+<td style="text-align:center"><strong>78.3%</strong></td>
+<td style="text-align:center"><strong>0.0%</strong></td>
+<td style="text-align:center">3.12%</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Whisper-small + $eta$-Shift</strong></td>
+<td style="text-align:center">$+2.5$</td>
+<td style="text-align:center">24.1%</td>
+<td style="text-align:center">0.0%</td>
+<td style="text-align:center">3.12%</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Whisper-small + $eta$-Shift</strong></td>
+<td style="text-align:center">$+4.0$</td>
+<td style="text-align:center"><strong>2.3%</strong></td>
+<td style="text-align:center">0.3%</td>
+<td style="text-align:center">3.15%</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Whisper-small + $eta$-Shift</strong></td>
+<td style="text-align:center">$+6.0$</td>
+<td style="text-align:center"><strong>0.0%</strong></td>
+<td style="text-align:center">2.7%</td>
+<td style="text-align:center">3.48%</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Whisper-small (外挂 VAD)</strong></td>
+<td style="text-align:center">—</td>
+<td style="text-align:center">14.7%</td>
+<td style="text-align:center">4.3%</td>
+<td style="text-align:center">3.89%</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Whisper-small (SAE 内部表征纠偏)</strong></td>
+<td style="text-align:center">—</td>
+<td style="text-align:center">8.9%</td>
+<td style="text-align:center">3.1%</td>
+<td style="text-align:center">3.65%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h4 id="深度洞察："><a href="#深度洞察：" class="headerlink" title="深度洞察："></a>深度洞察：</h4><ul>
+<li><strong>微小的标量偏置威力惊人</strong>：只需将第一步解码的 $z_{    ext{null}}$ 向上平移 $eta = +4.0$，<strong>非语音幻觉率瞬间从 78.3% 暴跌至 2.3%</strong>（相对消除 97% 的幻觉），而正常语音的误删率仅为微不足道的 0.3%，WER 几乎完全不受影响！</li>
+<li><strong>完胜复杂外挂与表征修改</strong>：相比于改动中间层隐藏状态（SAE / Steering）或外挂 VAD，直接在最终的 Null 坐标做标量调整，不仅具有严格的单调可控性，且由于没有污染声学表征，对正常语音的保真度最高。</li>
+</ul>
+<h3 id="4-2-Canary-1B-与翻译模型的表现"><a href="#4-2-Canary-1B-与翻译模型的表现" class="headerlink" title="4.2 Canary-1B 与翻译模型的表现"></a>4.2 Canary-1B 与翻译模型的表现</h3><p><img src="/images/paper_figs/null_token_hallucination/canary_beta.png" srcset="/img/loading.gif" lazyload alt="Canary-1B 在不同 $eta$ 下的幻觉-删除权衡曲线"></p>
+<ul>
+<li><strong>Canary-1B 与 SeamlessM4T</strong>：同样表现出对 $eta$-Shift 极佳的响应敏感度，通过单一标量即可平滑调节系统的保守/激进程度（如上图曲线所示）；</li>
+<li><strong>CTC / RNN-T 的本质区别</strong>：与 AED 模型的 EOT 不同，CTC 和 RNN-T 中的 <code>&lt;blank&gt;</code> 是<strong>局部的对齐占位符</strong>而非序列终止符。实验表明单纯提升 <code>&lt;blank&gt;</code> 的 Logit 无法抑制全局幻觉，证实了 AED 序列级 Null 坐标的特殊拓扑地位；</li>
+<li><strong>NMT 机器翻译</strong>：在退化/乱码源文本输入下，调控 <code>&lt;eos&gt;</code> 的初始几率同样能立竿见影地切断无意义的长句复读与幻觉生成。</li>
+</ul>
+<hr>
+<h2 id="5-工程落地指南-Practical-Deployment-Checklist"><a href="#5-工程落地指南-Practical-Deployment-Checklist" class="headerlink" title="5. 工程落地指南 (Practical Deployment Checklist)"></a>5. 工程落地指南 (Practical Deployment Checklist)</h2><p>基于论文的严谨审计，团队为实际业务落地提出了一套极其简洁高效的免训练防御规范：</p>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><code class="hljs routeros">┌───────────────────────────────┐<br>│  Audio Input x (e.g. 30s)     │<br>└───────────────┬───────────────┘<br>                ▼<br>┌───────────────────────────────┐<br>│    Whisper / AED Encoder      │<br>└───────────────┬───────────────┘<br>                ▼<br>┌───────────────────────────────┐<br>│  Decoder <span class="hljs-keyword">Step</span> 0 (Prompt/Task) │<br>└───────────────┬───────────────┘<br>                ▼<br>┌───────────────────────────────┐<br>│  <span class="hljs-keyword">Step</span> 1: Compute<span class="hljs-built_in"> Raw </span>Logits   │<br>│   z_v <span class="hljs-keyword">for</span> all v <span class="hljs-keyword">in</span> Vocab      │<br>└───────────────┬───────────────┘<br>                ▼<br>┌───────────────────────────────┐<br>│  Apply Scalar Bias:           │<br>│  z<span class="hljs-string">&#x27;_EOT = z_EOT + β (e.g. 3.5)│</span><br><span class="hljs-string">└───────────────┬───────────────┘</span><br><span class="hljs-string">                ▼</span><br><span class="hljs-string">      Is argmax(z&#x27;</span>) == EOT ?<br>            ╱       ╲<br>          <span class="hljs-literal">YES</span>        <span class="hljs-literal">NO</span><br>          ╱            ╲<br>┌────────────┐    ┌───────────────────────────┐<br>│ Suppress / │    │ Continue Normal Autore-   │<br>│ Output <span class="hljs-string">&quot;&quot;</span>  │    │ gressive Decoding (<span class="hljs-keyword">Step</span> 2)│<br>└────────────┘    └───────────────────────────┘<br></code></pre></td></tr></table></figure>
+<ol>
+<li><strong>Step-1 局部干预</strong>：仅在解码自回归的第一步（First Token Generation）对 $z_{    ext{EOT}}$ 施加标量偏置 $eta \in [3.0, 4.5]$；</li>
+<li><strong>后续步保持原样</strong>：一旦第一步判定为有效语音并输出第一个非空 Token，后续所有步的 Logit 恢复原始分布，防止过早截断正常长句；</li>
+<li><strong>零推理延迟与显存开销</strong>：无需加载额外模型，仅需一行代码 <code>logits[0, EOT_ID] += beta</code>，即可彻底阻断 95% 以上的 Message-Free 幻觉！</li>
+</ol>
+<hr>
+<h2 id="6-总结"><a href="#6-总结" class="headerlink" title="6. 总结"></a>6. 总结</h2><p>《The Null Token Knows》用极其扎实细腻的实证数据，打破了学术界“解决幻觉必须大动干戈重训表征或外挂复杂网络”的思维定势。</p>
+<p>它证明了大模型内部的注意力机制和深层网络早已经捕获了输入信号的真实信息量，通过简单、透明、数学上严格自洽的 Null-Coordinate 标量偏置，我们就能以近乎为零的计算代价换取极其稳健的工业级抗幻觉能力。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/Whisper/" class="print-no-link">#Whisper</a>
+      
+        <a href="/tags/Hallucination/" class="print-no-link">#Hallucination</a>
+      
+        <a href="/tags/NMT/" class="print-no-link">#NMT</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>The Null Token Knows: Reducing Message-Free Hallucination in ASR and NMT</div>
+      <div>https://smallsmartao.github.io/2026/08/18/the-null-token-knows-hallucination-asr-nmt/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年8月18日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年8月18日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/08/18/cached-llm-probability-retrieval-asr/" title="Cached LLM Probability Retrieval for Speech Recognition">
+                        <span class="hidden-mobile">Cached LLM Probability Retrieval for Speech Recognition</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
