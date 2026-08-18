@@ -1,0 +1,974 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="在大语言模型（LLM）与语音大模型（Speech-LLM）时代，自回归解码（Autoregressive Decoding）每生成一个 Token 都需要触发一次完整的 Transformer 前向计算，导致显存带宽严重受限（Memory-Bound），吞吐与端到端延迟成为工业落地的最大瓶颈。 投机解码（Speculative Decoding）通过“先低成本生成草稿候选（Drafting），再由">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的四代演进">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/08/18/speech-speculative-decoding-evolution/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="在大语言模型（LLM）与语音大模型（Speech-LLM）时代，自回归解码（Autoregressive Decoding）每生成一个 Token 都需要触发一次完整的 Transformer 前向计算，导致显存带宽严重受限（Memory-Bound），吞吐与端到端延迟成为工业落地的最大瓶颈。 投机解码（Speculative Decoding）通过“先低成本生成草稿候选（Drafting），再由">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/speech_speculative_decoding_evolution.png">
+<meta property="article:published_time" content="2026-08-18T07:30:00.000Z">
+<meta property="article:modified_time" content="2026-08-18T07:21:23.363Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="Speech-LLM">
+<meta property="article:tag" content="投机解码">
+<meta property="article:tag" content="推理加速">
+<meta property="article:tag" content="综述">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/speech_speculative_decoding_evolution.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的四代演进 - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/speech_speculative_decoding_evolution.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的四代演进"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-08-18 15:30" pubdate>
+          2026年8月18日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          19 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的四代演进</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年8月18日 下午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <p>在大语言模型（LLM）与语音大模型（Speech-LLM）时代，自回归解码（Autoregressive Decoding）每生成一个 Token 都需要触发一次完整的 Transformer 前向计算，导致<strong>显存带宽严重受限（Memory-Bound）</strong>，吞吐与端到端延迟成为工业落地的最大瓶颈。</p>
+<p><strong>投机解码（Speculative Decoding）</strong>通过“先低成本生成草稿候选（Drafting），再由大模型单次前向并行验证（Verification）”的范式，实现了严格无损（Lossless）的端到端加速。在语音识别与全双工语音交互领域，结合声学特征与 CTC 先验，投机解码更是演化出了一系列极具语音模态特性的加速方案。</p>
+<p>本文通过对 Leviathan et al. (2023)、Whisper-Speculative、SpecASR、SpeechKV、EAGLE / P-EAGLE 等工作及引用脉络的深度拆解，系统梳理 <strong>Speech 投机解码与推理加速的四个发展代际与未来落地课题</strong>。</p>
+<hr>
+<h2 id="架构演进路线全景"><a href="#架构演进路线全景" class="headerlink" title="架构演进路线全景"></a>架构演进路线全景</h2><figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs mathematica">┌──────────────────────────────────────────────────────────────────────────────────┐<br>│ 代际 <span class="hljs-number">0</span>：纯文本投机采样奠基 <span class="hljs-punctuation">(</span><span class="hljs-variable">Foundations</span> <span class="hljs-variable">of</span> <span class="hljs-variable">Speculative</span> <span class="hljs-variable">Decoding</span><span class="hljs-operator">,</span> <span class="hljs-number">2023</span><span class="hljs-punctuation">)</span>            │<br>│ 代表：<span class="hljs-variable">Leviathan</span> <span class="hljs-variable">et</span> <span class="hljs-variable">al</span><span class="hljs-operator">.</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">ICML</span> <span class="hljs-number">2023</span><span class="hljs-punctuation">)</span><span class="hljs-operator">,</span> <span class="hljs-variable">Chen</span> <span class="hljs-variable">et</span> <span class="hljs-variable">al</span><span class="hljs-operator">.</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">Fast</span> <span class="hljs-variable">Inference</span> <span class="hljs-variable">from</span> <span class="hljs-variable">Transformers</span><span class="hljs-punctuation">)</span>│<br>│ 机制：小模型（<span class="hljs-variable">Draft</span> <span class="hljs-variable">Model</span>）自回归生成 <span class="hljs-built_in">K</span> 个 <span class="hljs-variable">Token</span> ➔ 大模型（<span class="hljs-variable">Target</span> <span class="hljs-variable">Model</span>）并行 <span class="hljs-built_in">Forward</span> 校验。│<br>│ 数学准则：基于拒绝采样（<span class="hljs-variable">Rejection</span> <span class="hljs-variable">Sampling</span>），严格证明输出分布与 <span class="hljs-variable">Target</span> <span class="hljs-variable">Model</span> 完全一致（无损）。│<br>└────────────────────────────────────────┬─────────────────────────────────────────┘<br>                                         │<br>                                         ▼<br>┌──────────────────────────────────────────────────────────────────────────────────┐<br>│ 代际 <span class="hljs-number">1</span>：同模态小模型级联投机 <span class="hljs-punctuation">(</span><span class="hljs-built_in">Small</span><span class="hljs-operator">-</span><span class="hljs-variable">Target</span> <span class="hljs-variable">Model</span> <span class="hljs-variable">Drafting</span><span class="hljs-operator">,</span> <span class="hljs-number">2023</span><span class="hljs-operator">-</span><span class="hljs-number">2024</span><span class="hljs-punctuation">)</span>             │<br>│ 代表：<span class="hljs-variable">Whisper</span><span class="hljs-operator">-</span><span class="hljs-built_in">Tiny</span> <span class="hljs-variable">drafting</span> <span class="hljs-variable">Whisper</span><span class="hljs-operator">-</span><span class="hljs-built_in">Large</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">OpenAI</span> <span class="hljs-operator">/</span> <span class="hljs-variable">HuggingFace</span><span class="hljs-punctuation">)</span><span class="hljs-operator">,</span> <span class="hljs-variable">Qwen</span><span class="hljs-operator">-</span><span class="hljs-number">0.5</span><span class="hljs-variable">B</span> <span class="hljs-variable">draft</span> <span class="hljs-variable">Qwen</span><span class="hljs-operator">-</span><span class="hljs-number">7</span><span class="hljs-variable">B</span> │<br>│ 机制：使用同一家族的 <span class="hljs-built_in">Tiny</span><span class="hljs-operator">/</span><span class="hljs-built_in">Small</span> 模型接收相同声学特征生成草稿，由 <span class="hljs-built_in">Large</span> 模型单步验证。│<br>│ 痛点：需要同时在显存中常驻两个模型，<span class="hljs-variable">Draft</span> 阶段依然是串行自回归，显存带宽争抢明显。 │<br>└────────────────────────────────────────┬─────────────────────────────────────────┘<br>                                         │<br>                                         ▼<br>┌──────────────────────────────────────────────────────────────────────────────────┐<br>│ 代际 <span class="hljs-number">2</span>：自投机与多头预测 <span class="hljs-punctuation">(</span><span class="hljs-variable">Self</span><span class="hljs-operator">-</span><span class="hljs-variable">Speculative</span> <span class="hljs-variable">Decoding</span> <span class="hljs-operator">&amp;</span> <span class="hljs-variable">Multi</span><span class="hljs-operator">-</span><span class="hljs-built_in">Head</span> <span class="hljs-variable">Draft</span><span class="hljs-operator">,</span> <span class="hljs-number">2024</span><span class="hljs-operator">-</span><span class="hljs-number">2025</span><span class="hljs-punctuation">)</span> │<br>│ 代表：<span class="hljs-variable">Medusa</span><span class="hljs-operator">-</span><span class="hljs-built_in">Audio</span><span class="hljs-operator">,</span> <span class="hljs-variable">EAGLE</span> <span class="hljs-operator">/</span> <span class="hljs-variable">P</span><span class="hljs-operator">-</span><span class="hljs-variable">EAGLE</span> <span class="hljs-variable">for</span> <span class="hljs-variable">Multimodal</span><span class="hljs-operator">,</span> <span class="hljs-variable">Multi</span><span class="hljs-operator">-</span><span class="hljs-variable">Token</span> <span class="hljs-variable">Prediction</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">MTP</span><span class="hljs-punctuation">)</span> │<br>│ 机制：彻底抛弃独立 <span class="hljs-variable">Draft</span> 小模型！在 <span class="hljs-variable">Target</span> <span class="hljs-variable">LLM</span> 顶部挂载多个轻量级预测头（<span class="hljs-variable">Draft</span> <span class="hljs-built_in">Heads</span>）│<br>│ 或利用浅层隐状态（<span class="hljs-variable">Hidden</span> <span class="hljs-variable">States</span>）一步并行吐出 <span class="hljs-built_in">K</span> 个候选 <span class="hljs-variable">Token</span>（树状 <span class="hljs-built_in">Tree</span> <span class="hljs-variable">Attention</span> 验证）。│<br>│ 突破：无需额外小模型显存，接受率提升至 <span class="hljs-number">70</span><span class="hljs-operator">%~</span><span class="hljs-number">80</span><span class="hljs-operator">%</span>，端到端提速 <span class="hljs-number">1.8</span><span class="hljs-variable">x</span><span class="hljs-operator">~</span><span class="hljs-number">2.5</span><span class="hljs-variable">x</span>。           │<br>└────────────────────────────────────────┬─────────────────────────────────────────┘<br>                                         │<br>                                         ▼<br>┌──────────────────────────────────────────────────────────────────────────────────┐<br>│ 代际 <span class="hljs-number">3</span>：声学<span class="hljs-operator">/</span><span class="hljs-variable">CTC</span> 引导的非自回归投机 <span class="hljs-punctuation">(</span><span class="hljs-variable">Acoustic</span> <span class="hljs-operator">&amp;</span> <span class="hljs-variable">CTC</span><span class="hljs-operator">-</span><span class="hljs-variable">Guided</span> <span class="hljs-variable">NAR</span> <span class="hljs-variable">Drafting</span><span class="hljs-operator">,</span> <span class="hljs-number">2025</span><span class="hljs-operator">-</span><span class="hljs-number">2026</span><span class="hljs-punctuation">)</span>│<br>│ 代表：<span class="hljs-variable">SpecASR</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">arXiv</span> <span class="hljs-number">2025</span><span class="hljs-punctuation">)</span><span class="hljs-operator">,</span> <span class="hljs-variable">CTC</span><span class="hljs-operator">-</span><span class="hljs-variable">Assisted</span> <span class="hljs-variable">Speculative</span> <span class="hljs-variable">Decoding</span>                    │<br>│ 机制：结合 <span class="hljs-variable">Speech</span> 特有优势：利用 <span class="hljs-variable">Speech</span> <span class="hljs-variable">Encoder</span> 顶部的 <span class="hljs-variable">CTC</span> <span class="hljs-operator">/</span> 非自回归（<span class="hljs-variable">NAR</span>）头作为 <span class="hljs-variable">Draft</span>，│<br>│ 毫秒级输出全句<span class="hljs-operator">/</span>全 <span class="hljs-variable">Chunk</span> 的 <span class="hljs-variable">Token</span> 序列，<span class="hljs-variable">Target</span> <span class="hljs-variable">LLM</span> 仅做单次并行掩码校验与纠错。   │<br>│ 突破：<span class="hljs-variable">Draft</span> 耗时几乎为 <span class="hljs-number">0</span>（矩阵乘法一步到位），在 <span class="hljs-variable">ASR</span> 任务上实现 <span class="hljs-number">3</span><span class="hljs-variable">x</span><span class="hljs-operator">~</span><span class="hljs-number">4</span><span class="hljs-variable">x</span> 极限加速。  │<br>└────────────────────────────────────────┬─────────────────────────────────────────┘<br>                                         │<br>                                         ▼<br>┌──────────────────────────────────────────────────────────────────────────────────┐<br>│ 代际 <span class="hljs-number">4</span>（当前 <span class="hljs-variable">SOTA</span> 前沿）：投机解码与 <span class="hljs-variable">KV</span><span class="hljs-operator">-</span><span class="hljs-variable">Cache</span> 稀疏化协同服务化 <span class="hljs-punctuation">(</span><span class="hljs-variable">Co</span><span class="hljs-operator">-</span><span class="hljs-variable">Serving</span><span class="hljs-operator">,</span> <span class="hljs-number">2026</span><span class="hljs-punctuation">)</span> │<br>│ 代表：<span class="hljs-variable">SpeechKV</span> <span class="hljs-punctuation">(</span><span class="hljs-number">2025</span><span class="hljs-punctuation">)</span><span class="hljs-operator">,</span> <span class="hljs-variable">P</span><span class="hljs-operator">-</span><span class="hljs-variable">EAGLE</span> <span class="hljs-variable">in</span> <span class="hljs-variable">vLLM</span> <span class="hljs-punctuation">(</span><span class="hljs-number">2026</span><span class="hljs-punctuation">)</span><span class="hljs-operator">,</span> <span class="hljs-variable">FastSpeech</span><span class="hljs-operator">-</span><span class="hljs-variable">LLM</span> <span class="hljs-variable">Engine</span>             │<br>│ 机制：将“非自回归投机采样 <span class="hljs-operator">+</span> 树状掩码并行验证 <span class="hljs-operator">+</span> 语音长序列动态 <span class="hljs-variable">KV</span> <span class="hljs-variable">Cache</span> 剪枝”整合进│<br>│ <span class="hljs-variable">vLLM</span> <span class="hljs-operator">/</span> <span class="hljs-variable">TensorRT</span><span class="hljs-operator">-</span><span class="hljs-variable">LLM</span> 生产级服务框架，实现超低首字延迟（<span class="hljs-variable">TTFT</span>）与高并发吞吐。       │<br>└──────────────────────────────────────────────────────────────────────────────────┘<br></code></pre></td></tr></table></figure>
+<hr>
+<h2 id="脉络核心代表论文精读与解构"><a href="#脉络核心代表论文精读与解构" class="headerlink" title="脉络核心代表论文精读与解构"></a>脉络核心代表论文精读与解构</h2><h3 id="1-Leviathan-et-al-amp-Chen-et-al-2023-——-投机解码的数学基石"><a href="#1-Leviathan-et-al-amp-Chen-et-al-2023-——-投机解码的数学基石" class="headerlink" title="1. Leviathan et al. &amp; Chen et al. (2023) —— 投机解码的数学基石"></a>1. Leviathan et al. &amp; Chen et al. (2023) —— 投机解码的数学基石</h3><ul>
+<li><strong>论文</strong>：<em>Fast Inference from Transformers via Speculative Decoding</em> (ICML 2023)</li>
+<li><strong>核心数学机制</strong>：<ul>
+<li>设 Draft 模型每步生成概率为 $q(x)$，Target 模型概率为 $p(x)$。</li>
+<li>对于 Draft 提出的 Token $x$，以概率 $\min\left(1, rac{p(x)}{q(x)}<br>ight)$ 决定接受（Accept）。</li>
+<li>若被拒绝，则从修正分布 $p’(x) =     ext{norm}(\max(0, p(x) - q(x)))$ 中重新采样一个 Token，并截断后续草稿。</li>
+</ul>
+</li>
+<li><strong>数学特性</strong>：严格无损，Target 模型的输出概率分布不发生任何漂移。</li>
+</ul>
+<hr>
+<h3 id="2-Whisper-Speculative-Decoding-OpenAI-HuggingFace-2024"><a href="#2-Whisper-Speculative-Decoding-OpenAI-HuggingFace-2024" class="headerlink" title="2. Whisper Speculative Decoding (OpenAI / HuggingFace 2024)"></a>2. Whisper Speculative Decoding (OpenAI / HuggingFace 2024)</h3><ul>
+<li><strong>核心思想与机制</strong>：<ul>
+<li><strong>架构</strong>：以 <code>Whisper-Large-v3</code> 为 Target 模型，以同源架构的 <code>Whisper-Tiny.en</code> 或 <code>Whisper-Small</code> 为 Drafter。</li>
+<li><strong>执行流程</strong>：<ol>
+<li>共享同一个 Mel-Spectrogram 声学特征；</li>
+<li>Whisper-Tiny 以极快的速度自回归生成 $K=4$ 个 Token；</li>
+<li>Whisper-Large 仅执行一次前向计算（Forward Pass），并行校验这 4 个 Token 的对数几率（Logits）；</li>
+<li>平均接受长度（Average Accepted Tokens per Step）约为 3.2，端到端延迟降低 50%（2x 提速），字错率（WER）与纯 Large 保持 100% 一致。</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="3-SpecASR-Accelerating-LLM-based-ASR-via-Speculative-Decoding"><a href="#3-SpecASR-Accelerating-LLM-based-ASR-via-Speculative-Decoding" class="headerlink" title="3. SpecASR: Accelerating LLM-based ASR via Speculative Decoding"></a>3. SpecASR: Accelerating LLM-based ASR via Speculative Decoding</h3><ul>
+<li><strong>发表</strong>：arXiv:2507.18181 (2025)</li>
+<li><strong>核心思想与机制</strong>：<ul>
+<li><strong>背景痛点</strong>：传统投机解码在 ASR 任务中遇到生僻词或背景噪声时，Draft 模型的接受率断崖式下跌，且频繁的 Draft-Verify 切换引入额外开销。</li>
+<li><strong>三大创新</strong>：<ol>
+<li><strong>自适应草稿长度（Adaptive Draft Length）</strong>：根据声学编码器当前帧的声学信息熵/置信度动态决定草稿长度 $K$（声学清晰段 $K=6$，模糊段 $K=2$）；</li>
+<li><strong>草稿循环复用（Draft Recycling Strategy）</strong>：当部分 Token 被拒绝时，将未被接受但在声学邻域中匹配的 Token 缓存复用，避免重新生成；</li>
+<li><strong>性能收益</strong>：相比传统自回归 ASR 提速 <strong>1.84x ~ 3.79x</strong>。</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="4-SpeechKV-Dynamic-KV-Cache-Pruning-for-Long-Form-Audio-LLMs"><a href="#4-SpeechKV-Dynamic-KV-Cache-Pruning-for-Long-Form-Audio-LLMs" class="headerlink" title="4. SpeechKV: Dynamic KV-Cache Pruning for Long-Form Audio LLMs"></a>4. SpeechKV: Dynamic KV-Cache Pruning for Long-Form Audio LLMs</h3><ul>
+<li><strong>核心思想与机制</strong>：<ul>
+<li><strong>痛点</strong>：音频序列动辄数千帧，长音频 LLM-ASR 的 KV Cache 占用高达数 GB，显存带宽成为投机解码高并发验证的最大瓶颈。</li>
+<li><strong>机制</strong>：发现语音 Attention Map 在时间上具有极强的局部聚集性（Local Cluster）与静音区稀疏性。提出动态跨层 KV 缓存淘汰策略，在 Target Model 投机验证时丢弃 60% 的冗余声学 KV Cache，显著降低验证阶段的内存读写开销。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h3 id="5-P-EAGLE-Parallel-EAGLE-in-vLLM-2026"><a href="#5-P-EAGLE-Parallel-EAGLE-in-vLLM-2026" class="headerlink" title="5. P-EAGLE (Parallel EAGLE in vLLM, 2026)"></a>5. P-EAGLE (Parallel EAGLE in vLLM, 2026)</h3><ul>
+<li><strong>发表</strong>：vLLM 官方架构 (2026)</li>
+<li><strong>核心思想与机制</strong>：<ul>
+<li><strong>颠覆传统</strong>：以往 EAGLE 仍需在草稿阶段循环自回归 $K$ 次；</li>
+<li><strong>P-EAGLE 创新</strong>：提出完全并行的草稿生成（Parallel Drafting），仅通过一次前向网络一步预测出一棵草稿候选树（Draft Tree），结合 Tree Attention 机制在 Target 模型中一次性校验。在 B200 / H100 GPU 上将投机解码的系统开销降至极限。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="脉络演进论文完整清单（必读书单）"><a href="#脉络演进论文完整清单（必读书单）" class="headerlink" title="脉络演进论文完整清单（必读书单）"></a>脉络演进论文完整清单（必读书单）</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">年份</th>
+<th style="text-align:left">论文题目 / 项目</th>
+<th style="text-align:left">类别</th>
+<th style="text-align:left">核心贡献 / 突破点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>2023</strong></td>
+<td style="text-align:left"><em>Fast Inference from Transformers via Speculative Decoding</em> (Leviathan et al.)</td>
+<td style="text-align:left">理论奠基</td>
+<td style="text-align:left">提出无损投机采样的拒绝采样算法与数学证明</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>2023</strong></td>
+<td style="text-align:left"><em>Speculative Decoding for Whisper</em> (HuggingFace / OpenAI)</td>
+<td style="text-align:left">语音工程落地</td>
+<td style="text-align:left">首次在开源 Whisper 上实现 Tiny-draft-Large 的 2x 无损加速</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>2024</strong></td>
+<td style="text-align:left"><em>Medusa: Simple LLM Inference Acceleration with Multiple Decoding Heads</em></td>
+<td style="text-align:left">自投机架构</td>
+<td style="text-align:left">提出无须 Draft 小模型的多头自投机与 Tree Attention 机制</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>2024</strong></td>
+<td style="text-align:left"><em>EAGLE: Speculative Sampling Requires Rethinking Feature Uncertainty</em></td>
+<td style="text-align:left">隐状态投机</td>
+<td style="text-align:left">利用上一层 Hidden State 进行特征级自投机，大幅提高接受率</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>2025</strong></td>
+<td style="text-align:left"><em>SpecASR: Accelerating LLM-based ASR via Speculative Decoding</em> (arXiv:2507.18181)</td>
+<td style="text-align:left">语音自适应投机</td>
+<td style="text-align:left">提出声学自适应草稿长度与候选复用策略，最高提速 3.79x</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>2025</strong></td>
+<td style="text-align:left"><em>SpeechKV: Compressing Audio KV-Cache for Long-Form Speech LLM</em></td>
+<td style="text-align:left">显存协同优化</td>
+<td style="text-align:left">揭示语音注意力稀疏性，大幅降低投机验证时的 KV Cache 带宽占用</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>2026</strong></td>
+<td style="text-align:left"><em>P-EAGLE: Faster LLM Inference with Parallel Speculative Decoding in vLLM</em></td>
+<td style="text-align:left">生产级推理引擎</td>
+<td style="text-align:left">彻底消除 Draft 串行瓶颈，实现完全并行的草稿树生成与高并发服务化</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="核心科研与工程攻关课题"><a href="#核心科研与工程攻关课题" class="headerlink" title="核心科研与工程攻关课题"></a>核心科研与工程攻关课题</h2><p>结合工业级 ASR 部署实战（如 CTC N-best 重打分、CTC 提示词注入与边缘端快速推理），在投机解码领域有以下 3 个极具落地价值的突破方向：</p>
+<h3 id="课题-1：CTC-Assisted-Non-Autoregressive-Draft（CTC-引导的非自回归超轻量投机解码）"><a href="#课题-1：CTC-Assisted-Non-Autoregressive-Draft（CTC-引导的非自回归超轻量投机解码）" class="headerlink" title="课题 1：CTC-Assisted Non-Autoregressive Draft（CTC 引导的非自回归超轻量投机解码）"></a>课题 1：CTC-Assisted Non-Autoregressive Draft（CTC 引导的非自回归超轻量投机解码）</h3><ul>
+<li><strong>背景</strong>：现有 Speculative Decoding 无论用 Small Model 还是 Medusa Heads，Draft 阶段都存在额外的计算与显存开销。</li>
+<li><strong>创新方案</strong>：<ul>
+<li>利用 Speech Encoder 顶层已有的 CTC 分支作为天然的非自回归（NAR）并行预测器（耗时 $&lt; 5    ext{ms}$）；</li>
+<li>用 CTC 贪婪解码或 CTC N-best 生成 Token 序列作为 Draft，并在 Token 间构建局部候选树（Candidate Tree）；</li>
+<li>后端 LLM 直接加载该候选树，通过 Tree Masked Attention 一次 Forward 并行校验全句；</li>
+</ul>
+</li>
+<li><strong>预期收益</strong>：实现 <strong>3.0x ~ 4.5x</strong> 的无损转录加速，且无需额外训练庞大的 Draft 模型。</li>
+</ul>
+<h3 id="课题-2：基于声学置信度的自适应投机门控（Acoustic-Confidence-Gated-Speculation）"><a href="#课题-2：基于声学置信度的自适应投机门控（Acoustic-Confidence-Gated-Speculation）" class="headerlink" title="课题 2：基于声学置信度的自适应投机门控（Acoustic-Confidence Gated Speculation）"></a>课题 2：基于声学置信度的自适应投机门控（Acoustic-Confidence Gated Speculation）</h3><ul>
+<li><strong>背景</strong>：在复杂噪声或口音严重时，Draft 接受率骤降，盲目投机反而会导致负优化（延迟上升）。</li>
+<li><strong>创新方案</strong>：<ul>
+<li>设计轻量级 Acoustic Confidence Gate（监控 CTC 熵或 Encoder 隐层不确定性）；</li>
+<li><strong>声学置信度高（高信噪比/常用词）</strong>：开启长步长投机（$K=6 \sim 8$）；</li>
+<li><strong>声学模糊/极低置信度</strong>：自动回退为标准自回归或激活慢思考（CoT），杜绝投机惩罚。</li>
+</ul>
+</li>
+</ul>
+<h3 id="课题-3：流式-Chunk-级投机解码与-KV-Cache-复用引擎（Streaming-Speculative-Serving）"><a href="#课题-3：流式-Chunk-级投机解码与-KV-Cache-复用引擎（Streaming-Speculative-Serving）" class="headerlink" title="课题 3：流式 Chunk 级投机解码与 KV-Cache 复用引擎（Streaming Speculative Serving）"></a>课题 3：流式 Chunk 级投机解码与 KV-Cache 复用引擎（Streaming Speculative Serving）</h3><ul>
+<li><strong>背景</strong>：传统投机解码多用于离线生成，流式场景下每个 Chunk 仅接收 200~300ms 音频，自回归每字延迟（Inter-token Latency）敏感。</li>
+<li><strong>创新方案</strong>：<ul>
+<li>在流式 Chunk 推进时，利用上一 Chunk 的末尾状态预预测下一个 Chunk 的首批 Token；</li>
+<li>结合类似 P-EAGLE 的机制，在 vLLM 架构下打通流式 Audio KV-Cache 与投机 Tree Attention，将流式 ASR 的首字延迟（TTFT）压降到 80ms 以内。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>投机解码是推动 Speech-LLM 从“离线评测”走向“高吞吐、低延迟工业落地”的关键跳板。</p>
+<p>对于具备 CTC 解码与重打分积累的系统而言，<strong>从传统 CTC Rescoring 演进为 CTC-Drafted Speculative Decoding</strong> 具有极高的技术亲缘性与可行性，能够以极低算力代价榨取极致的推理性能。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech-LLM</a>
+      
+        <a href="/tags/%E7%BB%BC%E8%BF%B0/" class="print-no-link">#综述</a>
+      
+        <a href="/tags/%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81/" class="print-no-link">#投机解码</a>
+      
+        <a href="/tags/%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F/" class="print-no-link">#推理加速</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的四代演进</div>
+      <div>https://smallsmartao.github.io/2026/08/18/speech-speculative-decoding-evolution/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年8月18日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年8月18日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/08/18/the-null-token-knows-hallucination-asr-nmt/" title="The Null Token Knows: Reducing Message-Free Hallucination in ASR and NMT">
+                        <span class="hidden-mobile">The Null Token Knows: Reducing Message-Free Hallucination in ASR and NMT</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
