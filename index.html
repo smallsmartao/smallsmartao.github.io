@@ -237,7 +237,7 @@
     
       <div class="col-12 col-md-4 m-auto index-img">
         <a href="/2026/08/18/speech-speculative-decoding-evolution/" target="_self">
-          <img src="/images/paper_img/speech_speculative_decoding_evolution.png" srcset="/img/loading.gif" lazyload alt="语音大模型推理加速：从投机解码理论基石到 ASR 与 TTS 工业落地实践">
+          <img src="/images/paper_img/speech_speculative_decoding_evolution_v2.png" srcset="/img/loading.gif" lazyload alt="从拒绝采样、自投机到 CTC 与声学锚定：Speech 投机解码与推理加速深度综述">
         </a>
       </div>
     
@@ -245,14 +245,14 @@
       <h2 class="index-header">
         
         <a href="/2026/08/18/speech-speculative-decoding-evolution/" target="_self">
-          语音大模型推理加速：从投机解码理论基石到 ASR 与 TTS 工业落地实践
+          从拒绝采样、自投机到 CTC 与声学锚定：Speech 投机解码与推理加速深度综述
         </a>
       </h2>
 
       
       <a class="index-excerpt " href="/2026/08/18/speech-speculative-decoding-evolution/" target="_self">
         <div>
-          在大模型推理中，自回归（Autoregressive）逐 Token 解码每一步都需要将模型的完整参数从高带宽显存（HBM）搬运到计算核心，导致显存带宽受限（Memory-Bound）。投机解码（Speculative Decoding, SD）通过“轻量 Draft 机制多步提议 $    o$ Target Verifier 模型单步并行校验”的范式，在贪婪解码下实现与原模型 100% 一致的
+          在大语言模型（LLM）与语音大模型（Speech-LLM / Encoder-Decoder ASR / TTS）的自回归逐步解码中，每一步前向计算都必须将庞大的模型权重从高带宽显存（HBM）搬运到计算单元，使得推理过程严重受限于显存带宽（Memory-Bound）。 投机解码（Speculative Decoding, SD）通过“极轻量草稿机制（Drafter）生成 $K$ 个候选 Token
         </div>
       </a>
 
@@ -293,15 +293,15 @@
             
               <a href="/tags/ASR/">#ASR</a>
             
+              <a href="/tags/Speech-LLM/">#Speech-LLM</a>
+            
               <a href="/tags/TTS/">#TTS</a>
             
-              <a href="/tags/Speech-LLM/">#Speech-LLM</a>
+              <a href="/tags/%E7%BB%BC%E8%BF%B0/">#综述</a>
             
               <a href="/tags/%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81/">#投机解码</a>
             
               <a href="/tags/%E6%8E%A8%E7%90%86%E5%8A%A0%E9%80%9F/">#推理加速</a>
-            
-              <a href="/tags/%E7%BB%BC%E8%BF%B0/">#综述</a>
             
           </div>
         
@@ -368,9 +368,9 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
-            
               <a href="/tags/ASR/">#ASR</a>
+            
+              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
             
               <a href="/tags/Whisper/">#Whisper</a>
             
@@ -443,9 +443,9 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
-            
               <a href="/tags/ASR/">#ASR</a>
+            
+              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
             
               <a href="/tags/LLM/">#LLM</a>
             
@@ -516,15 +516,15 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
-            
               <a href="/tags/ASR/">#ASR</a>
+            
+              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
             
               <a href="/tags/Speech-LLM/">#Speech-LLM</a>
             
-              <a href="/tags/%E7%BB%BC%E8%BF%B0/">#综述</a>
-            
               <a href="/tags/Audio-LLM/">#Audio LLM</a>
+            
+              <a href="/tags/%E7%BB%BC%E8%BF%B0/">#综述</a>
             
           </div>
         
@@ -664,9 +664,9 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
-            
               <a href="/tags/ASR/">#ASR</a>
+            
+              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
             
               <a href="/tags/LLM/">#LLM</a>
             
@@ -684,23 +684,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/07/10/2026-07-10-DuplexPO/" target="_self">
-          <img src="/images/paper_img/duplexpo_cover_pixel.png" srcset="/img/loading.gif" lazyload alt="Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning">
+        <a href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" target="_self">
+          <img src="/images/paper_img/conv_timing_asr_cover_pixel.png" srcset="/img/loading.gif" lazyload alt="On the Role of Conversational Timing in Synthetic Training Data for ASR">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/07/10/2026-07-10-DuplexPO/" target="_self">
-          Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning
+        <a href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" target="_self">
+          On the Role of Conversational Timing in Synthetic Training Data for ASR
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/07/10/2026-07-10-DuplexPO/" target="_self">
+      <a class="index-excerpt " href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" target="_self">
         <div>
-          论文信息 标题: Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning 作者: Yuxin Li, Donghang Wu, Guan-Ting Lin, Hung-yi Lee, Chengwei Qin, Zhehuai Chen, Chen Chen 机构:
+          为什么需要研究对话时序？合成多说话人对话数据已成为训练对话式 ASR 系统的标准做法。但一个核心问题长期被忽视：哪些时序属性（timing properties）使得模拟数据对下游模型真正有用？ 现有模拟管线的设计哲学几乎都围绕”真实感”（realism）——从真实语料估计停顿和重叠的分布，然后让合成对话复现这些统计量。这是合理的起点，但真实感并不等于训练有效性。一个忠实于语料的分布未必是 ASR
         </div>
       </a>
 
@@ -739,11 +739,11 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/Speech-LLM/">#Speech LLM</a>
+              <a href="/tags/ASR/">#ASR</a>
             
-              <a href="/tags/Full-Duplex/">#Full-Duplex</a>
+              <a href="/tags/Conversational-AI/">#Conversational AI</a>
             
-              <a href="/tags/Reinforcement-Learning/">#Reinforcement Learning</a>
+              <a href="/tags/Data-Augmentation/">#Data Augmentation</a>
             
               <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
             
@@ -812,11 +812,11 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/Speech-LLM/">#Speech LLM</a>
+              <a href="/tags/ASR/">#ASR</a>
             
               <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
             
-              <a href="/tags/ASR/">#ASR</a>
+              <a href="/tags/Speech-LLM/">#Speech LLM</a>
             
               <a href="/tags/KV-Cache/">#KV Cache</a>
             
@@ -830,23 +830,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" target="_self">
-          <img src="/images/paper_img/conv_timing_asr_cover_pixel.png" srcset="/img/loading.gif" lazyload alt="On the Role of Conversational Timing in Synthetic Training Data for ASR">
+        <a href="/2026/07/10/2026-07-10-DuplexPO/" target="_self">
+          <img src="/images/paper_img/duplexpo_cover_pixel.png" srcset="/img/loading.gif" lazyload alt="Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" target="_self">
-          On the Role of Conversational Timing in Synthetic Training Data for ASR
+        <a href="/2026/07/10/2026-07-10-DuplexPO/" target="_self">
+          Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" target="_self">
+      <a class="index-excerpt " href="/2026/07/10/2026-07-10-DuplexPO/" target="_self">
         <div>
-          为什么需要研究对话时序？合成多说话人对话数据已成为训练对话式 ASR 系统的标准做法。但一个核心问题长期被忽视：哪些时序属性（timing properties）使得模拟数据对下游模型真正有用？ 现有模拟管线的设计哲学几乎都围绕”真实感”（realism）——从真实语料估计停顿和重叠的分布，然后让合成对话复现这些统计量。这是合理的起点，但真实感并不等于训练有效性。一个忠实于语料的分布未必是 ASR
+          论文信息 标题: Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning 作者: Yuxin Li, Donghang Wu, Guan-Ting Lin, Hung-yi Lee, Chengwei Qin, Zhehuai Chen, Chen Chen 机构:
         </div>
       </a>
 
@@ -887,11 +887,11 @@
             
               <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
             
-              <a href="/tags/ASR/">#ASR</a>
+              <a href="/tags/Speech-LLM/">#Speech LLM</a>
             
-              <a href="/tags/Conversational-AI/">#Conversational AI</a>
+              <a href="/tags/Full-Duplex/">#Full-Duplex</a>
             
-              <a href="/tags/Data-Augmentation/">#Data Augmentation</a>
+              <a href="/tags/Reinforcement-Learning/">#Reinforcement Learning</a>
             
           </div>
         
@@ -958,9 +958,9 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
-            
               <a href="/tags/ASR/">#ASR</a>
+            
+              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
             
               <a href="/tags/Language-Model/">#Language Model</a>
             
