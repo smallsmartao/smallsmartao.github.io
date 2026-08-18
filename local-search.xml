@@ -24,9 +24,9 @@
       
       <tag>Reinforcement Learning</tag>
       
-      <tag>TTS</tag>
-      
       <tag>Speech-LLM</tag>
+      
+      <tag>TTS</tag>
       
       <tag>PPO</tag>
       
@@ -59,9 +59,9 @@
       
       <tag>ASR</tag>
       
-      <tag>TTS</tag>
-      
       <tag>Speech-LLM</tag>
+      
+      <tag>TTS</tag>
       
       <tag>投机解码</tag>
       
@@ -569,9 +569,9 @@
       
       <tag>攀岩</tag>
       
-      <tag>运动</tag>
-      
       <tag>力量训练</tag>
+      
+      <tag>运动</tag>
       
     </tags>
     
@@ -1174,9 +1174,9 @@
       
       <tag>LLM</tag>
       
-      <tag>Multimodal</tag>
-      
       <tag>Hallucination</tag>
+      
+      <tag>Multimodal</tag>
       
       <tag>Audio-Visual</tag>
       
@@ -1886,9 +1886,9 @@
       
       <tag>Full-Duplex</tag>
       
-      <tag>VAD</tag>
-      
       <tag>对话系统</tag>
+      
+      <tag>VAD</tag>
       
     </tags>
     
