@@ -1,0 +1,993 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="在强化学习（Reinforcement Learning, RL）以及近年来大语言模型（LLM）与语音大模型（Speech-LLM）的后训练（Post-Training）中，On-Policy（同策略） 与 Off-Policy（异策略） 是最核心、最基础的一对概念。 无论是大模型对齐阶段经典的 PPO vs. DPO、语音识别（ASR）中的 Exposure Bias（暴露偏差）纠正、语音合成（">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入浅出强化学习：On-Policy 与 Off-Policy 的数学本质与 Speech-LLM 训练实战">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/08/18/on-policy-vs-off-policy-speech-llm/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="在强化学习（Reinforcement Learning, RL）以及近年来大语言模型（LLM）与语音大模型（Speech-LLM）的后训练（Post-Training）中，On-Policy（同策略） 与 Off-Policy（异策略） 是最核心、最基础的一对概念。 无论是大模型对齐阶段经典的 PPO vs. DPO、语音识别（ASR）中的 Exposure Bias（暴露偏差）纠正、语音合成（">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/on_policy_vs_off_policy_speech_llm.png">
+<meta property="article:published_time" content="2026-08-18T10:15:00.000Z">
+<meta property="article:modified_time" content="2026-08-18T10:14:15.585Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="DPO">
+<meta property="article:tag" content="PPO">
+<meta property="article:tag" content="Reinforcement Learning">
+<meta property="article:tag" content="Speech-LLM">
+<meta property="article:tag" content="TTS">
+<meta property="article:tag" content="投机解码">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/on_policy_vs_off_policy_speech_llm.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>深入浅出强化学习：On-Policy 与 Off-Policy 的数学本质与 Speech-LLM 训练实战 - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/on_policy_vs_off_policy_speech_llm.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="深入浅出强化学习：On-Policy 与 Off-Policy 的数学本质与 Speech-LLM 训练实战"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-08-18 18:15" pubdate>
+          2026年8月18日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          14 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">深入浅出强化学习：On-Policy 与 Off-Policy 的数学本质与 Speech-LLM 训练实战</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年8月18日 晚上
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <p>在强化学习（Reinforcement Learning, RL）以及近年来大语言模型（LLM）与语音大模型（Speech-LLM）的后训练（Post-Training）中，<strong>On-Policy（同策略）</strong> 与 <strong>Off-Policy（异策略）</strong> 是最核心、最基础的一对概念。</p>
+<p>无论是大模型对齐阶段经典的 PPO vs. DPO、语音识别（ASR）中的 Exposure Bias（暴露偏差）纠正、语音合成（TTS）的韵律与流式控制，还是投机解码（Speculative Decoding）中 Drafter 伪标签的生成机制，背后都深刻依赖于对 On-Policy 与 Off-Policy 的权衡。</p>
+<p>本文将从<strong>数学本质、核心区别、经典算法对比</strong>出发，并深入拆解其在 <strong>Speech-LLM（ASR、TTS、音频推理、投机解码）</strong> 中的具体工业实践与算法设计。</p>
+<hr>
+<h2 id="1-数学本质：两个策略的博弈"><a href="#1-数学本质：两个策略的博弈" class="headerlink" title="1. 数学本质：两个策略的博弈"></a>1. 数学本质：两个策略的博弈</h2><p>在强化学习的形式化定义中，智能体（Agent）在环境状态 $s \in \mathcal{S}$ 下采取动作 $a \in \mathcal{A}$，获得奖励 $r(s, a)$ 并转移到下一状态 $s’ \sim P(\cdot \mid s, a)$。</p>
+<p>在这一交互与优化过程中，天然存在两个策略角色：</p>
+<ol>
+<li><strong>行为策略（Behavior Policy, $\beta$ 或 $\mu$）</strong>：负责<strong>与环境交互采样</strong>，生成历史轨迹数据 $\tau = (s_0, a_0, r_0, s_1, a_1, \dots)$。</li>
+<li><strong>目标策略（Target Policy, $\pi_\theta$）</strong>：当前我们正在<strong>评估、优化或学习</strong>的策略参数 $\theta$。</li>
+</ol>
+<figure class="highlight pgsql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs pgsql">             ┌────────────────────────────┐<br>             │  Behavior <span class="hljs-keyword">Policy</span> β / π_old │<br>             └─────────────┬──────────────┘<br>                           │  (环境交互 / 轨迹采样)<br>                           ▼<br>                  [ 经验轨迹数据 D ]<br>                           │<br>            ┌──────────────┴──────────────┐<br>            ▼                             ▼<br>【 <span class="hljs-keyword">On</span>-<span class="hljs-keyword">Policy</span> 范式 】             【 <span class="hljs-keyword">Off</span>-<span class="hljs-keyword">Policy</span> 范式 】<br>   β == π_θ (实时采样)              β != π_θ (历史/外部离线数据)<br>   数据必须即采即用                 数据可写入 Buffer 多次复用<br>   更新后数据立即作废               需要重要性采样 (<span class="hljs-keyword">IS</span>) 或 Q-Learning 修正<br></code></pre></td></tr></table></figure>
+<h3 id="1-1-核心定义区分"><a href="#1-1-核心定义区分" class="headerlink" title="1.1 核心定义区分"></a>1.1 核心定义区分</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">维度</th>
+<th style="text-align:left">On-Policy (同策略)</th>
+<th style="text-align:left">Off-Policy (异策略)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>策略关系</strong></td>
+<td style="text-align:left"><strong>$\beta = \pi_\theta$</strong>（行为策略与目标策略完全相同）</td>
+<td style="text-align:left"><strong>$\beta \neq \pi_\theta$</strong>（行为策略与目标策略不同）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>数据来源</strong></td>
+<td style="text-align:left">必须由当前最新策略 $\pi_\theta$ 实时 rollout 生成</td>
+<td style="text-align:left">历史回放池（Replay Buffer）、人类专家数据、旧版本 checkpoint、甚至其他模型</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>样本效率 (Sample Efficiency)</strong></td>
+<td style="text-align:left"><strong>低</strong>。每更新一次策略参数 $\theta$，旧数据分布立刻失效，必须丢弃并重新采样</td>
+<td style="text-align:left"><strong>高</strong>。历史数据可以存储在 Buffer 中反复打乱并多次利用梯度更新</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>训练稳定性</strong></td>
+<td style="text-align:left"><strong>极高</strong>。因为梯度的期望估计直接来自于目标策略自身分布，方差可控且没有分布漂移</td>
+<td style="text-align:left"><strong>较脆弱</strong>。容易遭遇“致命三要素”（函数逼近 + 自举 Bootstrap + 离线数据分布偏移）导致的 Q 值发散</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>探索能力</strong></td>
+<td style="text-align:left">依赖当前策略自身的熵或噪声，可能陷入局部最优</td>
+<td style="text-align:left">可以从高探索性策略（如 $\epsilon$-greedy、专家示范）收集多样化数据</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="2-经典强化学习中的算法演进与数学推导"><a href="#2-经典强化学习中的算法演进与数学推导" class="headerlink" title="2. 经典强化学习中的算法演进与数学推导"></a>2. 经典强化学习中的算法演进与数学推导</h2><h3 id="2-1-On-Policy-经典：Policy-Gradient-与-PPO"><a href="#2-1-On-Policy-经典：Policy-Gradient-与-PPO" class="headerlink" title="2.1 On-Policy 经典：Policy Gradient 与 PPO"></a>2.1 On-Policy 经典：Policy Gradient 与 PPO</h3><p>在纯粹的策略梯度定理中，目标是最大化期望累积回报 $J(\theta) = \mathbb{E}_{\tau \sim \pi_\theta}[R(\tau)]$。其策略梯度为：</p>
+<script type="math/tex; mode=display">\nabla_\theta J(\theta) = \mathbb{E}_{s \sim d^{\pi_\theta}, a \sim \pi_\theta}\left[ \nabla_\theta \log \pi_\theta(a \mid s) \cdot A^{\pi_\theta}(s, a) \right]</script><p>其中 $A^{\pi_\theta}(s, a)$ 为优势函数（Advantage Function）。这里的期望 $\mathbb{E}$ 严格要求状态分布 $d^{\pi_\theta}$ 和动作分布 $a \sim \pi_\theta$ 来自于<strong>当前策略自身</strong>。</p>
+<h4 id="PPO-Proximal-Policy-Optimization-的近端裁剪"><a href="#PPO-Proximal-Policy-Optimization-的近端裁剪" class="headerlink" title="PPO (Proximal Policy Optimization) 的近端裁剪"></a>PPO (Proximal Policy Optimization) 的近端裁剪</h4><p>在实际训练中，为了稍微复用一小批采样数据（在同一个 Batch 内走几个 mini-epoch），PPO 引入了<strong>重要性采样比率（Importance Sampling Ratio）</strong> $r_t(\theta) = \frac{\pi_\theta(a_t \mid s_t)}{\pi_{\theta_{\text{old}}}(a_t \mid s_t)}$，并通过 Clip 机制将 $\pi_\theta$ 严格限制在 $\pi_{\theta_{\text{old}}}$ 的邻域内：</p>
+<script type="math/tex; mode=display">L^{\text{CLIP}}(\theta) = \hat{\mathbb{E}}_t \left[ \min\left( r_t(\theta) \hat{A}_t, \; \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t \right) \right]</script><blockquote>
+<p><strong>注意</strong>：尽管 PPO 在一个小的局部 iteration 内复用了刚刚采样的 $\pi_{\theta_{\text{old}}}$ 数据，但由于 $\pi_\theta$ 被强行约束不能偏离 $\pi_{\theta_{\text{old}}}$，且每轮迭代结束后数据立即全部销毁重新 Rollout，因此 <strong>PPO 在本质上仍被归为 On-Policy 算法</strong>。</p>
+</blockquote>
+<h3 id="2-2-Off-Policy-经典：Q-Learning、DQN-与-SAC"><a href="#2-2-Off-Policy-经典：Q-Learning、DQN-与-SAC" class="headerlink" title="2.2 Off-Policy 经典：Q-Learning、DQN 与 SAC"></a>2.2 Off-Policy 经典：Q-Learning、DQN 与 SAC</h3><p>在 Q-Learning 和 DQN 中，智能体通过贝尔曼最优方程更新动作价值函数 $Q(s, a)$：</p>
+<script type="math/tex; mode=display">Q(s, a) \leftarrow Q(s, a) + \alpha \left[ r + \gamma \max_{a'} Q(s', a') - Q(s, a) \right]</script><ul>
+<li><strong>行为策略</strong>：通常采用带探索的 $\epsilon$-greedy 策略，或者是几天前训练的老模型写入 Replay Buffer 的历史转移对 $(s, a, r, s’)$；</li>
+<li><strong>目标策略</strong>：完全由 $\max_{a’} Q(s’, a’)$ 定义的确定性贪婪策略 $\pi(s) = \arg\max_a Q(s, a)$。<br>由于行为策略与目标策略明显不一致，它是标准的 <strong>Off-Policy</strong> 机制。</li>
+</ul>
+<hr>
+<h2 id="3-为什么-Speech-LLM-领域极其在乎-On-Policy-vs-Off-Policy？"><a href="#3-为什么-Speech-LLM-领域极其在乎-On-Policy-vs-Off-Policy？" class="headerlink" title="3. 为什么 Speech-LLM 领域极其在乎 On-Policy vs. Off-Policy？"></a>3. 为什么 Speech-LLM 领域极其在乎 On-Policy vs. Off-Policy？</h2><p>在传统的文本 LLM 中，语言空间是高度抽象离散的词表，且文本预训练通常具备超大规模语料。而在 <strong>语音大模型（Speech-LLM）</strong> 中，模型跨越了<strong>连续声学信号（Continuous Acoustic Frames）</strong> 与 <strong>离散文本/语义/声学 Token（Discrete Tokens）</strong> 两个世界，On/Off-Policy 的差异会带来极其剧烈的系统行为分野：</p>
+<ol>
+<li><strong>Exposure Bias（暴露偏差）与自回归雪崩</strong>：<ul>
+<li>在传统的 Teacher-Forcing 训练（标准的 Off-Policy / MLE）下，模型每一步解码看到的都是完美无瑕的 Ground-Truth 前缀；</li>
+<li>一旦在测试期自由解码，模型吐出一个错误的音素/词，自回归上下文就会进入模型从未见过的“OOD 状态”，导致后续注意力漂移、重复乱码或胡言乱语（Hallucination）。</li>
+</ul>
+</li>
+<li><strong>多模态对齐漂移（Alignment Drift）</strong>：<ul>
+<li>语音具有严格的时序因果性。如果训练时只喂离线数据（Off-Policy），模型在长音频解码时无法学会“自我纠偏与声学重定位”。</li>
+</ul>
+</li>
+<li><strong>连续声学 Token 空间的容错性</strong>：<ul>
+<li>语音合成（TTS）的 Codebook 空间存在声学等价性，非自回归与投机解码必须在动态策略探索（On-Policy）与离线拟合（Off-Policy）之间做出权衡。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="4-Speech-LLM-具体场景举例与实战剖析"><a href="#4-Speech-LLM-具体场景举例与实战剖析" class="headerlink" title="4. Speech-LLM 具体场景举例与实战剖析"></a>4. Speech-LLM 具体场景举例与实战剖析</h2><h3 id="4-1-案例一：语音识别（ASR）的暴露偏差消除与强化对齐"><a href="#4-1-案例一：语音识别（ASR）的暴露偏差消除与强化对齐" class="headerlink" title="4.1 案例一：语音识别（ASR）的暴露偏差消除与强化对齐"></a>4.1 案例一：语音识别（ASR）的暴露偏差消除与强化对齐</h3><h4 id="①-Off-Policy-做法：Teacher-Forcing-MLE"><a href="#①-Off-Policy-做法：Teacher-Forcing-MLE" class="headerlink" title="① Off-Policy 做法：Teacher-Forcing MLE"></a>① Off-Policy 做法：Teacher-Forcing MLE</h4><p>在标准的 ASR 训练中，损失函数为简单的交叉熵：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{MLE}}(\theta) = -\sum_{t=1}^T \log P_\theta(y_t^* \mid y_{<t}^*, X_{\text{audio}})</script><ul>
+<li><strong>行为数据</strong>：静态数据集中的真实标签序列 $y_{1:T}^*$。</li>
+<li><strong>痛点</strong>：模型在训练阶段从来没有经历过“在第 $t$ 步预测错了，第 $t+1$ 步该怎么自救”。这是一种纯粹的静态 Off-Policy 学习，导致 ASR 模型在面对噪声、背景音或生僻词汇时鲁棒性极差。</li>
+</ul>
+<h4 id="②-On-Policy-做法：Minimum-Word-Error-Rate-MWER-训练-PPO-FSA-GRPO"><a href="#②-On-Policy-做法：Minimum-Word-Error-Rate-MWER-训练-PPO-FSA-GRPO" class="headerlink" title="② On-Policy 做法：Minimum Word Error Rate (MWER) 训练 / PPO / FSA-GRPO"></a>② On-Policy 做法：Minimum Word Error Rate (MWER) 训练 / PPO / FSA-GRPO</h4><p>为了让模型学会自我容错，工业界和学术界广泛引入 <strong>On-Policy 序列级强化学习</strong>：</p>
+<ol>
+<li><strong>在线 Rollout 采样</strong>：针对输入的音频 $X_{\text{audio}}$，让当前模型 $\pi_\theta$ 通过 Beam Search 或 Nucleus Sampling 自由解码生成 $N$ 条候选转写序列 ${\hat{Y}_1, \hat{Y}_2, \dots, \hat{Y}_N}$；</li>
+<li><strong>计算奖励（Reward）</strong>：将每条候选转写与真实转写比对，计算字错误率（WER）或编辑距离（Levenshtein Distance），将负 WER 作为奖励信号 $R(\hat{Y}_i) = -\text{WER}(\hat{Y}_i, Y^*)$；</li>
+<li><strong>On-Policy 策略更新</strong>：<script type="math/tex; mode=display">\nabla_\theta \mathcal{L}_{\text{MWER}}(\theta) = \sum_{i=1}^N \tilde{P}_\theta(\hat{Y}_i \mid X) \left( \text{WER}(\hat{Y}_i, Y^*) - \hat{\mathbb{E}}[\text{WER}] \right) \nabla_\theta \log P_\theta(\hat{Y}_i \mid X)</script></li>
+</ol>
+<figure class="highlight routeros"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs routeros">[ 音频输入 X ] ──► [ 当前 Speech-LLM (π_θ) ] ──► 在线自回归生成 4 条假说 (Rollout)<br>                                                       │<br>                               ┌───────────────────────┴───────────────────────┐<br>                               ▼                                               ▼<br>                     假说 1: <span class="hljs-string">&quot;今天天气真好&quot;</span> (<span class="hljs-attribute">WER</span>=0)                   假说 2: <span class="hljs-string">&quot;今天甜气真好&quot;</span> (<span class="hljs-attribute">WER</span>=1)<br>                     奖励: R = +1.0                                  奖励: R = -0.5<br>                               │                                               │<br>                               └───────────────────────┬───────────────────────┘<br>                                                       ▼<br>                                   [ 计算优势 Advantage 并执行策略梯度更新 ]<br>                                   (梯度拉高正确路径概率，压低错误路径概率)<br></code></pre></td></tr></table></figure>
+<ul>
+<li><strong>核心收益</strong>：通过 On-Policy 采样，模型见识到了自己最容易犯的同音字、吞音错误，并在训练过程中学会了从错误前缀中恢复，显著降低了长音频的 WER。</li>
+</ul>
+<hr>
+<h3 id="4-2-案例二：Speech-RLHF-DPO-在语音大模型对话与幻觉抑制中的抉择"><a href="#4-2-案例二：Speech-RLHF-DPO-在语音大模型对话与幻觉抑制中的抉择" class="headerlink" title="4.2 案例二：Speech-RLHF / DPO 在语音大模型对话与幻觉抑制中的抉择"></a>4.2 案例二：Speech-RLHF / DPO 在语音大模型对话与幻觉抑制中的抉择</h3><p>在 Speech-LLM（如 Qwen2-Audio、Slam-Omni、Mini-Omni）的偏好对齐中，针对语音问答的幻觉和拒答能力优化，存在 <strong>Off-Policy DPO</strong> 与 <strong>On-Policy PPO / Online DPO</strong> 两种技术路线：</p>
+<h4 id="①-Off-Policy-DPO-Direct-Preference-Optimization"><a href="#①-Off-Policy-DPO-Direct-Preference-Optimization" class="headerlink" title="① Off-Policy DPO (Direct Preference Optimization)"></a>① Off-Policy DPO (Direct Preference Optimization)</h4><ul>
+<li><strong>机制</strong>：事先让人类专家或 GPT-4 构造静态偏好数据集 $\mathcal{D} = {(X_{\text{audio}}, Y_{\text{win}}, Y_{\text{lose}})}$。训练时直接优化闭式损失：<script type="math/tex; mode=display">\mathcal{L}_{\text{DPO}}(\theta) = -\mathbb{E}_{(X, Y_w, Y_l) \sim \mathcal{D}} \left[ \log \sigma \left( \beta \log \frac{\pi_\theta(Y_w \mid X)}{\pi_{\text{ref}}(Y_w \mid X)} - \beta \log \frac{\pi_\theta(Y_l \mid X)}{\pi_{\text{ref}}(Y_l \mid X)} \right) \right]</script></li>
+<li><strong>优点</strong>：无需在训练过程中运行高开销的音频前向与自回归解码，显存占用极小，训练速度快。</li>
+<li><strong>致命缺陷</strong>：随着 $\pi_\theta$ 逐渐更新，它自己生成的声音/文本分布已经与离线数据集 $\mathcal{D}$ 发生剧烈偏移（Distribution Shift）。模型经常在离线数据上 Loss 极低，但实际部署上线自由对话时，依然会产生严重的语音幻觉。</li>
+</ul>
+<h4 id="②-On-Policy-Online-DPO-amp-PPO"><a href="#②-On-Policy-Online-DPO-amp-PPO" class="headerlink" title="② On-Policy / Online-DPO &amp; PPO"></a>② On-Policy / Online-DPO &amp; PPO</h4><ul>
+<li><strong>机制</strong>：在每个训练 step，<strong>必须将音频喂给当前的 $\pi_\theta$，在线生成响应文本/音频</strong>，交由 Reward Model（或基于规则的 WER/幻觉检测器）实时打分，动态构造 $(Y_w, Y_l)$ 执行更新。</li>
+<li><strong>效果对比</strong>：实验表明，在多模态语音交互中，<strong>On-Policy 产生的探索样本能精准覆盖模型当前的“盲区”</strong>，其抑制幻觉的效果与鲁棒性显著优于纯离线 Off-Policy DPO。</li>
+</ul>
+<hr>
+<h3 id="4-3-案例三：投机解码（Speculative-Decoding）中的-Drafter-训练与伪标签选择"><a href="#4-3-案例三：投机解码（Speculative-Decoding）中的-Drafter-训练与伪标签选择" class="headerlink" title="4.3 案例三：投机解码（Speculative Decoding）中的 Drafter 训练与伪标签选择"></a>4.3 案例三：投机解码（Speculative Decoding）中的 Drafter 训练与伪标签选择</h3><p>在《SpeechSpec (2026)》等工业级语音投机解码系统中，Drafter（如 EAGLE-3 或轻量小模型）需要学习如何精准预测 Target 大模型的输出。</p>
+<h4 id="①-传统-Off-Policy-训练（Ground-Truth-Targets）"><a href="#①-传统-Off-Policy-训练（Ground-Truth-Targets）" class="headerlink" title="① 传统 Off-Policy 训练（Ground-Truth Targets）"></a>① 传统 Off-Policy 训练（Ground-Truth Targets）</h4><ul>
+<li>训练 Drafter 时，直接使用数据集中的标准文本标签 $Y^*$ 作为监督信号：<script type="math/tex; mode=display">\mathcal{L}_{\text{Draft}}(\theta) = -\sum_t \log P_{\text{Draft}}(y_t^* \mid y_{<t}^*, X_{\text{audio}})</script></li>
+<li><strong>问题</strong>：在推理阶段，Drafter 的目标是<strong>去迎合 Target 大模型的预测行为</strong>，而不是去迎合绝对真值。如果 Target 模型本身对某段嘈杂音频的 Top-1 预测与 Ground-Truth 略有出入，按照 Off-Policy 真值训练出的 Drafter 就会给出与 Target 不同的 Token，导致验证阶段被 Target <strong>大面积拒绝（Rejection）</strong>，加速比断崖式下跌。</li>
+</ul>
+<h4 id="②-On-Policy-伪标签蒸馏（On-Policy-Target-Distillation）"><a href="#②-On-Policy-伪标签蒸馏（On-Policy-Target-Distillation）" class="headerlink" title="② On-Policy 伪标签蒸馏（On-Policy Target Distillation）"></a>② On-Policy 伪标签蒸馏（On-Policy Target Distillation）</h4><ul>
+<li><strong>机制</strong>：让 <strong>Target 大模型在当前音频输入下自由解码生成输出序列 $\hat{Y}_{\text{Target}}$</strong>（哪怕其中包含少许瑕疵），将 $\hat{Y}_{\text{Target}}$ 作为 Drafter 的监督目标；</li>
+<li><strong>工业收益</strong>：在 SpeechSpec 实测中，采用 On-Policy 伪标签训练 Drafter，<strong>直接将投机解码的平均接受长度 $\alpha$ 提升了 25%~30%</strong>，真正做到了 Drafter 与 Verifier 的步调一致。</li>
+</ul>
+<hr>
+<h3 id="4-4-案例四：语音合成（TTS）中的韵律探索与流式断句"><a href="#4-4-案例四：语音合成（TTS）中的韵律探索与流式断句" class="headerlink" title="4.4 案例四：语音合成（TTS）中的韵律探索与流式断句"></a>4.4 案例四：语音合成（TTS）中的韵律探索与流式断句</h3><p>在自回归流式 TTS（如 CosyVoice、ChatTTS、FishSpeech）中，模型需要预测离散声学特征（Acoustic Codec Tokens）并决定何时吐出音频块：</p>
+<ol>
+<li><strong>Off-Policy 模仿学习（MLE on Audio Tokens）</strong>：<ul>
+<li>只能学到单一口音或平均化的平淡韵律，遇到长难句容易在停顿处出现合成破音。</li>
+</ul>
+</li>
+<li><strong>On-Policy 强化微调（RL with Speech Discriminators）</strong>：<ul>
+<li>让 TTS 模型在线生成完整语音流，通过外部预训练的声学判别器（评估 MOS 分、自然度、说话人相似度、端到端延迟 Latency Penalty）实时计算综合 Reward；</li>
+<li>依据当前生成的语音质量在线更新策略，使得模型在自主探索多变语调的同时，学会最合理的流式发音切分策略。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="5-总结与工程选型指南"><a href="#5-总结与工程选型指南" class="headerlink" title="5. 总结与工程选型指南"></a>5. 总结与工程选型指南</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">场景需求</th>
+<th style="text-align:left">推荐策略模式</th>
+<th style="text-align:left">核心理由与选型依据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>大规模预训练 / 初步 SFT</strong></td>
+<td style="text-align:left"><strong>Off-Policy (MLE)</strong></td>
+<td style="text-align:left">语料规模以万小时计，离线数据并行吞吐最大化，快速收敛基础识别/合成能力。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>长音频 ASR 降低幻觉与 WER</strong></td>
+<td style="text-align:left"><strong>On-Policy (MWER / RL)</strong></td>
+<td style="text-align:left">必须暴露并纠正模型在自回归展开中的自诱导误差（Exposure Bias）。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Speech-LLM 对齐与安全性</strong></td>
+<td style="text-align:left"><strong>Online DPO / PPO (On-Policy)</strong></td>
+<td style="text-align:left">离线 DPO 容易在语音复杂模态下产生严重的分布偏移，在线交互探索才能覆盖真实交互分布。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>投机解码 (Speculative Drafter)</strong></td>
+<td style="text-align:left"><strong>On-Policy (Target-Alignment)</strong></td>
+<td style="text-align:left">Drafter 的唯一目标是模仿 Verifier 的实际分布，必须以 Target 模型的 Rollout 轨迹作为训练标签。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>理解 On-Policy 与 Off-Policy 的数学边界与数据流动，是走出“调包调参”、深入多模态大模型后训练与推理加速底层逻辑的关键一步。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%90%86%E8%AE%BA%E4%B8%8E%E5%AE%9E%E6%88%98/" class="category-chain-item">深度学习理论与实战</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Reinforcement-Learning/" class="print-no-link">#Reinforcement Learning</a>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech-LLM</a>
+      
+        <a href="/tags/TTS/" class="print-no-link">#TTS</a>
+      
+        <a href="/tags/PPO/" class="print-no-link">#PPO</a>
+      
+        <a href="/tags/DPO/" class="print-no-link">#DPO</a>
+      
+        <a href="/tags/%E6%8A%95%E6%9C%BA%E8%A7%A3%E7%A0%81/" class="print-no-link">#投机解码</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>深入浅出强化学习：On-Policy 与 Off-Policy 的数学本质与 Speech-LLM 训练实战</div>
+      <div>https://smallsmartao.github.io/2026/08/18/on-policy-vs-off-policy-speech-llm/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年8月18日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年8月18日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/08/18/speech-speculative-decoding-evolution/" title="从拒绝采样、自投机到 CTC 与声学锚定：Speech 投机解码与推理加速深度综述">
+                        <span class="hidden-mobile">从拒绝采样、自投机到 CTC 与声学锚定：Speech 投机解码与推理加速深度综述</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
