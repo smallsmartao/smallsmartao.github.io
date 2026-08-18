@@ -19,16 +19,16 @@
   <meta name="author" content="Ao Zhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="在大语言模型（LLM）与语音大模型（Speech-LLM）时代，自回归解码（Autoregressive Decoding）每生成一个 Token 都需要触发一次完整的 Transformer 前向计算，导致显存带宽严重受限（Memory-Bound），吞吐与端到端延迟成为工业落地的最大瓶颈。 投机解码（Speculative Decoding）通过“先低成本生成草稿候选（Drafting），再由">
+    <meta name="description" content="在大语言模型（LLM）与语音大模型（Speech-LLM &#x2F; Encoder-Decoder ASR）中，自回归逐 Token 解码（Autoregressive Decoding）每一步都需要从高带宽显存（HBM）中搬运完整权重，使得推理过程严重受限于内存带宽（Memory-Bound）。 投机解码（Speculative Decoding）的核心思想是：利用一个计算开销极低的草稿机制（Draf">
 <meta property="og:type" content="article">
-<meta property="og:title" content="从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的四代演进">
+<meta property="og:title" content="从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的演进综述">
 <meta property="og:url" content="https://smallsmartao.github.io/2026/08/18/speech-speculative-decoding-evolution/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="在大语言模型（LLM）与语音大模型（Speech-LLM）时代，自回归解码（Autoregressive Decoding）每生成一个 Token 都需要触发一次完整的 Transformer 前向计算，导致显存带宽严重受限（Memory-Bound），吞吐与端到端延迟成为工业落地的最大瓶颈。 投机解码（Speculative Decoding）通过“先低成本生成草稿候选（Drafting），再由">
+<meta property="og:description" content="在大语言模型（LLM）与语音大模型（Speech-LLM &#x2F; Encoder-Decoder ASR）中，自回归逐 Token 解码（Autoregressive Decoding）每一步都需要从高带宽显存（HBM）中搬运完整权重，使得推理过程严重受限于内存带宽（Memory-Bound）。 投机解码（Speculative Decoding）的核心思想是：利用一个计算开销极低的草稿机制（Draf">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/speech_speculative_decoding_evolution.png">
 <meta property="article:published_time" content="2026-08-18T07:30:00.000Z">
-<meta property="article:modified_time" content="2026-08-18T07:21:23.363Z">
+<meta property="article:modified_time" content="2026-08-18T07:33:08.926Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="Speech-LLM">
@@ -42,7 +42,7 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的四代演进 - 聪明的小奥</title>
+  <title>从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的演进综述 - 聪明的小奥</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -219,7 +219,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的四代演进"></span>
+            <span id="subtitle" data-typed-text="从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的演进综述"></span>
           
         </div>
 
@@ -247,7 +247,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2.2k 字
+          2.9k 字
         
       </span>
     
@@ -258,7 +258,7 @@
         
         
         
-          19 分钟
+          25 分钟
         
       </span>
     
@@ -304,7 +304,7 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的四代演进</h1>
+            <h1 id="seo-header">从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的演进综述</h1>
             
               <p id="updated-time" class="note note-info" style="">
                 
@@ -317,156 +317,166 @@
             
               <div class="markdown-body">
                 
-                <p>在大语言模型（LLM）与语音大模型（Speech-LLM）时代，自回归解码（Autoregressive Decoding）每生成一个 Token 都需要触发一次完整的 Transformer 前向计算，导致<strong>显存带宽严重受限（Memory-Bound）</strong>，吞吐与端到端延迟成为工业落地的最大瓶颈。</p>
-<p><strong>投机解码（Speculative Decoding）</strong>通过“先低成本生成草稿候选（Drafting），再由大模型单次前向并行验证（Verification）”的范式，实现了严格无损（Lossless）的端到端加速。在语音识别与全双工语音交互领域，结合声学特征与 CTC 先验，投机解码更是演化出了一系列极具语音模态特性的加速方案。</p>
-<p>本文通过对 Leviathan et al. (2023)、Whisper-Speculative、SpecASR、SpeechKV、EAGLE / P-EAGLE 等工作及引用脉络的深度拆解，系统梳理 <strong>Speech 投机解码与推理加速的四个发展代际与未来落地课题</strong>。</p>
+                <p>在大语言模型（LLM）与语音大模型（Speech-LLM / Encoder-Decoder ASR）中，自回归逐 Token 解码（Autoregressive Decoding）每一步都需要从高带宽显存（HBM）中搬运完整权重，使得推理过程严重受限于<strong>内存带宽（Memory-Bound）</strong>。</p>
+<p><strong>投机解码（Speculative Decoding）</strong>的核心思想是：利用一个计算开销极低的草稿机制（Drafter）一次性生成包含 $K$ 个候选 Token 的草稿序列（或草稿树），再交由大容量目标模型（Target Model）执行单次前向计算（Single Forward Pass）完成并行验证。</p>
+<p>本文围绕<strong>“草稿如何生成（Drafting 机制）、目标模型如何验证（Verification 准则）以及针对语音模态特性的针对性改造”</strong>这一技术主线，深度解构投机解码从纯文本通用理论到 Speech-LLM / ASR 领域的关键论文演进。</p>
 <hr>
-<h2 id="架构演进路线全景"><a href="#架构演进路线全景" class="headerlink" title="架构演进路线全景"></a>架构演进路线全景</h2><figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br></pre></td><td class="code"><pre><code class="hljs mathematica">┌──────────────────────────────────────────────────────────────────────────────────┐<br>│ 代际 <span class="hljs-number">0</span>：纯文本投机采样奠基 <span class="hljs-punctuation">(</span><span class="hljs-variable">Foundations</span> <span class="hljs-variable">of</span> <span class="hljs-variable">Speculative</span> <span class="hljs-variable">Decoding</span><span class="hljs-operator">,</span> <span class="hljs-number">2023</span><span class="hljs-punctuation">)</span>            │<br>│ 代表：<span class="hljs-variable">Leviathan</span> <span class="hljs-variable">et</span> <span class="hljs-variable">al</span><span class="hljs-operator">.</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">ICML</span> <span class="hljs-number">2023</span><span class="hljs-punctuation">)</span><span class="hljs-operator">,</span> <span class="hljs-variable">Chen</span> <span class="hljs-variable">et</span> <span class="hljs-variable">al</span><span class="hljs-operator">.</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">Fast</span> <span class="hljs-variable">Inference</span> <span class="hljs-variable">from</span> <span class="hljs-variable">Transformers</span><span class="hljs-punctuation">)</span>│<br>│ 机制：小模型（<span class="hljs-variable">Draft</span> <span class="hljs-variable">Model</span>）自回归生成 <span class="hljs-built_in">K</span> 个 <span class="hljs-variable">Token</span> ➔ 大模型（<span class="hljs-variable">Target</span> <span class="hljs-variable">Model</span>）并行 <span class="hljs-built_in">Forward</span> 校验。│<br>│ 数学准则：基于拒绝采样（<span class="hljs-variable">Rejection</span> <span class="hljs-variable">Sampling</span>），严格证明输出分布与 <span class="hljs-variable">Target</span> <span class="hljs-variable">Model</span> 完全一致（无损）。│<br>└────────────────────────────────────────┬─────────────────────────────────────────┘<br>                                         │<br>                                         ▼<br>┌──────────────────────────────────────────────────────────────────────────────────┐<br>│ 代际 <span class="hljs-number">1</span>：同模态小模型级联投机 <span class="hljs-punctuation">(</span><span class="hljs-built_in">Small</span><span class="hljs-operator">-</span><span class="hljs-variable">Target</span> <span class="hljs-variable">Model</span> <span class="hljs-variable">Drafting</span><span class="hljs-operator">,</span> <span class="hljs-number">2023</span><span class="hljs-operator">-</span><span class="hljs-number">2024</span><span class="hljs-punctuation">)</span>             │<br>│ 代表：<span class="hljs-variable">Whisper</span><span class="hljs-operator">-</span><span class="hljs-built_in">Tiny</span> <span class="hljs-variable">drafting</span> <span class="hljs-variable">Whisper</span><span class="hljs-operator">-</span><span class="hljs-built_in">Large</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">OpenAI</span> <span class="hljs-operator">/</span> <span class="hljs-variable">HuggingFace</span><span class="hljs-punctuation">)</span><span class="hljs-operator">,</span> <span class="hljs-variable">Qwen</span><span class="hljs-operator">-</span><span class="hljs-number">0.5</span><span class="hljs-variable">B</span> <span class="hljs-variable">draft</span> <span class="hljs-variable">Qwen</span><span class="hljs-operator">-</span><span class="hljs-number">7</span><span class="hljs-variable">B</span> │<br>│ 机制：使用同一家族的 <span class="hljs-built_in">Tiny</span><span class="hljs-operator">/</span><span class="hljs-built_in">Small</span> 模型接收相同声学特征生成草稿，由 <span class="hljs-built_in">Large</span> 模型单步验证。│<br>│ 痛点：需要同时在显存中常驻两个模型，<span class="hljs-variable">Draft</span> 阶段依然是串行自回归，显存带宽争抢明显。 │<br>└────────────────────────────────────────┬─────────────────────────────────────────┘<br>                                         │<br>                                         ▼<br>┌──────────────────────────────────────────────────────────────────────────────────┐<br>│ 代际 <span class="hljs-number">2</span>：自投机与多头预测 <span class="hljs-punctuation">(</span><span class="hljs-variable">Self</span><span class="hljs-operator">-</span><span class="hljs-variable">Speculative</span> <span class="hljs-variable">Decoding</span> <span class="hljs-operator">&amp;</span> <span class="hljs-variable">Multi</span><span class="hljs-operator">-</span><span class="hljs-built_in">Head</span> <span class="hljs-variable">Draft</span><span class="hljs-operator">,</span> <span class="hljs-number">2024</span><span class="hljs-operator">-</span><span class="hljs-number">2025</span><span class="hljs-punctuation">)</span> │<br>│ 代表：<span class="hljs-variable">Medusa</span><span class="hljs-operator">-</span><span class="hljs-built_in">Audio</span><span class="hljs-operator">,</span> <span class="hljs-variable">EAGLE</span> <span class="hljs-operator">/</span> <span class="hljs-variable">P</span><span class="hljs-operator">-</span><span class="hljs-variable">EAGLE</span> <span class="hljs-variable">for</span> <span class="hljs-variable">Multimodal</span><span class="hljs-operator">,</span> <span class="hljs-variable">Multi</span><span class="hljs-operator">-</span><span class="hljs-variable">Token</span> <span class="hljs-variable">Prediction</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">MTP</span><span class="hljs-punctuation">)</span> │<br>│ 机制：彻底抛弃独立 <span class="hljs-variable">Draft</span> 小模型！在 <span class="hljs-variable">Target</span> <span class="hljs-variable">LLM</span> 顶部挂载多个轻量级预测头（<span class="hljs-variable">Draft</span> <span class="hljs-built_in">Heads</span>）│<br>│ 或利用浅层隐状态（<span class="hljs-variable">Hidden</span> <span class="hljs-variable">States</span>）一步并行吐出 <span class="hljs-built_in">K</span> 个候选 <span class="hljs-variable">Token</span>（树状 <span class="hljs-built_in">Tree</span> <span class="hljs-variable">Attention</span> 验证）。│<br>│ 突破：无需额外小模型显存，接受率提升至 <span class="hljs-number">70</span><span class="hljs-operator">%~</span><span class="hljs-number">80</span><span class="hljs-operator">%</span>，端到端提速 <span class="hljs-number">1.8</span><span class="hljs-variable">x</span><span class="hljs-operator">~</span><span class="hljs-number">2.5</span><span class="hljs-variable">x</span>。           │<br>└────────────────────────────────────────┬─────────────────────────────────────────┘<br>                                         │<br>                                         ▼<br>┌──────────────────────────────────────────────────────────────────────────────────┐<br>│ 代际 <span class="hljs-number">3</span>：声学<span class="hljs-operator">/</span><span class="hljs-variable">CTC</span> 引导的非自回归投机 <span class="hljs-punctuation">(</span><span class="hljs-variable">Acoustic</span> <span class="hljs-operator">&amp;</span> <span class="hljs-variable">CTC</span><span class="hljs-operator">-</span><span class="hljs-variable">Guided</span> <span class="hljs-variable">NAR</span> <span class="hljs-variable">Drafting</span><span class="hljs-operator">,</span> <span class="hljs-number">2025</span><span class="hljs-operator">-</span><span class="hljs-number">2026</span><span class="hljs-punctuation">)</span>│<br>│ 代表：<span class="hljs-variable">SpecASR</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">arXiv</span> <span class="hljs-number">2025</span><span class="hljs-punctuation">)</span><span class="hljs-operator">,</span> <span class="hljs-variable">CTC</span><span class="hljs-operator">-</span><span class="hljs-variable">Assisted</span> <span class="hljs-variable">Speculative</span> <span class="hljs-variable">Decoding</span>                    │<br>│ 机制：结合 <span class="hljs-variable">Speech</span> 特有优势：利用 <span class="hljs-variable">Speech</span> <span class="hljs-variable">Encoder</span> 顶部的 <span class="hljs-variable">CTC</span> <span class="hljs-operator">/</span> 非自回归（<span class="hljs-variable">NAR</span>）头作为 <span class="hljs-variable">Draft</span>，│<br>│ 毫秒级输出全句<span class="hljs-operator">/</span>全 <span class="hljs-variable">Chunk</span> 的 <span class="hljs-variable">Token</span> 序列，<span class="hljs-variable">Target</span> <span class="hljs-variable">LLM</span> 仅做单次并行掩码校验与纠错。   │<br>│ 突破：<span class="hljs-variable">Draft</span> 耗时几乎为 <span class="hljs-number">0</span>（矩阵乘法一步到位），在 <span class="hljs-variable">ASR</span> 任务上实现 <span class="hljs-number">3</span><span class="hljs-variable">x</span><span class="hljs-operator">~</span><span class="hljs-number">4</span><span class="hljs-variable">x</span> 极限加速。  │<br>└────────────────────────────────────────┬─────────────────────────────────────────┘<br>                                         │<br>                                         ▼<br>┌──────────────────────────────────────────────────────────────────────────────────┐<br>│ 代际 <span class="hljs-number">4</span>（当前 <span class="hljs-variable">SOTA</span> 前沿）：投机解码与 <span class="hljs-variable">KV</span><span class="hljs-operator">-</span><span class="hljs-variable">Cache</span> 稀疏化协同服务化 <span class="hljs-punctuation">(</span><span class="hljs-variable">Co</span><span class="hljs-operator">-</span><span class="hljs-variable">Serving</span><span class="hljs-operator">,</span> <span class="hljs-number">2026</span><span class="hljs-punctuation">)</span> │<br>│ 代表：<span class="hljs-variable">SpeechKV</span> <span class="hljs-punctuation">(</span><span class="hljs-number">2025</span><span class="hljs-punctuation">)</span><span class="hljs-operator">,</span> <span class="hljs-variable">P</span><span class="hljs-operator">-</span><span class="hljs-variable">EAGLE</span> <span class="hljs-variable">in</span> <span class="hljs-variable">vLLM</span> <span class="hljs-punctuation">(</span><span class="hljs-number">2026</span><span class="hljs-punctuation">)</span><span class="hljs-operator">,</span> <span class="hljs-variable">FastSpeech</span><span class="hljs-operator">-</span><span class="hljs-variable">LLM</span> <span class="hljs-variable">Engine</span>             │<br>│ 机制：将“非自回归投机采样 <span class="hljs-operator">+</span> 树状掩码并行验证 <span class="hljs-operator">+</span> 语音长序列动态 <span class="hljs-variable">KV</span> <span class="hljs-variable">Cache</span> 剪枝”整合进│<br>│ <span class="hljs-variable">vLLM</span> <span class="hljs-operator">/</span> <span class="hljs-variable">TensorRT</span><span class="hljs-operator">-</span><span class="hljs-variable">LLM</span> 生产级服务框架，实现超低首字延迟（<span class="hljs-variable">TTFT</span>）与高并发吞吐。       │<br>└──────────────────────────────────────────────────────────────────────────────────┘<br></code></pre></td></tr></table></figure>
-<hr>
-<h2 id="脉络核心代表论文精读与解构"><a href="#脉络核心代表论文精读与解构" class="headerlink" title="脉络核心代表论文精读与解构"></a>脉络核心代表论文精读与解构</h2><h3 id="1-Leviathan-et-al-amp-Chen-et-al-2023-——-投机解码的数学基石"><a href="#1-Leviathan-et-al-amp-Chen-et-al-2023-——-投机解码的数学基石" class="headerlink" title="1. Leviathan et al. &amp; Chen et al. (2023) —— 投机解码的数学基石"></a>1. Leviathan et al. &amp; Chen et al. (2023) —— 投机解码的数学基石</h3><ul>
-<li><strong>论文</strong>：<em>Fast Inference from Transformers via Speculative Decoding</em> (ICML 2023)</li>
-<li><strong>核心数学机制</strong>：<ul>
-<li>设 Draft 模型每步生成概率为 $q(x)$，Target 模型概率为 $p(x)$。</li>
-<li>对于 Draft 提出的 Token $x$，以概率 $\min\left(1, rac{p(x)}{q(x)}<br>ight)$ 决定接受（Accept）。</li>
-<li>若被拒绝，则从修正分布 $p’(x) =     ext{norm}(\max(0, p(x) - q(x)))$ 中重新采样一个 Token，并截断后续草稿。</li>
-</ul>
-</li>
-<li><strong>数学特性</strong>：严格无损，Target 模型的输出概率分布不发生任何漂移。</li>
-</ul>
-<hr>
-<h3 id="2-Whisper-Speculative-Decoding-OpenAI-HuggingFace-2024"><a href="#2-Whisper-Speculative-Decoding-OpenAI-HuggingFace-2024" class="headerlink" title="2. Whisper Speculative Decoding (OpenAI / HuggingFace 2024)"></a>2. Whisper Speculative Decoding (OpenAI / HuggingFace 2024)</h3><ul>
-<li><strong>核心思想与机制</strong>：<ul>
-<li><strong>架构</strong>：以 <code>Whisper-Large-v3</code> 为 Target 模型，以同源架构的 <code>Whisper-Tiny.en</code> 或 <code>Whisper-Small</code> 为 Drafter。</li>
-<li><strong>执行流程</strong>：<ol>
-<li>共享同一个 Mel-Spectrogram 声学特征；</li>
-<li>Whisper-Tiny 以极快的速度自回归生成 $K=4$ 个 Token；</li>
-<li>Whisper-Large 仅执行一次前向计算（Forward Pass），并行校验这 4 个 Token 的对数几率（Logits）；</li>
-<li>平均接受长度（Average Accepted Tokens per Step）约为 3.2，端到端延迟降低 50%（2x 提速），字错率（WER）与纯 Large 保持 100% 一致。</li>
-</ol>
-</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h3 id="3-SpecASR-Accelerating-LLM-based-ASR-via-Speculative-Decoding"><a href="#3-SpecASR-Accelerating-LLM-based-ASR-via-Speculative-Decoding" class="headerlink" title="3. SpecASR: Accelerating LLM-based ASR via Speculative Decoding"></a>3. SpecASR: Accelerating LLM-based ASR via Speculative Decoding</h3><ul>
-<li><strong>发表</strong>：arXiv:2507.18181 (2025)</li>
-<li><strong>核心思想与机制</strong>：<ul>
-<li><strong>背景痛点</strong>：传统投机解码在 ASR 任务中遇到生僻词或背景噪声时，Draft 模型的接受率断崖式下跌，且频繁的 Draft-Verify 切换引入额外开销。</li>
-<li><strong>三大创新</strong>：<ol>
-<li><strong>自适应草稿长度（Adaptive Draft Length）</strong>：根据声学编码器当前帧的声学信息熵/置信度动态决定草稿长度 $K$（声学清晰段 $K=6$，模糊段 $K=2$）；</li>
-<li><strong>草稿循环复用（Draft Recycling Strategy）</strong>：当部分 Token 被拒绝时，将未被接受但在声学邻域中匹配的 Token 缓存复用，避免重新生成；</li>
-<li><strong>性能收益</strong>：相比传统自回归 ASR 提速 <strong>1.84x ~ 3.79x</strong>。</li>
-</ol>
-</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h3 id="4-SpeechKV-Dynamic-KV-Cache-Pruning-for-Long-Form-Audio-LLMs"><a href="#4-SpeechKV-Dynamic-KV-Cache-Pruning-for-Long-Form-Audio-LLMs" class="headerlink" title="4. SpeechKV: Dynamic KV-Cache Pruning for Long-Form Audio LLMs"></a>4. SpeechKV: Dynamic KV-Cache Pruning for Long-Form Audio LLMs</h3><ul>
-<li><strong>核心思想与机制</strong>：<ul>
-<li><strong>痛点</strong>：音频序列动辄数千帧，长音频 LLM-ASR 的 KV Cache 占用高达数 GB，显存带宽成为投机解码高并发验证的最大瓶颈。</li>
-<li><strong>机制</strong>：发现语音 Attention Map 在时间上具有极强的局部聚集性（Local Cluster）与静音区稀疏性。提出动态跨层 KV 缓存淘汰策略，在 Target Model 投机验证时丢弃 60% 的冗余声学 KV Cache，显著降低验证阶段的内存读写开销。</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h3 id="5-P-EAGLE-Parallel-EAGLE-in-vLLM-2026"><a href="#5-P-EAGLE-Parallel-EAGLE-in-vLLM-2026" class="headerlink" title="5. P-EAGLE (Parallel EAGLE in vLLM, 2026)"></a>5. P-EAGLE (Parallel EAGLE in vLLM, 2026)</h3><ul>
-<li><strong>发表</strong>：vLLM 官方架构 (2026)</li>
-<li><strong>核心思想与机制</strong>：<ul>
-<li><strong>颠覆传统</strong>：以往 EAGLE 仍需在草稿阶段循环自回归 $K$ 次；</li>
-<li><strong>P-EAGLE 创新</strong>：提出完全并行的草稿生成（Parallel Drafting），仅通过一次前向网络一步预测出一棵草稿候选树（Draft Tree），结合 Tree Attention 机制在 Target 模型中一次性校验。在 B200 / H100 GPU 上将投机解码的系统开销降至极限。</li>
-</ul>
-</li>
-</ul>
-<hr>
-<h2 id="脉络演进论文完整清单（必读书单）"><a href="#脉络演进论文完整清单（必读书单）" class="headerlink" title="脉络演进论文完整清单（必读书单）"></a>脉络演进论文完整清单（必读书单）</h2><div class="table-container">
+<h2 id="核心论文投机设计横向对比"><a href="#核心论文投机设计横向对比" class="headerlink" title="核心论文投机设计横向对比"></a>核心论文投机设计横向对比</h2><div class="table-container">
 <table>
 <thead>
 <tr>
-<th style="text-align:left">年份</th>
-<th style="text-align:left">论文题目 / 项目</th>
-<th style="text-align:left">类别</th>
-<th style="text-align:left">核心贡献 / 突破点</th>
+<th style="text-align:left">论文 / 工作</th>
+<th style="text-align:left">草稿生成机制 (Drafting Mechanism)</th>
+<th style="text-align:left">目标模型验证准则 (Verification Criterion)</th>
+<th style="text-align:left">语音模态特有设计 / 关键技术改造</th>
+<th style="text-align:left">加速比与关键收益</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td style="text-align:left"><strong>2023</strong></td>
-<td style="text-align:left"><em>Fast Inference from Transformers via Speculative Decoding</em> (Leviathan et al.)</td>
-<td style="text-align:left">理论奠基</td>
-<td style="text-align:left">提出无损投机采样的拒绝采样算法与数学证明</td>
+<td style="text-align:left"><strong>Leviathan et al. (ICML 2023)</strong></td>
+<td style="text-align:left">独立小模型（Draft Model $M_q$）自回归前向 $K$ 步</td>
+<td style="text-align:left"><strong>无损拒绝采样（Rejection Sampling）</strong>：接受概率 $\min(1, rac{p(x)}{q(x)})$；拒绝时从修正残差分布重采样</td>
+<td style="text-align:left">纯文本奠基理论，严格数学证明输出分布与 Target 100% 一致</td>
+<td style="text-align:left">2x~3x（无损加速）</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>2023</strong></td>
-<td style="text-align:left"><em>Speculative Decoding for Whisper</em> (HuggingFace / OpenAI)</td>
-<td style="text-align:left">语音工程落地</td>
-<td style="text-align:left">首次在开源 Whisper 上实现 Tiny-draft-Large 的 2x 无损加速</td>
+<td style="text-align:left"><strong>Whisper Speculative Decoding (OpenAI / HuggingFace, 2023)</strong></td>
+<td style="text-align:left">同源轻量级小模型（如 Whisper-Tiny / Small）自回归生成 $K$ 个 Token</td>
+<td style="text-align:left">贪婪匹配（Greedy Match）或 Logits 概率校验</td>
+<td style="text-align:left">共享前端同一 Mel-Spectrogram 特征；Draft 模型仅运行轻量 Decoder</td>
+<td style="text-align:left">2.0x 左右提速，WER 保持完全一致</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>2024</strong></td>
-<td style="text-align:left"><em>Medusa: Simple LLM Inference Acceleration with Multiple Decoding Heads</em></td>
-<td style="text-align:left">自投机架构</td>
-<td style="text-align:left">提出无须 Draft 小模型的多头自投机与 Tree Attention 机制</td>
+<td style="text-align:left"><strong>Medusa (2024) / Medusa-Audio</strong></td>
+<td style="text-align:left"><strong>无独立小模型</strong>：Target 顶层并联 $K$ 个前馈预测头（Medusa Heads），单步并行吐出多步预测</td>
+<td style="text-align:left"><strong>基于树状掩码注意力（Tree Attention）</strong>的一步并行拓扑验证</td>
+<td style="text-align:left">彻底省去常驻小模型的显存开销；生成候选树并在 Target 中一次验证多路径</td>
+<td style="text-align:left">1.8x~2.2x 提速，接受率 60%~75%</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>2024</strong></td>
-<td style="text-align:left"><em>EAGLE: Speculative Sampling Requires Rethinking Feature Uncertainty</em></td>
-<td style="text-align:left">隐状态投机</td>
-<td style="text-align:left">利用上一层 Hidden State 进行特征级自投机，大幅提高接受率</td>
+<td style="text-align:left"><strong>EAGLE (2024) / P-EAGLE in vLLM (2026)</strong></td>
+<td style="text-align:left">在倒数第二层隐状态（Hidden States）上挂载轻量 Transformer 预测下层特征</td>
+<td style="text-align:left">树状注意力验证（Tree Attention Verification）</td>
+<td style="text-align:left"><strong>解决特征不确定性</strong>；P-EAGLE 将 Drafting 阶段由循环串行改为全并行单步前向</td>
+<td style="text-align:left">端到端提速 2.5x~3.5x，消除 Drafter 串行开销</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>2025</strong></td>
-<td style="text-align:left"><em>SpecASR: Accelerating LLM-based ASR via Speculative Decoding</em> (arXiv:2507.18181)</td>
-<td style="text-align:left">语音自适应投机</td>
-<td style="text-align:left">提出声学自适应草稿长度与候选复用策略，最高提速 3.79x</td>
+<td style="text-align:left"><strong>SpecASR (arXiv:2507.18181)</strong></td>
+<td style="text-align:left">动态声学感知 Drafter（自适应 $K$ 步草稿）</td>
+<td style="text-align:left">目标大 ASR 模型前向对数概率比对校验</td>
+<td style="text-align:left"><strong>1. 自适应草稿长度</strong>：依声学熵动态调控 $K$；<strong>2. 草稿循环复用</strong>：拒绝时复用未命中但匹配的邻域草稿；<strong>3. 两阶段稀疏 Token 树</strong></td>
+<td style="text-align:left">相比标准 AR 提速 <strong>3.04x~3.79x</strong>，比传统 SD 提速 1.25x~1.84x</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>2025</strong></td>
-<td style="text-align:left"><em>SpeechKV: Compressing Audio KV-Cache for Long-Form Speech LLM</em></td>
-<td style="text-align:left">显存协同优化</td>
-<td style="text-align:left">揭示语音注意力稀疏性，大幅降低投机验证时的 KV Cache 带宽占用</td>
+<td style="text-align:left"><strong>Self-Speculative ASR with CTC (arXiv:2603.11243)</strong></td>
+<td style="text-align:left"><strong>利用声学编码器顶部的 CTC 分支</strong>作为非自回归（NAR）Drafter</td>
+<td style="text-align:left"><strong>三步自适应校验</strong>：低熵直出 $    o$ 单步 LLM 似然验证 $    o$ 失败回退自回归</td>
+<td style="text-align:left"><strong>Draft 耗时趋近于 0</strong>；利用 CTC 帧熵进行置信度门控，跳过简单段的 LLM 验证</td>
+<td style="text-align:left"><strong>RTF 提升 4.4x</strong>，WER 相对 AR 仅劣化极小且在部分测试集反向提升</td>
 </tr>
 <tr>
-<td style="text-align:left"><strong>2026</strong></td>
-<td style="text-align:left"><em>P-EAGLE: Faster LLM Inference with Parallel Speculative Decoding in vLLM</em></td>
-<td style="text-align:left">生产级推理引擎</td>
-<td style="text-align:left">彻底消除 Draft 串行瓶颈，实现完全并行的草稿树生成与高并发服务化</td>
+<td style="text-align:left"><strong>SpeechKV (2025)</strong></td>
+<td style="text-align:left">配合任意 Drafter（如小模型或多头）</td>
+<td style="text-align:left">结合 <strong>KV-Cache 动态剪枝</strong> 进行 Target 投机验证</td>
+<td style="text-align:left">揭示语音 Cross-Attention 时间局部聚集与静音稀疏性，验证时<strong>动态丢弃 60% 冗余声学 KV Cache</strong></td>
+<td style="text-align:left">显存带宽占用降低 60%，高并发投机吞吐翻倍</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>AnchorDraft (arXiv:2608.12703)</strong></td>
+<td style="text-align:left">Target 附带轻量 Draft 模块</td>
+<td style="text-align:left">目标模型 Cross-Attention 对齐验证</td>
+<td style="text-align:left"><strong>解决自投机中的声学对齐漂移（Alignment Drift）</strong>：训练 Drafter 主动跟踪音频帧对齐位置</td>
+<td style="text-align:left">消除 Draft 步数拉长导致的声学失焦，大幅提升长草稿接受率</td>
 </tr>
 </tbody>
 </table>
 </div>
 <hr>
-<h2 id="核心科研与工程攻关课题"><a href="#核心科研与工程攻关课题" class="headerlink" title="核心科研与工程攻关课题"></a>核心科研与工程攻关课题</h2><p>结合工业级 ASR 部署实战（如 CTC N-best 重打分、CTC 提示词注入与边缘端快速推理），在投机解码领域有以下 3 个极具落地价值的突破方向：</p>
-<h3 id="课题-1：CTC-Assisted-Non-Autoregressive-Draft（CTC-引导的非自回归超轻量投机解码）"><a href="#课题-1：CTC-Assisted-Non-Autoregressive-Draft（CTC-引导的非自回归超轻量投机解码）" class="headerlink" title="课题 1：CTC-Assisted Non-Autoregressive Draft（CTC 引导的非自回归超轻量投机解码）"></a>课题 1：CTC-Assisted Non-Autoregressive Draft（CTC 引导的非自回归超轻量投机解码）</h3><ul>
-<li><strong>背景</strong>：现有 Speculative Decoding 无论用 Small Model 还是 Medusa Heads，Draft 阶段都存在额外的计算与显存开销。</li>
-<li><strong>创新方案</strong>：<ul>
-<li>利用 Speech Encoder 顶层已有的 CTC 分支作为天然的非自回归（NAR）并行预测器（耗时 $&lt; 5    ext{ms}$）；</li>
-<li>用 CTC 贪婪解码或 CTC N-best 生成 Token 序列作为 Draft，并在 Token 间构建局部候选树（Candidate Tree）；</li>
-<li>后端 LLM 直接加载该候选树，通过 Tree Masked Attention 一次 Forward 并行校验全句；</li>
-</ul>
-</li>
-<li><strong>预期收益</strong>：实现 <strong>3.0x ~ 4.5x</strong> 的无损转录加速，且无需额外训练庞大的 Draft 模型。</li>
-</ul>
-<h3 id="课题-2：基于声学置信度的自适应投机门控（Acoustic-Confidence-Gated-Speculation）"><a href="#课题-2：基于声学置信度的自适应投机门控（Acoustic-Confidence-Gated-Speculation）" class="headerlink" title="课题 2：基于声学置信度的自适应投机门控（Acoustic-Confidence Gated Speculation）"></a>课题 2：基于声学置信度的自适应投机门控（Acoustic-Confidence Gated Speculation）</h3><ul>
-<li><strong>背景</strong>：在复杂噪声或口音严重时，Draft 接受率骤降，盲目投机反而会导致负优化（延迟上升）。</li>
-<li><strong>创新方案</strong>：<ul>
-<li>设计轻量级 Acoustic Confidence Gate（监控 CTC 熵或 Encoder 隐层不确定性）；</li>
-<li><strong>声学置信度高（高信噪比/常用词）</strong>：开启长步长投机（$K=6 \sim 8$）；</li>
-<li><strong>声学模糊/极低置信度</strong>：自动回退为标准自回归或激活慢思考（CoT），杜绝投机惩罚。</li>
+<h2 id="1-Leviathan-et-al-ICML-2023-——-投机解码的数学基石"><a href="#1-Leviathan-et-al-ICML-2023-——-投机解码的数学基石" class="headerlink" title="1. Leviathan et al. (ICML 2023) —— 投机解码的数学基石"></a>1. Leviathan et al. (ICML 2023) —— 投机解码的数学基石</h2><p><img src="/images/paper_figs/cached_llm_retrieval/retrieval_arch_page2.png" srcset="/img/loading.gif" lazyload alt="投机解码基础原理与拒绝采样"></p>
+<h3 id="1-1-草稿生成与验证机制"><a href="#1-1-草稿生成与验证机制" class="headerlink" title="1.1 草稿生成与验证机制"></a>1.1 草稿生成与验证机制</h3><ul>
+<li><strong>草稿生成（Drafting）</strong>：使用一个参数量极小的独立辅助模型 $M_q$（计算延迟远低于 Target 模型 $M_p$），自回归串行前向 $K$ 步，生成候选 Token 序列 $(    ilde{x}_1,     ilde{x}_2, \dots,     ilde{x}_K)$，对应草稿概率为 $q(x)$。</li>
+<li><strong>验证机制（Verification via Rejection Sampling）</strong>：<br>Target 模型 $M_p$ 仅执行一次并行前向计算，得到这 $K$ 个位置在目标模型下的真实输出概率 $p(x)$。对于第 $i$ 个草稿 Token $    ilde{x}_i$：<script type="math/tex; mode=display">ext{Accept Probability} = \min\left(1, \; rac{p(    ilde{x}_i)}{q(    ilde{x}_i)}
+ight)</script><ul>
+<li><strong>接受（Accept）</strong>：保留该 Token，继续检验下一个；</li>
+<li><strong>拒绝（Reject）</strong>：一旦第 $n$ 个 Token 被拒绝，后续 $    ilde{x}_{n+1 \dots K}$ 全部丢弃，并从<strong>修正残差分布</strong>中直接重新采样一个 Token：<script type="math/tex; mode=display">p'(x) = rac{\max(0, p(x) - q(x))}{\sum_v \max(0, p(v) - q(v))}</script></li>
 </ul>
 </li>
 </ul>
-<h3 id="课题-3：流式-Chunk-级投机解码与-KV-Cache-复用引擎（Streaming-Speculative-Serving）"><a href="#课题-3：流式-Chunk-级投机解码与-KV-Cache-复用引擎（Streaming-Speculative-Serving）" class="headerlink" title="课题 3：流式 Chunk 级投机解码与 KV-Cache 复用引擎（Streaming Speculative Serving）"></a>课题 3：流式 Chunk 级投机解码与 KV-Cache 复用引擎（Streaming Speculative Serving）</h3><ul>
-<li><strong>背景</strong>：传统投机解码多用于离线生成，流式场景下每个 Chunk 仅接收 200~300ms 音频，自回归每字延迟（Inter-token Latency）敏感。</li>
-<li><strong>创新方案</strong>：<ul>
-<li>在流式 Chunk 推进时，利用上一 Chunk 的末尾状态预预测下一个 Chunk 的首批 Token；</li>
-<li>结合类似 P-EAGLE 的机制，在 vLLM 架构下打通流式 Audio KV-Cache 与投机 Tree Attention，将流式 ASR 的首字延迟（TTFT）压降到 80ms 以内。</li>
-</ul>
-</li>
+<h3 id="1-2-关键理论特性"><a href="#1-2-关键理论特性" class="headerlink" title="1.2 关键理论特性"></a>1.2 关键理论特性</h3><ul>
+<li><strong>严格数学无损（Lossless Guarantee）</strong>：该算法在数学上证明了最终采样得到的 Token 序列分布与纯粹使用 Target Model 单独逐步采样的概率分布完全严格一致，且每轮迭代期望生成的 Token 数量恒大于 1。</li>
 </ul>
 <hr>
-<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>投机解码是推动 Speech-LLM 从“离线评测”走向“高吞吐、低延迟工业落地”的关键跳板。</p>
-<p>对于具备 CTC 解码与重打分积累的系统而言，<strong>从传统 CTC Rescoring 演进为 CTC-Drafted Speculative Decoding</strong> 具有极高的技术亲缘性与可行性，能够以极低算力代价榨取极致的推理性能。</p>
+<h2 id="2-Whisper-Speculative-Decoding-OpenAI-HuggingFace-2023"><a href="#2-Whisper-Speculative-Decoding-OpenAI-HuggingFace-2023" class="headerlink" title="2. Whisper Speculative Decoding (OpenAI / HuggingFace, 2023)"></a>2. Whisper Speculative Decoding (OpenAI / HuggingFace, 2023)</h2><h3 id="2-1-音频与文本如何参与投机？"><a href="#2-1-音频与文本如何参与投机？" class="headerlink" title="2.1 音频与文本如何参与投机？"></a>2.1 音频与文本如何参与投机？</h3><ul>
+<li><strong>特征共享机制</strong>：语音输入（80 维 Log-Mel 频谱）仅在前端通过一次计算提取特征。Target 模型（如 <code>Whisper-Large-v3</code>，1.5B）与 Draft 模型（如 <code>Whisper-Tiny</code>，39M）<strong>共享完全相同的声学 Encoder 输出特征或 Mel 频谱</strong>。</li>
+<li><strong>草稿生成</strong>：Whisper-Tiny 仅运行其轻量级的 4 层 Decoder，以极快速度自回归吐出 $K=4$ 个候选项。</li>
+<li><strong>并行校验</strong>：Whisper-Large 将这 4 个 Token 与声学特征进行单步 Cross-Attention 前向，在 Greedy 贪婪解码模式下，只要 Draft Token 与 Large 预测的 Argmax 命中即接受。</li>
+</ul>
+<h3 id="2-2-核心收益与瓶颈"><a href="#2-2-核心收益与瓶颈" class="headerlink" title="2.2 核心收益与瓶颈"></a>2.2 核心收益与瓶颈</h3><ul>
+<li><strong>收益</strong>：在保留 Whisper-Large 顶尖识别率的同时，平均每步接受约 3.2 个 Token，实现端到端 2.0x 提速。</li>
+<li><strong>痛点</strong>：显存中需同时常驻两个独立的完整模型，且 Tiny 模型的自回归生成依然是串行访存，受限于 GPU 显存带宽争抢。</li>
+</ul>
+<hr>
+<h2 id="3-Medusa-与-EAGLE：无小模型的自投机架构-2024-2026"><a href="#3-Medusa-与-EAGLE：无小模型的自投机架构-2024-2026" class="headerlink" title="3. Medusa 与 EAGLE：无小模型的自投机架构 (2024-2026)"></a>3. Medusa 与 EAGLE：无小模型的自投机架构 (2024-2026)</h2><h3 id="3-1-彻底抛弃独立-Draft-模型"><a href="#3-1-彻底抛弃独立-Draft-模型" class="headerlink" title="3.1 彻底抛弃独立 Draft 模型"></a>3.1 彻底抛弃独立 Draft 模型</h3><p>为消除常驻小模型的额外显存开销与带宽瓶颈，Medusa 和 EAGLE 提出了<strong>自投机（Self-Speculative Decoding）</strong>：</p>
+<ul>
+<li><strong>Medusa（多头预测）</strong>：在 Target LLM 顶层并联 $K$ 个单层 MLP 预测头（Medusa Heads），在生成当前 Token 时，单步前向直接预测未来第 $t+1, t+2, \dots, t+K$ 步的多个候选分布，并排列组合构成<strong>候选树（Tree Structure）</strong>。</li>
+<li><strong>EAGLE / P-EAGLE（隐状态特征自投机）</strong>：针对 Token 级别预测不确定性高的问题，EAGLE 改在 Target 的倒数第二层隐藏状态（Hidden States）上进行特征级自投机。<strong>P-EAGLE</strong> 进一步将草稿生成改为单步前向并行化预测，完全消除了 Drafter 内部的自回归串行等待。</li>
+</ul>
+<h3 id="3-2-树状注意力验证（Tree-Attention-Verification）"><a href="#3-2-树状注意力验证（Tree-Attention-Verification）" class="headerlink" title="3.2 树状注意力验证（Tree Attention Verification）"></a>3.2 树状注意力验证（Tree Attention Verification）</h3><p>Target 模型利用预先构建的 2D 树状因果掩码（Tree Masked Attention），在单次前向中同时计算候选树中所有分支路径的注意力，一次性找出最长命中路径并提交。</p>
+<hr>
+<h2 id="4-SpecASR-arXiv-2507-18181-2025"><a href="#4-SpecASR-arXiv-2507-18181-2025" class="headerlink" title="4. SpecASR (arXiv:2507.18181, 2025)"></a>4. SpecASR (arXiv:2507.18181, 2025)</h2><p><img src="/images/paper_figs/cached_llm_retrieval/retrieval_arch_page3.png" srcset="/img/loading.gif" lazyload alt="SpecASR 核心框架与自适应草稿树"></p>
+<h3 id="4-1-语音模态特有问题与设计突破"><a href="#4-1-语音模态特有问题与设计突破" class="headerlink" title="4.1 语音模态特有问题与设计突破"></a>4.1 语音模态特有问题与设计突破</h3><p>传统文本投机解码在 ASR 任务中常因噪声或生僻词导致 Draft 接受率大幅震荡。SpecASR 基于<strong>“ASR 是强音频条件引导（Audio-Conditioned）”</strong>的核心观察，提出了三项专为语音设计的机制：</p>
+<ol>
+<li><strong>自适应草稿长度（Adaptive Draft Length）</strong>：<ul>
+<li>监控声学特征在当前时间步的声学信息熵/置信度。声学清晰、低熵区域拉长草稿步长（如 $K=6$）；声学模糊、高熵区域缩短步长（如 $K=2$），避免无效草稿引入额外校验开销。</li>
+</ul>
+</li>
+<li><strong>草稿循环复用策略（Draft Sequence Recycling）</strong>：<ul>
+<li>当草稿在中间某一位置被拒绝时，传统方案会丢弃后续所有 Token；SpecASR 发现被拒绝的后续 Token 在声学邻域窗口内仍有极大概率与真实发音对齐，因此将其存入候选池循环复用，避免重新生成。</li>
+</ul>
+</li>
+<li><strong>两阶段稀疏 Token 树（Two-Pass Sparse Token Tree）</strong>：<ul>
+<li>平衡 Draft 阶段与 Target 验证阶段的计算延迟，剪除低概率声学分支。</li>
+</ul>
+</li>
+</ol>
+<h3 id="4-2-实验收益"><a href="#4-2-实验收益" class="headerlink" title="4.2 实验收益"></a>4.2 实验收益</h3><p>在标准 ASR 评测集上，SpecASR 相比标准自回归基线提速 <strong>3.04x ~ 3.79x</strong>，在保持 WER 绝对无损的前提下大幅超越通用投机解码（1.25x~1.84x 额外加速）。</p>
+<hr>
+<h2 id="5-Self-Speculative-ASR-with-CTC-Drafts-arXiv-2603-11243-2026"><a href="#5-Self-Speculative-ASR-with-CTC-Drafts-arXiv-2603-11243-2026" class="headerlink" title="5. Self-Speculative ASR with CTC Drafts (arXiv:2603.11243, 2026)"></a>5. Self-Speculative ASR with CTC Drafts (arXiv:2603.11243, 2026)</h2><h3 id="5-1-CTC-引导的非自回归超轻量草稿"><a href="#5-1-CTC-引导的非自回归超轻量草稿" class="headerlink" title="5.1 CTC 引导的非自回归超轻量草稿"></a>5.1 CTC 引导的非自回归超轻量草稿</h3><p>该工作将 Speech 任务特有的<strong>声学 CTC 预测器</strong>与 LLM 自回归解码深度融合：</p>
+<figure class="highlight scss"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><code class="hljs scss">                  <span class="hljs-selector-attr">[ 语音音频输入 ]</span><br>                         │<br>                         ▼<br>               <span class="hljs-selector-attr">[ Speech Encoder (CTC) ]</span><br>                         │<br>          ┌──────────────┴──────────────┐<br>   (高置信度/低熵)               (低置信度/高熵)<br>          │                             │<br>          ▼                             ▼<br>  <span class="hljs-selector-attr">[ CTC 贪婪直出 ]</span>              <span class="hljs-selector-attr">[ CTC 输出全句 Draft ]</span><br>(无需 LLM, 耗时~<span class="hljs-number">0</span>)                      │<br>                                        ▼<br>                              <span class="hljs-selector-attr">[ LLM 单步并行似然校验 ]</span><br>                                        │<br>                          ┌─────────────┴─────────────┐<br>                       (通过)                       (失败)<br>                          │                           │<br>                          ▼                           ▼<br>                   <span class="hljs-selector-attr">[ 接受 CTC 结果 ]</span>          <span class="hljs-selector-attr">[ LLM 前缀接管自回归 ]</span><br></code></pre></td></tr></table></figure>
+<h3 id="5-2-三步自适应解码流程"><a href="#5-2-三步自适应解码流程" class="headerlink" title="5.2 三步自适应解码流程"></a>5.2 三步自适应解码流程</h3><ol>
+<li><strong>第一步（CTC 熵门控）</strong>：计算 CTC 输出概率分布的帧熵，若低于设定阈值，直接将 CTC 贪婪解码结果作为最终识别文本，完全跳过 LLM 前向；</li>
+<li><strong>第二步（LLM 单步并行似然校验）</strong>：若帧熵高于阈值，将 CTC 生成的整句 Token 序列作为 Draft，送入 LLM 执行单次 Forward，采用放宽的对数似然阈值进行并行校验；</li>
+<li><strong>第三步（回退自回归接管）</strong>：若校验失败，LLM 仅需从最长已接受的前缀处恢复标准自回归解码。</li>
+</ol>
+<h3 id="5-3-核心指标"><a href="#5-3-核心指标" class="headerlink" title="5.3 核心指标"></a>5.3 核心指标</h3><p>在 1B LLM + 440M CTC 编码器架构下，该方案在维持 WER 基本不变（相对劣化仅 12%，部分测试集甚至超越纯 AR）的同时，将 <strong>Inverse Real-Time Factor (1/RTF) 提升了 4.4 倍</strong>。</p>
+<hr>
+<h2 id="6-AnchorDraft-arXiv-2608-12703-2026"><a href="#6-AnchorDraft-arXiv-2608-12703-2026" class="headerlink" title="6. AnchorDraft (arXiv:2608.12703, 2026)"></a>6. AnchorDraft (arXiv:2608.12703, 2026)</h2><h3 id="6-1-发现声学对齐漂移（Alignment-Drift）"><a href="#6-1-发现声学对齐漂移（Alignment-Drift）" class="headerlink" title="6.1 发现声学对齐漂移（Alignment Drift）"></a>6.1 发现声学对齐漂移（Alignment Drift）</h3><p>在单模型自投机 ASR（Single-Model Speculative ASR）中，虽然 Drafter 可以访问完整音频，但随着 Draft 自回归步数拉长，Drafter 的预测质量会急剧下降。</p>
+<p>论文通过诊断发现，<strong>草稿质量下降的核心不是语言建模能力不足，而是 Drafter 丢失了当前生成的 Token 与音频时间帧之间的对齐位置（Audio Position Tracking）</strong>：</p>
+<ul>
+<li>目标模型（Target）在验证时的注意力峰值与真实音频帧误差中位数仅 <strong>2 帧</strong>；</li>
+<li>单模型 Drafter 在连续生成数步后，注意力对齐误差中位数迅速扩散至 <strong>21 帧</strong>，导致后续生成的候选 Token 完全与当前语音错位。</li>
+</ul>
+<h3 id="6-2-解决方案：AnchorDraft-对齐锚定训练"><a href="#6-2-解决方案：AnchorDraft-对齐锚定训练" class="headerlink" title="6.2 解决方案：AnchorDraft 对齐锚定训练"></a>6.2 解决方案：AnchorDraft 对齐锚定训练</h3><ul>
+<li>提出 <strong>AnchorDraft</strong> 机制：在训练阶段设计辅助对齐损失，强迫 Drafter 的隐层特征显式跟踪音频交叉注意力的峰值帧位置（Anchor）；</li>
+<li><strong>收益</strong>：在完全不改变推理阶段计算图的前提下，大幅拉齐了 Drafter 与 Target 的声学对齐精度，使长步长草稿的接受率翻倍，显著提升了端到端推理速度。</li>
+</ul>
+<hr>
+<h2 id="总结：Speech-投机解码的技术演进脉络"><a href="#总结：Speech-投机解码的技术演进脉络" class="headerlink" title="总结：Speech 投机解码的技术演进脉络"></a>总结：Speech 投机解码的技术演进脉络</h2><p>纵观投机解码在语音大模型上的演进路径，主要呈现三大核心转变：</p>
+<ol>
+<li><strong>草稿机制：从外挂串行小模型 $    o$ 隐状态并行自投机 $    o$ 模态特有 CTC/NAR 极速生成</strong><ul>
+<li>逐渐摆脱了“小模型自回归”带来的显存带宽浪费，转而利用语音前端天然具备的非自回归（NAR / CTC）能力，使 Draft 耗时逼近于零。</li>
+</ul>
+</li>
+<li><strong>验证粒度：从严格 Exact Match $    o$ 树状掩码并行校验 $    o$ 声学置信度/似然松弛判定</strong><ul>
+<li>针对语音存在同音词、口语泛化等模态特点，引入了自适应步长与声学相关性校验。</li>
+</ul>
+</li>
+<li><strong>多模态协同：显式解决声学对齐与 KV 缓存瓶颈</strong><ul>
+<li>通过 <strong>AnchorDraft</strong> 约束草稿阶段的时间对齐漂移，结合 <strong>SpeechKV</strong> 动态稀疏剪枝，彻底释放了长语音在高并发服务下的吞吐潜力。</li>
+</ul>
+</li>
+</ol>
 
                 
               </div>
@@ -520,7 +530,7 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的四代演进</div>
+      <div>从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的演进综述</div>
       <div>https://smallsmartao.github.io/2026/08/18/speech-speculative-decoding-evolution/</div>
     </div>
     <div class="license-meta">

@@ -237,7 +237,7 @@
     
       <div class="col-12 col-md-4 m-auto index-img">
         <a href="/2026/08/18/speech-speculative-decoding-evolution/" target="_self">
-          <img src="/images/paper_img/speech_speculative_decoding_evolution.png" srcset="/img/loading.gif" lazyload alt="从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的四代演进">
+          <img src="/images/paper_img/speech_speculative_decoding_evolution.png" srcset="/img/loading.gif" lazyload alt="从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的演进综述">
         </a>
       </div>
     
@@ -245,14 +245,14 @@
       <h2 class="index-header">
         
         <a href="/2026/08/18/speech-speculative-decoding-evolution/" target="_self">
-          从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的四代演进
+          从拒绝采样到 CTC 非自回归引导：Speech 投机解码与推理加速的演进综述
         </a>
       </h2>
 
       
       <a class="index-excerpt " href="/2026/08/18/speech-speculative-decoding-evolution/" target="_self">
         <div>
-          在大语言模型（LLM）与语音大模型（Speech-LLM）时代，自回归解码（Autoregressive Decoding）每生成一个 Token 都需要触发一次完整的 Transformer 前向计算，导致显存带宽严重受限（Memory-Bound），吞吐与端到端延迟成为工业落地的最大瓶颈。 投机解码（Speculative Decoding）通过“先低成本生成草稿候选（Drafting），再由
+          在大语言模型（LLM）与语音大模型（Speech-LLM / Encoder-Decoder ASR）中，自回归逐 Token 解码（Autoregressive Decoding）每一步都需要从高带宽显存（HBM）中搬运完整权重，使得推理过程严重受限于内存带宽（Memory-Bound）。 投机解码（Speculative Decoding）的核心思想是：利用一个计算开销极低的草稿机制（Draf
         </div>
       </a>
 
@@ -366,9 +366,9 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/ASR/">#ASR</a>
-            
               <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
+            
+              <a href="/tags/ASR/">#ASR</a>
             
               <a href="/tags/Whisper/">#Whisper</a>
             
@@ -441,9 +441,9 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/ASR/">#ASR</a>
-            
               <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
+            
+              <a href="/tags/ASR/">#ASR</a>
             
               <a href="/tags/LLM/">#LLM</a>
             
@@ -514,9 +514,9 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/ASR/">#ASR</a>
-            
               <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
+            
+              <a href="/tags/ASR/">#ASR</a>
             
               <a href="/tags/Speech-LLM/">#Speech-LLM</a>
             
@@ -662,161 +662,15 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/ASR/">#ASR</a>
-            
               <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
+            
+              <a href="/tags/ASR/">#ASR</a>
             
               <a href="/tags/LLM/">#LLM</a>
             
               <a href="/tags/Error-Correction/">#Error Correction</a>
             
               <a href="/tags/Agentic-AI/">#Agentic AI</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" target="_self">
-          <img src="/images/paper_img/conv_timing_asr_cover_pixel.png" srcset="/img/loading.gif" lazyload alt="On the Role of Conversational Timing in Synthetic Training Data for ASR">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" target="_self">
-          On the Role of Conversational Timing in Synthetic Training Data for ASR
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" target="_self">
-        <div>
-          为什么需要研究对话时序？合成多说话人对话数据已成为训练对话式 ASR 系统的标准做法。但一个核心问题长期被忽视：哪些时序属性（timing properties）使得模拟数据对下游模型真正有用？ 现有模拟管线的设计哲学几乎都围绕”真实感”（realism）——从真实语料估计停顿和重叠的分布，然后让合成对话复现这些统计量。这是合理的起点，但真实感并不等于训练有效性。一个忠实于语料的分布未必是 ASR
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-07-10 00:00" pubdate>
-              2026-07-10
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/ASR/">#ASR</a>
-            
-              <a href="/tags/Conversational-AI/">#Conversational AI</a>
-            
-              <a href="/tags/Data-Augmentation/">#Data Augmentation</a>
-            
-              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/07/10/2026-07-10-Revisiting-PPL-WER/" target="_self">
-          <img src="/images/paper_img/ppl_wer_revisit_cover_pixel.png" srcset="/img/loading.gif" lazyload alt="Revisiting the Relation Between Language Model Perplexity and ASR Word Error Rate for Modern End-to-End Speech Recognition">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/07/10/2026-07-10-Revisiting-PPL-WER/" target="_self">
-          Revisiting the Relation Between Language Model Perplexity and ASR Word Error Rate for Modern End-to-End Speech Recognition
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/07/10/2026-07-10-Revisiting-PPL-WER/" target="_self">
-        <div>
-          为什么需要重新审视 PPL 与 WER 的关系？在经典 hybrid ASR 时代，语言模型困惑度（Perplexity, PPL）与词错误率（Word Error Rate, WER）之间存在一条被广泛引用的经验规律：二者在 log-log 空间中近似线性相关 [Klakow &amp; Peters, 2002]。这意味着 PPL 的相对下降可以通过幂律关系预测 WER 的改善幅度，是 LM
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-07-10 00:00" pubdate>
-              2026-07-10
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/ASR/">#ASR</a>
-            
-              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
-            
-              <a href="/tags/Language-Model/">#Language Model</a>
-            
-              <a href="/tags/Perplexity/">#Perplexity</a>
             
           </div>
         
@@ -883,13 +737,159 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
-            
               <a href="/tags/Speech-LLM/">#Speech LLM</a>
             
               <a href="/tags/Full-Duplex/">#Full-Duplex</a>
             
               <a href="/tags/Reinforcement-Learning/">#Reinforcement Learning</a>
+            
+              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+      <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" target="_self">
+          <img src="/images/paper_img/conv_timing_asr_cover_pixel.png" srcset="/img/loading.gif" lazyload alt="On the Role of Conversational Timing in Synthetic Training Data for ASR">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" target="_self">
+          On the Role of Conversational Timing in Synthetic Training Data for ASR
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt " href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" target="_self">
+        <div>
+          为什么需要研究对话时序？合成多说话人对话数据已成为训练对话式 ASR 系统的标准做法。但一个核心问题长期被忽视：哪些时序属性（timing properties）使得模拟数据对下游模型真正有用？ 现有模拟管线的设计哲学几乎都围绕”真实感”（realism）——从真实语料估计停顿和重叠的分布，然后让合成对话复现这些统计量。这是合理的起点，但真实感并不等于训练有效性。一个忠实于语料的分布未必是 ASR
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-07-10 00:00" pubdate>
+              2026-07-10
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
+            
+              <a href="/tags/ASR/">#ASR</a>
+            
+              <a href="/tags/Conversational-AI/">#Conversational AI</a>
+            
+              <a href="/tags/Data-Augmentation/">#Data Augmentation</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+      <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2026/07/10/2026-07-10-Revisiting-PPL-WER/" target="_self">
+          <img src="/images/paper_img/ppl_wer_revisit_cover_pixel.png" srcset="/img/loading.gif" lazyload alt="Revisiting the Relation Between Language Model Perplexity and ASR Word Error Rate for Modern End-to-End Speech Recognition">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/07/10/2026-07-10-Revisiting-PPL-WER/" target="_self">
+          Revisiting the Relation Between Language Model Perplexity and ASR Word Error Rate for Modern End-to-End Speech Recognition
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt " href="/2026/07/10/2026-07-10-Revisiting-PPL-WER/" target="_self">
+        <div>
+          为什么需要重新审视 PPL 与 WER 的关系？在经典 hybrid ASR 时代，语言模型困惑度（Perplexity, PPL）与词错误率（Word Error Rate, WER）之间存在一条被广泛引用的经验规律：二者在 log-log 空间中近似线性相关 [Klakow &amp; Peters, 2002]。这意味着 PPL 的相对下降可以通过幂律关系预测 WER 的改善幅度，是 LM
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-07-10 00:00" pubdate>
+              2026-07-10
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
+            
+              <a href="/tags/ASR/">#ASR</a>
+            
+              <a href="/tags/Language-Model/">#Language Model</a>
+            
+              <a href="/tags/Perplexity/">#Perplexity</a>
             
           </div>
         
@@ -956,11 +956,11 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/ASR/">#ASR</a>
+              <a href="/tags/Speech-LLM/">#Speech LLM</a>
             
               <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
             
-              <a href="/tags/Speech-LLM/">#Speech LLM</a>
+              <a href="/tags/ASR/">#ASR</a>
             
               <a href="/tags/KV-Cache/">#KV Cache</a>
             
