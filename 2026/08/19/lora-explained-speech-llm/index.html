@@ -1,0 +1,980 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="在大模型（LLM）与多模态模型（如 Speech LLM）的落地实践中，几乎每位 AI 工程师都会频繁使用或接触 LoRA（Low-Rank Adaptation）。它常被称为“轻量级微调神器”，只需极少的显存和几兆字节的存储，就能让几十亿甚至几百亿参数的基础模型迅速适应下游垂直场景。 但剥开各种封装库的外壳，LoRA 的底层数学和工程逻辑究竟是什么？在包含音频编码器、跨模态投影层与文本解码器的复">
+<meta property="og:type" content="article">
+<meta property="og:title" content="LoRA 到底做了什么？">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/08/19/lora-explained-speech-llm/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="在大模型（LLM）与多模态模型（如 Speech LLM）的落地实践中，几乎每位 AI 工程师都会频繁使用或接触 LoRA（Low-Rank Adaptation）。它常被称为“轻量级微调神器”，只需极少的显存和几兆字节的存储，就能让几十亿甚至几百亿参数的基础模型迅速适应下游垂直场景。 但剥开各种封装库的外壳，LoRA 的底层数学和工程逻辑究竟是什么？在包含音频编码器、跨模态投影层与文本解码器的复">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/lora_explained_speech_llm.png">
+<meta property="article:published_time" content="2026-08-19T02:25:00.000Z">
+<meta property="article:modified_time" content="2026-08-19T02:26:55.013Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="LoRA">
+<meta property="article:tag" content="PEFT">
+<meta property="article:tag" content="Speech LLM">
+<meta property="article:tag" content="微调">
+<meta property="article:tag" content="模型架构">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/lora_explained_speech_llm.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>LoRA 到底做了什么？ - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/lora_explained_speech_llm.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="LoRA 到底做了什么？"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-08-19 10:25" pubdate>
+          2026年8月19日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          27 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">LoRA 到底做了什么？</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年8月19日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <p>在大模型（LLM）与多模态模型（如 Speech LLM）的落地实践中，几乎每位 AI 工程师都会频繁使用或接触 <strong>LoRA（Low-Rank Adaptation）</strong>。它常被称为“轻量级微调神器”，只需极少的显存和几兆字节的存储，就能让几十亿甚至几百亿参数的基础模型迅速适应下游垂直场景。</p>
+<p>但剥开各种封装库的外壳，LoRA 的底层数学和工程逻辑究竟是什么？在包含音频编码器、跨模态投影层与文本解码器的复杂系统（如 Speech LLM）中，LoRA 到底应该加在哪里？本文将用直观的视角与工程代码，拆解 LoRA 的核心机制与实践准则。</p>
+<hr>
+<h2 id="1-为什么需要-LoRA？"><a href="#1-为什么需要-LoRA？" class="headerlink" title="1. 为什么需要 LoRA？"></a>1. 为什么需要 LoRA？</h2><p>在深入技术细节前，我们先看全量微调（Full Fine-Tuning, FFT）在工程上带来的两大核心痛点：</p>
+<h3 id="1-1-全量微调的显存与存储雪崩"><a href="#1-1-全量微调的显存与存储雪崩" class="headerlink" title="1.1 全量微调的显存与存储雪崩"></a>1.1 全量微调的显存与存储雪崩</h3><p>对于一个 7B 参数的模型（以 FP16 精度存储，权重本身占 14 GB）：</p>
+<ul>
+<li><strong>显存消耗</strong>：训练时不仅要放模型参数（14 GB），还要保存反向传播的梯度（14 GB），以及 Adam 优化器的两阶动量状态（FP32 格式下需要 $2 \times 4 \times 7 = 56\text{ GB}$），再加上激活值（Activations），训练一张 7B 模型至少需要 80~100 GB 显存，单张消费级 GPU（如 24GB 的 RTX 4090）直接 OOM。</li>
+<li><strong>存储开销</strong>：如果有 10 个下游任务（如客服对话、医疗问答、口音识别等），全量微调就必须保存 10 份完整的 14 GB 权重文件，不仅耗费巨量磁盘空间，线上动态切换多任务时更会面临巨大的冷启动延迟。</li>
+</ul>
+<h3 id="1-2-核心洞察：低秩的增量权重"><a href="#1-2-核心洞察：低秩的增量权重" class="headerlink" title="1.2 核心洞察：低秩的增量权重"></a>1.2 核心洞察：低秩的增量权重</h3><p>LoRA 的设计哲学源于一个关键假设（来自 Aghajanyan 等人在 2020 年的内在维度研究）：<strong>预训练大模型在适应特定下游任务时，其权重的有效更新量实际上处于一个极低的内在维度（Intrinsic Dimension）。</strong></p>
+<p>换句话说，模型学到的新知识并不需要填满一个巨大的全秩矩阵，只需要在一个非常低维的子空间里调整即可。LoRA 正是通过将大矩阵的更新量分解为两个极小的低秩矩阵乘积，大幅降低了可训练参数量。</p>
+<figure class="highlight tp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><code class="hljs tp">全量微调：直接更新整个大矩阵 <span class="hljs-keyword">W</span> (全秩，动量占满显存)<br>LoRA 微调：冻结原始矩阵 <span class="hljs-keyword">W</span>，只学习低秩增量 Δ<span class="hljs-keyword">W</span> = B · A<br></code></pre></td></tr></table></figure>
+<hr>
+<h2 id="2-LoRA-的核心原理"><a href="#2-LoRA-的核心原理" class="headerlink" title="2. LoRA 的核心原理"></a>2. LoRA 的核心原理</h2><h3 id="2-1-极简数学：-Delta-W-BA"><a href="#2-1-极简数学：-Delta-W-BA" class="headerlink" title="2.1 极简数学：$\Delta W = BA$"></a>2.1 极简数学：$\Delta W = BA$</h3><p>假设模型中某一层的原始权重矩阵为 $W_0 \in \mathbb{R}^{d \times k}$（其中 $d$ 为输入维度，$k$ 为输出维度）。对于输入向量 $x$，原始前向计算为：</p>
+<script type="math/tex; mode=display">h = x W_0</script><p>在微调过程中，我们希望权重变为 $W = W_0 + \Delta W$。LoRA 的做法是把增量矩阵 $\Delta W$ 分解为两个低秩矩阵的乘积：</p>
+<script type="math/tex; mode=display">\Delta W = B \cdot A</script><p>其中：</p>
+<ul>
+<li>$A \in \mathbb{R}^{d \times r}$（下投影降维）</li>
+<li>$B \in \mathbb{R}^{r \times k}$（上投影升维）</li>
+<li>$r \ll \min(d, k)$，这里的超参数 $r$ 即为 <strong>rank（秩）</strong>，通常取 8、16 或 32。</li>
+</ul>
+<p>带有 LoRA 的前向计算公式变为：</p>
+<script type="math/tex; mode=display">h = x W_0 + \frac{\alpha}{r} (x A) B</script><p><em>(注：$\alpha$ 是一个常数缩放因子，用于在调节 rank 时保持学习率的相对稳定，通常设置为 $\alpha = 2r$ 或固定值)</em>。</p>
+<figure class="highlight coq"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs coq">          输入 x (维度 d)<br>         /             \<br>        / (冻结)        \ (可训练)<br>       v                 v<br>[ 原始权重 W₀ ]        [ 矩阵 A ] (d -&gt; r, 降维)<br>   (d x k)               v<br>       |             <span class="hljs-type">[ 矩阵 B</span> ] (r -&gt; k, 升维)<br>       |                 <span class="hljs-type">|</span><br><span class="hljs-type">       |            *(alpha</span> / r) 缩放<br>       v                 v<br>       + &lt;---------------+ (相加)<br>       |<br>   <span class="hljs-type">输出 h</span> (维度 k)<br></code></pre></td></tr></table></figure>
+<h3 id="2-2-具体矩阵尺寸与参数量计算"><a href="#2-2-具体矩阵尺寸与参数量计算" class="headerlink" title="2.2 具体矩阵尺寸与参数量计算"></a>2.2 具体矩阵尺寸与参数量计算</h3><p>以典型的 LLaMA-7B 某一线性层为例：</p>
+<ul>
+<li>输入维度 $d = 4096$，输出维度 $k = 4096$。</li>
+<li><strong>全量微调参数量</strong>：$4096 \times 4096 = 16,777,216$（约 16.78M 参数）。</li>
+<li><strong>LoRA 参数量（设定 $r = 8$）</strong>：<ul>
+<li>矩阵 $A$：$4096 \times 8 = 32,768$</li>
+<li>矩阵 $B$：$8 \times 4096 = 32,768$</li>
+<li>总参数量：$32,768 + 32,768 = 65,536$（约 0.065M 参数）。</li>
+</ul>
+</li>
+</ul>
+<p><strong>参数量压缩了 256 倍！</strong> 相应地，Adam 优化器只需维护这 6.5 万个参数的动量状态，显存占用断崖式下降。</p>
+<hr>
+<h2 id="3-LoRA-在具体模型中怎么加：以-Speech-LLM-为例"><a href="#3-LoRA-在具体模型中怎么加：以-Speech-LLM-为例" class="headerlink" title="3. LoRA 在具体模型中怎么加：以 Speech LLM 为例"></a>3. LoRA 在具体模型中怎么加：以 Speech LLM 为例</h2><p>现代语音大模型（如 Whisper-LLaMA、Qwen-Audio、SALMONN 等）通常由三大部分构成：</p>
+<ol>
+<li><strong>大型语音编码器（Speech Encoder）</strong>（如 Whisper Encoder、Conformer）</li>
+<li><strong>跨模态连接层（Connector / Adapter / Projector）</strong>（如 Linear、Q-Former 或多层卷积/池化模块）</li>
+<li><strong>文本解码器（LLM Decoder）</strong>（如 LLaMA、Qwen）</li>
+</ol>
+<h3 id="3-1-Speech-LLM-的-LoRA-插入位置拓扑"><a href="#3-1-Speech-LLM-的-LoRA-插入位置拓扑" class="headerlink" title="3.1 Speech LLM 的 LoRA 插入位置拓扑"></a>3.1 Speech LLM 的 LoRA 插入位置拓扑</h3><figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs asciidoc"><span class="hljs-code">+-------------------------------------------------------------+</span><br><span class="hljs-section">|                      输入语音波形                            |</span><br><span class="hljs-section">+-------------------------------------------------------------+</span><br><span class="hljs-code">                               |</span><br><span class="hljs-section">                               v</span><br><span class="hljs-section">+-------------------------------------------------------------+</span><br>| 1. Speech Encoder (如 Whisper Encoder, 几亿参数)            |<br>|    - Self-Attention (q_proj, v_proj)  &lt;-- [可选加 LoRA]      |<br>|    - FFN / MLP                        &lt;-- [可选加 LoRA]      |<br><span class="hljs-section">|    * 作用：适配方言口音、特定说话人、噪声信道特征           |</span><br><span class="hljs-section">+-------------------------------------------------------------+</span><br><span class="hljs-code">                               |</span><br><span class="hljs-section">                               v</span><br><span class="hljs-section">+-------------------------------------------------------------+</span><br>| 2. Connector / Projector (通常只有几百万参数)                |<br>|    - 线性映射层 / 降采样卷积                                |<br><span class="hljs-section">|    * 策略：参数量小，直接全量微调 (Full FT)，无需 LoRA       |</span><br><span class="hljs-section">+-------------------------------------------------------------+</span><br><span class="hljs-code">                               |</span><br><span class="hljs-section">                               v</span><br><span class="hljs-section">+-------------------------------------------------------------+</span><br>| 3. LLM Decoder (如 LLaMA-7B/14B, 几十亿参数)                |<br>|    - Self-Attention (q, k, v, o)      &lt;-- [推荐重点加 LoRA] |<br>|    - MLP (gate, up, down)             &lt;-- [推荐加 LoRA]     |<br><span class="hljs-section">|    * 作用：适配领域术语、对话逻辑、任务指令与输出格式       |</span><br><span class="hljs-section">+-------------------------------------------------------------+</span><br><span class="hljs-code">                               |</span><br><span class="hljs-section">                               v</span><br><span class="hljs-section">+-------------------------------------------------------------+</span><br><span class="hljs-section">|                      输出文本 / 语音响应                    |</span><br><span class="hljs-section">+-------------------------------------------------------------+</span><br></code></pre></td></tr></table></figure>
+<h3 id="3-2-各层-LoRA-的功能分工与选型策略"><a href="#3-2-各层-LoRA-的功能分工与选型策略" class="headerlink" title="3.2 各层 LoRA 的功能分工与选型策略"></a>3.2 各层 LoRA 的功能分工与选型策略</h3><ol>
+<li><p><strong>LLM Decoder 中的 LoRA（语言与领域适配）</strong>：</p>
+<ul>
+<li><strong>目标模块</strong>：常规只加 <code>q_proj, v_proj</code>，但如果显存允许，推荐全加（<code>q, k, v, o, gate, up, down</code>），后者的表达能力和泛化性显著更强。</li>
+<li><strong>核心作用</strong>：负责理解任务指令（如语音翻译、音频事件分类、问答），学习垂直领域专业术语（如医疗、法律专有名词）以及对齐输出格式。</li>
+</ul>
+</li>
+<li><p><strong>Speech Encoder 中的 LoRA（声学与信道适配）</strong>：</p>
+<ul>
+<li><strong>目标模块</strong>：Encoder 的 self-attention (<code>q_proj, v_proj</code>) 与 FFN。</li>
+<li><strong>核心作用</strong>：负责底层声学特征的转换。例如处理重度方言口音、儿童语音、极端嘈杂工业环境、远场混响等声学畸变。如果下游任务只是普通的标准语音问答，Encoder 通常可以完全冻结。</li>
+</ul>
+</li>
+<li><p><strong>连接层（Connector）为什么通常不用 LoRA？</strong></p>
+<ul>
+<li>连接层的作用是将 Encoder 的音频表征空间映射到 LLM 的文本 embedding 空间。</li>
+<li>这部分结构本身参数量极小（通常只有 1~2 个线性层或轻量卷积，参数量仅在 2M~10M 之间）。对它做 LoRA 不仅节省不了几兆显存，反而会限制跨模态对齐的学习能力。因此工程上的标准做法是：<strong>连接层直接开启全量更新（Full Trainable）</strong>。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="4-LoRA-的训练与推理机制"><a href="#4-LoRA-的训练与推理机制" class="headerlink" title="4. LoRA 的训练与推理机制"></a>4. LoRA 的训练与推理机制</h2><h3 id="4-1-训练阶段：冻结与隔离"><a href="#4-1-训练阶段：冻结与隔离" class="headerlink" title="4.1 训练阶段：冻结与隔离"></a>4.1 训练阶段：冻结与隔离</h3><ul>
+<li>将原始大模型的所有参数 <code>requires_grad = False</code> 全部冻结。</li>
+<li>初始化 LoRA 矩阵：通常矩阵 $A$ 使用高斯随机分布（如 Kaiming 正态分布）初始化，矩阵 $B$ 全零初始化。<ul>
+<li><strong>精妙之处</strong>：在训练第一步开始时，$B \cdot A = 0 \cdot A = 0$，保证了 $\Delta W = 0$。即模型初始状态与原始预训练模型完全等价，训练过程平滑起步。</li>
+</ul>
+</li>
+<li>只有矩阵 $A$ 和 $B$ 会参与梯度计算并更新权重。</li>
+</ul>
+<h3 id="4-2-保存与发布"><a href="#4-2-保存与发布" class="headerlink" title="4.2 保存与发布"></a>4.2 保存与发布</h3><ul>
+<li>训练完成后，无需保存几十 GB 的完整基座模型。</li>
+<li>只需要将极其小巧的 LoRA 权重字典（通常仅几十 MB 到几百 MB）单独保存为 <code>adapter_model.bin</code> 或 <code>adapter_model.safetensors</code>。</li>
+</ul>
+<h3 id="4-3-零开销推理：权重合并（Merge）"><a href="#4-3-零开销推理：权重合并（Merge）" class="headerlink" title="4.3 零开销推理：权重合并（Merge）"></a>4.3 零开销推理：权重合并（Merge）</h3><p>在实际服务上线或生产部署（如接入 vLLM/TensorRT-LLM）时，如果在前向传播中分别计算 $x W_0$ 和 $x \Delta W$ 再相加，会增加额外的内存搬运和矩阵乘法耗时。</p>
+<p>由于矩阵乘法满足分配律：</p>
+<script type="math/tex; mode=display">h = x W_0 + \frac{\alpha}{r} x(BA) = x \left( W_0 + \frac{\alpha}{r} BA \right)</script><p>我们可以在服务启动前，离线将 $\Delta W = \frac{\alpha}{r} BA$ 直接加回到原始权重 $W_0$ 中：</p>
+<script type="math/tex; mode=display">W_{\text{merged}} = W_0 + \frac{\alpha}{r} BA</script><p><strong>合并后的模型结构与原始基座完全一致，没有任何额外计算开销，推理速度达到 100% 的原生水平！</strong></p>
+<hr>
+<h2 id="5-最小-PyTorch-实现"><a href="#5-最小-PyTorch-实现" class="headerlink" title="5. 最小 PyTorch 实现"></a>5. 最小 PyTorch 实现</h2><p>下面我们编写一个不到 50 行的最小原生 PyTorch 实现，展示如何将 LoRA 动态注入一个普通的 <code>nn.Linear</code> 层：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-keyword">import</span> torch<br><span class="hljs-keyword">import</span> torch.nn <span class="hljs-keyword">as</span> nn<br><span class="hljs-keyword">import</span> math<br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">LoRALinear</span>(nn.Module):<br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, base_layer: nn.Linear, rank: <span class="hljs-built_in">int</span> = <span class="hljs-number">8</span>, alpha: <span class="hljs-built_in">float</span> = <span class="hljs-number">16.0</span></span>):<br>        <span class="hljs-built_in">super</span>().__init__()<br>        <span class="hljs-variable language_">self</span>.base_layer = base_layer<br>        <span class="hljs-variable language_">self</span>.rank = rank<br>        <span class="hljs-variable language_">self</span>.scaling = alpha / rank<br><br>        <span class="hljs-comment"># 1. 冻结原始线性层权重</span><br>        <span class="hljs-variable language_">self</span>.base_layer.weight.requires_grad = <span class="hljs-literal">False</span><br>        <span class="hljs-keyword">if</span> <span class="hljs-variable language_">self</span>.base_layer.bias <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span>:<br>            <span class="hljs-variable language_">self</span>.base_layer.bias.requires_grad = <span class="hljs-literal">False</span><br><br>        in_features = base_layer.in_features<br>        out_features = base_layer.out_features<br><br>        <span class="hljs-comment"># 2. 定义低秩分解矩阵 A 和 B</span><br>        <span class="hljs-variable language_">self</span>.lora_A = nn.Parameter(torch.zeros(in_features, rank))<br>        <span class="hljs-variable language_">self</span>.lora_B = nn.Parameter(torch.zeros(rank, out_features))<br><br>        <span class="hljs-comment"># 3. 初始化：A 用高斯分布，B 初始化为 0，确保初始增量为 0</span><br>        nn.init.kaiming_uniform_(<span class="hljs-variable language_">self</span>.lora_A, a=math.sqrt(<span class="hljs-number">5</span>))<br>        nn.init.zeros_(<span class="hljs-variable language_">self</span>.lora_B)<br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">forward</span>(<span class="hljs-params">self, x: torch.Tensor</span>) -&gt; torch.Tensor:<br>        <span class="hljs-comment"># 原始基座前向（无梯度更新）</span><br>        base_out = <span class="hljs-variable language_">self</span>.base_layer(x)<br>        <span class="hljs-comment"># LoRA 增量前向：x -&gt; A (降维) -&gt; B (升维) -&gt; 缩放</span><br>        lora_out = (x @ <span class="hljs-variable language_">self</span>.lora_A @ <span class="hljs-variable language_">self</span>.lora_B) * <span class="hljs-variable language_">self</span>.scaling<br>        <span class="hljs-keyword">return</span> base_out + lora_out<br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">merge_weights</span>(<span class="hljs-params">self</span>):<br>        <span class="hljs-string">&quot;&quot;&quot;推理阶段：将 LoRA 权重直接合并进原始权重，消除推理额外延迟&quot;&quot;&quot;</span><br>        delta_w = (<span class="hljs-variable language_">self</span>.lora_A @ <span class="hljs-variable language_">self</span>.lora_B).T * <span class="hljs-variable language_">self</span>.scaling<br>        <span class="hljs-variable language_">self</span>.base_layer.weight.data += delta_w<br>        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;LoRA weights merged successfully into base layer!&quot;</span>)<br></code></pre></td></tr></table></figure>
+<h3 id="验证梯度流与前向："><a href="#验证梯度流与前向：" class="headerlink" title="验证梯度流与前向："></a>验证梯度流与前向：</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 测试用例</span><br>batch_size, seq_len, dim = <span class="hljs-number">2</span>, <span class="hljs-number">4</span>, <span class="hljs-number">4096</span><br>x = torch.randn(batch_size, seq_len, dim)<br><br><span class="hljs-comment"># 原始层与 LoRA 包装</span><br>linear = nn.Linear(dim, dim)<br>lora_linear = LoRALinear(linear, rank=<span class="hljs-number">8</span>, alpha=<span class="hljs-number">16.0</span>)<br><br><span class="hljs-comment"># 前向传播与反向传播</span><br>out = lora_linear(x)<br>loss = out.<span class="hljs-built_in">sum</span>()<br>loss.backward()<br><br><span class="hljs-comment"># 验证梯度流：原始权重无梯度，仅 LoRA 参数有梯度</span><br><span class="hljs-keyword">assert</span> lora_linear.base_layer.weight.grad <span class="hljs-keyword">is</span> <span class="hljs-literal">None</span><br><span class="hljs-keyword">assert</span> lora_linear.lora_A.grad <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span><br><span class="hljs-keyword">assert</span> lora_linear.lora_B.grad <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;验证通过：只有 LoRA 矩阵参与梯度反向传播！&quot;</span>)<br></code></pre></td></tr></table></figure>
+<hr>
+<h2 id="6-对比其他微调方法"><a href="#6-对比其他微调方法" class="headerlink" title="6. 对比其他微调方法"></a>6. 对比其他微调方法</h2><p>在主流的高效微调（PEFT）方案中，LoRA 处于什么位置？</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">微调方法</th>
+<th style="text-align:left">可训练参数比例</th>
+<th style="text-align:left">训练显存占用</th>
+<th style="text-align:left">推理额外延迟</th>
+<th style="text-align:left">核心使用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Full Fine-Tuning</strong></td>
+<td style="text-align:left">100%</td>
+<td style="text-align:left">极高 (需要保存全部优化器状态)</td>
+<td style="text-align:left">无</td>
+<td style="text-align:left">基础模型预训练、领域知识完全重构、大规模从头对齐</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Adapter (串联/并联)</strong></td>
+<td style="text-align:left">0.5% ~ 3%</td>
+<td style="text-align:left">中等</td>
+<td style="text-align:left">有 (增加网络深度与串行计算耗时)</td>
+<td style="text-align:left">早期模块化多任务研究，现多被 LoRA 替代</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Prompt / Prefix Tuning</strong></td>
+<td style="text-align:left">&lt; 0.1%</td>
+<td style="text-align:left">较低</td>
+<td style="text-align:left">有 (占用输入 context 长度，降低有效吞吐)</td>
+<td style="text-align:left">提示词自动化搜索、极轻量任务适配</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>LoRA</strong></td>
+<td style="text-align:left">0.1% ~ 1%</td>
+<td style="text-align:left">低 (仅维护极小矩阵梯度与动量)</td>
+<td style="text-align:left"><strong>无 (可离线 merge)</strong></td>
+<td style="text-align:left">大多数垂直领域任务适配、指令微调、多模态下游适配</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>QLoRA</strong></td>
+<td style="text-align:left">0.1% ~ 1%</td>
+<td style="text-align:left"><strong>极低 (基座 4-bit 量化)</strong></td>
+<td style="text-align:left">无 (量化反量化或量化合并)</td>
+<td style="text-align:left">消费级单卡（如 24G 显卡）微调 70B 级别大模型</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="7-LoRA-适合与不适合什么？"><a href="#7-LoRA-适合与不适合什么？" class="headerlink" title="7. LoRA 适合与不适合什么？"></a>7. LoRA 适合与不适合什么？</h2><h3 id="7-1-LoRA-的舒适区（适合）"><a href="#7-1-LoRA-的舒适区（适合）" class="headerlink" title="7.1 LoRA 的舒适区（适合）"></a>7.1 LoRA 的舒适区（适合）</h3><ol>
+<li><strong>领域与术语对齐</strong>：医疗问答、金融研报分析、法律合同解析等有明确规则和专用词汇的领域。</li>
+<li><strong>格式与风格控制</strong>：要求特定输出格式（JSON/Markdown）、特定人设语气、特定代码风格。</li>
+<li><strong>指令遵循与任务迁移</strong>：让基座模型学会做摘要、抽取实体、翻译等标准 NLP / 多模态指令任务。</li>
+<li><strong>多租户动态切换</strong>：服务端常驻一个共享的基础大模型底座，针对不同客户/任务动态加载只有几十兆的 LoRA 权重。</li>
+</ol>
+<h3 id="7-2-LoRA-的局限区（不适合）"><a href="#7-2-LoRA-的局限区（不适合）" class="headerlink" title="7.2 LoRA 的局限区（不适合）"></a>7.2 LoRA 的局限区（不适合）</h3><ol>
+<li><strong>从零注入全新认知/复杂世界知识</strong>：如果要让模型学习一门原本完全没见过的冷门小语种或全新学科体系，低秩子空间的容量往往不足以支撑庞大的知识沉淀，此时仍需全量微调或连续预训练（Continual Pre-training）。</li>
+<li><strong>学习全新的底层声学表征</strong>：在 Speech LLM 中，如果想让文本大模型学会直接理解超高采样率声学生物特征（或完全颠覆性的全新音频编码），单靠几层微小的 LoRA 难以改变整体特征分布。</li>
+</ol>
+<hr>
+<h2 id="总结：用-5-句话看懂-LoRA"><a href="#总结：用-5-句话看懂-LoRA" class="headerlink" title="总结：用 5 句话看懂 LoRA"></a>总结：用 5 句话看懂 LoRA</h2><ol>
+<li><strong>核心原理</strong>：LoRA 基于“模型权重更新处于低维子空间”的假设，将高维权重增量分解为两个极低秩矩阵的乘积（$\Delta W = BA$）。</li>
+<li><strong>显存优势</strong>：通过冻结原始大模型、只训练低秩矩阵，大幅压缩了梯度与优化器状态显存，使普通消费级显卡也能微调百亿大模型。</li>
+<li><strong>架构实践</strong>：在复杂多模态系统（如 Speech LLM）中，推荐重点对 Decoder 模块施加 LoRA，对声学特异场景选配 Encoder LoRA，而连接层直接开启全量训练。</li>
+<li><strong>零开销推理</strong>：LoRA 权重可以在推理前直接数学合并（merge）回原始权重矩阵，彻底消除任何额外的在线计算开销和推理延迟。</li>
+<li><strong>适用边界</strong>：LoRA 是领域适配、指令微调与人设风格定制的最佳利器，但无法完全取代需要灌注海量全新世界知识的全量预训练。</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0/" class="category-chain-item">深度学习</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech LLM</a>
+      
+        <a href="/tags/LoRA/" class="print-no-link">#LoRA</a>
+      
+        <a href="/tags/PEFT/" class="print-no-link">#PEFT</a>
+      
+        <a href="/tags/%E5%BE%AE%E8%B0%83/" class="print-no-link">#微调</a>
+      
+        <a href="/tags/%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84/" class="print-no-link">#模型架构</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>LoRA 到底做了什么？</div>
+      <div>https://smallsmartao.github.io/2026/08/19/lora-explained-speech-llm/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年8月19日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年8月19日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/08/18/on-policy-vs-off-policy-speech-llm/" title="深入浅出强化学习：On-Policy 与 Off-Policy 的数学本质与 Speech-LLM 训练实战">
+                        <span class="hidden-mobile">深入浅出强化学习：On-Policy 与 Off-Policy 的数学本质与 Speech-LLM 训练实战</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
