@@ -160,9 +160,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>LM Rescoring</tag>
       
@@ -255,9 +255,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>Error Correction</tag>
       
@@ -288,11 +288,11 @@
       
       <tag>ASR</tag>
       
-      <tag>论文解读</tag>
-      
       <tag>Language Model</tag>
       
       <tag>Perplexity</tag>
+      
+      <tag>论文解读</tag>
       
     </tags>
     
@@ -301,11 +301,11 @@
   
   
   <entry>
-    <title>Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs</title>
-    <link href="/2026/07/10/2026-07-10-SpeechKV/"/>
-    <url>/2026/07/10/2026-07-10-SpeechKV/</url>
+    <title>Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning</title>
+    <link href="/2026/07/10/2026-07-10-DuplexPO/"/>
+    <url>/2026/07/10/2026-07-10-DuplexPO/</url>
     
-    <content type="html"><![CDATA[<h2 id="为什么需要-SpeechKV？"><a href="#为什么需要-SpeechKV？" class="headerlink" title="为什么需要 SpeechKV？"></a>为什么需要 SpeechKV？</h2><p>Speech LLM 面临一个根本性的效率瓶颈：语音序列远长于文本。英语 ASR 中，一个文本 token 对应约 300ms 语音，而常见语音编码器每 80ms 产生一帧——同等语义信息下，语音序列长度约为文本的 4 倍。在自回归解码阶段，模型需在每一步 attend 所有前序位置，KV cache 的线性增长直接导致延迟和显存消耗随序列长度线性增长。</p><p>现有方案的标准做法是在 adapter 层对语音进行早期下采样（CTC blank filtering、CIF 累积、Q-Former 等），但这种”先压缩后推理”的范式引入了不可逆信息损失——一旦在 LLM 之前丢弃了细粒度声学细节，后续层便无法恢复。</p><p>SpeechKV 提出了一个优雅的替代思路：<strong>将压缩延迟到 LLM 内部</strong>，对中间层的语音 KV cache 施加学习式 pooling，让 LLM 自身决定保留哪些声学特征。</p><span id="more"></span><h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul><li><strong>标题</strong>: Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs</li><li><strong>作者</strong>: Ke-Han Lu, Keqi Deng, Ruchao Fan, Rui Zhao, Jinyu Li (Microsoft)</li><li><strong>arXiv</strong>: <a href="https://arxiv.org/abs/2607.06827">2607.06827</a></li><li><strong>发表时间</strong>: 2026年7月</li></ul><hr><h2 id="一、引言（Introduction）"><a href="#一、引言（Introduction）" class="headerlink" title="一、引言（Introduction）"></a>一、引言（Introduction）</h2><p>LLM 在 NLP 任务中展现了卓越能力，研究者将其扩展到语音模态，形成 Speech LLM 家族。典型架构包含三个组件：预训练语音编码器 → 模态适配器 → LLM backbone。</p><p>核心挑战在于语音序列长度。以英语 ASR 为例，语音帧率约 80ms/帧，而文本 token 对应约 300ms，导致语音 KV cache 在解码阶段成为主要瓶颈。</p><p>作者的初步实验观察到：Speech LLM 在浅层自然地将相邻语音信息合并，在深层产生近重复表示。基于此观察，SpeechKV 在中间层对语音 KV 序列施加学习式 pooling，允许 LLM 学习保留哪些特征、如何融合语音与文本。</p><p><strong>主要贡献</strong>：</p><ol><li>提出 SpeechKV：在 Speech LLM 中间层对语音 KV cache 施加学习式 pooling 压缩</li><li>将语音压缩到文本级粒度仍维持 baseline 性能，同时获得 1.49–2× 解码加速</li><li>实证分析表明相邻语音表示在 LLM 层间逐渐变得冗余，为”在 LLM 内部压缩”提供理论动机</li></ol><hr><h2 id="二、相关工作（Related-Work）"><a href="#二、相关工作（Related-Work）" class="headerlink" title="二、相关工作（Related Work）"></a>二、相关工作（Related Work）</h2><h3 id="2-1-Speech-LLMs-与语音序列压缩"><a href="#2-1-Speech-LLMs-与语音序列压缩" class="headerlink" title="2.1 Speech LLMs 与语音序列压缩"></a>2.1 Speech LLMs 与语音序列压缩</h3><p>Speech LLM 采用 encoder–adapter–LLM 范式。核心挑战是弥合连续语音与离散文本之间的模态和长度差异。</p><p>现有预 LLM 压缩方案包括：</p><ul><li><strong>CTC-based</strong>：边界合并或 blank filtering</li><li><strong>CIF-based</strong>：动态累积声学特征</li><li><strong>Q-Former</strong>：提取固定数量的语音表示</li></ul><p>这些方法引入瓶颈，导致后续 LLM 层无法恢复已丢弃的信息。</p><h3 id="2-2-LLM-中的-KV-Cache-压缩"><a href="#2-2-LLM-中的-KV-Cache-压缩" class="headerlink" title="2.2 LLM 中的 KV Cache 压缩"></a>2.2 LLM 中的 KV Cache 压缩</h3><p>KV cache 线性增长是长上下文 LLM 推理的已知瓶颈。现有方法分两大类：</p><ul><li><strong>Training-free</strong>：基于注意力统计或 recency 的 eviction（H2O、SnapKV、StreamingLLM），低比特量化（KVQuant）</li><li><strong>Trainable</strong>：学习式合并或摘要上下文为更短的 KV cache（Dynamic Memory Compression 等）</li></ul><p>Training-free 方法不可避免地存在 train-test mismatch。SpeechKV 属于 trainable 方案，联合训练消除此问题。</p><hr><h2 id="三、方法（Method）"><a href="#三、方法（Method）" class="headerlink" title="三、方法（Method）"></a>三、方法（Method）</h2><h3 id="3-1-Speech-Language-Model-Baseline"><a href="#3-1-Speech-Language-Model-Baseline" class="headerlink" title="3.1 Speech Language Model Baseline"></a>3.1 Speech Language Model Baseline</h3><p>Baseline 遵循 encoder–adapter–LLM 范式：</p><script type="math/tex; mode=display">Z = f_{\text{enc}}(x) \in \mathbb{R}^{T \times d_e} \tag{1}</script><p>其中 $T$ 为帧数，$d_e$ 为编码器隐藏维度。2 层 MLP adapter 投影到 LLM 嵌入空间（无时间下采样）：</p><script type="math/tex; mode=display">A = f_{\text{adp}}(Z) \in \mathbb{R}^{T \times d} \tag{2}</script><p>拼接文本嵌入 $E \in \mathbb{R}^{N \times d}$ 后，输入 $L$ 层 decoder-only LLM，以 next-token prediction 训练：</p><script type="math/tex; mode=display">\mathcal{L} = -\sum_{t=1}^{M} \log p(y_t \mid A, E, y_{<t}) \tag{3}</script><p>由于 $T \gg N + M$，语音 KV cache 主导每步注意力开销。</p><h3 id="3-2-SpeechKV"><a href="#3-2-SpeechKV" class="headerlink" title="3.2 SpeechKV"></a>3.2 SpeechKV</h3><p><img src="/images/paper_figs/speechkv/figure1.png" alt="SpeechKV 架构总览"></p><p>从第 $l_0$ 层开始，对语音 KV 序列施加学习式 pooling 算子 $\mathcal{P}_R$（压缩比 $R$）。</p><p><strong>核心操作</strong>：将 $T$ 个语音位置分割为大小为 $R$ 的非重叠窗口。在每个窗口内，学习线性门 $g: \mathbb{R}^{d_h} \to \mathbb{R}$ 对每个 key 向量产生标量 logit，softmax 归一化为权重：</p><script type="math/tex; mode=display">\alpha_j = \frac{\exp(g(k_j))}{\sum_{j'=1}^{R} \exp(g(k_{j'}))}, \quad \hat{k} = \sum_{j=1}^{R} \alpha_j k_j, \quad \hat{v} = \sum_{j=1}^{R} \alpha_j v_j \tag{4}</script><p>门初始化为零，模型从均匀平均出发，逐渐学习强调窗口内的信息性位置。</p><p>在每层 $l \geq l_0$，全分辨率 query attend 压缩后的 KV 序列：</p><script type="math/tex; mode=display">\text{Attention}^{(l)} = \text{softmax}\left(\frac{Q^{(l)} \hat{K}^{(l)\top}}{\sqrt{d_h}}\right) \hat{V}^{(l)} \tag{5}</script><p>其中 $\hat{K}^{(l)} = \mathcal{P}_R(K^{(l)})$，$\hat{V}^{(l)} = \mathcal{P}_R(V^{(l)})$。注意力掩码相应调整以保持因果性。文本位置不受影响。</p><p><strong>设计哲学</strong>：压缩操作刻意保持简洁轻量，依赖 LLM 自身的注意力机制有效处理压缩序列。</p><h3 id="3-3-训练与推理"><a href="#3-3-训练与推理" class="headerlink" title="3.3 训练与推理"></a>3.3 训练与推理</h3><ul><li><strong>训练阶段</strong>：SpeechKV 在前向传播中 on-the-fly 应用，与 next-token-prediction loss 联合优化，确保无 train-test mismatch。</li><li><strong>推理阶段</strong>：压缩在 prefill 阶段一次性完成，压缩后的 KV 存入 cache，在每个解码步实现 $R$ 倍语音 KV cache 缩减，直接转化为更小显存占用和更快解码速度。</li></ul><hr><h2 id="四、实验设置（Experiment-Setup）"><a href="#四、实验设置（Experiment-Setup）" class="headerlink" title="四、实验设置（Experiment Setup）"></a>四、实验设置（Experiment Setup）</h2><h3 id="4-1-模型配置"><a href="#4-1-模型配置" class="headerlink" title="4.1 模型配置"></a>4.1 模型配置</h3><div class="table-container"><table><thead><tr><th>组件</th><th>配置</th></tr></thead><tbody><tr><td>LLM Backbone</td><td>Qwen3-1.7B（28层 Transformer decoder）</td></tr><tr><td>Speech Encoder</td><td>预训练 encoder-decoder ASR 模型（3 conv + 24 conformer blocks，80ms 帧率）</td></tr><tr><td>Adapter</td><td>2层 MLP（无时间下采样）</td></tr></tbody></table></div><p><strong>压缩方法对比</strong>：</p><div class="table-container"><table><thead><tr><th>方法</th><th>压缩位置</th><th>描述</th></tr></thead><tbody><tr><td>Concat-MLP</td><td>Adapter</td><td>拼接 $R$ 相邻帧 → 2层 MLP</td></tr><tr><td>Window Q-Former</td><td>Adapter</td><td>2层 Transformer cross-attention 合并 $R$ 帧</td></tr><tr><td>HS Compression</td><td>LLM 内部</td><td>对第 $l_0$ 层整个 hidden state 做 pooling（含 query）</td></tr><tr><td><strong>SpeechKV</strong></td><td>LLM 内部</td><td>仅压缩 key/value，保留全分辨率 query 和 residual stream</td></tr></tbody></table></div><h3 id="4-2-训练数据"><a href="#4-2-训练数据" class="headerlink" title="4.2 训练数据"></a>4.2 训练数据</h3><p>总计 71K 小时开源 ASR 数据：</p><div class="table-container"><table><thead><tr><th>Dataset</th><th>Hours</th><th>Utts (K)</th></tr></thead><tbody><tr><td>Multilingual LibriSpeech (en)</td><td>44,659.7</td><td>10,808.0</td></tr><tr><td>GigaSpeech</td><td>13,714.4</td><td>11,659.8</td></tr><tr><td>SPGISpeech</td><td>4,996.6</td><td>1,965.3</td></tr><tr><td>LibriSpeech</td><td>1,920.0</td><td>560.8</td></tr><tr><td>LibriHeavy</td><td>1,852.2</td><td>469.4</td></tr><tr><td>Common Voice 15</td><td>1,688.3</td><td>1,069.7</td></tr><tr><td>VoxPopuli</td><td>1,045.2</td><td>365.0</td></tr><tr><td>TED-LIUM 3</td><td>907.6</td><td>536.5</td></tr><tr><td>Earnings-22</td><td>287.2</td><td>104.0</td></tr><tr><td>AMI</td><td>156.3</td><td>217.0</td></tr><tr><td>FLEURS</td><td>15.0</td><td>5.2</td></tr><tr><td><strong>Total</strong></td><td><strong>71,242.5</strong></td><td><strong>27,760.8</strong></td></tr></tbody></table></div><h3 id="4-3-训练细节"><a href="#4-3-训练细节" class="headerlink" title="4.3 训练细节"></a>4.3 训练细节</h3><ul><li>优化器：AdamW，peak lr = 2×10⁻⁵，linear warmup 100 steps，warmup-decay schedule</li><li>DeepSpeed ZeRO Stage 1</li><li>有效 batch size ≈ 200K tokens</li><li>训练 10,000 steps（覆盖全训练集约 1 epoch）</li><li>LoRA rank 32，约 480M 可训练参数（总 2.2B）</li><li>硬件：8× H100 GPU，约 1 天/run</li></ul><h3 id="4-4-评测"><a href="#4-4-评测" class="headerlink" title="4.4 评测"></a>4.4 评测</h3><p>三个测试套件：</p><ol><li><strong>OpenASR</strong>（7 个公开 benchmark）：domain 内 ASR 评估</li><li><strong>In-house ASR</strong>（4 个内部测试集）：dictation、financial calls、broadcast、voicemail（domain 外）</li><li><strong>In-house Entity Recognition</strong>（2 个实体密集测试集）：banking、medical domain，报告 Entity Error Rate (EER)</li></ol><hr><h2 id="五、实验结果（Results）"><a href="#五、实验结果（Results）" class="headerlink" title="五、实验结果（Results）"></a>五、实验结果（Results）</h2><h3 id="5-1-主要结果"><a href="#5-1-主要结果" class="headerlink" title="5.1 主要结果"></a>5.1 主要结果</h3><div class="table-container"><table><thead><tr><th>Method</th><th>In-house ER ↓</th><th>In-house ASR ↓</th><th>OpenASR ↓</th></tr></thead><tbody><tr><td><strong>Open-sourced Models</strong></td><td></td><td></td><td></td></tr><tr><td>Whisper-L-v3</td><td>8.41</td><td>4.91</td><td>7.95</td></tr><tr><td>Phi4-mm</td><td>11.36</td><td>4.89</td><td>6.60</td></tr><tr><td><strong>Our Models</strong></td><td></td><td></td><td></td></tr><tr><td>MLP (Baseline)</td><td>14.41</td><td>5.78</td><td>6.12</td></tr><tr><td><strong>R=4</strong></td><td></td><td></td><td></td></tr><tr><td>Concat-MLP</td><td>15.84</td><td>6.29</td><td>6.07</td></tr><tr><td>Window Q-Former</td><td>14.70</td><td>6.23</td><td>6.02</td></tr><tr><td>HS Compression</td><td>15.22</td><td>5.79</td><td>6.06</td></tr><tr><td><strong>SpeechKV</strong></td><td><strong>13.46</strong></td><td><strong>5.71</strong></td><td><strong>5.98</strong></td></tr><tr><td><strong>R=8</strong></td><td></td><td></td><td></td></tr><tr><td>Concat-MLP</td><td>17.52</td><td>6.63</td><td>6.43</td></tr><tr><td>Window Q-Former</td><td>16.41</td><td>6.50</td><td>6.64</td></tr><tr><td>HS Compression</td><td>16.98</td><td>6.22</td><td>6.31</td></tr><tr><td><strong>SpeechKV</strong></td><td><strong>14.91</strong></td><td><strong>5.95</strong></td><td><strong>6.05</strong></td></tr></tbody></table></div><p><strong>关键发现</strong>：</p><ul><li><strong>R=4 时 SpeechKV 不仅不降反升</strong>：相对 baseline，In-house ER 提升 6.6%，In-house ASR 提升 1.2%，OpenASR 提升 2.3%。</li><li><strong>R=8 时 SpeechKV 优雅退化</strong>：In-house ER 仅退化 3.5%，ASR 退化 2.9%，OpenASR 几乎持平。而竞争方法退化 8%–20%。</li><li>作者推测原因：(1) 每层保留完整音频信息的访问路径；(2) 压缩粒度与 LLM 预训练的文本 token rate 对齐，形成结构性正则化。</li></ul><h3 id="5-2-逐层分析与消融实验"><a href="#5-2-逐层分析与消融实验" class="headerlink" title="5.2 逐层分析与消融实验"></a>5.2 逐层分析与消融实验</h3><p><img src="/images/paper_figs/speechkv/local_similarity_comparison.png" alt="逐层局部相似度"></p><p><strong>Local Similarity 分析</strong>：测量相邻语音位置间的 cosine similarity。</p><ul><li>Baseline 在前 4 层急剧上升（模型主动聚合局部声学特征），约第 5 层进入平台期（局部聚合基本完成，时间冗余自然出现）。</li><li>SpeechKV(R=4) 的相似度曲线紧跟 baseline 自然上升趋势，说明压缩与模型本身的聚合行为一致。</li><li>SpeechKV(R=8) 相似度在所有层都被抬高，模型需重构表示以适应更激进压缩。</li></ul><p><strong>起始层消融</strong>：</p><div class="table-container"><table><thead><tr><th>Method</th><th>$l_0$</th><th>In-house ER</th><th>In-house ASR</th><th>OpenASR</th></tr></thead><tbody><tr><td>MLP Baseline</td><td>–</td><td>14.41</td><td>5.78</td><td>6.12</td></tr><tr><td>SpeechKV (R=4)</td><td>3</td><td>14.33</td><td>5.87</td><td>6.12</td></tr><tr><td>SpeechKV (R=4)</td><td><strong>5</strong></td><td><strong>13.46</strong></td><td><strong>5.71</strong></td><td><strong>5.98</strong></td></tr><tr><td>SpeechKV (R=4)</td><td>7</td><td>13.56</td><td>6.23</td><td>5.93</td></tr><tr><td>SpeechKV (R=8)</td><td>3</td><td>16.70</td><td>7.06</td><td>6.53</td></tr><tr><td>SpeechKV (R=8)</td><td><strong>5</strong></td><td><strong>14.91</strong></td><td><strong>5.95</strong></td><td><strong>6.05</strong></td></tr><tr><td>SpeechKV (R=8)</td><td>7</td><td>15.25</td><td>6.49</td><td>6.08</td></tr></tbody></table></div><p>最优起始层为 $l_0=5$：过早压缩（layer 3）在 local similarity 尚未收敛时介入；过晚（layer 7）时模型已开始高层处理的特化。</p><h3 id="5-3-注意力分析"><a href="#5-3-注意力分析" class="headerlink" title="5.3 注意力分析"></a>5.3 注意力分析</h3><p><img src="/images/paper_figs/speechkv/KV_layer4_27.png" alt="注意力图对比"></p><p><strong>Baseline</strong>（左列）：</p><ul><li>浅层（Layer 4）：注意力弥散，模型仍在聚合局部声学特征</li><li>深层（Layer 27）：出现清晰的单调对齐模式，但注意力分散在相邻近重复位置上</li></ul><p><strong>SpeechKV</strong>（右列）：</p><ul><li>浅层（Layer 4）：即使此层未施加压缩，已出现单调对齐——深层 KV 缩短迫使模型在更早层建立跨模态对应</li><li>深层（Layer 27）：压缩后的 key 序列产生更尖锐、集中的注意力峰值，冗余位置已被合并</li></ul><p>这表明 SpeechKV 重塑了层间表示：浅层更早建立跨模态对应，深层更高效地在去重复 key 表示上操作。</p><h3 id="5-4-解码速度"><a href="#5-4-解码速度" class="headerlink" title="5.4 解码速度"></a>5.4 解码速度</h3><p><img src="/images/paper_figs/speechkv/speedup.png" alt="解码加速"></p><p>在 A100 80GB GPU + vLLM 上的端到端解码加速：</p><div class="table-container"><table><thead><tr><th>Audio Length</th><th>Baseline</th><th>R=4</th><th>R=8</th></tr></thead><tbody><tr><td>30s</td><td>1.00×</td><td>1.49×</td><td>1.62×</td></tr><tr><td>5min</td><td>1.00×</td><td>1.88×</td><td>1.87×</td></tr><tr><td>10min</td><td>1.00×</td><td>2.02×</td><td>2.03×</td></tr></tbody></table></div><p>加速随音频长度增长：语音 KV cache 在总注意力开销中占比更大时，压缩收益更显著。R=8 相比 R=4 仅有边际额外加速，因为 feed-forward 层和文本 KV cache 成为新瓶颈。</p><p><strong>R=4 是最佳实践点</strong>：精度匹配 baseline，解码速度 1.49–2× 提升。</p><hr><h2 id="六、结论（Conclusion）"><a href="#六、结论（Conclusion）" class="headerlink" title="六、结论（Conclusion）"></a>六、结论（Conclusion）</h2><p>SpeechKV 将语音 KV cache 压缩延迟到 LLM 中间层，通过保留全分辨率 query 和 residual stream，让 LLM 预训练参数自行决定保留哪些声学特征。</p><p>在 71K 小时训练的 Qwen3-1.7B Speech LLM 上：</p><ul><li>R=4 压缩到文本粒度仍匹配甚至超越 baseline（实体识别相对提升 6.6%）</li><li>至少 1.49× 解码加速，随音频长度扩展</li><li>注意力分析揭示 SpeechKV 作为结构性正则化：浅层更早建立跨模态对应，深层注意力更集中</li></ul><p><strong>未来方向</strong>：扩展到 ASR 之外的语音任务、研究自适应跨层压缩比、进一步分析 Speech LLM 的逐层动态。</p><hr><h2 id="个人思考"><a href="#个人思考" class="headerlink" title="个人思考"></a>个人思考</h2><p>SpeechKV 的核心洞察极其简洁：语音在 LLM 浅层自然聚合后变得时间冗余，与其在 LLM 之前强制压缩（承担不可逆信息损失），不如让 LLM 先看完整信息再压缩 KV cache。这实际上是一种”先理解后摘要”的策略。</p><p>更令人意外的是 R=4 压缩不仅无损反而增益——压缩后粒度恰好对齐文本 token rate，形成对 LLM 预训练分布的结构性正则化。这暗示 Speech LLM 的一个深层问题：未压缩时，深层大量冗余 key 实际上是在”稀释”注意力。</p><p>从工程角度看，SpeechKV 的实现极为轻量（仅一个线性门 + softmax weighted sum），无需修改推理框架核心逻辑，与 vLLM 等系统的兼容性良好。这使其具有很强的实用部署价值。</p>]]></content>
+    <content type="html"><![CDATA[<h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul><li><strong>标题</strong>: Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning</li><li><strong>作者</strong>: Yuxin Li, Donghang Wu, Guan-Ting Lin, Hung-yi Lee, Chengwei Qin, Zhehuai Chen, Chen Chen</li><li><strong>机构</strong>: NTU, NTU (Taiwan), HKUST, NVIDIA</li><li><strong>arXiv</strong>: <a href="https://arxiv.org/abs/2607.07148">2607.07148</a></li><li><strong>Demo</strong>: <a href="https://liyuxin44.github.io/DuplexPO/">https://liyuxin44.github.io/DuplexPO/</a></li></ul><hr><h2 id="1-为什么需要-DuplexPO？——Intelligence-Dynamics-Trade-off"><a href="#1-为什么需要-DuplexPO？——Intelligence-Dynamics-Trade-off" class="headerlink" title="1. 为什么需要 DuplexPO？——Intelligence-Dynamics Trade-off"></a>1. 为什么需要 DuplexPO？——Intelligence-Dynamics Trade-off</h2><p>全双工（Full-Duplex）语音对话模型允许智能体在聆听用户语音的同时生成回复，实现低延迟响应、反向通道（backchannel）与打断处理（barge-in handling）。然而，当前全双工模型在交互动态性上的进步，往往以牺牲推理和指令遵循能力为代价——Moshi、SALM-Duplex 等模型在 QA 和推理基准上显著落后于半双工对应物。</p><p>作者从两个视角剖析了这一权衡：</p><ol><li><strong>建模层面</strong>：深层逻辑推理需要长程、结构化的解码轨迹来支撑多步推断；而全双工交互要求模型持续处理碎片化、快速变化的上下文，做出局部实时决策（说、停、静默）。这种时间控制偏向短程交互状态，使得维持推理所需的长程依赖更加困难。</li><li><strong>数据层面</strong>：对话动态行为的训练依赖人类对话语料（如 Fisher），这些数据以闲聊和非目标导向交流为主，与构建有帮助的指令遵循助手目标不一致。</li></ol><p><strong>核心洞察</strong>：上述冲突的根源在于将”说什么”（what to say）和”何时说”（when to speak）耦合在单一学习目标中。前者是语义内容生成问题，后者是实时时间决策问题——两者本质不同，无需在同一数据分布上联合学习。</p><hr><h2 id="2-DuplexPO-方法概述"><a href="#2-DuplexPO-方法概述" class="headerlink" title="2. DuplexPO 方法概述"></a>2. DuplexPO 方法概述</h2><p><img src="/images/paper_figs/duplexpo/model_structure.png" alt="DuplexPO 框架总览"></p><p>DuplexPO 是一个强化学习框架，将对话动态性作为独立优化目标。框架包含三个核心组件：</p><ol><li><strong>Dynamics-Critical Window Sampling</strong>：从长对话中采样动态关键窗口</li><li><strong>Factorized Conversational Dynamics Reward (FCDR)</strong>：分解式对话动态奖励</li><li><strong>GRPO-style Policy Optimization</strong>：基于组归一化优势的策略优化</li></ol><hr><h2 id="3-问题形式化"><a href="#3-问题形式化" class="headerlink" title="3. 问题形式化"></a>3. 问题形式化</h2><p>将全双工对话动态学习形式化为帧级策略优化。设 $x_{1:T}$ 为用户音频流，$y_{1:T}$ 为智能体实时交互决策，帧间隔为 $\Delta$。每帧策略预测：</p><script type="math/tex; mode=display">\pi_\theta(y_t \mid y_{<t}, x_{\leq t})</script><p>其中 $y_t$ 表示智能体交互状态（静默、说话、轮次起始、让步等）。</p><p>DuplexPO 不优化整段对话，而是在动态关键窗口 $\mathcal{W} = {W_i}_{i=1}^M$ 上操作。对窗口 $W_i$（时间支撑 $[s_i, e_i)$），策略仅在窗口内采样动作，历史部分教师强制：</p><script type="math/tex; mode=display">R_i = R(W_i, y_{[s_i, e_i)})</script><hr><h2 id="4-Dynamics-Critical-Window-Sampling"><a href="#4-Dynamics-Critical-Window-Sampling" class="headerlink" title="4. Dynamics-Critical Window Sampling"></a>4. Dynamics-Critical Window Sampling</h2><p>先行研究表明，对话轮次转换通常由可能响应点附近的局部时间和韵律线索决定，而非均匀分布于整段对话。DuplexPO 选取短但重要的局部窗口——轮次转换、反向通道、打断——作为优化单元。</p><p>设 $(a_i, b_i)$ 为第 $i$ 个标注智能体片段的起止时间，$c_i$ 为事件元数据。窗口定义为：</p><script type="math/tex; mode=display">W_i = (s_i, e_i, g_i, h_i, c_i)</script><p>参考说话区间离散化：</p><script type="math/tex; mode=display">g_i = \lfloor a_i / \Delta \rfloor, \quad h_i = \lfloor b_i / \Delta \rfloor</script><p>采样窗口包含前导时间 $L$ 和缓冲时间 $B$：</p><script type="math/tex; mode=display">s_i = \max(e_{i-1}, \lfloor (a_i - L) / \Delta \rfloor), \quad \bar{e}_i = \lfloor (b_i + B) / \Delta \rfloor</script><p>边界裁剪防止相邻事件重叠：</p><script type="math/tex; mode=display">e_i = \min(\bar{e}_i, \lfloor (a_{i+1} - L) / \Delta \rfloor, T)</script><hr><h2 id="5-Factorized-Conversational-Dynamics-Reward-FCDR"><a href="#5-Factorized-Conversational-Dynamics-Reward-FCDR" class="headerlink" title="5. Factorized Conversational Dynamics Reward (FCDR)"></a>5. Factorized Conversational Dynamics Reward (FCDR)</h2><p>FCDR 是本文的核心贡献之一，实现了事件级的细粒度时间信用分配。对窗口 $W_i$ 中采样的继续序列，设 $\hat{S}_i \subseteq [s_i, e_i]$ 为智能体说话帧集合。若 $\hat{S}_i \neq \emptyset$，预测起始为 $\hat{g}_i = \min \hat{S}_i$，起始延迟为：</p><script type="math/tex; mode=display">\tau_i = \Delta(\hat{g}_i - g_i)</script><p>三个二值掩码 $m_i^{\text{on}}, m_i^{\text{bc}}, m_i^{\text{off}}$ 分别指示轮次起始、反向通道和打断让步是否激活。</p><p>最终 FCDR 为加权和：</p><script type="math/tex; mode=display">R_{\text{FCD}}(W_i, \hat{S}_i) = \lambda_{\text{on}} m_i^{\text{on}} R_i^{\text{on}} + \lambda_{\text{bc}} m_i^{\text{bc}} R_i^{\text{bc}} + \lambda_{\text{off}} m_i^{\text{off}} R_i^{\text{off}} + \lambda_{\text{reg}} R_i^{\text{reg}}</script><p>各分量定义如下：</p><div class="table-container"><table><thead><tr><th>分量</th><th>目标行为</th><th>函数形式</th><th>范围</th></tr></thead><tbody><tr><td>$R_i^{\text{on}}$</td><td>轮次起始</td><td>$\mathbb{I}[\hat{S}_i \neq \emptyset] \exp\left(-\frac{\tau_i^2}{2\sigma_{\text{on}}(\tau_i)^2}\right)$</td><td>$[0, 1]$</td></tr><tr><td>$R_i^{\text{bc}}$</td><td>反向通道</td><td>$\mathbb{I}[\hat{S}_i \neq \emptyset] \max_{t \in \hat{S}_i} \mathbb{I}[t \in B_i] + \mathbb{I}[t \notin B_i] e^{-\alpha d(t, B_i)}$</td><td>$[0, 1]$</td></tr><tr><td>$R_i^{\text{off}}$</td><td>打断后让步</td><td>$-\text{clip}\left(\frac{\max(0, \ell_i - \ell^*)}{H_{\text{off}}}, 0, 1\right)$</td><td>$[-1, 0]$</td></tr><tr><td>$R_i^{\text{reg}}$</td><td>模式正则化</td><td>$-\text{clip}\left(\sum_{k=1}^K \beta_k \mathbb{I}[e_{i,k}], 0, 1\right)$</td><td>$[-1, 0]$</td></tr></tbody></table></div><hr><h2 id="6-Group-based-Policy-Optimization"><a href="#6-Group-based-Policy-Optimization" class="headerlink" title="6. Group-based Policy Optimization"></a>6. Group-based Policy Optimization</h2><p>DuplexPO 使用 GRPO 风格目标优化。对窗口 $i$，跨采样续写归一化奖励得到裁剪组优势：</p><script type="math/tex; mode=display">A_{i,k} = \text{clip}\left(\frac{r_{i,k} - \mu_i}{\sigma_i + \epsilon}, -5, 5\right)</script><p>策略梯度损失仅施加于窗口内的采样 token，并附带 KL 惩罚以约束相对参考 SFT 模型的策略漂移：</p><script type="math/tex; mode=display">\mathcal{L}_{\text{GRPO}} = \mathcal{L}_{\text{policy}} + \beta \mathcal{L}_{\text{KL}}</script><hr><h2 id="7-数据与训练"><a href="#7-数据与训练" class="headerlink" title="7. 数据与训练"></a>7. 数据与训练</h2><h3 id="7-1-数据来源"><a href="#7-1-数据来源" class="headerlink" title="7.1 数据来源"></a>7.1 数据来源</h3><ul><li><strong>Fisher</strong>：对称点对点对话，含词级时间对齐</li><li><strong>Seamless-Naturalistic-HQ</strong>：角色不对称问答交互</li><li>训练集：24.6K Fisher 样本 + 43.1K Seamless 样本</li><li>评估集与训练集在对话级别严格分离</li></ul><h3 id="7-2-训练流水线"><a href="#7-2-训练流水线" class="headerlink" title="7.2 训练流水线"></a>7.2 训练流水线</h3><p>四阶段训练：</p><ol><li><strong>Pre-training</strong>：530K 小时语音续写数据</li><li><strong>SFT</strong>：70K 小时指令遵循 QA + ASR-QA + 合成打断数据</li><li><strong>RL (DuplexPO)</strong>：动态关键窗口上的策略优化</li><li><strong>Speech-synthesis SFT</strong>：冻结除语音生成模块外所有参数</li></ol><p>模型骨干：Qwen2.5-7B-Instruct + 600M Parakeet 流式语音编码器 + CosyVoice2 语音合成。训练使用 64 × A800 80GB GPU。</p><hr><h2 id="8-实验结果"><a href="#8-实验结果" class="headerlink" title="8. 实验结果"></a>8. 实验结果</h2><h3 id="8-1-对话动态性评估"><a href="#8-1-对话动态性评估" class="headerlink" title="8.1 对话动态性评估"></a>8.1 对话动态性评估</h3><p><strong>Fisher &amp; Seamless 窗口级性能：</strong></p><div class="table-container"><table><thead><tr><th>方法</th><th>数据集</th><th>Onset MAE↓</th><th>TT Init↑</th><th>TT Yield↑</th><th>BC Init↑</th><th>BC Yield↑</th></tr></thead><tbody><tr><td>Moshi</td><td>Fisher</td><td>1.99</td><td>87.7%</td><td>76.5%</td><td>83.9%</td><td>66.7%</td></tr><tr><td>PersonaPlex</td><td>Fisher</td><td>1.50</td><td>98.6%</td><td>80.3%</td><td>91.4%</td><td>69.2%</td></tr><tr><td>SFT Baseline</td><td>Fisher</td><td>0.98</td><td>97.8%</td><td>92.1%</td><td>95.7%</td><td>57.1%</td></tr><tr><td>SFT Dynamics</td><td>Fisher</td><td>1.14</td><td>97.1%</td><td>78.9%</td><td>91.4%</td><td>57.1%</td></tr><tr><td><strong>DuplexPO</strong></td><td><strong>Fisher</strong></td><td><strong>0.69</strong></td><td><strong>100.0%</strong></td><td><strong>98.7%</strong></td><td><strong>97.8%</strong></td><td><strong>100.0%</strong></td></tr><tr><td>Moshi</td><td>Seamless</td><td>2.16</td><td>80.1%</td><td>69.0%</td><td>76.2%</td><td>71.3%</td></tr><tr><td>SFT Baseline</td><td>Seamless</td><td>1.22</td><td>91.8%</td><td>78.5%</td><td>92.2%</td><td>79.4%</td></tr><tr><td><strong>DuplexPO</strong></td><td><strong>Seamless</strong></td><td><strong>1.03</strong></td><td><strong>98.0%</strong></td><td><strong>93.6%</strong></td><td><strong>99.5%</strong></td><td><strong>93.3%</strong></td></tr></tbody></table></div><p><strong>FDB-v3 评估：</strong></p><div class="table-container"><table><thead><tr><th>方法</th><th>Turn-Take↑</th><th>Latency↓</th><th>VIR↓</th><th>Yield↑</th></tr></thead><tbody><tr><td>GPT-Realtime</td><td>96.0%</td><td>2.65s</td><td>–</td><td>–</td></tr><tr><td>Gemini Live 3.1</td><td>78.0%</td><td>1.59s</td><td>–</td><td>–</td></tr><tr><td>Moshi</td><td>100.0%</td><td>0.44s</td><td>12.0%</td><td>71.9%</td></tr><tr><td>SFT Baseline</td><td>99.0%</td><td>7.33s</td><td>8.0%</td><td>64.8%</td></tr><tr><td><strong>DuplexPO</strong></td><td><strong>100.0%</strong></td><td><strong>0.24s</strong></td><td><strong>5.0%</strong></td><td><strong>100.0%</strong></td></tr></tbody></table></div><p>DuplexPO 打破了延迟-打断权衡：在所有模型中实现最低延迟（0.24s）和最高 Yield Rate（100%），同时保持低 VIR。</p><h3 id="8-2-模型智能评估"><a href="#8-2-模型智能评估" class="headerlink" title="8.2 模型智能评估"></a>8.2 模型智能评估</h3><div class="table-container"><table><thead><tr><th>方法</th><th style="text-align:center">FD</th><th>LlamaQ</th><th>WebQ</th><th>TriQA</th><th>SDQA</th><th>AlpacaE</th><th>ComE</th><th>OBQA</th><th>MMSU</th></tr></thead><tbody><tr><td>Moshi</td><td style="text-align:center">✓</td><td>54.5</td><td>22.1</td><td>16.7</td><td>15.6</td><td>2.01</td><td>1.60</td><td>25.9</td><td>24.0</td></tr><tr><td>SALMONN-omni</td><td style="text-align:center">✓</td><td>73.6</td><td>43.7</td><td>56.0</td><td>-</td><td>3.22</td><td>-</td><td>-</td><td>30.0</td></tr><tr><td>Kimi-Audio</td><td style="text-align:center">✗</td><td>68.3</td><td>37.3</td><td>51.2</td><td>63.1</td><td>4.46</td><td>3.97</td><td>83.5</td><td>62.2</td></tr><tr><td>SFT Baseline</td><td style="text-align:center">✓</td><td>72.0</td><td>44.3</td><td>48.1</td><td>47.2</td><td>3.43</td><td>3.48</td><td>72.2</td><td>54.9</td></tr><tr><td><strong>DuplexPO</strong></td><td style="text-align:center">✓</td><td><strong>75.3</strong></td><td><strong>44.5</strong></td><td><strong>49.9</strong></td><td><strong>49.8</strong></td><td><strong>3.68</strong></td><td><strong>3.74</strong></td><td><strong>73.7</strong></td><td><strong>56.2</strong></td></tr></tbody></table></div><p>DuplexPO 在所有智能指标上不仅没有退化，还略有提升。这验证了核心假设：解耦”何时说”与”说什么”可以避免 intelligence-dynamics trade-off。</p><h3 id="8-3-LLM-as-Judge-对话级评估"><a href="#8-3-LLM-as-Judge-对话级评估" class="headerlink" title="8.3 LLM-as-Judge 对话级评估"></a>8.3 LLM-as-Judge 对话级评估</h3><p><img src="/images/paper_figs/duplexpo/gemini.png" alt="Gemini 配对评估"></p><p>Gemini 3.0 Pro 配对评估中，DuplexPO 在 Fisher 上 76.9% 胜率，Seamless 上 69.3% 胜率（排除平局）。在轮次转换、反向通道和打断处理三个维度上全面领先。</p><hr><h2 id="9-分析与消融"><a href="#9-分析与消融" class="headerlink" title="9. 分析与消融"></a>9. 分析与消融</h2><h3 id="9-1-Suppressed-Intent-分析"><a href="#9-1-Suppressed-Intent-分析" class="headerlink" title="9.1 Suppressed Intent 分析"></a>9.1 Suppressed Intent 分析</h3><p><img src="/images/paper_figs/duplexpo/EOS_Urge_Trajectory.png" alt="EOS 冲动轨迹"></p><p>DuplexPO 并非全局抑制说话意图，而是在边界控制决策附近有选择地释放潜在的 <code>&lt;BOS&gt;</code> 和 <code>&lt;EOS&gt;</code> 冲动。SRR（Suppression Release Ratio）显示 DuplexPO 将 70.6% 的被抑制 <code>&lt;BOS&gt;</code> 冲动在正确时刻释放。</p><h3 id="9-2-注意力分析"><a href="#9-2-注意力分析" class="headerlink" title="9.2 注意力分析"></a>9.2 注意力分析</h3><p><img src="/images/paper_figs/duplexpo/attention.jpg" alt="注意力分布"></p><p>与 Moshi 7B 相比，DuplexPO 将更少的注意力分配给 <code>&lt;BOS&gt;</code> sink（14.5% vs 70.2%），更多注意力分配给 PAD 状态位（77.5% vs 28.0%）和真实文本位（22.5% vs 1.8%），表明模型学会了利用实际上下文进行时间决策。</p><h3 id="9-3-窗口边界消融"><a href="#9-3-窗口边界消融" class="headerlink" title="9.3 窗口边界消融"></a>9.3 窗口边界消融</h3><p><img src="/images/paper_figs/duplexpo/window_ablation.png" alt="窗口消融"></p><p>前导时间 $L$ 对 RL 奖励影响显著（过长 lead time 导致奖励骤降），而缓冲时间 $B$ 影响较小。这表明动态关键窗口采样主要依赖于做出说话决策所需的预见性上下文量。</p><h3 id="9-4-奖励训练动态"><a href="#9-4-奖励训练动态" class="headerlink" title="9.4 奖励训练动态"></a>9.4 奖励训练动态</h3><p><img src="/images/paper_figs/duplexpo/reward_training_dynamics.png" alt="奖励训练动态"></p><p><img src="/images/paper_figs/duplexpo/reward_component_relationships.png" alt="奖励分量关系"></p><p>总奖励单调上升后趋于平稳，各奖励分量呈现功能特化：stop reward 专门驱动让步行为，start reward 驱动轮次起始时间。</p><h3 id="9-5-优化方法消融"><a href="#9-5-优化方法消融" class="headerlink" title="9.5 优化方法消融"></a>9.5 优化方法消融</h3><p>GRPO vs DPO：GRPO 在大多数动态指标上优于 DPO，特别是 yield rate。DPO 仅使用最高/最低奖励续写对，丢弃了有用的排序信息；GRPO 利用全部采样续写的组归一化优势，提供更密集稳定的优化信号。</p><hr><h2 id="10-Token-级行为模式"><a href="#10-Token-级行为模式" class="headerlink" title="10. Token 级行为模式"></a>10. Token 级行为模式</h2><p><img src="/images/paper_figs/duplexpo/conv_pattern.png" alt="对话模式对比"></p><p>上图对比了 SFT Baseline 和 DuplexPO 的 token 级对话模式。DuplexPO 在用户语音附近主动维持和释放 <code>&lt;BOS&gt;</code>/<code>&lt;EOS&gt;</code> 冲动，而 SFT Baseline 则倾向于停留在 PAD 状态。</p><hr><h2 id="11-局限性"><a href="#11-局限性" class="headerlink" title="11. 局限性"></a>11. 局限性</h2><ul><li>FCDR 的分解式奖励可能遗漏微妙的语用因素（用户意图、话语内容、说话风格、文化特定时间偏好）</li><li>人类时间标注并非唯一真值——轮次起始、反向通道和让步在不同说话者、语言和对话场景中存在变异</li><li>策略更新被限制在局部窗口中，可能错过长程对话效应</li></ul><hr><h2 id="12-总结"><a href="#12-总结" class="headerlink" title="12. 总结"></a>12. 总结</h2><p>DuplexPO 的核心贡献在于证明了一个重要观点：<strong>全双工语音模型中的 intelligence-dynamics trade-off 并非本质性的</strong>。通过将”何时说”与”说什么”解耦为独立优化目标，使用动态关键窗口采样 + FCDR 奖励 + GRPO 优化，DuplexPO 在显著提升对话动态性的同时完全保持了推理和指令遵循能力。这为构建既聪明又自然的全双工语音助手提供了一条可行路径。</p>]]></content>
     
     
     <categories>
@@ -317,13 +317,13 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
       
       <tag>Speech LLM</tag>
       
-      <tag>KV Cache</tag>
+      <tag>Full-Duplex</tag>
+      
+      <tag>Reinforcement Learning</tag>
       
     </tags>
     
@@ -363,11 +363,11 @@
   
   
   <entry>
-    <title>Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning</title>
-    <link href="/2026/07/10/2026-07-10-DuplexPO/"/>
-    <url>/2026/07/10/2026-07-10-DuplexPO/</url>
+    <title>Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs</title>
+    <link href="/2026/07/10/2026-07-10-SpeechKV/"/>
+    <url>/2026/07/10/2026-07-10-SpeechKV/</url>
     
-    <content type="html"><![CDATA[<h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul><li><strong>标题</strong>: Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning</li><li><strong>作者</strong>: Yuxin Li, Donghang Wu, Guan-Ting Lin, Hung-yi Lee, Chengwei Qin, Zhehuai Chen, Chen Chen</li><li><strong>机构</strong>: NTU, NTU (Taiwan), HKUST, NVIDIA</li><li><strong>arXiv</strong>: <a href="https://arxiv.org/abs/2607.07148">2607.07148</a></li><li><strong>Demo</strong>: <a href="https://liyuxin44.github.io/DuplexPO/">https://liyuxin44.github.io/DuplexPO/</a></li></ul><hr><h2 id="1-为什么需要-DuplexPO？——Intelligence-Dynamics-Trade-off"><a href="#1-为什么需要-DuplexPO？——Intelligence-Dynamics-Trade-off" class="headerlink" title="1. 为什么需要 DuplexPO？——Intelligence-Dynamics Trade-off"></a>1. 为什么需要 DuplexPO？——Intelligence-Dynamics Trade-off</h2><p>全双工（Full-Duplex）语音对话模型允许智能体在聆听用户语音的同时生成回复，实现低延迟响应、反向通道（backchannel）与打断处理（barge-in handling）。然而，当前全双工模型在交互动态性上的进步，往往以牺牲推理和指令遵循能力为代价——Moshi、SALM-Duplex 等模型在 QA 和推理基准上显著落后于半双工对应物。</p><p>作者从两个视角剖析了这一权衡：</p><ol><li><strong>建模层面</strong>：深层逻辑推理需要长程、结构化的解码轨迹来支撑多步推断；而全双工交互要求模型持续处理碎片化、快速变化的上下文，做出局部实时决策（说、停、静默）。这种时间控制偏向短程交互状态，使得维持推理所需的长程依赖更加困难。</li><li><strong>数据层面</strong>：对话动态行为的训练依赖人类对话语料（如 Fisher），这些数据以闲聊和非目标导向交流为主，与构建有帮助的指令遵循助手目标不一致。</li></ol><p><strong>核心洞察</strong>：上述冲突的根源在于将”说什么”（what to say）和”何时说”（when to speak）耦合在单一学习目标中。前者是语义内容生成问题，后者是实时时间决策问题——两者本质不同，无需在同一数据分布上联合学习。</p><hr><h2 id="2-DuplexPO-方法概述"><a href="#2-DuplexPO-方法概述" class="headerlink" title="2. DuplexPO 方法概述"></a>2. DuplexPO 方法概述</h2><p><img src="/images/paper_figs/duplexpo/model_structure.png" alt="DuplexPO 框架总览"></p><p>DuplexPO 是一个强化学习框架，将对话动态性作为独立优化目标。框架包含三个核心组件：</p><ol><li><strong>Dynamics-Critical Window Sampling</strong>：从长对话中采样动态关键窗口</li><li><strong>Factorized Conversational Dynamics Reward (FCDR)</strong>：分解式对话动态奖励</li><li><strong>GRPO-style Policy Optimization</strong>：基于组归一化优势的策略优化</li></ol><hr><h2 id="3-问题形式化"><a href="#3-问题形式化" class="headerlink" title="3. 问题形式化"></a>3. 问题形式化</h2><p>将全双工对话动态学习形式化为帧级策略优化。设 $x_{1:T}$ 为用户音频流，$y_{1:T}$ 为智能体实时交互决策，帧间隔为 $\Delta$。每帧策略预测：</p><script type="math/tex; mode=display">\pi_\theta(y_t \mid y_{<t}, x_{\leq t})</script><p>其中 $y_t$ 表示智能体交互状态（静默、说话、轮次起始、让步等）。</p><p>DuplexPO 不优化整段对话，而是在动态关键窗口 $\mathcal{W} = {W_i}_{i=1}^M$ 上操作。对窗口 $W_i$（时间支撑 $[s_i, e_i)$），策略仅在窗口内采样动作，历史部分教师强制：</p><script type="math/tex; mode=display">R_i = R(W_i, y_{[s_i, e_i)})</script><hr><h2 id="4-Dynamics-Critical-Window-Sampling"><a href="#4-Dynamics-Critical-Window-Sampling" class="headerlink" title="4. Dynamics-Critical Window Sampling"></a>4. Dynamics-Critical Window Sampling</h2><p>先行研究表明，对话轮次转换通常由可能响应点附近的局部时间和韵律线索决定，而非均匀分布于整段对话。DuplexPO 选取短但重要的局部窗口——轮次转换、反向通道、打断——作为优化单元。</p><p>设 $(a_i, b_i)$ 为第 $i$ 个标注智能体片段的起止时间，$c_i$ 为事件元数据。窗口定义为：</p><script type="math/tex; mode=display">W_i = (s_i, e_i, g_i, h_i, c_i)</script><p>参考说话区间离散化：</p><script type="math/tex; mode=display">g_i = \lfloor a_i / \Delta \rfloor, \quad h_i = \lfloor b_i / \Delta \rfloor</script><p>采样窗口包含前导时间 $L$ 和缓冲时间 $B$：</p><script type="math/tex; mode=display">s_i = \max(e_{i-1}, \lfloor (a_i - L) / \Delta \rfloor), \quad \bar{e}_i = \lfloor (b_i + B) / \Delta \rfloor</script><p>边界裁剪防止相邻事件重叠：</p><script type="math/tex; mode=display">e_i = \min(\bar{e}_i, \lfloor (a_{i+1} - L) / \Delta \rfloor, T)</script><hr><h2 id="5-Factorized-Conversational-Dynamics-Reward-FCDR"><a href="#5-Factorized-Conversational-Dynamics-Reward-FCDR" class="headerlink" title="5. Factorized Conversational Dynamics Reward (FCDR)"></a>5. Factorized Conversational Dynamics Reward (FCDR)</h2><p>FCDR 是本文的核心贡献之一，实现了事件级的细粒度时间信用分配。对窗口 $W_i$ 中采样的继续序列，设 $\hat{S}_i \subseteq [s_i, e_i]$ 为智能体说话帧集合。若 $\hat{S}_i \neq \emptyset$，预测起始为 $\hat{g}_i = \min \hat{S}_i$，起始延迟为：</p><script type="math/tex; mode=display">\tau_i = \Delta(\hat{g}_i - g_i)</script><p>三个二值掩码 $m_i^{\text{on}}, m_i^{\text{bc}}, m_i^{\text{off}}$ 分别指示轮次起始、反向通道和打断让步是否激活。</p><p>最终 FCDR 为加权和：</p><script type="math/tex; mode=display">R_{\text{FCD}}(W_i, \hat{S}_i) = \lambda_{\text{on}} m_i^{\text{on}} R_i^{\text{on}} + \lambda_{\text{bc}} m_i^{\text{bc}} R_i^{\text{bc}} + \lambda_{\text{off}} m_i^{\text{off}} R_i^{\text{off}} + \lambda_{\text{reg}} R_i^{\text{reg}}</script><p>各分量定义如下：</p><div class="table-container"><table><thead><tr><th>分量</th><th>目标行为</th><th>函数形式</th><th>范围</th></tr></thead><tbody><tr><td>$R_i^{\text{on}}$</td><td>轮次起始</td><td>$\mathbb{I}[\hat{S}_i \neq \emptyset] \exp\left(-\frac{\tau_i^2}{2\sigma_{\text{on}}(\tau_i)^2}\right)$</td><td>$[0, 1]$</td></tr><tr><td>$R_i^{\text{bc}}$</td><td>反向通道</td><td>$\mathbb{I}[\hat{S}_i \neq \emptyset] \max_{t \in \hat{S}_i} \mathbb{I}[t \in B_i] + \mathbb{I}[t \notin B_i] e^{-\alpha d(t, B_i)}$</td><td>$[0, 1]$</td></tr><tr><td>$R_i^{\text{off}}$</td><td>打断后让步</td><td>$-\text{clip}\left(\frac{\max(0, \ell_i - \ell^*)}{H_{\text{off}}}, 0, 1\right)$</td><td>$[-1, 0]$</td></tr><tr><td>$R_i^{\text{reg}}$</td><td>模式正则化</td><td>$-\text{clip}\left(\sum_{k=1}^K \beta_k \mathbb{I}[e_{i,k}], 0, 1\right)$</td><td>$[-1, 0]$</td></tr></tbody></table></div><hr><h2 id="6-Group-based-Policy-Optimization"><a href="#6-Group-based-Policy-Optimization" class="headerlink" title="6. Group-based Policy Optimization"></a>6. Group-based Policy Optimization</h2><p>DuplexPO 使用 GRPO 风格目标优化。对窗口 $i$，跨采样续写归一化奖励得到裁剪组优势：</p><script type="math/tex; mode=display">A_{i,k} = \text{clip}\left(\frac{r_{i,k} - \mu_i}{\sigma_i + \epsilon}, -5, 5\right)</script><p>策略梯度损失仅施加于窗口内的采样 token，并附带 KL 惩罚以约束相对参考 SFT 模型的策略漂移：</p><script type="math/tex; mode=display">\mathcal{L}_{\text{GRPO}} = \mathcal{L}_{\text{policy}} + \beta \mathcal{L}_{\text{KL}}</script><hr><h2 id="7-数据与训练"><a href="#7-数据与训练" class="headerlink" title="7. 数据与训练"></a>7. 数据与训练</h2><h3 id="7-1-数据来源"><a href="#7-1-数据来源" class="headerlink" title="7.1 数据来源"></a>7.1 数据来源</h3><ul><li><strong>Fisher</strong>：对称点对点对话，含词级时间对齐</li><li><strong>Seamless-Naturalistic-HQ</strong>：角色不对称问答交互</li><li>训练集：24.6K Fisher 样本 + 43.1K Seamless 样本</li><li>评估集与训练集在对话级别严格分离</li></ul><h3 id="7-2-训练流水线"><a href="#7-2-训练流水线" class="headerlink" title="7.2 训练流水线"></a>7.2 训练流水线</h3><p>四阶段训练：</p><ol><li><strong>Pre-training</strong>：530K 小时语音续写数据</li><li><strong>SFT</strong>：70K 小时指令遵循 QA + ASR-QA + 合成打断数据</li><li><strong>RL (DuplexPO)</strong>：动态关键窗口上的策略优化</li><li><strong>Speech-synthesis SFT</strong>：冻结除语音生成模块外所有参数</li></ol><p>模型骨干：Qwen2.5-7B-Instruct + 600M Parakeet 流式语音编码器 + CosyVoice2 语音合成。训练使用 64 × A800 80GB GPU。</p><hr><h2 id="8-实验结果"><a href="#8-实验结果" class="headerlink" title="8. 实验结果"></a>8. 实验结果</h2><h3 id="8-1-对话动态性评估"><a href="#8-1-对话动态性评估" class="headerlink" title="8.1 对话动态性评估"></a>8.1 对话动态性评估</h3><p><strong>Fisher &amp; Seamless 窗口级性能：</strong></p><div class="table-container"><table><thead><tr><th>方法</th><th>数据集</th><th>Onset MAE↓</th><th>TT Init↑</th><th>TT Yield↑</th><th>BC Init↑</th><th>BC Yield↑</th></tr></thead><tbody><tr><td>Moshi</td><td>Fisher</td><td>1.99</td><td>87.7%</td><td>76.5%</td><td>83.9%</td><td>66.7%</td></tr><tr><td>PersonaPlex</td><td>Fisher</td><td>1.50</td><td>98.6%</td><td>80.3%</td><td>91.4%</td><td>69.2%</td></tr><tr><td>SFT Baseline</td><td>Fisher</td><td>0.98</td><td>97.8%</td><td>92.1%</td><td>95.7%</td><td>57.1%</td></tr><tr><td>SFT Dynamics</td><td>Fisher</td><td>1.14</td><td>97.1%</td><td>78.9%</td><td>91.4%</td><td>57.1%</td></tr><tr><td><strong>DuplexPO</strong></td><td><strong>Fisher</strong></td><td><strong>0.69</strong></td><td><strong>100.0%</strong></td><td><strong>98.7%</strong></td><td><strong>97.8%</strong></td><td><strong>100.0%</strong></td></tr><tr><td>Moshi</td><td>Seamless</td><td>2.16</td><td>80.1%</td><td>69.0%</td><td>76.2%</td><td>71.3%</td></tr><tr><td>SFT Baseline</td><td>Seamless</td><td>1.22</td><td>91.8%</td><td>78.5%</td><td>92.2%</td><td>79.4%</td></tr><tr><td><strong>DuplexPO</strong></td><td><strong>Seamless</strong></td><td><strong>1.03</strong></td><td><strong>98.0%</strong></td><td><strong>93.6%</strong></td><td><strong>99.5%</strong></td><td><strong>93.3%</strong></td></tr></tbody></table></div><p><strong>FDB-v3 评估：</strong></p><div class="table-container"><table><thead><tr><th>方法</th><th>Turn-Take↑</th><th>Latency↓</th><th>VIR↓</th><th>Yield↑</th></tr></thead><tbody><tr><td>GPT-Realtime</td><td>96.0%</td><td>2.65s</td><td>–</td><td>–</td></tr><tr><td>Gemini Live 3.1</td><td>78.0%</td><td>1.59s</td><td>–</td><td>–</td></tr><tr><td>Moshi</td><td>100.0%</td><td>0.44s</td><td>12.0%</td><td>71.9%</td></tr><tr><td>SFT Baseline</td><td>99.0%</td><td>7.33s</td><td>8.0%</td><td>64.8%</td></tr><tr><td><strong>DuplexPO</strong></td><td><strong>100.0%</strong></td><td><strong>0.24s</strong></td><td><strong>5.0%</strong></td><td><strong>100.0%</strong></td></tr></tbody></table></div><p>DuplexPO 打破了延迟-打断权衡：在所有模型中实现最低延迟（0.24s）和最高 Yield Rate（100%），同时保持低 VIR。</p><h3 id="8-2-模型智能评估"><a href="#8-2-模型智能评估" class="headerlink" title="8.2 模型智能评估"></a>8.2 模型智能评估</h3><div class="table-container"><table><thead><tr><th>方法</th><th style="text-align:center">FD</th><th>LlamaQ</th><th>WebQ</th><th>TriQA</th><th>SDQA</th><th>AlpacaE</th><th>ComE</th><th>OBQA</th><th>MMSU</th></tr></thead><tbody><tr><td>Moshi</td><td style="text-align:center">✓</td><td>54.5</td><td>22.1</td><td>16.7</td><td>15.6</td><td>2.01</td><td>1.60</td><td>25.9</td><td>24.0</td></tr><tr><td>SALMONN-omni</td><td style="text-align:center">✓</td><td>73.6</td><td>43.7</td><td>56.0</td><td>-</td><td>3.22</td><td>-</td><td>-</td><td>30.0</td></tr><tr><td>Kimi-Audio</td><td style="text-align:center">✗</td><td>68.3</td><td>37.3</td><td>51.2</td><td>63.1</td><td>4.46</td><td>3.97</td><td>83.5</td><td>62.2</td></tr><tr><td>SFT Baseline</td><td style="text-align:center">✓</td><td>72.0</td><td>44.3</td><td>48.1</td><td>47.2</td><td>3.43</td><td>3.48</td><td>72.2</td><td>54.9</td></tr><tr><td><strong>DuplexPO</strong></td><td style="text-align:center">✓</td><td><strong>75.3</strong></td><td><strong>44.5</strong></td><td><strong>49.9</strong></td><td><strong>49.8</strong></td><td><strong>3.68</strong></td><td><strong>3.74</strong></td><td><strong>73.7</strong></td><td><strong>56.2</strong></td></tr></tbody></table></div><p>DuplexPO 在所有智能指标上不仅没有退化，还略有提升。这验证了核心假设：解耦”何时说”与”说什么”可以避免 intelligence-dynamics trade-off。</p><h3 id="8-3-LLM-as-Judge-对话级评估"><a href="#8-3-LLM-as-Judge-对话级评估" class="headerlink" title="8.3 LLM-as-Judge 对话级评估"></a>8.3 LLM-as-Judge 对话级评估</h3><p><img src="/images/paper_figs/duplexpo/gemini.png" alt="Gemini 配对评估"></p><p>Gemini 3.0 Pro 配对评估中，DuplexPO 在 Fisher 上 76.9% 胜率，Seamless 上 69.3% 胜率（排除平局）。在轮次转换、反向通道和打断处理三个维度上全面领先。</p><hr><h2 id="9-分析与消融"><a href="#9-分析与消融" class="headerlink" title="9. 分析与消融"></a>9. 分析与消融</h2><h3 id="9-1-Suppressed-Intent-分析"><a href="#9-1-Suppressed-Intent-分析" class="headerlink" title="9.1 Suppressed Intent 分析"></a>9.1 Suppressed Intent 分析</h3><p><img src="/images/paper_figs/duplexpo/EOS_Urge_Trajectory.png" alt="EOS 冲动轨迹"></p><p>DuplexPO 并非全局抑制说话意图，而是在边界控制决策附近有选择地释放潜在的 <code>&lt;BOS&gt;</code> 和 <code>&lt;EOS&gt;</code> 冲动。SRR（Suppression Release Ratio）显示 DuplexPO 将 70.6% 的被抑制 <code>&lt;BOS&gt;</code> 冲动在正确时刻释放。</p><h3 id="9-2-注意力分析"><a href="#9-2-注意力分析" class="headerlink" title="9.2 注意力分析"></a>9.2 注意力分析</h3><p><img src="/images/paper_figs/duplexpo/attention.jpg" alt="注意力分布"></p><p>与 Moshi 7B 相比，DuplexPO 将更少的注意力分配给 <code>&lt;BOS&gt;</code> sink（14.5% vs 70.2%），更多注意力分配给 PAD 状态位（77.5% vs 28.0%）和真实文本位（22.5% vs 1.8%），表明模型学会了利用实际上下文进行时间决策。</p><h3 id="9-3-窗口边界消融"><a href="#9-3-窗口边界消融" class="headerlink" title="9.3 窗口边界消融"></a>9.3 窗口边界消融</h3><p><img src="/images/paper_figs/duplexpo/window_ablation.png" alt="窗口消融"></p><p>前导时间 $L$ 对 RL 奖励影响显著（过长 lead time 导致奖励骤降），而缓冲时间 $B$ 影响较小。这表明动态关键窗口采样主要依赖于做出说话决策所需的预见性上下文量。</p><h3 id="9-4-奖励训练动态"><a href="#9-4-奖励训练动态" class="headerlink" title="9.4 奖励训练动态"></a>9.4 奖励训练动态</h3><p><img src="/images/paper_figs/duplexpo/reward_training_dynamics.png" alt="奖励训练动态"></p><p><img src="/images/paper_figs/duplexpo/reward_component_relationships.png" alt="奖励分量关系"></p><p>总奖励单调上升后趋于平稳，各奖励分量呈现功能特化：stop reward 专门驱动让步行为，start reward 驱动轮次起始时间。</p><h3 id="9-5-优化方法消融"><a href="#9-5-优化方法消融" class="headerlink" title="9.5 优化方法消融"></a>9.5 优化方法消融</h3><p>GRPO vs DPO：GRPO 在大多数动态指标上优于 DPO，特别是 yield rate。DPO 仅使用最高/最低奖励续写对，丢弃了有用的排序信息；GRPO 利用全部采样续写的组归一化优势，提供更密集稳定的优化信号。</p><hr><h2 id="10-Token-级行为模式"><a href="#10-Token-级行为模式" class="headerlink" title="10. Token 级行为模式"></a>10. Token 级行为模式</h2><p><img src="/images/paper_figs/duplexpo/conv_pattern.png" alt="对话模式对比"></p><p>上图对比了 SFT Baseline 和 DuplexPO 的 token 级对话模式。DuplexPO 在用户语音附近主动维持和释放 <code>&lt;BOS&gt;</code>/<code>&lt;EOS&gt;</code> 冲动，而 SFT Baseline 则倾向于停留在 PAD 状态。</p><hr><h2 id="11-局限性"><a href="#11-局限性" class="headerlink" title="11. 局限性"></a>11. 局限性</h2><ul><li>FCDR 的分解式奖励可能遗漏微妙的语用因素（用户意图、话语内容、说话风格、文化特定时间偏好）</li><li>人类时间标注并非唯一真值——轮次起始、反向通道和让步在不同说话者、语言和对话场景中存在变异</li><li>策略更新被限制在局部窗口中，可能错过长程对话效应</li></ul><hr><h2 id="12-总结"><a href="#12-总结" class="headerlink" title="12. 总结"></a>12. 总结</h2><p>DuplexPO 的核心贡献在于证明了一个重要观点：<strong>全双工语音模型中的 intelligence-dynamics trade-off 并非本质性的</strong>。通过将”何时说”与”说什么”解耦为独立优化目标，使用动态关键窗口采样 + FCDR 奖励 + GRPO 优化，DuplexPO 在显著提升对话动态性的同时完全保持了推理和指令遵循能力。这为构建既聪明又自然的全双工语音助手提供了一条可行路径。</p>]]></content>
+    <content type="html"><![CDATA[<h2 id="为什么需要-SpeechKV？"><a href="#为什么需要-SpeechKV？" class="headerlink" title="为什么需要 SpeechKV？"></a>为什么需要 SpeechKV？</h2><p>Speech LLM 面临一个根本性的效率瓶颈：语音序列远长于文本。英语 ASR 中，一个文本 token 对应约 300ms 语音，而常见语音编码器每 80ms 产生一帧——同等语义信息下，语音序列长度约为文本的 4 倍。在自回归解码阶段，模型需在每一步 attend 所有前序位置，KV cache 的线性增长直接导致延迟和显存消耗随序列长度线性增长。</p><p>现有方案的标准做法是在 adapter 层对语音进行早期下采样（CTC blank filtering、CIF 累积、Q-Former 等），但这种”先压缩后推理”的范式引入了不可逆信息损失——一旦在 LLM 之前丢弃了细粒度声学细节，后续层便无法恢复。</p><p>SpeechKV 提出了一个优雅的替代思路：<strong>将压缩延迟到 LLM 内部</strong>，对中间层的语音 KV cache 施加学习式 pooling，让 LLM 自身决定保留哪些声学特征。</p><span id="more"></span><h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul><li><strong>标题</strong>: Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs</li><li><strong>作者</strong>: Ke-Han Lu, Keqi Deng, Ruchao Fan, Rui Zhao, Jinyu Li (Microsoft)</li><li><strong>arXiv</strong>: <a href="https://arxiv.org/abs/2607.06827">2607.06827</a></li><li><strong>发表时间</strong>: 2026年7月</li></ul><hr><h2 id="一、引言（Introduction）"><a href="#一、引言（Introduction）" class="headerlink" title="一、引言（Introduction）"></a>一、引言（Introduction）</h2><p>LLM 在 NLP 任务中展现了卓越能力，研究者将其扩展到语音模态，形成 Speech LLM 家族。典型架构包含三个组件：预训练语音编码器 → 模态适配器 → LLM backbone。</p><p>核心挑战在于语音序列长度。以英语 ASR 为例，语音帧率约 80ms/帧，而文本 token 对应约 300ms，导致语音 KV cache 在解码阶段成为主要瓶颈。</p><p>作者的初步实验观察到：Speech LLM 在浅层自然地将相邻语音信息合并，在深层产生近重复表示。基于此观察，SpeechKV 在中间层对语音 KV 序列施加学习式 pooling，允许 LLM 学习保留哪些特征、如何融合语音与文本。</p><p><strong>主要贡献</strong>：</p><ol><li>提出 SpeechKV：在 Speech LLM 中间层对语音 KV cache 施加学习式 pooling 压缩</li><li>将语音压缩到文本级粒度仍维持 baseline 性能，同时获得 1.49–2× 解码加速</li><li>实证分析表明相邻语音表示在 LLM 层间逐渐变得冗余，为”在 LLM 内部压缩”提供理论动机</li></ol><hr><h2 id="二、相关工作（Related-Work）"><a href="#二、相关工作（Related-Work）" class="headerlink" title="二、相关工作（Related Work）"></a>二、相关工作（Related Work）</h2><h3 id="2-1-Speech-LLMs-与语音序列压缩"><a href="#2-1-Speech-LLMs-与语音序列压缩" class="headerlink" title="2.1 Speech LLMs 与语音序列压缩"></a>2.1 Speech LLMs 与语音序列压缩</h3><p>Speech LLM 采用 encoder–adapter–LLM 范式。核心挑战是弥合连续语音与离散文本之间的模态和长度差异。</p><p>现有预 LLM 压缩方案包括：</p><ul><li><strong>CTC-based</strong>：边界合并或 blank filtering</li><li><strong>CIF-based</strong>：动态累积声学特征</li><li><strong>Q-Former</strong>：提取固定数量的语音表示</li></ul><p>这些方法引入瓶颈，导致后续 LLM 层无法恢复已丢弃的信息。</p><h3 id="2-2-LLM-中的-KV-Cache-压缩"><a href="#2-2-LLM-中的-KV-Cache-压缩" class="headerlink" title="2.2 LLM 中的 KV Cache 压缩"></a>2.2 LLM 中的 KV Cache 压缩</h3><p>KV cache 线性增长是长上下文 LLM 推理的已知瓶颈。现有方法分两大类：</p><ul><li><strong>Training-free</strong>：基于注意力统计或 recency 的 eviction（H2O、SnapKV、StreamingLLM），低比特量化（KVQuant）</li><li><strong>Trainable</strong>：学习式合并或摘要上下文为更短的 KV cache（Dynamic Memory Compression 等）</li></ul><p>Training-free 方法不可避免地存在 train-test mismatch。SpeechKV 属于 trainable 方案，联合训练消除此问题。</p><hr><h2 id="三、方法（Method）"><a href="#三、方法（Method）" class="headerlink" title="三、方法（Method）"></a>三、方法（Method）</h2><h3 id="3-1-Speech-Language-Model-Baseline"><a href="#3-1-Speech-Language-Model-Baseline" class="headerlink" title="3.1 Speech Language Model Baseline"></a>3.1 Speech Language Model Baseline</h3><p>Baseline 遵循 encoder–adapter–LLM 范式：</p><script type="math/tex; mode=display">Z = f_{\text{enc}}(x) \in \mathbb{R}^{T \times d_e} \tag{1}</script><p>其中 $T$ 为帧数，$d_e$ 为编码器隐藏维度。2 层 MLP adapter 投影到 LLM 嵌入空间（无时间下采样）：</p><script type="math/tex; mode=display">A = f_{\text{adp}}(Z) \in \mathbb{R}^{T \times d} \tag{2}</script><p>拼接文本嵌入 $E \in \mathbb{R}^{N \times d}$ 后，输入 $L$ 层 decoder-only LLM，以 next-token prediction 训练：</p><script type="math/tex; mode=display">\mathcal{L} = -\sum_{t=1}^{M} \log p(y_t \mid A, E, y_{<t}) \tag{3}</script><p>由于 $T \gg N + M$，语音 KV cache 主导每步注意力开销。</p><h3 id="3-2-SpeechKV"><a href="#3-2-SpeechKV" class="headerlink" title="3.2 SpeechKV"></a>3.2 SpeechKV</h3><p><img src="/images/paper_figs/speechkv/figure1.png" alt="SpeechKV 架构总览"></p><p>从第 $l_0$ 层开始，对语音 KV 序列施加学习式 pooling 算子 $\mathcal{P}_R$（压缩比 $R$）。</p><p><strong>核心操作</strong>：将 $T$ 个语音位置分割为大小为 $R$ 的非重叠窗口。在每个窗口内，学习线性门 $g: \mathbb{R}^{d_h} \to \mathbb{R}$ 对每个 key 向量产生标量 logit，softmax 归一化为权重：</p><script type="math/tex; mode=display">\alpha_j = \frac{\exp(g(k_j))}{\sum_{j'=1}^{R} \exp(g(k_{j'}))}, \quad \hat{k} = \sum_{j=1}^{R} \alpha_j k_j, \quad \hat{v} = \sum_{j=1}^{R} \alpha_j v_j \tag{4}</script><p>门初始化为零，模型从均匀平均出发，逐渐学习强调窗口内的信息性位置。</p><p>在每层 $l \geq l_0$，全分辨率 query attend 压缩后的 KV 序列：</p><script type="math/tex; mode=display">\text{Attention}^{(l)} = \text{softmax}\left(\frac{Q^{(l)} \hat{K}^{(l)\top}}{\sqrt{d_h}}\right) \hat{V}^{(l)} \tag{5}</script><p>其中 $\hat{K}^{(l)} = \mathcal{P}_R(K^{(l)})$，$\hat{V}^{(l)} = \mathcal{P}_R(V^{(l)})$。注意力掩码相应调整以保持因果性。文本位置不受影响。</p><p><strong>设计哲学</strong>：压缩操作刻意保持简洁轻量，依赖 LLM 自身的注意力机制有效处理压缩序列。</p><h3 id="3-3-训练与推理"><a href="#3-3-训练与推理" class="headerlink" title="3.3 训练与推理"></a>3.3 训练与推理</h3><ul><li><strong>训练阶段</strong>：SpeechKV 在前向传播中 on-the-fly 应用，与 next-token-prediction loss 联合优化，确保无 train-test mismatch。</li><li><strong>推理阶段</strong>：压缩在 prefill 阶段一次性完成，压缩后的 KV 存入 cache，在每个解码步实现 $R$ 倍语音 KV cache 缩减，直接转化为更小显存占用和更快解码速度。</li></ul><hr><h2 id="四、实验设置（Experiment-Setup）"><a href="#四、实验设置（Experiment-Setup）" class="headerlink" title="四、实验设置（Experiment Setup）"></a>四、实验设置（Experiment Setup）</h2><h3 id="4-1-模型配置"><a href="#4-1-模型配置" class="headerlink" title="4.1 模型配置"></a>4.1 模型配置</h3><div class="table-container"><table><thead><tr><th>组件</th><th>配置</th></tr></thead><tbody><tr><td>LLM Backbone</td><td>Qwen3-1.7B（28层 Transformer decoder）</td></tr><tr><td>Speech Encoder</td><td>预训练 encoder-decoder ASR 模型（3 conv + 24 conformer blocks，80ms 帧率）</td></tr><tr><td>Adapter</td><td>2层 MLP（无时间下采样）</td></tr></tbody></table></div><p><strong>压缩方法对比</strong>：</p><div class="table-container"><table><thead><tr><th>方法</th><th>压缩位置</th><th>描述</th></tr></thead><tbody><tr><td>Concat-MLP</td><td>Adapter</td><td>拼接 $R$ 相邻帧 → 2层 MLP</td></tr><tr><td>Window Q-Former</td><td>Adapter</td><td>2层 Transformer cross-attention 合并 $R$ 帧</td></tr><tr><td>HS Compression</td><td>LLM 内部</td><td>对第 $l_0$ 层整个 hidden state 做 pooling（含 query）</td></tr><tr><td><strong>SpeechKV</strong></td><td>LLM 内部</td><td>仅压缩 key/value，保留全分辨率 query 和 residual stream</td></tr></tbody></table></div><h3 id="4-2-训练数据"><a href="#4-2-训练数据" class="headerlink" title="4.2 训练数据"></a>4.2 训练数据</h3><p>总计 71K 小时开源 ASR 数据：</p><div class="table-container"><table><thead><tr><th>Dataset</th><th>Hours</th><th>Utts (K)</th></tr></thead><tbody><tr><td>Multilingual LibriSpeech (en)</td><td>44,659.7</td><td>10,808.0</td></tr><tr><td>GigaSpeech</td><td>13,714.4</td><td>11,659.8</td></tr><tr><td>SPGISpeech</td><td>4,996.6</td><td>1,965.3</td></tr><tr><td>LibriSpeech</td><td>1,920.0</td><td>560.8</td></tr><tr><td>LibriHeavy</td><td>1,852.2</td><td>469.4</td></tr><tr><td>Common Voice 15</td><td>1,688.3</td><td>1,069.7</td></tr><tr><td>VoxPopuli</td><td>1,045.2</td><td>365.0</td></tr><tr><td>TED-LIUM 3</td><td>907.6</td><td>536.5</td></tr><tr><td>Earnings-22</td><td>287.2</td><td>104.0</td></tr><tr><td>AMI</td><td>156.3</td><td>217.0</td></tr><tr><td>FLEURS</td><td>15.0</td><td>5.2</td></tr><tr><td><strong>Total</strong></td><td><strong>71,242.5</strong></td><td><strong>27,760.8</strong></td></tr></tbody></table></div><h3 id="4-3-训练细节"><a href="#4-3-训练细节" class="headerlink" title="4.3 训练细节"></a>4.3 训练细节</h3><ul><li>优化器：AdamW，peak lr = 2×10⁻⁵，linear warmup 100 steps，warmup-decay schedule</li><li>DeepSpeed ZeRO Stage 1</li><li>有效 batch size ≈ 200K tokens</li><li>训练 10,000 steps（覆盖全训练集约 1 epoch）</li><li>LoRA rank 32，约 480M 可训练参数（总 2.2B）</li><li>硬件：8× H100 GPU，约 1 天/run</li></ul><h3 id="4-4-评测"><a href="#4-4-评测" class="headerlink" title="4.4 评测"></a>4.4 评测</h3><p>三个测试套件：</p><ol><li><strong>OpenASR</strong>（7 个公开 benchmark）：domain 内 ASR 评估</li><li><strong>In-house ASR</strong>（4 个内部测试集）：dictation、financial calls、broadcast、voicemail（domain 外）</li><li><strong>In-house Entity Recognition</strong>（2 个实体密集测试集）：banking、medical domain，报告 Entity Error Rate (EER)</li></ol><hr><h2 id="五、实验结果（Results）"><a href="#五、实验结果（Results）" class="headerlink" title="五、实验结果（Results）"></a>五、实验结果（Results）</h2><h3 id="5-1-主要结果"><a href="#5-1-主要结果" class="headerlink" title="5.1 主要结果"></a>5.1 主要结果</h3><div class="table-container"><table><thead><tr><th>Method</th><th>In-house ER ↓</th><th>In-house ASR ↓</th><th>OpenASR ↓</th></tr></thead><tbody><tr><td><strong>Open-sourced Models</strong></td><td></td><td></td><td></td></tr><tr><td>Whisper-L-v3</td><td>8.41</td><td>4.91</td><td>7.95</td></tr><tr><td>Phi4-mm</td><td>11.36</td><td>4.89</td><td>6.60</td></tr><tr><td><strong>Our Models</strong></td><td></td><td></td><td></td></tr><tr><td>MLP (Baseline)</td><td>14.41</td><td>5.78</td><td>6.12</td></tr><tr><td><strong>R=4</strong></td><td></td><td></td><td></td></tr><tr><td>Concat-MLP</td><td>15.84</td><td>6.29</td><td>6.07</td></tr><tr><td>Window Q-Former</td><td>14.70</td><td>6.23</td><td>6.02</td></tr><tr><td>HS Compression</td><td>15.22</td><td>5.79</td><td>6.06</td></tr><tr><td><strong>SpeechKV</strong></td><td><strong>13.46</strong></td><td><strong>5.71</strong></td><td><strong>5.98</strong></td></tr><tr><td><strong>R=8</strong></td><td></td><td></td><td></td></tr><tr><td>Concat-MLP</td><td>17.52</td><td>6.63</td><td>6.43</td></tr><tr><td>Window Q-Former</td><td>16.41</td><td>6.50</td><td>6.64</td></tr><tr><td>HS Compression</td><td>16.98</td><td>6.22</td><td>6.31</td></tr><tr><td><strong>SpeechKV</strong></td><td><strong>14.91</strong></td><td><strong>5.95</strong></td><td><strong>6.05</strong></td></tr></tbody></table></div><p><strong>关键发现</strong>：</p><ul><li><strong>R=4 时 SpeechKV 不仅不降反升</strong>：相对 baseline，In-house ER 提升 6.6%，In-house ASR 提升 1.2%，OpenASR 提升 2.3%。</li><li><strong>R=8 时 SpeechKV 优雅退化</strong>：In-house ER 仅退化 3.5%，ASR 退化 2.9%，OpenASR 几乎持平。而竞争方法退化 8%–20%。</li><li>作者推测原因：(1) 每层保留完整音频信息的访问路径；(2) 压缩粒度与 LLM 预训练的文本 token rate 对齐，形成结构性正则化。</li></ul><h3 id="5-2-逐层分析与消融实验"><a href="#5-2-逐层分析与消融实验" class="headerlink" title="5.2 逐层分析与消融实验"></a>5.2 逐层分析与消融实验</h3><p><img src="/images/paper_figs/speechkv/local_similarity_comparison.png" alt="逐层局部相似度"></p><p><strong>Local Similarity 分析</strong>：测量相邻语音位置间的 cosine similarity。</p><ul><li>Baseline 在前 4 层急剧上升（模型主动聚合局部声学特征），约第 5 层进入平台期（局部聚合基本完成，时间冗余自然出现）。</li><li>SpeechKV(R=4) 的相似度曲线紧跟 baseline 自然上升趋势，说明压缩与模型本身的聚合行为一致。</li><li>SpeechKV(R=8) 相似度在所有层都被抬高，模型需重构表示以适应更激进压缩。</li></ul><p><strong>起始层消融</strong>：</p><div class="table-container"><table><thead><tr><th>Method</th><th>$l_0$</th><th>In-house ER</th><th>In-house ASR</th><th>OpenASR</th></tr></thead><tbody><tr><td>MLP Baseline</td><td>–</td><td>14.41</td><td>5.78</td><td>6.12</td></tr><tr><td>SpeechKV (R=4)</td><td>3</td><td>14.33</td><td>5.87</td><td>6.12</td></tr><tr><td>SpeechKV (R=4)</td><td><strong>5</strong></td><td><strong>13.46</strong></td><td><strong>5.71</strong></td><td><strong>5.98</strong></td></tr><tr><td>SpeechKV (R=4)</td><td>7</td><td>13.56</td><td>6.23</td><td>5.93</td></tr><tr><td>SpeechKV (R=8)</td><td>3</td><td>16.70</td><td>7.06</td><td>6.53</td></tr><tr><td>SpeechKV (R=8)</td><td><strong>5</strong></td><td><strong>14.91</strong></td><td><strong>5.95</strong></td><td><strong>6.05</strong></td></tr><tr><td>SpeechKV (R=8)</td><td>7</td><td>15.25</td><td>6.49</td><td>6.08</td></tr></tbody></table></div><p>最优起始层为 $l_0=5$：过早压缩（layer 3）在 local similarity 尚未收敛时介入；过晚（layer 7）时模型已开始高层处理的特化。</p><h3 id="5-3-注意力分析"><a href="#5-3-注意力分析" class="headerlink" title="5.3 注意力分析"></a>5.3 注意力分析</h3><p><img src="/images/paper_figs/speechkv/KV_layer4_27.png" alt="注意力图对比"></p><p><strong>Baseline</strong>（左列）：</p><ul><li>浅层（Layer 4）：注意力弥散，模型仍在聚合局部声学特征</li><li>深层（Layer 27）：出现清晰的单调对齐模式，但注意力分散在相邻近重复位置上</li></ul><p><strong>SpeechKV</strong>（右列）：</p><ul><li>浅层（Layer 4）：即使此层未施加压缩，已出现单调对齐——深层 KV 缩短迫使模型在更早层建立跨模态对应</li><li>深层（Layer 27）：压缩后的 key 序列产生更尖锐、集中的注意力峰值，冗余位置已被合并</li></ul><p>这表明 SpeechKV 重塑了层间表示：浅层更早建立跨模态对应，深层更高效地在去重复 key 表示上操作。</p><h3 id="5-4-解码速度"><a href="#5-4-解码速度" class="headerlink" title="5.4 解码速度"></a>5.4 解码速度</h3><p><img src="/images/paper_figs/speechkv/speedup.png" alt="解码加速"></p><p>在 A100 80GB GPU + vLLM 上的端到端解码加速：</p><div class="table-container"><table><thead><tr><th>Audio Length</th><th>Baseline</th><th>R=4</th><th>R=8</th></tr></thead><tbody><tr><td>30s</td><td>1.00×</td><td>1.49×</td><td>1.62×</td></tr><tr><td>5min</td><td>1.00×</td><td>1.88×</td><td>1.87×</td></tr><tr><td>10min</td><td>1.00×</td><td>2.02×</td><td>2.03×</td></tr></tbody></table></div><p>加速随音频长度增长：语音 KV cache 在总注意力开销中占比更大时，压缩收益更显著。R=8 相比 R=4 仅有边际额外加速，因为 feed-forward 层和文本 KV cache 成为新瓶颈。</p><p><strong>R=4 是最佳实践点</strong>：精度匹配 baseline，解码速度 1.49–2× 提升。</p><hr><h2 id="六、结论（Conclusion）"><a href="#六、结论（Conclusion）" class="headerlink" title="六、结论（Conclusion）"></a>六、结论（Conclusion）</h2><p>SpeechKV 将语音 KV cache 压缩延迟到 LLM 中间层，通过保留全分辨率 query 和 residual stream，让 LLM 预训练参数自行决定保留哪些声学特征。</p><p>在 71K 小时训练的 Qwen3-1.7B Speech LLM 上：</p><ul><li>R=4 压缩到文本粒度仍匹配甚至超越 baseline（实体识别相对提升 6.6%）</li><li>至少 1.49× 解码加速，随音频长度扩展</li><li>注意力分析揭示 SpeechKV 作为结构性正则化：浅层更早建立跨模态对应，深层注意力更集中</li></ul><p><strong>未来方向</strong>：扩展到 ASR 之外的语音任务、研究自适应跨层压缩比、进一步分析 Speech LLM 的逐层动态。</p><hr><h2 id="个人思考"><a href="#个人思考" class="headerlink" title="个人思考"></a>个人思考</h2><p>SpeechKV 的核心洞察极其简洁：语音在 LLM 浅层自然聚合后变得时间冗余，与其在 LLM 之前强制压缩（承担不可逆信息损失），不如让 LLM 先看完整信息再压缩 KV cache。这实际上是一种”先理解后摘要”的策略。</p><p>更令人意外的是 R=4 压缩不仅无损反而增益——压缩后粒度恰好对齐文本 token rate，形成对 LLM 预训练分布的结构性正则化。这暗示 Speech LLM 的一个深层问题：未压缩时，深层大量冗余 key 实际上是在”稀释”注意力。</p><p>从工程角度看，SpeechKV 的实现极为轻量（仅一个线性门 + softmax weighted sum），无需修改推理框架核心逻辑，与 vLLM 等系统的兼容性良好。这使其具有很强的实用部署价值。</p>]]></content>
     
     
     <categories>
@@ -379,13 +379,13 @@
     
     <tags>
       
-      <tag>论文解读</tag>
+      <tag>ASR</tag>
       
-      <tag>Reinforcement Learning</tag>
+      <tag>论文解读</tag>
       
       <tag>Speech LLM</tag>
       
-      <tag>Full-Duplex</tag>
+      <tag>KV Cache</tag>
       
     </tags>
     
@@ -445,9 +445,9 @@
       
       <tag>TTS</tag>
       
-      <tag>Speech Language Model</tag>
-      
       <tag>vLLM</tag>
+      
+      <tag>Speech Language Model</tag>
       
       <tag>Inference</tag>
       
@@ -505,9 +505,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>Speech-LLM</tag>
       
@@ -881,9 +881,9 @@
     
     <tags>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>Streaming ASR</tag>
       
@@ -1040,9 +1040,9 @@
     
     <tags>
       
-      <tag>Reinforcement Learning</tag>
-      
       <tag>Full-Duplex</tag>
+      
+      <tag>Reinforcement Learning</tag>
       
       <tag>Turn-Taking</tag>
       
@@ -1075,9 +1075,9 @@
     
     <tags>
       
-      <tag>Chain-of-Thought</tag>
-      
       <tag>Speech LLM</tag>
+      
+      <tag>Chain-of-Thought</tag>
       
       <tag>Entity Binding</tag>
       
@@ -1139,13 +1139,13 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
       
-      <tag>Few-shot</tag>
-      
       <tag>Reinforcement Learning</tag>
+      
+      <tag>LLM</tag>
+      
+      <tag>Few-shot</tag>
       
     </tags>
     
@@ -1172,9 +1172,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>TTS</tag>
       
@@ -1203,9 +1203,9 @@
     
     <tags>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>Multimodal</tag>
       
@@ -1589,9 +1589,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>语音识别评估</tag>
       
@@ -1686,9 +1686,9 @@
       
       <tag>Speech LLM</tag>
       
-      <tag>RAG</tag>
-      
       <tag>Full-Duplex</tag>
+      
+      <tag>RAG</tag>
       
     </tags>
     
@@ -1777,9 +1777,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>Speech</tag>
       
@@ -1814,15 +1814,15 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
       
-      <tag>Hallucination</tag>
+      <tag>LLM</tag>
       
       <tag>Speech Encoder</tag>
       
       <tag>Entropy</tag>
+      
+      <tag>Hallucination</tag>
       
     </tags>
     
@@ -1849,9 +1849,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>Speech</tag>
       
@@ -1946,9 +1946,9 @@
     
     <tags>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>长文本</tag>
       
@@ -1979,9 +1979,9 @@
       
       <tag>Speech LLM</tag>
       
-      <tag>全双工</tag>
-      
       <tag>综述</tag>
+      
+      <tag>全双工</tag>
       
       <tag>实时推理</tag>
       
@@ -2012,9 +2012,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>Chain-of-Thought</tag>
       
@@ -2045,9 +2045,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>Speech LM</tag>
       
@@ -2080,9 +2080,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>CIF</tag>
       
@@ -2115,9 +2115,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>Streaming</tag>
       
@@ -2146,9 +2146,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>Audio</tag>
       
@@ -2181,9 +2181,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>Audio</tag>
       
@@ -2313,9 +2313,9 @@
     
     <tags>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>Audio</tag>
       
@@ -2348,9 +2348,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>Diarization</tag>
       
@@ -2480,9 +2480,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>语音识别</tag>
       
@@ -2513,9 +2513,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>TTS</tag>
       
@@ -2546,9 +2546,9 @@
       
       <tag>ASR</tag>
       
-      <tag>LLM</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>LLM</tag>
       
       <tag>CTC</tag>
       
@@ -2612,9 +2612,9 @@
     
     <tags>
       
-      <tag>asr</tag>
-      
       <tag>beamsearch</tag>
+      
+      <tag>asr</tag>
       
       <tag>decode</tag>
       
@@ -2741,9 +2741,9 @@
     
     <tags>
       
-      <tag>ctc</tag>
-      
       <tag>asr</tag>
+      
+      <tag>ctc</tag>
       
     </tags>
     
