@@ -1,0 +1,1382 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="本文系统梳理了大语言模型（LLM）、强化学习对齐（PPO &#x2F; GRPO &#x2F; DPO）、底层 Transformer 架构机理、多模态（语音&#x2F;视觉&#x2F;CLIP）融合演进、幻觉机制与治理以及智能体（Agent）落地实战中的核心技术要点与深层考点。力求从数学推导、架构设计、训练动态到工业落地避坑，提供无死角的硬核技术全景指南。   一、 大模型强化学习与对齐体系（RLHF &#x2F; DPO &#x2F; GRPO）在后">
+<meta property="og:type" content="article">
+<meta property="og:title" content="知识储备">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/08/21/llm-speech-multimodal-rlhf-knowledge-base/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="本文系统梳理了大语言模型（LLM）、强化学习对齐（PPO &#x2F; GRPO &#x2F; DPO）、底层 Transformer 架构机理、多模态（语音&#x2F;视觉&#x2F;CLIP）融合演进、幻觉机制与治理以及智能体（Agent）落地实战中的核心技术要点与深层考点。力求从数学推导、架构设计、训练动态到工业落地避坑，提供无死角的硬核技术全景指南。   一、 大模型强化学习与对齐体系（RLHF &#x2F; DPO &#x2F; GRPO）在后">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/llm_speech_knowledge_base_cover.png">
+<meta property="article:published_time" content="2026-08-21T08:10:00.000Z">
+<meta property="article:modified_time" content="2026-08-21T08:06:11.851Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="Agent">
+<meta property="article:tag" content="LLM">
+<meta property="article:tag" content="RLHF">
+<meta property="article:tag" content="Transformer">
+<meta property="article:tag" content="多模态语音">
+<meta property="article:tag" content="架构原理">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/llm_speech_knowledge_base_cover.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>知识储备 - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/llm_speech_knowledge_base_cover.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="知识储备"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-08-21 16:10" pubdate>
+          2026年8月21日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          10 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">知识储备</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年8月21日 下午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p>本文系统梳理了大语言模型（LLM）、强化学习对齐（PPO / GRPO / DPO）、底层 Transformer 架构机理、多模态（语音/视觉/CLIP）融合演进、幻觉机制与治理以及智能体（Agent）落地实战中的核心技术要点与深层考点。力求从数学推导、架构设计、训练动态到工业落地避坑，提供无死角的硬核技术全景指南。</p>
+</blockquote>
+<hr>
+<h1 id="一、-大模型强化学习与对齐体系（RLHF-DPO-GRPO）"><a href="#一、-大模型强化学习与对齐体系（RLHF-DPO-GRPO）" class="headerlink" title="一、 大模型强化学习与对齐体系（RLHF / DPO / GRPO）"></a>一、 大模型强化学习与对齐体系（RLHF / DPO / GRPO）</h1><p>在后预训练（Post-Training）时代，强化学习对齐已从最初复杂的“Actor-Critic-RM-Ref”四模型协同架构，向轻量化、显式偏好拟合（如 DPO）以及无需 Critic 模型的组内相对优势探索（如 GRPO）演进。</p>
+<hr>
+<h2 id="3-GRPO、PPO-与-DPO-三者的本质区别与演进脉络"><a href="#3-GRPO、PPO-与-DPO-三者的本质区别与演进脉络" class="headerlink" title="3. GRPO、PPO 与 DPO 三者的本质区别与演进脉络"></a>3. GRPO、PPO 与 DPO 三者的本质区别与演进脉络</h2><p>强化学习在 LLM 对齐中的核心目标是优化策略 $\pi_\theta(y|x)$，使得在环境反馈或人类偏好下累积奖励期望最大化，同时加入 KL 散度约束以防止策略退化或灾难性遗忘：</p>
+<script type="math/tex; mode=display">\max_\theta \mathbb{E}_{x \sim \mathcal{D}, y \sim \pi_\theta(\cdot|x)} \left[ r(x, y) \right] - \beta \mathbb{D}_{\text{KL}}\left(\pi_\theta(y|x) \,\|\, \pi_{\text{ref}}(y|x)\right)</script><p>这三种算法在达成上述目标时的计算范式和架构设计存在根本差异：</p>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs asciidoc"><span class="hljs-code">+-----------------------------------------------------------------------------------------+</span><br><span class="hljs-section">|                                    RL 对齐范式演进                                      |</span><br><span class="hljs-section">+-----------------------------------------------------------------------------------------+</span><br>|  [PPO]   : Actor <span class="hljs-code">+ Critic(显式Value) +</span> Reward Model + Ref Model -&gt; 逐 Token GAE 优势估计 |<br>|  [DPO]   : 闭式解代入 -&gt; 消除 RL 循环采样与 Critic/RM -&gt; 离线成对偏好直接做交叉熵/NLL     |<br>|  [GRPO]  : 丢弃 Critic 显式 Value 网络 -&gt; 组内采样 G 个候选解 -&gt; 组内均值方差归一化算 Advantage |<br><span class="hljs-code">+-----------------------------------------------------------------------------------------+</span><br></code></pre></td></tr></table></figure>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">维度</th>
+<th style="text-align:left">PPO (Proximal Policy Optimization)</th>
+<th style="text-align:left">DPO (Direct Preference Optimization)</th>
+<th style="text-align:left">GRPO (Group Relative Policy Optimization)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>显式模型数量</strong></td>
+<td style="text-align:left">4 个 (Actor, Critic, Reward Model, Ref Model)</td>
+<td style="text-align:left">2 个 (Actor, Ref Model)</td>
+<td style="text-align:left">2/3 个 (Actor, Ref Model, 可选规则/轻量 RM，<strong>无 Critic</strong>)</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>训练模式</strong></td>
+<td style="text-align:left"><strong>On-Policy 在线强化学习</strong>（需环境 Rollout 采样）</td>
+<td style="text-align:left"><strong>Off-Policy 离线监督偏好优化</strong>（直接读取偏好对数据集）</td>
+<td style="text-align:left"><strong>On-Policy 在线强化学习</strong>（组采样 Rollout）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>奖励评估方式</strong></td>
+<td style="text-align:left">Token 级或句子级 Reward，经由 Critic 网络估计价值</td>
+<td style="text-align:left">无需显式打分，基于相对胜负偏好隐式建模</td>
+<td style="text-align:left">基于规则判别器或生成式 RM，对组内 $G$ 个样本打分</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>优势函数估计</strong></td>
+<td style="text-align:left">GAE（广义优势估计），在每个 Token 步长上计算 $A_t$</td>
+<td style="text-align:left">无显式优势函数，通过显式解析解将梯度转化为隐式胜率对数比</td>
+<td style="text-align:left"><strong>组内相对归一化</strong>：$A_i = \frac{r_i - \text{mean}(\mathbf{r})}{\text{std}(\mathbf{r})}$</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>显存与训练开销</strong></td>
+<td style="text-align:left">极大（Critic 模型常与 Actor 同样大小，通信与显存开销沉重）</td>
+<td style="text-align:left">极小（与标准 SFT 显存和吞吐相当）</td>
+<td style="text-align:left">显著低于 PPO（省去 Critic 的前向/反向与显存，支持超长推理链 CoT）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>探索能力 (Exploration)</strong></td>
+<td style="text-align:left">强（通过在线采样探索未知状态空间）</td>
+<td style="text-align:left">弱（受限于静态偏好数据集的支撑集分布）</td>
+<td style="text-align:left">极强（组内采样 $G$ 条样本形成天然的多样性探索空间）</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="4-PPO（逐-Token-Advantage）与-GRPO（逐-Sequence-Advantage）的深度辨析"><a href="#4-PPO（逐-Token-Advantage）与-GRPO（逐-Sequence-Advantage）的深度辨析" class="headerlink" title="4. PPO（逐 Token Advantage）与 GRPO（逐 Sequence Advantage）的深度辨析"></a>4. PPO（逐 Token Advantage）与 GRPO（逐 Sequence Advantage）的深度辨析</h2><h3 id="1-PPO-的逐-Token-Advantage-与-GAE-机制"><a href="#1-PPO-的逐-Token-Advantage-与-GAE-机制" class="headerlink" title="(1) PPO 的逐 Token Advantage 与 GAE 机制"></a>(1) PPO 的逐 Token Advantage 与 GAE 机制</h3><p>标准 PPO 将文本生成视为马尔可夫决策过程（MDP）。给定序列 $y = (y_1, y_2, \dots, y_T)$，在每个时间步 $t$，Critic 网络 $V_\phi(s_t)$ 输出当前前缀状态 $s_t = (x, y_{&lt;t})$ 的状态价值。<br>为了平衡偏差与方差，PPO 采用广义优势估计（GAE, Generalized Advantage Estimation）：</p>
+<script type="math/tex; mode=display">\delta_t = r_t + \gamma V_\phi(s_{t+1}) - V_\phi(s_t)</script><script type="math/tex; mode=display">\hat{A}_t^{\text{GAE}(\gamma, \lambda)} = \sum_{l=0}^{\infty} (\gamma \lambda)^l \delta_{t+l}</script><ul>
+<li><strong>本质特征</strong>：利用 Critic 神经网络赋予模型在<strong>每个 Token 粒度</strong>上的信用分配（Credit Assignment）能力，理论上能精确定位具体哪个词导致了奖励的增减。</li>
+<li><strong>代价与弊端</strong>：<ol>
+<li>文本生成中中间 Token 的真实 Reward 通常为 0，仅在结尾有序列级奖励（Sparse Reward），Critic 拟合难度极高且方差极大；</li>
+<li>显式训练 Critic 模型不仅占用与 Actor 同等量级的显存，还极易由于 Critic 训练不稳定导致策略崩溃。</li>
+</ol>
+</li>
+</ul>
+<h3 id="2-GRPO-的逐-Sequence-组内相对-Advantage"><a href="#2-GRPO-的逐-Sequence-组内相对-Advantage" class="headerlink" title="(2) GRPO 的逐 Sequence 组内相对 Advantage"></a>(2) GRPO 的逐 Sequence 组内相对 Advantage</h3><p>GRPO 彻底去除了 Critic 网络。针对同一输入 Prompt $x$，策略模型 $\pi_{\theta_{\text{old}}}$ 采样生成一组输出候选集 $\mathcal{O} = {y_1, y_2, \dots, y_G}$。对每个完整序列由评估器（如数学验证器或编译器）打出标量奖励 $r_i = \mathcal{R}(x, y_i)$。<br>序列级优势直接通过组内均值与标准差标准化得到：</p>
+<script type="math/tex; mode=display">A_i = \frac{r_i - \frac{1}{G}\sum_{j=1}^G r_j}{\sqrt{\frac{1}{G}\sum_{j=1}^G \left(r_j - \bar{r}\right)^2 + \epsilon}}</script><p>在梯度回传时，该序列内的所有 Token 共享这一整体优势标量 $A_i$：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{GRPO}}(\theta) = -\frac{1}{G} \sum_{i=1}^G \frac{1}{|y_i|} \sum_{t=1}^{|y_i|} \left[ \min\left( \frac{\pi_\theta(y_{i,t}|x, y_{i,<t})}{\pi_{\theta_{\text{old}}}(y_{i,t}|x, y_{i,<t})} A_i, \; \text{clip}\left(\frac{\pi_\theta(y_{i,t}|x, y_{i,<t})}{\pi_{\theta_{\text{old}}}(y_{i,t}|x, y_{i,<t})}, 1-\epsilon, 1+\epsilon\right) A_i \right) - \beta \mathbb{D}_{\text{KL}}\left(\pi_\theta \| \pi_{\text{ref}}\right) \right]</script><ul>
+<li><strong>两者核心权衡</strong>：<ul>
+<li><strong>PPO</strong>：牺牲显存与训练稳定性，换取细粒度 Token 级别的局部反馈能力。</li>
+<li><strong>GRPO</strong>：放弃密集的中间 Token 状态估计，利用同一 Prompt 下生成多个样本的<strong>横向对比（Comparative Baseline）</strong>消除环境基线方差，大幅降低显存占用，天然适配长思维链（CoT）推理模型的强化训练。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="5-DPO-与在线强化学习（PPO-GRPO）的区别与局限"><a href="#5-DPO-与在线强化学习（PPO-GRPO）的区别与局限" class="headerlink" title="5. DPO 与在线强化学习（PPO/GRPO）的区别与局限"></a>5. DPO 与在线强化学习（PPO/GRPO）的区别与局限</h2><p>DPO 通过严密的数学推导，利用 Bradley-Terry 偏好模型下最优策略与奖励函数的对偶关系：</p>
+<script type="math/tex; mode=display">r(x, y) = \beta \log \frac{\pi^*(y|x)}{\pi_{\text{ref}}(y|x)} + \beta \log Z(x)</script><p>将奖励函数代入 Bradley-Terry 目标，完全消去了未知的配分函数 $Z(x)$ 与显式奖励模型，直接推导出关于策略参数的显式闭式损失：</p>
+<script type="math/tex; mode=display">\mathcal{L}_{\text{DPO}}(\theta; \pi_{\text{ref}}) = -\mathbb{E}_{(x, y_w, y_l) \sim \mathcal{D}} \left[ \log \sigma \left( \beta \log \frac{\pi_\theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \beta \log \frac{\pi_\theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)} \right) \right]</script><h3 id="核心差异总结"><a href="#核心差异总结" class="headerlink" title="核心差异总结"></a>核心差异总结</h3><ol>
+<li><strong>采样与探索闭环</strong>：PPO/GRPO 必须在训练中在线 Rollout 采样，策略在自我生成的分布（On-Policy）上更新；DPO 完全基于离线固定的偏好对 $(x, y_w, y_l)$ 计算交叉熵，<strong>无法在训练过程中产生新路径的主动探索</strong>。</li>
+<li><strong>分布偏移（Distribution Shift）</strong>：随着 DPO 策略 $\pi_\theta$ 的持续迭代，其输出分布会迅速偏离原始数据集和 $\pi_{\text{ref}}$ 的覆盖范围。在未见过的状态区域，DPO 的隐式奖励估计会严重失真，导致过拟合或退化；而在线 RL（PPO/GRPO）通过持续与环境交互重采样，动态校准策略行为。</li>
+</ol>
+<hr>
+<h2 id="6-生成式-Reward-Model（Generative-RM）的数据构建策略"><a href="#6-生成式-Reward-Model（Generative-RM）的数据构建策略" class="headerlink" title="6. 生成式 Reward Model（Generative RM）的数据构建策略"></a>6. 生成式 Reward Model（Generative RM）的数据构建策略</h2><p>当任务无法通过静态规则（如数学正则解析、LeetCode 测试用例执行）直接获得 0/1 判定时，需要训练生成式奖励模型（LLM-as-a-Judge / Generative RM）进行打分或生成评判理由（Critique）。</p>
+<h3 id="核心数据构造规范"><a href="#核心数据构造规范" class="headerlink" title="核心数据构造规范"></a>核心数据构造规范</h3><ol>
+<li><strong>多维度细粒度标注体系（Multi-dimensional Rubrics）</strong>：<ul>
+<li>避免仅标注单一的 1~5 分总分。必须构建结构化维度：事实准确性（Factuality）、逻辑严密性（Logical Coherence）、安全性（Safety）、指令遵循度（Instruction Following）与表达精炼度（Conciseness）。</li>
+</ul>
+</li>
+<li><strong>CoT 评判轨迹数据（Critique-before-Score）</strong>：<ul>
+<li>数据格式不仅包含最终判定或分数，必须显式包含推导过程：<code>Input Prompt</code> $\to$ <code>Candidate Answer</code> $\to$ <code>Chain-of-Thought Evaluation (评判思考过程)</code> $\to$ <code>Final Decision / Rubric Score</code>。让 RM 学会先分析错误点，再给出打分，显著提升奖励的鲁棒性。</li>
+</ul>
+</li>
+<li><strong>难负例挖掘（Hard Negative Mining）与扰动样本</strong>：<ul>
+<li><strong>事实反转样本</strong>：在原本优质的回答中篡改微小实体、时间或因果链条，迫使 RM 关注细微事实错误；</li>
+<li><strong>废话连篇但无用样本（Length-biased / Verbose Negatives）</strong>：构造行文华丽但未解答核心问题的长文本，打压 RM 的长度偏置（Length Bias）；</li>
+<li><strong>格式违背样本</strong>：精准测试指令约束（如“字数限制在200字以内”、“必须输出JSON格式”）。</li>
+</ul>
+</li>
+<li><strong>多样化 Prompt 覆盖与一致性去噪</strong>：<ul>
+<li>同一 Prompt 配备多模型（开源/闭源多种尺寸）生成的 4~8 个不同回答，利用人类专家或极高算力裁判模型完成全序或半序排列，通过 Elo 机制转化或 Bradley-Terry 矩阵交叉验证消除标注歧义。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="7-Reward-Model-离线预训-vs-在线与-Policy-联合训练的权衡"><a href="#7-Reward-Model-离线预训-vs-在线与-Policy-联合训练的权衡" class="headerlink" title="7. Reward Model 离线预训 vs 在线与 Policy 联合训练的权衡"></a>7. Reward Model 离线预训 vs 在线与 Policy 联合训练的权衡</h2><figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><code class="hljs asciidoc"><span class="hljs-code">+--------------------------------------------------------------------------------------------------+</span><br><span class="hljs-section">|                                    RM 训练模式对比                                               |</span><br><span class="hljs-section">+--------------------------------------------------------------------------------------------------+</span><br>| 离线预训 RM:   [固定偏好数据] ---&gt; [训练 RM] ---&gt; (冻结 RM 参数) ---&gt; [PPO / 在线采样循环]            |<br>|                * 优点：流程解耦、算力开销低                                                      |<br><span class="hljs-section">|                * 缺点：策略漂移导致 OOD、极易被 Policy 模型“黑客攻击 (Reward Hacking)”          |</span><br><span class="hljs-section">+--------------------------------------------------------------------------------------------------+</span><br>| 在线协同 RM:   [环境动态采样] ---&gt; [Policy 生成 + RM 动态标注/主动学习] ---&gt; [Policy &amp; RM 双向更新]   |<br>|                * 优点：动态覆盖策略当前分布、有效抑制对抗性作弊                                  |<br><span class="hljs-section">|                * 缺点：计算开销翻倍、系统复杂度高、双模型动态博弈可能发生震荡或不收敛             |</span><br><span class="hljs-section">+--------------------------------------------------------------------------------------------------+</span><br></code></pre></td></tr></table></figure>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">特性</th>
+<th style="text-align:left">离线提前训练好 RM (Offline RM)</th>
+<th style="text-align:left">在线与 Policy 协同训练 (Online/Iterative RM)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>工程实现与复杂度</strong></td>
+<td style="text-align:left">流程解耦，先打榜/评测 RM，再跑 RL 流程，工程链路简单。</td>
+<td style="text-align:left">系统高度耦合，需在 RL 训练循环中动态插入打分校准、主动学习或异步重新微调，系统架构复杂。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>计算资源消耗</strong></td>
+<td style="text-align:left">低。RM 在 RL 阶段仅需做纯 Inference 前向传播（甚至可做量化加速）。</td>
+<td style="text-align:left">高。RM 需要伴随 Policy 产生的轨迹进行周期性梯度更新或在线评判推理。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>分布外漂移 (OOD)</strong></td>
+<td style="text-align:left"><strong>严重</strong>。随着 Policy 优化，生成的样本逐渐脱离离线训练集覆盖空间，进入 RM 盲区。</td>
+<td style="text-align:left"><strong>良好</strong>。RM 的训练数据分布实时紧跟 Policy 的最新生成分布（On-Policy 数据）。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Reward Hacking 敏感度</strong></td>
+<td style="text-align:left"><strong>极高</strong>。Policy 模型在数千步迭代后极易发现离线 RM 的参数漏洞，生成欺骗高分但人类不可读的异常模式。</td>
+<td style="text-align:left"><strong>较低</strong>。通过持续引入当前 Policy 的对抗性生成样本更新 RM，填补打分漏洞。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="8-在线训练中抑制-Reward-Hacking-的核心手段"><a href="#8-在线训练中抑制-Reward-Hacking-的核心手段" class="headerlink" title="8. 在线训练中抑制 Reward-Hacking 的核心手段"></a>8. 在线训练中抑制 Reward-Hacking 的核心手段</h2><p>Reward-Hacking 是指 Policy 模型学会在不真正提升生成质量的情况下，最大化 Reward 信号的漏洞（例如：恶意复读安全免责声明、无意义拉长回复长度、过度谄媚 Sycophancy、或生成迎合特定打分词的乱码）。工业界常见防御方案包括：</p>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs gherkin">                    +----------------------------------------+<br>                    |<span class="hljs-string">        Reward-Hacking 防御体系         </span>|<br>                    +----------------------------------------+<br>                                         |<span class="hljs-string"></span><br><span class="hljs-string">     +-----------------+-----------------+-----------------+-----------------+</span><br><span class="hljs-string">     </span>|<span class="hljs-string">                 </span>|<span class="hljs-string">                 </span>|<span class="hljs-string">                 </span>|<span class="hljs-string">                 </span>|<br>     v                 v                 v                 v                 v<br>[KL散度动态惩罚]   [集成奖励/悲观估计]   [长度/规则显式惩罚]   [主动重采样更新]   [严格格式结构隔离]<br>β <span class="hljs-symbol">*</span> D_KL(π||<span class="hljs-string">π_ref)  min(RM_1, RM_2)     Penalty = λ*Len     Iterative DPO/RL   Thinking/Final 拆分</span><br></code></pre></td></tr></table></figure>
+<ol>
+<li><strong>KL 散度约束与动态自适应调节</strong>：<ul>
+<li>维持惩罚项 $-\beta \mathbb{D}_{\text{KL}}(\pi_\theta | \pi_{\text{ref}})$。采用自适应 $\beta$ 调节算法：当实际 KL 超出设定阈值时增大 $\beta$，抑制策略偏离；回落时减小 $\beta$。</li>
+</ul>
+</li>
+<li><strong>集成奖励模型与保守悲观估计（Ensemble &amp; Pessimistic Bound / Min-Reward）</strong>：<ul>
+<li>同时部署多个不同初始化或不同架构的 RM（$RM_1, RM_2, \dots, RM_k$）。</li>
+<li>策略计算奖励时采用<strong>保守打分（Worst-case Reward）</strong>：$r_{\text{final}} = \min_k RM_k(x, y)$ 或均值减去方差 $r_{\text{final}} = \mu_r - \alpha \sigma_r$。只要有一个模型识别出异常，Policy 就无法获得高分。</li>
+</ul>
+</li>
+<li><strong>显式长度与格式惩罚项（Length/Verbosity Penalty）</strong>：<ul>
+<li>在奖励信号中加入长度线性或对数衰减项：$r_{\text{norm}}(x, y) = r(x, y) - \lambda \cdot |y|$，打破“字数越长得分越高”的虚假相关性。</li>
+</ul>
+</li>
+<li><strong>迭代式数据重标注（Iterative / Active Exploration Update）</strong>：<ul>
+<li>周期性地将当前 Policy 产生的高分可疑样本提交给更大规模裁判模型或人工审核，打上负标签后回填至 RM 训练集，重新微调 RM。</li>
+</ul>
+</li>
+<li><strong>推理过程与最终结果隔离打分（Process vs Outcome Separation）</strong>：<ul>
+<li>对于思考模型（Reasoning Model），严格分离 <code>&lt;think&gt;</code> 标签内部的思维链与最终答案。RM 只对最终输出判定客观正确性，防止模型通过在思维链中“刷关键词”骗取高分。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="9-SFT-阶段与-RL-阶段的深层本质关系"><a href="#9-SFT-阶段与-RL-阶段的深层本质关系" class="headerlink" title="9. SFT 阶段与 RL 阶段的深层本质关系"></a>9. SFT 阶段与 RL 阶段的深层本质关系</h2><p>大模型训练中，SFT 与 RL 绝非简单的“前后工序”，而是扮演着完全不同的信息论角色：</p>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs asciidoc"><span class="hljs-code">+-------------------------------------------------------------------------------------------------+</span><br><span class="hljs-section">|                                  SFT 阶段 vs RL 阶段的本质分工                                    |</span><br><span class="hljs-section">+-------------------------------------------------------------------------------------------------+</span><br>| [SFT 阶段] : 模式填充 (Knowledge/Format Seeding)                                                |<br>|   * 本质：模仿学习 (Behavior Cloning / Supervised Cross-Entropy)                                 |<br>|   * 作用：确定输出语法框架、注入基础领域知识、激发指令遵循基线                                     |<br><span class="hljs-section">|   * 局限：教师强迫 (Teacher Forcing) 导致曝光偏差 (Exposure Bias)；缺乏反思和自我探索机制         |</span><br><span class="hljs-section">+-------------------------------------------------------------------------------------------------+</span><br><span class="hljs-code">                                                |</span><br><span class="hljs-code">                                                v</span><br>| [RL 阶段]  : 概率质量重塑与探索 (Probability Mass Reshaping &amp; Search Space Exploration)         |<br>|   * 本质：强化学习探索 (Trial-and-Error / Policy Gradient)                                      |<br>|   * 作用：在现有知识空间内，压制低质量分支，大幅提升高质量高置信解的采样概率；激活长思考自纠错能力     |<br><span class="hljs-section">|   * 核心：RL 极难无中生有注入全新的世界知识，但能将模型已有的潜在潜能发挥至极（Unlock Capability） |</span><br><span class="hljs-section">+-------------------------------------------------------------------------------------------------+</span><br></code></pre></td></tr></table></figure>
+<ul>
+<li><strong>SFT 奠定能力的下限与格式边界</strong>：SFT 相当于给模型建立“概念字典”和“行动协议”。没有高质量 SFT，RL 的随机探索空间（Action Space）过大，极难在初期采样到有效高分轨迹；</li>
+<li><strong>RL 决定能力的上限与自纠错深度</strong>：SFT 仅迫使模型拟合数据集中单一的黄金路径（Gold Trajectory），无法学会“走入死胡同后如何回退重试”。RL 通过引入试错机制，改变了 Token 的采样分布拓扑，让高置信度推导路径的概率质量高度聚焦。</li>
+</ul>
+<hr>
+<h1 id="二、-智能体架构与落地实战（Agent-Systems）"><a href="#二、-智能体架构与落地实战（Agent-Systems）" class="headerlink" title="二、 智能体架构与落地实战（Agent Systems）"></a>二、 智能体架构与落地实战（Agent Systems）</h1><hr>
+<h2 id="10-除-ReAct-外的主流-Agent-范式"><a href="#10-除-ReAct-外的主流-Agent-范式" class="headerlink" title="10. 除 ReAct 外的主流 Agent 范式"></a>10. 除 ReAct 外的主流 Agent 范式</h2><p>尽管 ReAct（Reasoning + Acting 交替迭代）是目前最直观的 Agent 范式，但在复杂工业场景中，更多架构已被广泛验证并落地：</p>
+<figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs gherkin">                                  +-----------------------+<br>                                  |<span class="hljs-string">   主流 Agent 架构范式  </span>|<br>                                  +-----------------------+<br>                                              |<span class="hljs-string"></span><br><span class="hljs-string">     +-------------------+--------------------+-------------------+--------------------+</span><br><span class="hljs-string">     </span>|<span class="hljs-string">                   </span>|<span class="hljs-string">                    </span>|<span class="hljs-string">                   </span>|<span class="hljs-string">                    </span>|<br>     v                   v                    v                   v                    v<br>[Plan-and-Solve]       [ToT / GoT]         [Multi-Agent]      [Reflexion]       [Toolformer]<br> 预先规划 -&gt; 逐步执行   树状/图状空间搜索    分工协同与辩论机制   反思记忆与重试机制  Token 级内嵌调用<br></code></pre></td></tr></table></figure>
+<ol>
+<li><strong>Plan-and-Solve (规划-执行分离架构，如 Plan-and-Solve / BabyAGI)</strong>：<ul>
+<li>核心思想：将“高层全局任务规划”与“底层低阶工具执行”解耦。Planner 模型首先将用户目标拆解为拓扑依赖的任务 DAG（有向无环图），随后由独立的 Execution Worker 严格按依赖关系执行并聚合结果。</li>
+</ul>
+</li>
+<li><strong>Tree of Thoughts (ToT) / Graph of Thoughts (GoT)</strong>：<ul>
+<li>核心思想：摒弃线性推导，引入树状或图状搜索空间。结合广度优先（BFS）或深度优先（DFS）搜索，配合评估模型（Heuristic / Value Evaluator）对不同推导分支剪枝、回溯，用于复杂组合求解与定理证明。</li>
+</ul>
+</li>
+<li><strong>Multi-Agent 协作与博弈系统 (如 MetaGPT / AutoGen / ChatDev)</strong>：<ul>
+<li>核心思想：构建具有不同 Prompt Persona、知识库和工具权限的多智能体网络。利用 SOP（标准作业程序）、角色扮演、交叉审核（Reviewer）、双向辩论（Debate）机制，降低单一模型在长程任务中的幻觉与错误积累。</li>
+</ul>
+</li>
+<li><strong>Reflexion (反思自纠错记忆架构)</strong>：<ul>
+<li>核心思想：引入显式评估器（Evaluator）和短期反思记忆缓冲器（Self-Reflection Memory）。当工具执行或任务判定失败时，Agent 将执行历史和错误堆栈输入模型，生成反思摘要，在下一次迭代中作为提示词约束，避免重蹈覆辙。</li>
+</ul>
+</li>
+<li><strong>Toolformer / 深度内化原生工具调用架构</strong>：<ul>
+<li>核心思想：通过在预训练或精调阶段将特殊的 <code>&lt;tool_call&gt;</code> Token 内化进词表，使得模型在自回归生成过程中自然预测何时挂起、调用 API 并接收 <code>&lt;tool_response&gt;</code>，消除外部繁琐的字符串正则解析。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="11-ReAct-推理模式的核心弊端"><a href="#11-ReAct-推理模式的核心弊端" class="headerlink" title="11. ReAct 推理模式的核心弊端"></a>11. ReAct 推理模式的核心弊端</h2><ol>
+<li><strong>误差级联与不可逆的死循环（Error Cascading &amp; Infinite Loops）</strong>：<ul>
+<li>ReAct 是严格的单向贪心线性决策。一旦中间某一步 Observation 返回了意料之外的信息或 Action 参数错误，Thought 极易产生偏离基准的解释，进而陷入反复调用相同无效工具的死循环。</li>
+</ul>
+</li>
+<li><strong>上下文膨胀与长程遗忘（Context Window Bloat &amp; Cost）</strong>：<ul>
+<li>每次 <code>Thought -&gt; Action -&gt; Observation</code> 都会被完整保留并追加到 Prompt 中。在多步复杂任务中，Token 消耗呈平方级激增，迅速挤占有效上下文窗口，稀释系统最初的 System Prompt 约束。</li>
+</ul>
+</li>
+<li><strong>缺乏全局前瞻性与回溯能力（Myopic Horizon &amp; No Backtracking）</strong>：<ul>
+<li>ReAct 仅根据当前前缀做局部一步最优贪心决策，无法在面临全局矛盾时主动放弃当前分支、回退到两步前重新规划。</li>
+</ul>
+</li>
+<li><strong>串行延迟不可控（High Wall-Clock Latency）</strong>：<ul>
+<li>所有思考与工具调用均为完全同步串行阻塞。即使某些工具调用之间互相独立（如同时查询北京天气和上海天气），ReAct 也难以自发生成并行调用流。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="12-Agent-离线评测高分但线上暴跌的排查维度"><a href="#12-Agent-离线评测高分但线上暴跌的排查维度" class="headerlink" title="12. Agent 离线评测高分但线上暴跌的排查维度"></a>12. Agent 离线评测高分但线上暴跌的排查维度</h2><p>当 Agent 离线 Benchmark（如 AgentBench, GAIA）表现优异但在线真实生产环境大幅退化时，应系统性从以下五大维度进行根因排查：</p>
+<figure class="highlight asciidoc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs asciidoc"><span class="hljs-code">+--------------------------------------------------------------------------------------------------+</span><br><span class="hljs-section">|                                    Agent 线上故障排查维度                                         |</span><br><span class="hljs-section">+--------------------------------------------------------------------------------------------------+</span><br>| 1. 环境与分布偏移 (Data Drift)  : 用户自然语言多样性、歧义指令、对抗输入与评测数据集分布差异     |<br>| 2. 工具与接口契约失效 (API Fail): Schema 变动、超时/限流(429)、网络抖动、返回 Payload 结构漂移   |<br>| 3. 状态一致性与并发冲突 (State): 离线沙箱为无状态单线程；线上存在多轮会话状态污染与并发脏数据   |<br>| 4. 真实延迟与截断降级 (Latency): 生产环境超时熔断截断导致推理被强制杀死，引发半完成悬空状态       |<br><span class="hljs-section">| 5. 提示词注入与安全拦截 (Safety): 线上网关安全过滤与意图识别误拦截，修改了系统预设 Prompt 语义  |</span><br><span class="hljs-section">+--------------------------------------------------------------------------------------------------+</span><br></code></pre></td></tr></table></figure>
+<ol>
+<li><strong>输入分布偏移与用户意图歧义度（User Query Drift &amp; Ambiguity）</strong>：<ul>
+<li>离线测试集通常格式规范、意图清晰；线上真实用户的输入包含大量错别字、口语化表达、省略句、上下文指代不清以及对抗性注入。</li>
+</ul>
+</li>
+<li><strong>外部工具接口的确定性与契约漂移（Tool Contract &amp; Schema Drift）</strong>：<ul>
+<li>离线沙箱环境通常提供 Mock 数据或高可用专线；线上环境面临真实第三方 API 的网络延迟、限频拦截（HTTP 429）、非标准错误码、返回超大 JSON 数据导致上下文瞬间被冲垮。</li>
+</ul>
+</li>
+<li><strong>会话状态膨胀与多轮历史污染（Multi-turn State Pollution）</strong>：<ul>
+<li>离线评测多为单轮或固定步骤测试；线上复杂对话中，用户会不断更改需求、追问纠错，过往会话中陈旧的 Observation 严重干扰了当前的判断。</li>
+</ul>
+</li>
+<li><strong>超时熔断与非优雅降级机制（Timeout &amp; Concurrency Hazards）</strong>：<ul>
+<li>线上存在网关超时（Gateway Timeout）。当模型因慢网络生成过慢被强制中断时，系统状态是否处于不一致的中间态（如钱扣了但单未下）？</li>
+</ul>
+</li>
+<li><strong>安全与审查系统的干预截断（Safety Guardrail Interference）</strong>：<ul>
+<li>线上部署的前置/后置安全审核模型可能误伤 Agent 生成的中间 Action 代码或工具返回的敏感数据，破坏了原本预期的执行流。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h1 id="三、-语音与多模态融合前沿（Multimodal-amp-Audio-Intelligence）"><a href="#三、-语音与多模态融合前沿（Multimodal-amp-Audio-Intelligence）" class="headerlink" title="三、 语音与多模态融合前沿（Multimodal &amp; Audio Intelligence）"></a>三、 语音与多模态融合前沿（Multimodal &amp; Audio Intelligence）</h1><p>在多模态与智能语音交互领域，大模型正经历从“级联管道（Cascade: ASR $\to$ LLM $\to$ TTS）”向“端到端全双工原生模态融合（End-to-End Multimodal Interaction）”的全面演进。</p>
+<hr>
+<h2 id="13-智能语音与多模态核心前沿洞察"><a href="#13-智能语音与多模态核心前沿洞察" class="headerlink" title="13. 智能语音与多模态核心前沿洞察"></a>13. 智能语音与多模态核心前沿洞察</h2><p>智能语音岗位与多模态大模型的交叉点集中在以下核心方向：</p>
+<ul>
+<li><strong>音频特征表示与离散化</strong>：从连续声学特征（Filter Bank / WavLM / Whisper Encoder 特征）到离散神经音频编解码（Neural Audio Codec，如 EnCodec, DAC, Mimi, SoundStream）；</li>
+<li><strong>全双工端到端语音交互（Full-Duplex Speech-to-Speech LLM）</strong>：如 Mini-Omni, Moshi, Step-Audio 等架构，无需转文本作为中间载体，直接在统一 Transformer 内部实现流式文本与音频 Token 的并行交错自回归生成；</li>
+<li><strong>声学对齐与实体偏置（Contextual Biasing &amp; CTC Fusion）</strong>：将语音编码器输出与大语言模型通过 Cross-Attention 或投影层高效桥接，结合 CTC Loss 或 CIF（连续积分触发）实现流式低延迟语音识别与多模态上下文感知。</li>
+</ul>
+<hr>
+<h2 id="14-多模态融合范式全景"><a href="#14-多模态融合范式全景" class="headerlink" title="14. 多模态融合范式全景"></a>14. 多模态融合范式全景</h2><figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><code class="hljs gherkin">(a) 早期融合 (Early Fusion)          (b) 晚期融合 (Late Fusion)         (c) 交叉注意力/混合投影融合 (Cross/Projector)<br>+-----------------------+           +-------+       +-------+         +-------+          +-------+<br>|<span class="hljs-string"> 模态A特征 + 模态B特征 </span>|<span class="hljs-string">           </span>|<span class="hljs-string"> 模态A </span>|<span class="hljs-string">       </span>|<span class="hljs-string"> 模态B </span>|<span class="hljs-string">         </span>|<span class="hljs-string"> 模态A </span>|<span class="hljs-string">          </span>|<span class="hljs-string"> 模态B </span>|<br>+-----------+-----------+           +---+---+       +---+---+         +---+---+          +---+---+<br>            |<span class="hljs-string">                           </span>|<span class="hljs-string">               </span>|<span class="hljs-string">                 </span>|<span class="hljs-string">                  </span>|<br>            v                           v               v                 v                  v<br>    [统一深层网络]                   [单模态编码]     [单模态编码]         [Encoder]          [Encoder]<br>            |<span class="hljs-string">                           </span>|<span class="hljs-string">               </span>|<span class="hljs-string">                 </span>|<span class="hljs-string">                  </span>|<br>            v                           +-------+-------+                 +--------+---------+<br>         [输出]                                 |<span class="hljs-string">                                  </span>|<br>                                                v                                  v<br>                                         [决策层汇聚/投票]                [Cross-Attention / Q-Former]<br>                                                |<span class="hljs-string">                                  </span>|<br>                                                v                                  v<br>                                              [输出]                             [LLM 主干]<br></code></pre></td></tr></table></figure>
+<ol>
+<li><strong>早期特征融合（Early Fusion / Input-level Fusion）</strong>：<ul>
+<li>在进入主干网络前，将不同模态的特征在输入端进行拼接（Concatenation）或线性映射。</li>
+<li><strong>优缺点</strong>：允许模型自底层起捕获跨模态低阶交互，但对时间分辨率对齐要求极高（如音频 50Hz 与文本 Token 的对齐），极易产生模态主导与 Modality Gap 现象。</li>
+</ul>
+</li>
+<li><strong>晚期决策融合（Late Fusion / Decision-level Fusion）</strong>：<ul>
+<li>各模态分别拥有独立的单模态编码器与分类/决策头，在输出端对概率分布进行加权平均、门控投票（Gating）或集成。</li>
+<li><strong>优缺点</strong>：工程解耦清晰，但完全丢失了模态之间的深层语义交互，无法完成复杂跨模态推理。</li>
+</ul>
+</li>
+<li><strong>混合与交叉注意力融合（Hybrid Fusion / Cross-Attention / Adapter / Q-Former）</strong>：<ul>
+<li><strong>主流方案</strong>：保留单模态预训练基座（如 Whisper Encoder + LLM），通过轻量级 Projector（如 MLP, Perceiver Resampler, Q-Former, Cross-Attention 层）将语音/图像特征投影到 LLM 的 Embedding 空间。</li>
+<li><strong>机制</strong>：LLM 可以像阅读自身 Text Token 一样处理多模态序列，兼顾计算效率与多模态深度语义推理能力。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="15-CLIP-原理与架构实现剖析"><a href="#15-CLIP-原理与架构实现剖析" class="headerlink" title="15. CLIP 原理与架构实现剖析"></a>15. CLIP 原理与架构实现剖析</h2><p>CLIP（Contrastive Language-Image Pre-training）通过<strong>双塔对比学习（Two-Tower Contrastive Learning）</strong>在大规模图文对（Image-Text Pairs）上实现跨模态联合表征学习。</p>
+<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli">图像输入: I_1, I_2, <span class="hljs-string">...</span>, I_B  <span class="hljs-params">---</span>&gt; [图像编码器 <span class="hljs-params">(ViT / ResNet)</span>]  <span class="hljs-params">---</span>&gt; 归一化特征向量: v_1, v_2, <span class="hljs-string">...</span>, v_B<br>文本输入: T_1, T_2, <span class="hljs-string">...</span>, T_B  <span class="hljs-params">---</span>&gt; [文本编码器 <span class="hljs-params">(Transformer)</span>]    <span class="hljs-params">---</span>&gt; 归一化特征向量: u_1, u_2, <span class="hljs-string">...</span>, u_B<br><br>计算余弦相似度矩阵 <span class="hljs-params">(缩放因子 exp(t)</span>):<br>         u_1     u_2    <span class="hljs-string">...</span>    u_B<br>v_1  [ S_&#123;1,1&#125;  S_&#123;1,2&#125; <span class="hljs-string">...</span>  S_&#123;1,B&#125; ]  <span class="hljs-params">---</span>&gt; 图像到文本 Cross-Entropy Loss<br>v_2  [ S_&#123;2,1&#125;  S_&#123;2,2&#125; <span class="hljs-string">...</span>  S_&#123;2,B&#125; ]<br><span class="hljs-string">...</span><br>v_B  [ S_&#123;B,1&#125;  S_&#123;B,2&#125; <span class="hljs-string">...</span>  S_&#123;B,B&#125; ]  <span class="hljs-params">---</span>&gt; 文本到图像 Cross-Entropy Loss<br></code></pre></td></tr></table></figure>
+<h3 id="核心机制与数学公式"><a href="#核心机制与数学公式" class="headerlink" title="核心机制与数学公式"></a>核心机制与数学公式</h3><ol>
+<li><strong>特征提取与 L2 归一化</strong>：<ul>
+<li>图像批次通过图像编码器得到向量并归一化：$v_i = \frac{f_I(I_i)}{|f_I(I_i)|_2}$</li>
+<li>对应文本批次通过文本编码器得到向量并归一化：$u_j = \frac{f_T(T_j)}{|f_T(T_j)|_2}$</li>
+</ul>
+</li>
+<li><strong>双向对比损失（Symmetric InfoNCE Loss）</strong>：<ul>
+<li>设 Batch Size 为 $B$，可学习温度系数为 $\tau = e^t$。</li>
+<li>余弦相似度标量为：$S_{i, j} = \tau \cdot (v_i^\top u_j)$。</li>
+<li><strong>图像到文本对齐损失</strong>：$\mathcal{L}_{I \to T} = -\frac{1}{B} \sum_{i=1}^B \log \frac{\exp(S_{i,i})}{\sum_{j=1}^B \exp(S_{i,j})}$</li>
+<li><strong>文本到图像对齐损失</strong>：$\mathcal{L}_{T \to I} = -\frac{1}{B} \sum_{j=1}^B \log \frac{\exp(S_{j,j})}{\sum_{i=1}^B \exp(S_{i,j})}$</li>
+<li><strong>总损失函数</strong>：$\mathcal{L}_{\text{CLIP}} = \frac{1}{2} (\mathcal{L}_{I \to T} + \mathcal{L}_{T \to I})$</li>
+</ul>
+</li>
+<li><strong>零样本分类迁移（Zero-Shot Classification）</strong>：<ul>
+<li>推理时，将候选类别构造为 Prompt（如 <code>&quot;a photo of a {class}&quot;</code>），计算图像与所有类别文本的相似度，通过 Softmax 选取最高匹配项。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h1 id="四、-幻觉机理、长上下文与注意力本质（Hallucination-amp-Transformers）"><a href="#四、-幻觉机理、长上下文与注意力本质（Hallucination-amp-Transformers）" class="headerlink" title="四、 幻觉机理、长上下文与注意力本质（Hallucination &amp; Transformers）"></a>四、 幻觉机理、长上下文与注意力本质（Hallucination &amp; Transformers）</h1><hr>
+<h2 id="16-大模型幻觉的本质成因与非-RAG-治理手段"><a href="#16-大模型幻觉的本质成因与非-RAG-治理手段" class="headerlink" title="16. 大模型幻觉的本质成因与非 RAG 治理手段"></a>16. 大模型幻觉的本质成因与非 RAG 治理手段</h2><h3 id="幻觉产生的根本原因"><a href="#幻觉产生的根本原因" class="headerlink" title="幻觉产生的根本原因"></a>幻觉产生的根本原因</h3><ol>
+<li><strong>概率预测与知识真实的根本脱节（Statistical Autoregression vs Truth）</strong>：<ul>
+<li>LLM 的优化目标是最大化训练语料在自回归下的对数似然 $\sum \log P(x_t|x_{&lt;t})$，即<strong>学习统计分布上的平滑连续性</strong>，而非形式逻辑学上的真实性（Truthfulness）。模型倾向于生成“最符合语法逻辑和统计流畅度的词”，即使事实是捏造的。</li>
+</ul>
+</li>
+<li><strong>预训练数据中的噪声、冲突与长尾遗忘（Parametric Memory Noise &amp; Long-tail Fallacy）</strong>：<ul>
+<li>互联网语料包含大量自相矛盾、过时或虚假信息；在模型参数容量有限的情况下，低频长尾实体记忆模糊，在解码时被高频概念强行覆盖（Confabulation）。</li>
+</ul>
+</li>
+<li><strong>解码策略的随机性引入（Decoding Randomness）</strong>：<ul>
+<li>Temperature &gt; 0 及 Top-p 采样在发散分支上引入了不可控的扰动，使得模型脱离了高置信度事实事实核。</li>
+</ul>
+</li>
+</ol>
+<h3 id="除-RAG-之外的系统性抗幻觉手段"><a href="#除-RAG-之外的系统性抗幻觉手段" class="headerlink" title="除 RAG 之外的系统性抗幻觉手段"></a>除 RAG 之外的系统性抗幻觉手段</h3><ol>
+<li><strong>推理时干预与引导（Inference-Time Interventions）</strong>：<ul>
+<li><strong>DoLa (Decoding by Contrasting Layers)</strong>：对比 LLM 深层与浅层的输出 Logits。由于深层更富含事实知识，对比浅层能压制低阶统计语法关联，显著降低幻觉；</li>
+<li><strong>对比解码（Contrastive Decoding / ITI）</strong>：通过在注意力头内部探测并减去“幻觉方向”的激活向量。</li>
+</ul>
+</li>
+<li><strong>思维链自洽性与多路径投票（Self-Consistency &amp; Tree Search）</strong>：<ul>
+<li>采用多路径采样并聚类最终答案，利用多数共识压制单一路径上的偶然幻觉。</li>
+</ul>
+</li>
+<li><strong>外部验证器与反思反馈闭环（External Verifier &amp; Critique Loop）</strong>：<ul>
+<li>引入符号计算器、代码解释器或形式化逻辑检查器，对生成结果做确定性校验并触发重试。</li>
+</ul>
+</li>
+<li><strong>对齐阶段引入不确定性显式拒答（Calibrated Refusal / DPO for Honesty）</strong>：<ul>
+<li>在 SFT 和 RL 阶段构造“不知道”类样本，训练模型对不确定知识进行主动拒答（Uncertainty-Aware Refusal），降低过度自信。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="17-amp-18-长上下文导致幻觉-性能衰减的机理与-Self-Attention-序列关系"><a href="#17-amp-18-长上下文导致幻觉-性能衰减的机理与-Self-Attention-序列关系" class="headerlink" title="17 &amp; 18. 长上下文导致幻觉/性能衰减的机理与 Self-Attention 序列关系"></a>17 &amp; 18. 长上下文导致幻觉/性能衰减的机理与 Self-Attention 序列关系</h2><p>长上下文衰减（Lost in the Middle / Context Saturation）不仅是工程显存问题，更是 Attention 机制在数学与特征空间上的必然物理限制：</p>
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs mathematica"><span class="hljs-variable">Softmax</span> 权重分布在超长序列下的衰减示意<span class="hljs-operator">:</span><br><span class="hljs-built_in">Sequence</span> <span class="hljs-built_in">Length</span> <span class="hljs-built_in">N</span><span class="hljs-operator">:</span> <span class="hljs-number">1000</span>  <span class="hljs-operator">---&gt;</span> <span class="hljs-variable">Attention</span> <span class="hljs-built_in">Weights</span><span class="hljs-operator">:</span> 某个关键 <span class="hljs-variable">Token</span> 可分得 <span class="hljs-operator">~</span><span class="hljs-number">0.45</span> 权重 <span class="hljs-punctuation">(</span>信噪比高<span class="hljs-punctuation">)</span><br><span class="hljs-built_in">Sequence</span> <span class="hljs-built_in">Length</span> <span class="hljs-built_in">N</span><span class="hljs-operator">:</span> <span class="hljs-number">128</span><span class="hljs-variable">k</span>  <span class="hljs-operator">---&gt;</span> <span class="hljs-variable">Attention</span> <span class="hljs-built_in">Weights</span><span class="hljs-operator">:</span> <span class="hljs-variable">Softmax</span> 分母急剧膨胀，关键 <span class="hljs-variable">Token</span> 被大量背景稀释至 <span class="hljs-operator">~</span><span class="hljs-number">0.005</span> <span class="hljs-punctuation">(</span>严重弥散<span class="hljs-punctuation">)</span><br></code></pre></td></tr></table></figure>
+<ol>
+<li><p><strong>Softmax 分布的过度弥散与信噪比（SNR）雪崩</strong>：</p>
+<ul>
+<li><p>设 Query 对 Key 算出的原始相关性分数为 $S_{i,j} = \frac{q_i k_j^\top}{\sqrt{d_k}}$。在 Softmax 归一化时：</p>
+<script type="math/tex; mode=display">\alpha_{i,j} = \frac{\exp(S_{i,j})}{\sum_{m=1}^N \exp(S_{i,m})}</script></li>
+<li><p>当序列长度 $N$ 从 1K 扩展到 128K 时，分母累加了十万个微小项。即使某些背景上下文的无关 Token 仅分得极小注意力，上万个背景 Token 的加权和也会形成巨大的<strong>背景噪声基底</strong>，严重稀释目标关键信息的特征贡献。</p>
+</li>
+</ul>
+</li>
+<li><strong>位置编码的外推失效（Positional Extrapolation Breakdown）</strong>：<ul>
+<li>RoPE（旋转位置编码）在预训练见过的序列长度以外，其高频分量旋转角度发生混叠，相对距离衰减的先验特性被破坏，导致模型无法准确定位长距离上下文的相对依赖关系。</li>
+</ul>
+</li>
+<li><strong>注意力集中于首尾的固有偏置（Lost-in-the-Middle Phenomenon）</strong>：<ul>
+<li>因自回归因果掩码及起始 Token（Attention Sink）的存在，模型的注意力权重呈现出强烈的“U型分布”——高度偏向序列开头的 System Prompt 和最近生成的末尾 Token，处于序列中间 30%~70% 位置的信息召回率断崖式下跌。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="19-Self-Attention-机制与数学推导"><a href="#19-Self-Attention-机制与数学推导" class="headerlink" title="19. Self-Attention 机制与数学推导"></a>19. Self-Attention 机制与数学推导</h2><p>给定输入序列的隐层表示矩阵 $X \in \mathbb{R}^{N \times d_{\text{model}}}$，通过三个可学习参数矩阵 $W^Q, W^K, W^V \in \mathbb{R}^{d_{\text{model}} \times d_k}$（假设 $d_k = d_v$）将其投影到对应的低维表示空间：</p>
+<script type="math/tex; mode=display">Q = X W^Q, \quad K = X W^K, \quad V = X W^V \quad (Q, K, V \in \mathbb{R}^{N \times d_k})</script><p>标准点积注意力公式定义为：</p>
+<script type="math/tex; mode=display">\text{Attention}(Q, K, V) = \text{Softmax}\left( \frac{Q K^\top}{\sqrt{d_k}} \right) V</script><figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><code class="hljs mathematica"><span class="hljs-variable">Q</span> <span class="hljs-punctuation">(</span><span class="hljs-built_in">N</span> <span class="hljs-variable">x</span> <span class="hljs-type">d_k</span><span class="hljs-punctuation">)</span>   <span class="hljs-operator">*</span>   <span class="hljs-built_in">K</span><span class="hljs-operator">^</span><span class="hljs-variable">T</span> <span class="hljs-punctuation">(</span><span class="hljs-type">d_k</span> <span class="hljs-variable">x</span> <span class="hljs-built_in">N</span><span class="hljs-punctuation">)</span><br>     \                 <span class="hljs-operator">/</span><br>      \               <span class="hljs-operator">/</span><br>       <span class="hljs-variable">v</span>             <span class="hljs-variable">v</span><br>    <span class="hljs-punctuation">[</span>     <span class="hljs-variable">Q</span> <span class="hljs-operator">*</span> <span class="hljs-built_in">K</span><span class="hljs-operator">^</span><span class="hljs-variable">T</span>     <span class="hljs-punctuation">]</span>  <span class="hljs-punctuation">(</span><span class="hljs-built_in">N</span> <span class="hljs-variable">x</span> <span class="hljs-built_in">N</span> 原始相关度矩阵<span class="hljs-punctuation">)</span><br>              <span class="hljs-operator">|</span><br>              <span class="hljs-variable">v</span>   <span class="hljs-operator">/</span> \<span class="hljs-variable">sqrt</span><span class="hljs-punctuation">&#123;</span><span class="hljs-type">d_k</span><span class="hljs-punctuation">&#125;</span> <span class="hljs-punctuation">(</span>缩放因子：稳定方差<span class="hljs-punctuation">)</span><br>    <span class="hljs-punctuation">[</span> 缩放后点积分数  <span class="hljs-punctuation">]</span><br>              <span class="hljs-operator">|</span><br>              <span class="hljs-variable">v</span>   <span class="hljs-operator">+</span> <span class="hljs-variable">Mask</span> <span class="hljs-punctuation">(</span>自回归因果掩码 <span class="hljs-operator">/</span> 下三角掩码<span class="hljs-punctuation">)</span><br>    <span class="hljs-punctuation">[</span> 掩码后点积分数  <span class="hljs-punctuation">]</span><br>              <span class="hljs-operator">|</span><br>              <span class="hljs-variable">v</span>   <span class="hljs-variable">Softmax</span> <span class="hljs-punctuation">(</span>行归一化<span class="hljs-punctuation">)</span><br>    <span class="hljs-punctuation">[</span> <span class="hljs-variable">Attention</span> 权重 <span class="hljs-variable">A</span><span class="hljs-punctuation">]</span>  <span class="hljs-punctuation">(</span><span class="hljs-built_in">N</span> <span class="hljs-variable">x</span> <span class="hljs-built_in">N</span> 归一化概率分布<span class="hljs-punctuation">)</span><br>              <span class="hljs-operator">|</span><br>              <span class="hljs-variable">v</span>   <span class="hljs-operator">*</span> <span class="hljs-variable">V</span> <span class="hljs-punctuation">(</span><span class="hljs-built_in">N</span> <span class="hljs-variable">x</span> <span class="hljs-type">d_k</span><span class="hljs-punctuation">)</span><br>    <span class="hljs-punctuation">[</span>   加权输出 <span class="hljs-variable">Z</span>    <span class="hljs-punctuation">]</span>  <span class="hljs-punctuation">(</span><span class="hljs-built_in">N</span> <span class="hljs-variable">x</span> <span class="hljs-type">d_k</span> 综合上下文表征<span class="hljs-punctuation">)</span><br></code></pre></td></tr></table></figure>
+<ul>
+<li><strong>为何除以 $\sqrt{d_k}$（缩放因子 Scaling Factor）</strong>：<ul>
+<li>假设向量 $q$ 与 $k$ 的各分量是独立同分布且均值为 0、方差为 1 的随机变量。则点积 $q^\top k = \sum_{i=1}^{d_k} q_i k_i$ 的均值为 0，方差为 $d_k$。</li>
+<li>当维度 $d_k$ 很大时，点积数值可能极大或极小。若不进行缩放，输入 Softmax 后的数值将落入<strong>梯度饱和区</strong>（Softmax 函数导数接近 0），导致反向传播时梯度消失。除以 $\sqrt{d_k}$ 可将点积方差强制归一化回 1。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="20-Transformer-与-RNN-LSTM-的全方位对比"><a href="#20-Transformer-与-RNN-LSTM-的全方位对比" class="headerlink" title="20. Transformer 与 RNN / LSTM 的全方位对比"></a>20. Transformer 与 RNN / LSTM 的全方位对比</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">对比维度</th>
+<th style="text-align:left">RNN / LSTM / GRU</th>
+<th style="text-align:left">Transformer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>计算时空复杂度</strong></td>
+<td style="text-align:left">时间复杂度 $\mathcal{O}(N)$（序列串行），空间复杂度 $\mathcal{O}(1)$（仅需保留隐状态）</td>
+<td style="text-align:left">时间复杂度 $\mathcal{O}(N^2 \cdot d)$，空间复杂度 $\mathcal{O}(N^2 + N \cdot d)$</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>训练并行性</strong></td>
+<td style="text-align:left"><strong>完全无法并行</strong>。计算时刻 $t$ 必须等待 $t-1$ 的隐藏状态 $h_{t-1}$ 输出，受限于顺序执行。</td>
+<td style="text-align:left"><strong>完全高度并行</strong>。自注意力矩阵可通过高度优化的 GPU GEMM 矩阵乘法一次性完成全局计算。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>长距离依赖捕获</strong></td>
+<td style="text-align:left"><strong>极差</strong>。信息必须在隐状态向量中连续压缩传递，存在固有的指数级梯度消失或梯度爆炸；长程记忆随距离急剧退化。</td>
+<td style="text-align:left"><strong>极佳</strong>。任意两个 Token 之间的交互路径长度固定为 $\mathcal{O}(1)$，信息可无衰减跨越全局直接连接。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>推理自回归开销</strong></td>
+<td style="text-align:left">极低。推理仅需传递并覆盖定长隐藏向量 $h_t$，显存与时间恒定。</td>
+<td style="text-align:left">较高。自回归依赖 KV Cache 机制，显存随序列长度线性增长，长序列面临访存瓶颈（Memory Bound）。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>归纳偏置 (Inductive Bias)</strong></td>
+<td style="text-align:left">强。天然蕴含“时间先后顺序”与“马尔可夫局部近邻”假设。</td>
+<td style="text-align:left">弱。缺乏天然序列感知能力，必须显式依赖外部位置编码（Positional Embeddings）。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="21-Transformer-现存缺陷与业界前沿改进"><a href="#21-Transformer-现存缺陷与业界前沿改进" class="headerlink" title="21. Transformer 现存缺陷与业界前沿改进"></a>21. Transformer 现存缺陷与业界前沿改进</h2><figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs gherkin">Transformer 核心缺陷              业界主流前沿改进方案<br>+------------------------+        +--------------------------------------------------------+<br>|<span class="hljs-string"> 1. KV Cache 显存暴涨    </span>|<span class="hljs-string">  ---&gt;  </span>|<span class="hljs-string"> Multi-Query Attention (MQA) / Grouped-Query Attn (GQA) </span>|<br>|<span class="hljs-string"> 2. O(N^2) 算力与长文本 </span>|<span class="hljs-string">  ---&gt;  </span>|<span class="hljs-string"> FlashAttention-1/2/3 (IO感知的Tiling重计算与分块核函数) </span>|<br>|<span class="hljs-string"> 3. 位置外推性不足      </span>|<span class="hljs-string">  ---&gt;  </span>|<span class="hljs-string"> RoPE, YaRN, LongRoPE 动态插值与基频自适应缩放          </span>|<br>|<span class="hljs-string"> 4. 激活参数冗余/成本高  </span>|<span class="hljs-string">  ---&gt;  </span>|<span class="hljs-string"> Mixture of Experts (MoE: DeepSeek-V2/3 细粒度专家路由)  </span>|<br>|<span class="hljs-string"> 5. 无法线性长程流式推导 </span>|<span class="hljs-string">  ---&gt;  </span>|<span class="hljs-string"> 混合架构 (Mamba-2 / RWKV-v6 / RetNet 状态空间模型)      </span>|<br>+------------------------+        +--------------------------------------------------------+<br></code></pre></td></tr></table></figure>
+<ol>
+<li><strong>显存墙与算力墙优化（Attention 机制与 IO 加速）</strong>：<ul>
+<li><strong>GQA (Grouped-Query Attention)</strong>：将多个 Query 头共享一组 KV 头，在几乎无损模型性能的前提下，将推理阶段 KV Cache 的显存占用降低数倍；</li>
+<li><strong>FlashAttention-1/2/3</strong>：从底层硬件 GPU SRAM/HBM 访存特性出发，利用分块计算（Tiling）与在线 Softmax 动态更新，避免在慢速 HBM 中读写庞大的 $N \times N$ 中间矩阵，实现数倍物理加速。</li>
+</ul>
+</li>
+<li><strong>长序列外推方案（Context Scaling）</strong>：<ul>
+<li><strong>YaRN (Yet another RoPE extensioN)</strong>：结合高频关注局部、低频内插延伸的机制，将预训练 4K 上下文无损扩展至 128K 以上。</li>
+</ul>
+</li>
+<li><strong>稀疏激活与计算架构创新（Sparse MoE &amp; Linear RNN）</strong>：<ul>
+<li><strong>细粒度 MoE (如 DeepSeek-V3 MoE)</strong>：采用细粒度共享与路由专家机制，在千亿总参数下仅激活一小部分，大幅削减推理算力开销；</li>
+<li><strong>SSM 状态空间混合架构（Mamba / Jamba）</strong>：将线性时间复杂度的 SSM 算子与自注意力层交替堆叠，兼顾长序列线性推理速度与高精度联想回忆能力。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="22-形状与张量流转推导（输入-N-times-D-）"><a href="#22-形状与张量流转推导（输入-N-times-D-）" class="headerlink" title="22. 形状与张量流转推导（输入 $N \times D$）"></a>22. 形状与张量流转推导（输入 $N \times D$）</h2><p>给定输入序列形状为 <code>(Batch_Size, N, D)</code>，其在单层 Transformer Encoder 中的标准前向张量维度变化如下：</p>
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs mathematica">输入序列张量<span class="hljs-operator">:</span> <span class="hljs-variable">X</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span><br>      <span class="hljs-operator">|</span><br>      <span class="hljs-operator">+---&gt;</span> 线性投影<span class="hljs-operator">:</span> <span class="hljs-type">W_Q</span><span class="hljs-operator">,</span> <span class="hljs-type">W_K</span><span class="hljs-operator">,</span> <span class="hljs-type">W_V</span> <span class="hljs-punctuation">(</span><span class="hljs-built_in">D</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span><br>      <span class="hljs-operator">|</span>     <span class="hljs-variable">Q</span> <span class="hljs-operator">=</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span><span class="hljs-operator">,</span> <span class="hljs-built_in">K</span> <span class="hljs-operator">=</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span><span class="hljs-operator">,</span> <span class="hljs-variable">V</span> <span class="hljs-operator">=</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span><br>      <span class="hljs-operator">|</span><br>      <span class="hljs-operator">+---&gt;</span> 分割多头 <span class="hljs-punctuation">(</span>假设 <span class="hljs-variable">H</span> 个 <span class="hljs-built_in">Head</span><span class="hljs-operator">,</span> 每个头维度 <span class="hljs-type">d_k</span> <span class="hljs-operator">=</span> <span class="hljs-built_in">D</span> <span class="hljs-operator">/</span> <span class="hljs-variable">H</span><span class="hljs-punctuation">)</span><span class="hljs-operator">:</span><br>      <span class="hljs-operator">|</span>     <span class="hljs-variable">Q</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-variable">H</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-type">d_k</span><span class="hljs-punctuation">)</span><br>      <span class="hljs-operator">|</span>     <span class="hljs-built_in">K</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-variable">H</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-type">d_k</span><span class="hljs-punctuation">)</span><br>      <span class="hljs-operator">|</span>     <span class="hljs-variable">V</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-variable">H</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-type">d_k</span><span class="hljs-punctuation">)</span><br>      <span class="hljs-operator">|</span><br>      <span class="hljs-operator">+---&gt;</span> 计算点积注意力权重<span class="hljs-operator">:</span><br>      <span class="hljs-operator">|</span>     <span class="hljs-variable">Score</span> <span class="hljs-operator">=</span> <span class="hljs-variable">Q</span> <span class="hljs-operator">*</span> <span class="hljs-built_in">K</span><span class="hljs-operator">^</span><span class="hljs-variable">T</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-variable">H</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-punctuation">)</span><br>      <span class="hljs-operator">|</span>     <span class="hljs-type">Attn_Weights</span> <span class="hljs-operator">=</span> <span class="hljs-variable">Softmax</span><span class="hljs-punctuation">(</span><span class="hljs-variable">Score</span> <span class="hljs-operator">/</span> \<span class="hljs-variable">sqrt</span><span class="hljs-punctuation">&#123;</span><span class="hljs-type">d_k</span><span class="hljs-punctuation">&#125;</span><span class="hljs-punctuation">)</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-variable">H</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-punctuation">)</span><br>      <span class="hljs-operator">|</span><br>      <span class="hljs-operator">+---&gt;</span> 加权聚合并拼接多头<span class="hljs-operator">:</span><br>      <span class="hljs-operator">|</span>     <span class="hljs-built_in">Context</span> <span class="hljs-operator">=</span> <span class="hljs-type">Attn_Weights</span> <span class="hljs-operator">*</span> <span class="hljs-variable">V</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-variable">H</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-type">d_k</span><span class="hljs-punctuation">)</span><br>      <span class="hljs-operator">|</span>     转置与重塑 <span class="hljs-operator">-&gt;</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-variable">H</span> <span class="hljs-operator">*</span> <span class="hljs-type">d_k</span><span class="hljs-punctuation">)</span> <span class="hljs-operator">=</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span><br>      <span class="hljs-operator">|</span>     输出投影 <span class="hljs-type">W_O</span> <span class="hljs-punctuation">(</span><span class="hljs-built_in">D</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span><br>      <span class="hljs-operator">|</span><br>      <span class="hljs-operator">+---&gt;</span> 残差连接与 <span class="hljs-variable">LayerNorm</span><span class="hljs-operator">:</span><br>      <span class="hljs-operator">|</span>     <span class="hljs-variable">Z</span> <span class="hljs-operator">=</span> <span class="hljs-variable">LayerNorm</span><span class="hljs-punctuation">(</span><span class="hljs-variable">X</span> <span class="hljs-operator">+</span> <span class="hljs-built_in">Context</span><span class="hljs-punctuation">)</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span><br>      <span class="hljs-operator">|</span><br>      <span class="hljs-operator">+---&gt;</span> 前馈神经网络 <span class="hljs-punctuation">(</span><span class="hljs-variable">FFN</span><span class="hljs-operator">,</span> 隐藏层通常扩展为 <span class="hljs-number">4</span><span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span><span class="hljs-operator">:</span><br>      <span class="hljs-operator">|</span>     <span class="hljs-variable">FFN</span><span class="hljs-punctuation">(</span><span class="hljs-variable">Z</span><span class="hljs-punctuation">)</span> <span class="hljs-operator">=</span> <span class="hljs-variable">Linear2</span><span class="hljs-punctuation">(</span><span class="hljs-variable">Activation</span><span class="hljs-punctuation">(</span><span class="hljs-variable">Linear1</span><span class="hljs-punctuation">(</span><span class="hljs-variable">Z</span><span class="hljs-punctuation">)</span><span class="hljs-punctuation">)</span><span class="hljs-punctuation">)</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-number">4</span><span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span><br>      <span class="hljs-operator">|</span><br>      <span class="hljs-operator">+---&gt;</span> 第二层残差连接与 <span class="hljs-variable">LayerNorm</span><span class="hljs-operator">:</span><br>            <span class="hljs-variable">Output</span> <span class="hljs-operator">=</span> <span class="hljs-variable">LayerNorm</span><span class="hljs-punctuation">(</span><span class="hljs-variable">Z</span> <span class="hljs-operator">+</span> <span class="hljs-variable">FFN</span><span class="hljs-punctuation">(</span><span class="hljs-variable">Z</span><span class="hljs-punctuation">)</span><span class="hljs-punctuation">)</span> <span class="hljs-operator">-&gt;</span> <span class="hljs-punctuation">(</span><span class="hljs-variable">B</span><span class="hljs-operator">,</span> <span class="hljs-built_in">N</span><span class="hljs-operator">,</span> <span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span><br></code></pre></td></tr></table></figure>
+<hr>
+<h1 id="五、-模型架构范式、预训练任务与分词底层（Architecture-amp-Tokenization）"><a href="#五、-模型架构范式、预训练任务与分词底层（Architecture-amp-Tokenization）" class="headerlink" title="五、 模型架构范式、预训练任务与分词底层（Architecture &amp; Tokenization）"></a>五、 模型架构范式、预训练任务与分词底层（Architecture &amp; Tokenization）</h1><hr>
+<h2 id="23-Decoder-only、Encoder-Decoder-与纯-Encoder-架构对比"><a href="#23-Decoder-only、Encoder-Decoder-与纯-Encoder-架构对比" class="headerlink" title="23. Decoder-only、Encoder-Decoder 与纯 Encoder 架构对比"></a>23. Decoder-only、Encoder-Decoder 与纯 Encoder 架构对比</h2><figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><code class="hljs gherkin">(a) 纯 Encoder (BERT)           (b) Encoder-Decoder (T5)         (c) Decoder-only (GPT)<br>+-----------------------+       +-----------+   +-----------+    +-----------------------+<br>|<span class="hljs-string">  双向完全可见注意力    </span>|<span class="hljs-string">       </span>|<span class="hljs-string"> 双向编码  </span>|<span class="hljs-string">--&gt;</span>|<span class="hljs-string"> 自回归因果 </span>|<span class="hljs-string">    </span>|<span class="hljs-string">  因果掩码注意力 (下三角)</span>|<br>|<span class="hljs-string"> (每个Token看全局所有)  </span>|<span class="hljs-string">       </span>|<span class="hljs-string"> 全局可见  </span>|<span class="hljs-string">   </span>|<span class="hljs-string"> 交叉注意力 </span>|<span class="hljs-string">    </span>|<span class="hljs-string"> (每个Token仅看历史前缀)</span>|<br>+-----------------------+       +-----------+   +-----------+    +-----------------------+<br>适用：特征提取、文本分类        适用：机器翻译、文本摘要         适用：开放生成、大一统自回归<br></code></pre></td></tr></table></figure>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">架构类型</th>
+<th style="text-align:left">代表模型</th>
+<th style="text-align:left">注意力掩码机制 (Attention Mask)</th>
+<th style="text-align:left">优势特性</th>
+<th style="text-align:left">核心适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>纯 Encoder</strong></td>
+<td style="text-align:left">BERT, RoBERTa</td>
+<td style="text-align:left"><strong>无因果掩码（全可见双向注意力）</strong>。序列中每个 Token 均可与所有其他 Token 计算注意力。</td>
+<td style="text-align:left">能够无死角获取整段文本的全局双向深层表征，上下文语义抽取极强。</td>
+<td style="text-align:left">语义匹配、命名实体识别（NER）、句向量嵌入（Embedding）、文本分类。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Encoder-Decoder</strong></td>
+<td style="text-align:left">T5, BART, Original Transformer</td>
+<td style="text-align:left">Encoder 双向全可见；Decoder 采用<strong>因果下三角掩码 + Cross-Attention</strong> 关注 Encoder 输出。</td>
+<td style="text-align:left">编码与解码严格解耦，非常适合输入与输出长度不对等的转换任务。</td>
+<td style="text-align:left">机器翻译、长文档抽取式/生成式摘要。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Decoder-only</strong></td>
+<td style="text-align:left">GPT-4, LLaMA, DeepSeek, Qwen</td>
+<td style="text-align:left"><strong>严格下三角因果掩码（Causal Mask）</strong>。位置 $t$ 的 Token 仅能看见位置 $\le t$ 的历史 Token。</td>
+<td style="text-align:left">预训练任务极度统一（Next-token Prediction）；天然适合 KV Cache 连续自回归推理与 Zero-shot 泛化。</td>
+<td style="text-align:left">开放式文本生成、通用多轮对话、复杂推理 Agent。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="24-amp-25-BERT-原理及其与-GPT-任务目标的本质差异"><a href="#24-amp-25-BERT-原理及其与-GPT-任务目标的本质差异" class="headerlink" title="24 &amp; 25. BERT 原理及其与 GPT 任务目标的本质差异"></a>24 &amp; 25. BERT 原理及其与 GPT 任务目标的本质差异</h2><h3 id="1-BERT-的核心原理"><a href="#1-BERT-的核心原理" class="headerlink" title="(1) BERT 的核心原理"></a>(1) BERT 的核心原理</h3><p>BERT（Bidirectional Encoder Representations from Transformers）基于 Transformer Encoder 架构，核心创新在于利用自监督无监督语料进行深度双向表征预训练：</p>
+<ol>
+<li><strong>MLM（Masked Language Model，掩码语言模型）</strong>：<ul>
+<li>随机选取输入序列中 15% 的 Token 进行特殊处理（其中 80% 替换为 <code>[MASK]</code>，10% 替换为随机词，10% 保持不变）。模型必须基于周围无死角的双向上下文预测被掩盖的词。</li>
+</ul>
+</li>
+<li><strong>NSP（Next Sentence Prediction，下一句预测）</strong>：<ul>
+<li>输入句子对 $(A, B)$，二分类判定句子 $B$ 是否为句子 $A$ 的真实下一句。</li>
+</ul>
+</li>
+</ol>
+<h3 id="2-BERT-与-GPT-的任务目标本质不同"><a href="#2-BERT-与-GPT-的任务目标本质不同" class="headerlink" title="(2) BERT 与 GPT 的任务目标本质不同"></a>(2) BERT 与 GPT 的任务目标本质不同</h3><ul>
+<li><strong>BERT 采用 Autoencoding（自编码）目标</strong>：<ul>
+<li>优化目标为：$\mathcal{L}_{\text{MLM}}(\theta) = -\sum_{i \in \text{Masked}} \log P(x_i | x_{\backslash i}; \theta)$。</li>
+<li><strong>核心特征</strong>：训练时能同时获取上下文两侧的信息，适合判别与抽取式任务；但由于引入了 <code>[MASK]</code> 标记，存在预训练与微调时的分布不一致问题，且天然不具备高效连贯自回归长程文本生成的能力。</li>
+</ul>
+</li>
+<li><strong>GPT 采用 Autoregressive（自回归）因果语言建模目标</strong>：<ul>
+<li>优化目标为：$\mathcal{L}_{\text{CLM}}(\theta) = -\sum_{t=1}^T \log P(x_t | x_{&lt;t}; \theta)$。</li>
+<li><strong>核心特征</strong>：严格遵循因果逻辑，最大化前向单向似然，完美统一了预训练与生成推理阶段，是涌现出强泛化能力与上下文学习（In-Context Learning）的基石。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="26-Encoder-Decoder-架构如何实现机器翻译"><a href="#26-Encoder-Decoder-架构如何实现机器翻译" class="headerlink" title="26. Encoder-Decoder 架构如何实现机器翻译"></a>26. Encoder-Decoder 架构如何实现机器翻译</h2><p>在以 Transformer 为基座的神经机器翻译（NMT）中，输入源语言（如中文）到输出目标语言（如英文）的流转过程如下：</p>
+<figure class="highlight mathematica"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs mathematica">源语言句子 <span class="hljs-punctuation">(</span>中文<span class="hljs-punctuation">)</span><span class="hljs-operator">:</span> <span class="hljs-string">&quot;我 爱 自然语言处理&quot;</span><br>        <span class="hljs-operator">|</span><br>        <span class="hljs-variable">v</span><br><span class="hljs-punctuation">[</span><span class="hljs-variable">Encoder</span><span class="hljs-operator">:</span> <span class="hljs-built_in">N</span> 层双向注意力<span class="hljs-punctuation">]</span>  <span class="hljs-operator">---&gt;</span> 产出全局上下文记忆向量矩阵 <span class="hljs-variable">Memory</span><span class="hljs-operator">:</span> <span class="hljs-type">H_enc</span> <span class="hljs-punctuation">(</span><span class="hljs-type">L_src</span> <span class="hljs-variable">x</span> <span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span><br>                                            <span class="hljs-operator">|</span><br>                                            <span class="hljs-operator">|</span> <span class="hljs-punctuation">(</span>注入每一层的 <span class="hljs-built_in">Cross</span><span class="hljs-operator">-</span><span class="hljs-variable">Attention</span><span class="hljs-punctuation">)</span><br>                                            <span class="hljs-variable">v</span><br>目标语言已生成前缀<span class="hljs-operator">:</span> <span class="hljs-string">&quot;&lt;BOS&gt; I&quot;</span>  <span class="hljs-operator">---&gt;</span> <span class="hljs-punctuation">[</span><span class="hljs-variable">Decoder</span><span class="hljs-operator">:</span> 因果自注意力 <span class="hljs-punctuation">(</span>只能看前缀<span class="hljs-punctuation">)</span><span class="hljs-punctuation">]</span><br>                                            <span class="hljs-operator">|</span><br>                                            <span class="hljs-variable">v</span><br>                                  <span class="hljs-punctuation">[</span><span class="hljs-built_in">Cross</span><span class="hljs-operator">-</span><span class="hljs-variable">Attention</span> 层<span class="hljs-punctuation">]</span><br>                                  <span class="hljs-variable">Q</span> <span class="hljs-operator">=</span> <span class="hljs-variable">Decoder</span> 隐状态 <span class="hljs-punctuation">(</span><span class="hljs-number">1</span> <span class="hljs-variable">x</span> <span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span><br>                                  <span class="hljs-built_in">K</span> <span class="hljs-operator">=</span> <span class="hljs-variable">Memory</span> <span class="hljs-punctuation">(</span><span class="hljs-type">L_src</span> <span class="hljs-variable">x</span> <span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span><br>                                  <span class="hljs-variable">V</span> <span class="hljs-operator">=</span> <span class="hljs-variable">Memory</span> <span class="hljs-punctuation">(</span><span class="hljs-type">L_src</span> <span class="hljs-variable">x</span> <span class="hljs-built_in">D</span><span class="hljs-punctuation">)</span><br>                                            <span class="hljs-operator">|</span><br>                                            <span class="hljs-variable">v</span><br>                                  <span class="hljs-punctuation">[</span><span class="hljs-variable">FFN</span> <span class="hljs-operator">+</span> <span class="hljs-variable">Output</span> <span class="hljs-variable">Linear</span><span class="hljs-punctuation">]</span><br>                                            <span class="hljs-operator">|</span><br>                                            <span class="hljs-variable">v</span><br>                             预测 <span class="hljs-built_in">Next</span> <span class="hljs-variable">Token</span><span class="hljs-operator">:</span> <span class="hljs-string">&quot;love&quot;</span><br></code></pre></td></tr></table></figure>
+<ol>
+<li><strong>源序列完全编码</strong>：源端中文句子一次性送入 Encoder，经过全可见自注意力计算，输出富含全局双向语义的表示矩阵 $\mathbf{H}_{\text{enc}} \in \mathbb{R}^{L_{\text{src}} \times D}$。</li>
+<li><strong>目标序列自回归解码</strong>：<ul>
+<li>解码起始时刻输入起始符 <code>&lt;BOS&gt;</code>；</li>
+<li>步骤 $t$ 时，Decoder 接收已生成的译文前缀 $y_{&lt;t}$，首先通过<strong>Masked Self-Attention</strong>避免偷看未来词；</li>
+<li>紧接着进入 <strong>Cross-Attention 层</strong>：以 Decoder 当前隐状态作为 Query，以 Encoder 的输出矩阵 $\mathbf{H}_{\text{enc}}$ 作为 Key 和 Value，计算当前生成词与整个中文源句各词之间的软对齐关联；</li>
+<li>经过 FFN 和线性分类头预测出下一个英文词 $y_t$；</li>
+<li>将预测结果追加至 Decoder 输入，循环往复直至生成结束符 <code>&lt;EOS&gt;</code>。</li>
+</ul>
+</li>
+</ol>
+<hr>
+<h2 id="27-Self-Attention-与-Cross-Attention-的核心区别"><a href="#27-Self-Attention-与-Cross-Attention-的核心区别" class="headerlink" title="27. Self-Attention 与 Cross-Attention 的核心区别"></a>27. Self-Attention 与 Cross-Attention 的核心区别</h2><figure class="highlight gherkin"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs gherkin">(a) Self-Attention (自注意力)                  (b) Cross-Attention (交叉注意力)<br>+------------------------------------+        +------------------------------------+<br>|<span class="hljs-string">  Query, Key, Value 均来自同一序列   </span>|<span class="hljs-string">        </span>|<span class="hljs-string">  Query 来自自身序列 (如 Decoder)    </span>|<br>|<span class="hljs-string">  Q = X * W_Q                       </span>|<span class="hljs-string">        </span>|<span class="hljs-string">  Key, Value 来自外部序列 (如 Encoder)</span>|<br>|<span class="hljs-string">  K = X * W_K                       </span>|<span class="hljs-string">        </span>|<span class="hljs-string">  Q = X_dec * W_Q                   </span>|<br>|<span class="hljs-string">  V = X * W_V                       </span>|<span class="hljs-string">        </span>|<span class="hljs-string">  K = H_enc * W_K, V = H_enc * W_V  </span>|<br>+------------------------------------+        +------------------------------------+<br>作用：计算自身序列内部各个词之间的内部关联     作用：计算一个序列对另一个异构序列的语义寻址<br></code></pre></td></tr></table></figure>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">维度</th>
+<th style="text-align:left">Self-Attention (自注意力)</th>
+<th style="text-align:left">Cross-Attention (交叉注意力)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Q, K, V 来源</strong></td>
+<td style="text-align:left"><strong>同源</strong>。$Q, K, V$ 均来自同一个输入特征序列（经过不同的线性矩阵投影）。</td>
+<td style="text-align:left"><strong>异源</strong>。$Q$ 来自当前主序列（如 Decoder 隐状态），而 $K, V$ 来自外部条件序列（如 Encoder 输出或图像/音频特征）。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>注意力矩阵形状</strong></td>
+<td style="text-align:left">维度为 $(L_q \times L_q)$，是一个方阵（自相关矩阵）。</td>
+<td style="text-align:left">维度为 $(L_q \times L_{kv})$，通常为非方阵。</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>核心功能</strong></td>
+<td style="text-align:left">建模单一序列内部各元素之间的长程依赖与语法结构关联。</td>
+<td style="text-align:left">实现跨序列、跨模态或条件约束下的语义检索与特征对齐（Conditioning）。</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="28-Tokenizer-底层实现机理：从-Raw-Text-到-Token-ID"><a href="#28-Tokenizer-底层实现机理：从-Raw-Text-到-Token-ID" class="headerlink" title="28. Tokenizer 底层实现机理：从 Raw Text 到 Token ID"></a>28. Tokenizer 底层实现机理：从 Raw Text 到 Token ID</h2><p>文本无法直接作为连续张量输入神经网络，分词器（Tokenizer）扮演着离散自然语言字符与模型密集数字索引之间的桥梁。</p>
+<figure class="highlight coq"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><code class="hljs coq">Raw Text: <span class="hljs-string">&quot;unhappiness&quot;</span><br>    |<br>    <span class="hljs-type">v</span> <span class="hljs-number">1.</span> Normalization (标准化: Unicode规范化、大小写统一、空白清洗)<br><span class="hljs-string">&quot;unhappiness&quot;</span><br>    |<br>    <span class="hljs-type">v</span> <span class="hljs-number">2.</span> Pre-tokenization (预分词: 按空格/标点切分为粗粒度单词单元)<br>[<span class="hljs-string">&quot;unhappiness&quot;</span>]<br>    |<br>    <span class="hljs-type">v</span> <span class="hljs-number">3.</span> Subword Algorithm (子词算法模型: 如 BPE / WordPiece)<br>       查找最高频合并规则: <span class="hljs-string">&quot;un&quot;</span> + <span class="hljs-string">&quot;happiness&quot;</span> -&gt; <span class="hljs-string">&quot;un&quot;</span> + <span class="hljs-string">&quot;happi&quot;</span> + <span class="hljs-string">&quot;ness&quot;</span><br>[<span class="hljs-string">&quot;un&quot;</span>, <span class="hljs-string">&quot;happi&quot;</span>, <span class="hljs-string">&quot;ness&quot;</span>]<br>    |<br>    <span class="hljs-type">v</span> <span class="hljs-number">4.</span> Vocabulary Lookup (词表映射: 查表转换为整型 ID)<br>[<span class="hljs-number">2841</span>, <span class="hljs-number">19024</span>, <span class="hljs-number">734</span>]<br></code></pre></td></tr></table></figure>
+<h3 id="1-主流分词算法：BPE-Byte-Pair-Encoding-的构建与编码机制"><a href="#1-主流分词算法：BPE-Byte-Pair-Encoding-的构建与编码机制" class="headerlink" title="1. 主流分词算法：BPE (Byte-Pair Encoding) 的构建与编码机制"></a>1. 主流分词算法：BPE (Byte-Pair Encoding) 的构建与编码机制</h3><p>现代大模型（如 GPT-4, LLaMA）普遍采用 <strong>Byte-level BPE</strong> 算法：</p>
+<ul>
+<li><strong>词表构建阶段（Training/Learning Phase）</strong>：<ol>
+<li>初始化基础词表：包含所有基本的单字节（256 个 Byte，确保绝对不会产生 OOV 未知词）；</li>
+<li>将训练语料中的所有单词按字节/字符拆开，统计相邻字符对（Bigram）的共现频次；</li>
+<li>选取当前共现频次最高的字符对（例如 <code>&#39;t&#39;</code> 和 <code>&#39;h&#39;</code>），将其合并为一个新的子词单元 <code>&#39;th&#39;</code>，并加入词表与合并规则表（Merge Rules）；</li>
+<li>重复上述合并迭代步骤，直至达到预设的词表大小（Vocab Size，如 32K, 100K 或 128K）。</li>
+</ol>
+</li>
+<li><strong>文本编码与映射阶段（Encoding Phase）</strong>：<ol>
+<li><strong>规范化（Normalization）</strong>：执行 NFKC 规范化、去除非法不可见字符；</li>
+<li><strong>预分词（Pre-tokenization）</strong>：基于正则表达式（如 GPT-4 的特化正则）将输入划分为单词与标点切片；</li>
+<li><strong>规则迭代应用</strong>：按照训练时学习到的 Merge 规则优先级，自底向上贪心合并子词；</li>
+<li><strong>ID 查找（Token-to-ID）</strong>：将最终切分得到的子词单元在固定词表中查询对应的唯一整型索引（Token ID），生成作为模型最终输入的张量序列。</li>
+</ol>
+</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%A0%B8%E5%BF%83%E6%8A%80%E6%9C%AF%E6%B2%89%E6%B7%80/" class="category-chain-item">核心技术沉淀</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
+      
+        <a href="/tags/RLHF/" class="print-no-link">#RLHF</a>
+      
+        <a href="/tags/Transformer/" class="print-no-link">#Transformer</a>
+      
+        <a href="/tags/%E5%A4%9A%E6%A8%A1%E6%80%81%E8%AF%AD%E9%9F%B3/" class="print-no-link">#多模态语音</a>
+      
+        <a href="/tags/Agent/" class="print-no-link">#Agent</a>
+      
+        <a href="/tags/%E6%9E%B6%E6%9E%84%E5%8E%9F%E7%90%86/" class="print-no-link">#架构原理</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>知识储备</div>
+      <div>https://smallsmartao.github.io/2026/08/21/llm-speech-multimodal-rlhf-knowledge-base/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年8月21日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年8月21日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/08/24/turbobias-2/" title="TurboBias 2.0: Streaming Context-Biasing for Production-Efficient ASR Systems">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">TurboBias 2.0: Streaming Context-Biasing for Production-Efficient ASR Systems</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/08/20/contextual-biasing-speech-rag-evolution/" title="上下文偏置、Speech-RAG 与语音大模型领域自适应的技术演进全景：从神经监听器、脉冲触发到局部声学检索">
+                        <span class="hidden-mobile">上下文偏置、Speech-RAG 与语音大模型领域自适应的技术演进全景：从神经监听器、脉冲触发到局部声学检索</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
