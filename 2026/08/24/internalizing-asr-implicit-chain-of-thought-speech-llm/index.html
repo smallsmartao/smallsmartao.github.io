@@ -19,16 +19,16 @@
   <meta name="author" content="Ao Zhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="导读与核心背景近年来，语音大语言模型（Speech LLMs，如 SpeechGPT、AnyGPT、Qwen2-Audio 等）通过引入离散语音 Token 或跨模态投影层，在传统的单模态语音识别（ASR）、语音合成（TTS）以及语音问答任务上取得了突破性进展。然而，当直接要求模型进行端到端全双工&#x2F;语音到语音对话（Direct Speech-to-Speech Conversation）时，模型往">
+    <meta name="description" content="💡 小奥的感悟这篇论文主要提供了一种在训练策略层面去除对 ASR 显式文本依赖的思路。以往我们为了让语音模型具备强推理能力，往往不得不妥协于显式生成 ASR 转录文本（A-T-T-A），这极大地拖慢了交互时延；而通过渐进式课程内化，将显式转录文本作为训练阶段的“辅助认知支架”并在退火中沉淀为隐层注意力，既保住了大模型的语义理解上限，又去除了对中间显式文本输出的强依赖，为端到端语音交互提供了很优">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Internalizing ASR with Implicit Chain of Thought for Efficient Speech-to-Speech Conversational LLM">
 <meta property="og:url" content="https://smallsmartao.github.io/2026/08/24/internalizing-asr-implicit-chain-of-thought-speech-llm/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="导读与核心背景近年来，语音大语言模型（Speech LLMs，如 SpeechGPT、AnyGPT、Qwen2-Audio 等）通过引入离散语音 Token 或跨模态投影层，在传统的单模态语音识别（ASR）、语音合成（TTS）以及语音问答任务上取得了突破性进展。然而，当直接要求模型进行端到端全双工&#x2F;语音到语音对话（Direct Speech-to-Speech Conversation）时，模型往">
+<meta property="og:description" content="💡 小奥的感悟这篇论文主要提供了一种在训练策略层面去除对 ASR 显式文本依赖的思路。以往我们为了让语音模型具备强推理能力，往往不得不妥协于显式生成 ASR 转录文本（A-T-T-A），这极大地拖慢了交互时延；而通过渐进式课程内化，将显式转录文本作为训练阶段的“辅助认知支架”并在退火中沉淀为隐层注意力，既保住了大模型的语义理解上限，又去除了对中间显式文本输出的强依赖，为端到端语音交互提供了很优">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_implicit_cot_internalizing.png">
 <meta property="article:published_time" content="2026-08-24T07:40:00.000Z">
-<meta property="article:modified_time" content="2026-08-24T07:40:14.190Z">
+<meta property="article:modified_time" content="2026-08-24T08:39:19.862Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="Implicit CoT">
@@ -247,7 +247,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2k 字
+          2.1k 字
         
       </span>
     
@@ -258,7 +258,7 @@
         
         
         
-          17 分钟
+          18 分钟
         
       </span>
     
@@ -317,7 +317,10 @@
             
               <div class="markdown-body">
                 
-                <h2 id="导读与核心背景"><a href="#导读与核心背景" class="headerlink" title="导读与核心背景"></a>导读与核心背景</h2><p>近年来，语音大语言模型（Speech LLMs，如 SpeechGPT、AnyGPT、Qwen2-Audio 等）通过引入离散语音 Token 或跨模态投影层，在传统的单模态语音识别（ASR）、语音合成（TTS）以及语音问答任务上取得了突破性进展。然而，当直接要求模型进行<strong>端到端全双工/语音到语音对话（Direct Speech-to-Speech Conversation）</strong>时，模型往往会陷入生成无意义乱码音频、语义漂移或逻辑不通顺的困境。</p>
+                <blockquote>
+<p><strong>💡 小奥的感悟</strong><br>这篇论文主要提供了一种在<strong>训练策略层面去除对 ASR 显式文本依赖</strong>的思路。以往我们为了让语音模型具备强推理能力，往往不得不妥协于显式生成 ASR 转录文本（A-T-T-A），这极大地拖慢了交互时延；而通过渐进式课程内化，将显式转录文本作为训练阶段的“辅助认知支架”并在退火中沉淀为隐层注意力，既保住了大模型的语义理解上限，又去除了对中间显式文本输出的强依赖，为端到端语音交互提供了很优雅的策略启发。</p>
+</blockquote>
+<h2 id="导读与核心背景"><a href="#导读与核心背景" class="headerlink" title="导读与核心背景"></a>导读与核心背景</h2><p>近年来，语音大语言模型（Speech LLMs，如 SpeechGPT、AnyGPT、Qwen2-Audio 等）通过引入离散语音 Token 或跨模态投影层，在传统的单模态语音识别（ASR）、语音合成（TTS）以及语音问答任务上取得了突破性进展。然而，当直接要求模型进行<strong>端到端全双工/语音到语音对话（Direct Speech-to-Speech Conversation）</strong>时，模型往往会陷入生成无意义乱码音频、语义漂移或逻辑不通顺的困境。</p>
 <p>为了解决这一问题，目前主流的 Speech-to-Speech 方案普遍依赖显式的串行思维链管道，即 <strong>A-T-T-A（Audio $\rightarrow$ Text $\rightarrow$ Text $\rightarrow$ Audio）</strong> 范式：</p>
 <ol>
 <li><strong>Audio $\rightarrow$ Text (ASR CoT)</strong>：先将输入的音频 Token 显式转录为文本；</li>
