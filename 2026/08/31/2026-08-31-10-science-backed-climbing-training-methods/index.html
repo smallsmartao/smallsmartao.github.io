@@ -19,30 +19,31 @@
   <meta name="author" content="Ao Zhang">
   <meta name="keywords" content="">
   
-    <meta name="description" content="为什么需要这篇工作？当前大型语言模型（LLM）的推理引擎——以 vLLM、SGLang 为代表——在文本生成场景中已经做到了极致的吞吐优化：连续批处理（Continuous Batching）、PagedAttention、自动前缀缓存等技术将 GPU 利用率拉到了很高的水平。然而，当我们试图将这些引擎用于语音语言模型（Speech Language Models, SpeechLMs）时，会遭遇">
+    <meta name="description" content="核心来源：YouTube &#x2F; Bilibili Hooper’s Beta（Emile Modesitt &amp; Jason Hooper 物理治疗师&#x2F;攀岩教练团队）视频原题：10 Science-Backed Ways to Get Stronger in Less Time (Climbing Training) &#x2F; 《10个科学依据的方法，让你在更短的时间内变得更强（攀岩训练）》音频转">
 <meta property="og:type" content="article">
-<meta property="og:title" content="An Efficient vLLM-Based Inference Pipeline for Unified Audio Understanding and Generation">
-<meta property="og:url" content="https://smallsmartao.github.io/2026/07/06/vLLM-Based-Inference-Pipeline-for-Unified-Audio-Understanding-and-Generation/index.html">
+<meta property="og:title" content="10 个基于运动科学的攀岩高效训练法：如何在更短时间内变得更强">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/08/31/2026-08-31-10-science-backed-climbing-training-methods/index.html">
 <meta property="og:site_name" content="聪明的小奥">
-<meta property="og:description" content="为什么需要这篇工作？当前大型语言模型（LLM）的推理引擎——以 vLLM、SGLang 为代表——在文本生成场景中已经做到了极致的吞吐优化：连续批处理（Continuous Batching）、PagedAttention、自动前缀缓存等技术将 GPU 利用率拉到了很高的水平。然而，当我们试图将这些引擎用于语音语言模型（Speech Language Models, SpeechLMs）时，会遭遇">
+<meta property="og:description" content="核心来源：YouTube &#x2F; Bilibili Hooper’s Beta（Emile Modesitt &amp; Jason Hooper 物理治疗师&#x2F;攀岩教练团队）视频原题：10 Science-Backed Ways to Get Stronger in Less Time (Climbing Training) &#x2F; 《10个科学依据的方法，让你在更短的时间内变得更强（攀岩训练）》音频转">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/vllm_audio_2607_02119_pixel.png">
-<meta property="article:published_time" content="2026-07-06T04:50:00.000Z">
-<meta property="article:modified_time" content="2026-08-18T04:02:29.857Z">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_climbing_10_efficient_methods.jpg">
+<meta property="article:published_time" content="2026-08-30T16:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-31T09:11:52.951Z">
 <meta property="article:author" content="Ao Zhang">
-<meta property="article:tag" content="Inference">
-<meta property="article:tag" content="Speech Language Model">
-<meta property="article:tag" content="TTS">
-<meta property="article:tag" content="vLLM">
-<meta property="article:tag" content="论文解读">
+<meta property="article:tag" content="Hooper&#39;s Beta">
+<meta property="article:tag" content="力量训练">
+<meta property="article:tag" content="攀岩">
+<meta property="article:tag" content="极简训练">
+<meta property="article:tag" content="训练效率">
+<meta property="article:tag" content="运动科学">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/vllm_audio_2607_02119_pixel.png">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_climbing_10_efficient_methods.jpg">
   
   
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>An Efficient vLLM-Based Inference Pipeline for Unified Audio Understanding and Generation - 聪明的小奥</title>
+  <title>10 个基于运动科学的攀岩高效训练法：如何在更短时间内变得更强 - 聪明的小奥</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -213,13 +214,13 @@
   
 
 <div id="banner" class="banner" parallax=true
-     style="background: url('/images/paper_img/banner/vllm_audio_2607_02119_pixel.png') no-repeat center center; background-size: cover;">
+     style="background: url('/images/paper_img/banner/banner_climbing_10_efficient_methods.jpg') no-repeat center center; background-size: cover;">
   <div class="full-bg-img">
     <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="An Efficient vLLM-Based Inference Pipeline for Unified Audio Understanding and Generation"></span>
+            <span id="subtitle" data-typed-text="10 个基于运动科学的攀岩高效训练法：如何在更短时间内变得更强"></span>
           
         </div>
 
@@ -235,8 +236,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2026-07-06 12:50" pubdate>
-          2026年7月6日 下午
+        <time datetime="2026-08-31 00:00" pubdate>
+          2026年8月31日 凌晨
         </time>
       </span>
     
@@ -247,7 +248,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          2.4k 字
+          2.2k 字
         
       </span>
     
@@ -258,7 +259,7 @@
         
         
         
-          20 分钟
+          19 分钟
         
       </span>
     
@@ -304,12 +305,12 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">An Efficient vLLM-Based Inference Pipeline for Unified Audio Understanding and Generation</h1>
+            <h1 id="seo-header">10 个基于运动科学的攀岩高效训练法：如何在更短时间内变得更强</h1>
             
               <p id="updated-time" class="note note-info" style="">
                 
                   
-                    本文最后更新于 2026年8月18日 中午
+                    本文最后更新于 2026年8月31日 下午
                   
                 
               </p>
@@ -317,259 +318,148 @@
             
               <div class="markdown-body">
                 
-                <h2 id="为什么需要这篇工作？"><a href="#为什么需要这篇工作？" class="headerlink" title="为什么需要这篇工作？"></a>为什么需要这篇工作？</h2><p>当前大型语言模型（LLM）的推理引擎——以 vLLM、SGLang 为代表——在文本生成场景中已经做到了极致的吞吐优化：连续批处理（Continuous Batching）、PagedAttention、自动前缀缓存等技术将 GPU 利用率拉到了很高的水平。然而，当我们试图将这些引擎用于<strong>语音语言模型（Speech Language Models, SpeechLMs）</strong>时，会遭遇结构性的架构冲突。</p>
-<p>问题的根源在于：语音不是文本。文本生成是”一次一个 token”的单流自回归过程，而高保真语音生成需要<strong>多码本（Multi-Codebook）</strong> token 的同步预测——每个时间帧被编码为多层残差向量量化（RVQ）token，再经过延迟模式（Delay Pattern）交错排列。此外，高质量音频合成还严重依赖<strong>分类器无关引导（Classifier-Free Guidance, CFG）</strong>，而 CFG 需要每一步同时执行条件和无条件两次前向传播，直觉上会将吞吐量减半。</p>
-<p>本文（CMU + 上海交通大学，2026年7月）提出了一套基于 vLLM 的统一推理管线，在不侵入式修改调度器和 PagedAttention 基础设施的前提下，原生支持多流采样、延迟模式去交错和 CFG 的高效执行，实现了相较于顺序 PyTorch 推理 <strong>~100× 的吞吐提升</strong>，且 CFG 模式下仍保持非 CFG 吞吐量的 <strong>80%</strong>。</p>
+                <blockquote>
+<p><strong>核心来源</strong>：YouTube / Bilibili <em>Hooper’s Beta</em>（Emile Modesitt &amp; Jason Hooper 物理治疗师/攀岩教练团队）<br><strong>视频原题</strong>：<em>10 Science-Backed Ways to Get Stronger in Less Time (Climbing Training)</em> / 《10个科学依据的方法，让你在更短的时间内变得更强（攀岩训练）》<br><strong>音频转录</strong>：基于 Azure 认知语音服务完成全量英文转录与运动科学体系精读。</p>
+</blockquote>
 <hr>
-<h2 id="1-背景：Speech-Language-Model-架构"><a href="#1-背景：Speech-Language-Model-架构" class="headerlink" title="1. 背景：Speech Language Model 架构"></a>1. 背景：Speech Language Model 架构</h2><p>本文面向的模型家族共享以下架构基础（如 Figure 1 所示）：</p>
-<p><img src="/images/paper_figs/vllm_audio_2607_02119_fig_page2.png" srcset="/img/loading.gif" lazyload alt="Figure 1: Speech language model architecture"></p>
-<h3 id="1-1-多-Token-预测（Multi-Token-Prediction）"><a href="#1-1-多-Token-预测（Multi-Token-Prediction）" class="headerlink" title="1.1 多 Token 预测（Multi-Token Prediction）"></a>1.1 多 Token 预测（Multi-Token Prediction）</h3><p>音频编码器将连续语音送入自回归 LLM。LLM 在统一词表上运行，词表被划分为文本子词表和 $S$ 个音频子词表。在音频输出阶段，每一步 $t$，LLM 骨干产生隐状态 $h_t$，然后 $S$ 个并行的码本头（Codebook Head）将该状态投影为各自的 logits $\ell^{(i)}$ 和采样 token $c_i$（$1 \le i \le S$）。具体地，每个头将一个可学习的流嵌入 $e_i$ 加到 $h_t$ 上再通过共享的语言建模头 $W_H$：</p>
-<script type="math/tex; mode=display">\ell^{(i)} = W_H(h_t + e_i)</script><h3 id="1-2-延迟交错模式（Delay-Interleave-Pattern）"><a href="#1-2-延迟交错模式（Delay-Interleave-Pattern）" class="headerlink" title="1.2 延迟交错模式（Delay Interleave Pattern）"></a>1.2 延迟交错模式（Delay Interleave Pattern）</h3><p>在延迟模式下，第 $i$ 个流偏移 $i$ 步——即步骤 $t$ 发射的 $S$ 个 token ${c_1, \ldots, c_S}$ 对应不同的时间位置。自回归反馈时，每步的输入表示聚合了先前生成的这些 token 的嵌入。生成结束后，得到的 $S \times T$ 码本矩阵（$T$ 为总声学帧数）经去交错（de-interleave）后送入声学解码器合成波形。</p>
-<p>这种统一词表设计天然支持混合模态响应（如文本无缝过渡到音频）。</p>
-<h3 id="1-3-验证模型"><a href="#1-3-验证模型" class="headerlink" title="1.3 验证模型"></a>1.3 验证模型</h3><p>本文在三个代表性开源 SpeechLM 上验证：</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>模型</th>
-<th>骨干</th>
-<th>码本流数</th>
-<th>编码器</th>
-<th>场景</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Bagpiper</td>
-<td>Qwen3-8B</td>
-<td>8</td>
-<td>X-Codec</td>
-<td>开放式音频理解+生成，支持 CFG</td>
-</tr>
-<tr>
-<td>OpusLM</td>
-<td>OLMo-2-7B</td>
-<td>9 (1 SSL + 8 DAC)</td>
-<td>DAC</td>
-<td>ASR + TTS</td>
-</tr>
-<tr>
-<td>OpusLM-Dialogue</td>
-<td>SmolLM2-1.7B</td>
-<td>9</td>
-<td>DAC</td>
-<td>口语对话</td>
-</tr>
-</tbody>
-</table>
-</div>
+<h2 id="引言：为什么我们需要“极简高效”的攀岩训练？"><a href="#引言：为什么我们需要“极简高效”的攀岩训练？" class="headerlink" title="引言：为什么我们需要“极简高效”的攀岩训练？"></a>引言：为什么我们需要“极简高效”的攀岩训练？</h2><p>很多攀岩者和健身者都默认一种假设：<strong>训练时间越长，收获越大</strong>。如果有额外 1 小时能让收益从 90% 提升到 100%，传统“最大化主义者（Maximalist）”一定会选择多练 1 小时。</p>
+<p>然而对于绝大多数上班族、学生和业余攀岩者来说，时间是最稀缺的资源。运动科学研究表明：<strong>训练量与收益之间存在显著的边际递减效应</strong>。只要把握好强度、组间节奏与动作编排，用传统训练 1/3 的时间，就能换取 80%~90% 以上的力量进阶。</p>
+<p>本文结合物理治疗与力量训练科学，系统拆解 Hooper’s Beta 提出的 <strong>10 个高效训练法则</strong>。</p>
 <hr>
-<h2 id="2-标准连续批处理引擎的局限（§2-2）"><a href="#2-标准连续批处理引擎的局限（§2-2）" class="headerlink" title="2. 标准连续批处理引擎的局限（§2.2）"></a>2. 标准连续批处理引擎的局限（§2.2）</h2><p>vLLM 等引擎通过迭代级调度和连续批处理最大化硬件利用：不等待整个 batch 完成，而是以单解码步为粒度动态注入新 prompt、退役已完成的请求。PagedAttention 将 KV 缓存分成固定大小的非连续块，按需分配 GPU 内存并消除碎片化。</p>
-<p><strong>核心约束</strong>：这些引擎将模型视为黑盒，对所有活跃请求执行统一的前向传播，整个基础设施深度耦合于”同构、单流文本生成”的假设。多 token 预测和 CFG 推理必须在此约束下工作。</p>
+<h2 id="1-践行“极简主义训练”（Train-Like-a-Minimalist）"><a href="#1-践行“极简主义训练”（Train-Like-a-Minimalist）" class="headerlink" title="1. 践行“极简主义训练”（Train Like a Minimalist）"></a>1. 践行“极简主义训练”（Train Like a Minimalist）</h2><ul>
+<li><strong>科学依据</strong>：关于“最低有效训练剂量（Minimum Effective Dose）”的运动科学研究表明，对于中级训练者，<strong>每周仅仅做 2~3 组力竭的大重量复合动作</strong>，就足以显著提升 1RM（单次极限负荷）最大力量；<em>Stronger by Science</em> 的实证指南也指出，每周针对核心动作完成数组 1~5 次重复（Reps）的正式组，便能维持并稳步增长力量。</li>
+<li><strong>攀岩实操</strong>：<ul>
+<li>无需每周去 4~5 次岩馆耗费 3 小时，甚至可以将专项力量训练压缩到每周 1 次高浓度日；</li>
+<li>新手及中阶者用极低的容量就能触发神经募集适应；高阶者则需要更聚焦于“组组高质量”。</li>
+</ul>
+</li>
+</ul>
 <hr>
-<h2 id="3-统一多-Token-预测服务管线（§2-3）"><a href="#3-统一多-Token-预测服务管线（§2-3）" class="headerlink" title="3. 统一多 Token 预测服务管线（§2.3）"></a>3. 统一多 Token 预测服务管线（§2.3）</h2><p><img src="/images/paper_figs/vllm_audio_2607_02119_fig_page3.png" srcset="/img/loading.gif" lazyload alt="Figure 2: Unified serving framework"></p>
-<h3 id="3-1-主-辅分解（Primary-Auxiliary-Decomposition）"><a href="#3-1-主-辅分解（Primary-Auxiliary-Decomposition）" class="headerlink" title="3.1 主-辅分解（Primary-Auxiliary Decomposition）"></a>3.1 主-辅分解（Primary-Auxiliary Decomposition）</h3><p>核心思想：<strong>不修改调度器和 PagedAttention</strong>，而是将一个码本流指定为”主流（Primary）”，由引擎标准管线全权管理。其余 $S-1$ 个”辅流（Auxiliary）”在模型的 logit 计算阶段内部采样并按请求缓冲。</p>
-<p>从引擎的视角看，模型仍然是每步只发射一个 token 的标准文本 LM——但实际上透明地执行了多码本生成。</p>
-<h3 id="3-2-去交错与解码（De-interleave-and-Decode）"><a href="#3-2-去交错与解码（De-interleave-and-Decode）" class="headerlink" title="3.2 去交错与解码（De-interleave and Decode）"></a>3.2 去交错与解码（De-interleave and Decode）</h3><p>请求完成后，缓冲的码本矩阵经延迟去交错后传入<strong>同驻 GPU 的声学解码器</strong>，将波形合成直接融合进服务路径，消除了外部 vocoder 服务的需求。</p>
-<h3 id="3-3-混合模态阶段管理（Mixed-Modality-Phase-Management）"><a href="#3-3-混合模态阶段管理（Mixed-Modality-Phase-Management）" class="headerlink" title="3.3 混合模态阶段管理（Mixed-Modality Phase Management）"></a>3.3 混合模态阶段管理（Mixed-Modality Phase Management）</h3><p>通过<strong>逐请求的阶段状态机</strong>配合动态词表掩码，系统在三个主要状态间转换：</p>
+<h2 id="2-追求“更高强度、更快向心速度”（Do-Faster-Harder-Sets）"><a href="#2-追求“更高强度、更快向心速度”（Do-Faster-Harder-Sets）" class="headerlink" title="2. 追求“更高强度、更快向心速度”（Do Faster, Harder Sets）"></a>2. 追求“更高强度、更快向心速度”（Do Faster, Harder Sets）</h2><p>在极简低容量的前提下，<strong>严禁使用垃圾容量（Junk Volume）来弥补训练质量的不足</strong>：</p>
 <ol>
-<li><strong>文本阶段（Text Phase）</strong>：词表限制为文本 token</li>
-<li><strong>过渡阶段（Transition Phase）</strong>：注入确定性桥接 token 以条件化音频生成</li>
-<li><strong>音频阶段（Audio Phase）</strong>：激活所有 $S$ 个流</li>
+<li><strong>向心爆发速度（Maximal Intent Velocity）</strong>：在给定负荷下，以尽可能快的速度发力完成向心收缩（如引体拉起阶段、指力板锁定阶段），比慢速拉起能募集更多高阈值快肌纤维，带来更佳的力量进阶。</li>
+<li><strong>黄金力量区间</strong>：单组保持在 <strong>3 ~ 5 次重复（Reps）</strong>，专注于纯神经力量与肌原纤维募集。</li>
+<li><strong>真实强度感知（RPE 7~9 / ~80% 1RM）</strong>：研究表明运动员往往低估自己的真实极限，以为力竭时往往还有数次冗余（RIR）。</li>
+<li><strong>定期校准力竭极限</strong>：偶尔在有保护或安全动作下测试单组力竭，真实校准自己对 RPE 9~10 的体感认知。</li>
 </ol>
-<p>关键细节：</p>
+<hr>
+<h2 id="3-策略性利用组间休息（Use-Rest-Time-Strategically）"><a href="#3-策略性利用组间休息（Use-Rest-Time-Strategically）" class="headerlink" title="3. 策略性利用组间休息（Use Rest Time Strategically）"></a>3. 策略性利用组间休息（Use Rest Time Strategically）</h2><p>大多数训练者的整个训练 Session，<strong>超过 60%~70% 的时间是在干等和休息</strong>。优化组间休息能极大压缩总耗时：</p>
 <ul>
-<li><strong>排空子阶段（Drain Sub-phase）</strong>：音频阶段结束时发射 $S-1$ 个填充 token 以刷新延迟缓冲区，保证完整的 $S \times T$ 码本矩阵可供去交错。</li>
-<li><strong>模态推断</strong>：由于连续批处理将多请求 token 交错为单一扁平序列，通过输入位置追踪模态不可靠。系统改为从模型未掩码的输出分布中动态推断活跃模态（即对不相交词表区域取 argmax），确保鲁棒且引擎无关的阶段管理。</li>
+<li><strong>严控计时器</strong>：大重量神经力量组必须严格控制在 3~5 分钟，既防止休息不足导致神经疲劳输出暴跌，也避免边刷手机边无意识延长到 8~10 分钟；</li>
+<li><strong>见缝插针做对抗项/活动度（Antagonist Mobility Work）</strong>：<ul>
+<li>在指力板或引体的大重量休息间隙，不要纯坐着，可以穿插 <strong>髋关节活动度拉伸、胸椎灵活性旋转或脚踝协调性练习</strong>；</li>
+<li>⚠️ <strong>避坑禁忌</strong>：避免在组间对<strong>即将发力的目标肌群</strong>进行超过 30 秒的高强度静态拉伸（会降低肌肉刚性与力量输出）。</li>
+</ul>
+</li>
 </ul>
 <hr>
-<h2 id="4-分类器无关引导的配对请求协同调度（§2-4）"><a href="#4-分类器无关引导的配对请求协同调度（§2-4）" class="headerlink" title="4. 分类器无关引导的配对请求协同调度（§2.4）"></a>4. 分类器无关引导的配对请求协同调度（§2.4）</h2><p>CFG 对每个码本流 $i$ 独立应用：</p>
-<script type="math/tex; mode=display">\tilde{\ell}^{(i)} = w \cdot \ell^{(i)}_{\text{cond}} + (1-w) \cdot \ell^{(i)}_{\text{uncond}}, \quad w > 1</script><p>朴素实现需要两个独立请求，引发严重的调度碎片化和跨请求同步开销，且由于需要逐步同步而不可行。</p>
-<h3 id="4-1-配对协同调度机制（Paired-Request-Co-Scheduling）"><a href="#4-1-配对协同调度机制（Paired-Request-Co-Scheduling）" class="headerlink" title="4.1 配对协同调度机制（Paired Request Co-Scheduling）"></a>4.1 配对协同调度机制（Paired Request Co-Scheduling）</h3><p>端到端流程（Figure 2 右侧）：</p>
-<ol>
-<li><strong>输入自动分配</strong>：当服务器收到 CFG scale $w &gt; 1$ 的请求时，透明生成一个”伴侣请求（Companion）”（空 prompt）。引擎将此对视为原子调度单元，始终一起处理。</li>
-<li><strong>共享前向传播</strong>：二者被协同调度到同一连续 batch，共享单次 Transformer 前向传播。引擎严格按 50/50 平分逐步 token 预算。</li>
-<li><strong>CFG 合并</strong>：前向传播后，两个上下文的原始 logits 按公式合并。合并<strong>仅在音频阶段</strong>执行，旁路模态切换 token 以防 CFG 破坏阶段状态机。辅流的投影一起批处理以避免冗余计算。</li>
-<li><strong>输出与同步</strong>：从合并分布 $\tilde{\ell}^{(i)}$ 中采样单一主 token，同步追加到伴侣请求（伴侣的外部输出对客户端隐藏），确保两个上下文在下一步保持完全相同的自回归历史。</li>
-</ol>
-<hr>
-<h2 id="5-实验"><a href="#5-实验" class="headerlink" title="5. 实验"></a>5. 实验</h2><h3 id="5-1-实验设置"><a href="#5-1-实验设置" class="headerlink" title="5.1 实验设置"></a>5.1 实验设置</h3><ul>
-<li>硬件：单张 NVIDIA H100 80GB GPU，FlashAttention-3</li>
-<li>最大序列长度：16,384 tokens</li>
-<li>并发量：标准评估 512 请求，CFG 评估 256 请求（因内部伴侣请求等效工作负载相同）</li>
-<li>基线：原始 PyTorch 顺序推理管线（无连续批处理）</li>
+<h2 id="4-将专项力量融入热身（Supercharge-Your-Warm-Up）"><a href="#4-将专项力量融入热身（Supercharge-Your-Warm-Up）" class="headerlink" title="4. 将专项力量融入热身（Supercharge Your Warm-Up）"></a>4. 将专项力量融入热身（Supercharge Your Warm-Up）</h2><ul>
+<li><strong>指力板前置热身（Hangboard Integration）</strong>：<ul>
+<li>指部深层肌腱和 A2 滑车升温速度远慢于全身大肌群；</li>
+<li>将指力板训练（如渐进递增负荷的悬垂）直接整合进热身末尾，既完成了指力板的超负荷刺激，又让手指在踏上岩壁前达到 100% 战备状态；</li>
+<li><strong>立竿见影的效果</strong>：上墙后无需再爬 5~6 条无聊的热身线，直接进入高质量红点磕线阶段。</li>
 </ul>
-<h3 id="5-2-吞吐量"><a href="#5-2-吞吐量" class="headerlink" title="5.2 吞吐量"></a>5.2 吞吐量</h3><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>系统</th>
-<th>Decode (tok/s)</th>
-<th>MFU (%)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Bagpiper (PyTorch)</td>
-<td>52.7</td>
-<td>0.096</td>
-</tr>
-<tr>
-<td>Bagpiper (vLLM)</td>
-<td>5694.5</td>
-<td>9.95</td>
-</tr>
-<tr>
-<td>OpusLM (PyTorch)</td>
-<td>36.5</td>
-<td>0.311</td>
-</tr>
-<tr>
-<td>OpusLM (vLLM)</td>
-<td>4582.9</td>
-<td>9.89</td>
-</tr>
-<tr>
-<td>OpusLM-Dial. (PyTorch)</td>
-<td>53.9</td>
-<td>0.290</td>
-</tr>
-<tr>
-<td>OpusLM-Dial. (vLLM)</td>
-<td>5870.5</td>
-<td>3.28</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>关键发现：</p>
+</li>
+<li><strong>热身组公式</strong>：选取 1~2 个薄弱力量项，用 <strong>3 组 × 3 次 @ 5RM 强度</strong> 的紧凑节奏融入热身末期。</li>
+</ul>
+<hr>
+<h2 id="5-拆分训练片段，拒绝长-Session（Micro-Sessions-amp-Segmenting）"><a href="#5-拆分训练片段，拒绝长-Session（Micro-Sessions-amp-Segmenting）" class="headerlink" title="5. 拆分训练片段，拒绝长 Session（Micro-Sessions &amp; Segmenting）"></a>5. 拆分训练片段，拒绝长 Session（Micro-Sessions &amp; Segmenting）</h2><p>不用把“爬线 + 力量 + 拉伸”塞进一个长达 3 小时的单次训练中：</p>
 <ul>
-<li>连续批处理管线实现了约<strong>两个数量级</strong>的加速（Bagpiper: 108×, OpusLM: 125×, OpusLM-Dialogue: 109×）。</li>
-<li>MFU 从基线的不足 0.1% 提升至 Bagpiper 的 9.95% 和 OpusLM 的 9.89%。</li>
-<li>OpusLM-Dialogue（1.7B 参数）虽然绝对吞吐最高（5870.5 tok/s），但 MFU 仅 3.28%。原因：如此紧凑的模型在 H100 上算术强度低，推理在完全饱和计算单元之前就撞到了<strong>内存带宽墙</strong>。</li>
+<li><strong>时空分离</strong>：<ul>
+<li><strong>早晨/居家</strong>：利用门上指力板架（Doorway Mount）完成 20 分钟指力悬挂或 Dan Bell 混合悬垂；</li>
+<li><strong>下午/晚间</strong>：去岩馆专心进行纯攀爬抱石；</li>
+<li><strong>睡前半小时</strong>：居家完成全身拉伸与筋膜放松。</li>
 </ul>
-<h3 id="5-3-数值正确性与质量验证"><a href="#5-3-数值正确性与质量验证" class="headerlink" title="5.3 数值正确性与质量验证"></a>5.3 数值正确性与质量验证</h3><p>使用 Bagpiper 在 MMAU-mini 数据集上验证 token 序列和 logit 分布的一致性：</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>配置</th>
-<th>RMSE (Max)</th>
-<th>RMSE (Mean)</th>
-<th>首次不匹配步</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>FP32 + SDPA</td>
-<td>0.081</td>
-<td>0.008</td>
-<td>无（完全一致）</td>
-</tr>
-<tr>
-<td>BF16 + FA3</td>
-<td>0.532</td>
-<td>0.163</td>
-<td>第 34 步</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>FP32 下两套实现产生严格一致的 token 序列，证实多流采样和阶段控制未引入数值 bug。BF16 + FlashAttention-3 下的偏差是精度损失和浮点非结合律的已知后果。</p>
-<p>端到端质量评估：</p>
-<div class="table-container">
-<table>
-<thead>
-<tr>
-<th>系统</th>
-<th>MMAU-mini ↑</th>
-<th>ASR WER ↓</th>
-<th>TTS WER ↓</th>
-<th>UTMOS ↑</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Bagpiper (PyTorch)</td>
-<td>74.5</td>
-<td>2.5</td>
-<td>2.7</td>
-<td>–</td>
-</tr>
-<tr>
-<td>Bagpiper (vLLM)</td>
-<td>75.4</td>
-<td>2.6</td>
-<td>3.3</td>
-<td>–</td>
-</tr>
-<tr>
-<td>OpusLM (PyTorch)</td>
-<td>–</td>
-<td>2.3</td>
-<td>4.6</td>
-<td>–</td>
-</tr>
-<tr>
-<td>OpusLM (vLLM)</td>
-<td>–</td>
-<td>1.9</td>
-<td>5.3</td>
-<td>–</td>
-</tr>
-<tr>
-<td>OpusLM-Dial. (PyTorch)</td>
-<td>–</td>
-<td>–</td>
-<td>–</td>
-<td>2.85</td>
-</tr>
-<tr>
-<td>OpusLM-Dial. (vLLM)</td>
-<td>–</td>
-<td>–</td>
-<td>–</td>
-<td>2.51</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>聚合性能安全维持在预期水平，实例级别的微小变化来自硬件精度偏移和 TTS 生成的固有方差。</p>
-<h3 id="5-4-CFG-开销分析"><a href="#5-4-CFG-开销分析" class="headerlink" title="5.4 CFG 开销分析"></a>5.4 CFG 开销分析</h3><div class="table-container">
-<table>
-<thead>
-<tr>
-<th>设置</th>
-<th>Prefill (tok/s)</th>
-<th>Decode (tok/s)</th>
-<th>MFU (%)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>w/o CFG</td>
-<td>315.8</td>
-<td>4952.0</td>
-<td>8.0</td>
-</tr>
-<tr>
-<td>w/ CFG</td>
-<td>271.2</td>
-<td>3960.7</td>
-<td>12.8</td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>CFG 保持了基线<strong>80%</strong> 的解码吞吐。效率来源于三个因素：</p>
-<ol>
-<li><strong>前缀缓存命中</strong>：伴侣请求严格复制主序列，实现近乎完美的前缀缓存命中，最小化 KV 缓存开销。</li>
-<li><strong>内存带宽受限的边际成本</strong>：自回归解码本质上是内存带宽受限的，处理伴侣请求仅相当于 batch size 的边际增加——饱和空闲计算以提升 MFU（从 8.0% 到 12.8%），延迟和同步惩罚可忽略。</li>
-<li><strong>阶段选择性激活</strong>：如 Bagpiper 等模型在输出简短音频前会生成大量文本推理。CFG 仅在短暂的音频阶段激活，有效地将双通道成本摊销到整个端到端序列上。</li>
-</ol>
+</li>
+<li>这样能让每次进入训练时神经系统都保持高度敏锐，避免后半段在疲劳状态下低效磨洋工。</li>
+</ul>
 <hr>
-<h2 id="6-结论与启示"><a href="#6-结论与启示" class="headerlink" title="6. 结论与启示"></a>6. 结论与启示</h2><p>本文的核心贡献在于证明了：在不重写推理引擎核心调度器的情况下，通过精心的架构设计（主辅分解 + 阶段状态机 + 配对协同调度），可以让专为文本设计的高吞吐引擎原生服务于多模态语音模型。修改仅局限于模型层和 logit 处理层，具有良好的可移植性。</p>
-<p>开源地址：<a target="_blank" rel="noopener" href="https://github.com/whr-a/vllm/tree/opuslm">https://github.com/whr-a/vllm/tree/opuslm</a></p>
+<h2 id="6-安排无交叠拮抗超级组（Strategic-Supersets）"><a href="#6-安排无交叠拮抗超级组（Strategic-Supersets）" class="headerlink" title="6. 安排无交叠拮抗超级组（Strategic Supersets）"></a>6. 安排无交叠拮抗超级组（Strategic Supersets）</h2><ul>
+<li><strong>科学依据</strong>：2023 年力量训练实证研究表明，对比传统单项训练，做<strong>卧推（Push）与深蹲/引体（Pull/Leg）的非重叠超级组</strong>，力量增长完全一致，且肌肉耐力与时间效率显著提高。</li>
+<li><strong>攀岩搭配建议</strong>：<ul>
+<li><strong>推拉超级组</strong>：重负荷引体向上（Pull） $\longleftrightarrow$ 站姿哑铃推举/双杠臂屈伸（Push）；</li>
+<li><strong>上肢与下肢交替</strong>：指力板悬垂 $\longleftrightarrow$ 单腿罗马尼亚硬拉 / 哥本哈根内收；</li>
+<li>❌ <strong>严禁同肌群超组</strong>：绝对不要把引体和高位下拉做超组，局部肌群疲劳堆积会彻底破坏力量表现。</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="7-优先复合动作与双侧训练（Compound-amp-Bilateral-Focus）"><a href="#7-优先复合动作与双侧训练（Compound-amp-Bilateral-Focus）" class="headerlink" title="7. 优先复合动作与双侧训练（Compound &amp; Bilateral Focus）"></a>7. 优先复合动作与双侧训练（Compound &amp; Bilateral Focus）</h2><ul>
+<li><strong>复合动作（Multi-joint）优先</strong>：用站姿推举、硬拉、引体向上等复合动作覆盖全身链条，替代 5~6 个孤立小动作；</li>
+<li><strong>双侧训练节约时间</strong>：单侧动作（Unilateral）需要左右交替做两遍，翻倍耗时。对于时间紧迫的攀岩者，日常强化多选用双侧动作（如双臂面拉 Face Pull、古巴推举 Cuban Rotation），既高效保护肩袖，又能节约一半的动作组数。</li>
+</ul>
+<hr>
+<h2 id="8-周期化模块训练（Block-Periodization）"><a href="#8-周期化模块训练（Block-Periodization）" class="headerlink" title="8. 周期化模块训练（Block Periodization）"></a>8. 周期化模块训练（Block Periodization）</h2><p>试图在同一周内同时兼顾<strong>指力、最大拉力、耐力、柔韧性、动态协调与爬线技巧</strong>，只会导致哪一项都练不透。</p>
+<ul>
+<li><strong>科学分块策略（6~8 周为一个 Block）</strong>：<ul>
+<li><strong>Block 1（最大力量期）</strong>：高强度指力板 + 极限抱石，彻底砍掉耐力训练；</li>
+<li><strong>Block 2（耐力/容量期）</strong>：降低负荷，主攻长线路耐力与 4x4 循环；</li>
+<li><strong>Block 3（磕线/转化期）</strong>：放下器械训练，将力量储备转化为岩壁动作技能与红点冲刺。</li>
+</ul>
+</li>
+<li>集中单点突破，全年累积收益远高于“全要素混杂”。</li>
+</ul>
+<hr>
+<h2 id="9-精准把控恢复与中枢状态（Dial-in-Your-Recovery）"><a href="#9-精准把控恢复与中枢状态（Dial-in-Your-Recovery）" class="headerlink" title="9. 精准把控恢复与中枢状态（Dial in Your Recovery）"></a>9. 精准把控恢复与中枢状态（Dial in Your Recovery）</h2><p>力量的本质是<strong>“刺激 + 恢复 = 超量补偿”</strong>。在极简高强度体系中，恢复日的质量决定了下一次训练的上限：</p>
+<ul>
+<li><strong>神经清爽度（Readiness）</strong>：确保每次进入岩馆时没有深层的中枢神经疲劳；</li>
+<li><strong>咖啡因与前置补剂的合理利用</strong>：大量实证表明，适量咖啡因对力量输出、专注力与主观疲劳感降低有确定性的积极效益（对于经常喝咖啡的人群依然有效）。</li>
+</ul>
+<hr>
+<h2 id="10-带着清晰目标进馆，拒绝无计划即兴（Never-Wing-It）"><a href="#10-带着清晰目标进馆，拒绝无计划即兴（Never-Wing-It）" class="headerlink" title="10. 带着清晰目标进馆，拒绝无计划即兴（Never Wing It）"></a>10. 带着清晰目标进馆，拒绝无计划即兴（Never Wing It）</h2><p>再完美的科学原理，如果走到岩馆现场才决定“今天爬什么”，都会迅速退化为漫无目的的闲聊和垃圾爬行：</p>
+<ul>
+<li><strong>进馆前列出极简 Checklist</strong>：<ol>
+<li>明确今天的首要目标（如：磕 2 条 V6 弱项风格线 + 3 组重负荷指力）；</li>
+<li>设定时间框（Timebox），例如限定攀爬 60 分钟、专项辅助 20 分钟；</li>
+<li>时间一到果断收工，留有余力（Leave something in the tank）。</li>
+</ol>
+</li>
+</ul>
+<hr>
+<h2 id="总结：高效率攀岩者的极简执行清单"><a href="#总结：高效率攀岩者的极简执行清单" class="headerlink" title="总结：高效率攀岩者的极简执行清单"></a>总结：高效率攀岩者的极简执行清单</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">维度</th>
+<th style="text-align:left">传统冗长做法</th>
+<th style="text-align:left">Hooper’s Beta 极简科学做法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>训练容量</strong></td>
+<td style="text-align:left">动辄 15~20 组，追求泵感与力竭</td>
+<td style="text-align:left">每周 3~5 组高质量核心力量，单组 3~5 次</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>发力意图</strong></td>
+<td style="text-align:left">随意速度拉起，慢速消耗</td>
+<td style="text-align:left">向心阶段尽最大爆发意图快速拉起</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>组间休息</strong></td>
+<td style="text-align:left">刷手机 8~10 分钟或休息过短</td>
+<td style="text-align:left">严格计时 3~5 分钟，穿插髋/肩灵活性拉伸</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>指力安排</strong></td>
+<td style="text-align:left">爬完力竭后拖着疲惫双手挂指力板</td>
+<td style="text-align:left">前置融入热身阶段，双重收益且缩短热身时间</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>动作选择</strong></td>
+<td style="text-align:left">堆叠各种单关节孤立动作</td>
+<td style="text-align:left">复合推拉超组、双侧肩袖养护动作优先</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>周期规划</strong></td>
+<td style="text-align:left">每次都想兼顾力量、耐力与技术</td>
+<td style="text-align:left">6~8 周单一目标模块化进阶</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>聪明地练，比盲目地苦练更重要！🔥</p>
 
                 
               </div>
@@ -588,7 +478,7 @@
     
       <span class="category-chain">
         
-  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  <a href="/categories/%E6%94%80%E5%B2%A9%E7%AC%94%E8%AE%B0/" class="category-chain-item">攀岩笔记</a>
   
   
 
@@ -603,15 +493,17 @@
     <div class="post-meta">
       <i class="iconfont icon-tags"></i>
       
-        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+        <a href="/tags/%E5%8A%9B%E9%87%8F%E8%AE%AD%E7%BB%83/" class="print-no-link">#力量训练</a>
       
-        <a href="/tags/TTS/" class="print-no-link">#TTS</a>
+        <a href="/tags/%E6%94%80%E5%B2%A9/" class="print-no-link">#攀岩</a>
       
-        <a href="/tags/Speech-Language-Model/" class="print-no-link">#Speech Language Model</a>
+        <a href="/tags/%E8%BF%90%E5%8A%A8%E7%A7%91%E5%AD%A6/" class="print-no-link">#运动科学</a>
       
-        <a href="/tags/vLLM/" class="print-no-link">#vLLM</a>
+        <a href="/tags/%E8%AE%AD%E7%BB%83%E6%95%88%E7%8E%87/" class="print-no-link">#训练效率</a>
       
-        <a href="/tags/Inference/" class="print-no-link">#Inference</a>
+        <a href="/tags/%E6%9E%81%E7%AE%80%E8%AE%AD%E7%BB%83/" class="print-no-link">#极简训练</a>
+      
+        <a href="/tags/Hooper-s-Beta/" class="print-no-link">#Hooper's Beta</a>
       
     </div>
   
@@ -623,8 +515,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>An Efficient vLLM-Based Inference Pipeline for Unified Audio Understanding and Generation</div>
-      <div>https://smallsmartao.github.io/2026/07/06/vLLM-Based-Inference-Pipeline-for-Unified-Audio-Understanding-and-Generation/</div>
+      <div>10 个基于运动科学的攀岩高效训练法：如何在更短时间内变得更强</div>
+      <div>https://smallsmartao.github.io/2026/08/31/2026-08-31-10-science-backed-climbing-training-methods/</div>
     </div>
     <div class="license-meta">
       
@@ -636,13 +528,13 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2026年7月6日</div>
+          <div>2026年8月31日</div>
         </div>
       
       
         <div class="license-meta-item license-meta-date">
           <div>更新于</div>
-          <div>2026年8月18日</div>
+          <div>2026年8月31日</div>
         </div>
       
       
@@ -673,18 +565,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/07/08/%E8%AE%A9%E4%BD%93%E8%84%8214%E6%88%90%E4%B8%BA%E5%B8%B8%E6%80%81%E7%9A%8410%E4%B8%AA%E6%89%8B%E8%89%BA/" title="让体脂14%成为常态——我积累的10个手艺">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">让体脂14%成为常态——我积累的10个手艺</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/07/06/JSTIP-Rethinking-Speech-LLM-Integration-for-ASR/" title="JSTIP: Rethinking Speech-LLM Integration for ASR">
-                        <span class="hidden-mobile">JSTIP: Rethinking Speech-LLM Integration for ASR</span>
+                      <a href="/2026/08/30/2026-08-30-TanChengyi-Beginner-4Split-Strength-Training-Guide/" title="谭成义四分化训练计划">
+                        <span class="hidden-mobile">谭成义四分化训练计划</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
