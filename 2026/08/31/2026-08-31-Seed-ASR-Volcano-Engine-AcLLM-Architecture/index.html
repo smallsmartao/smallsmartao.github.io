@@ -1,0 +1,981 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文标题：Seed-ASR: Understanding Diverse Speech and Contexts with LLM-based Speech Recognition作者单位：ByteDance &#x2F; 字节跳动火山引擎语音团队（豆包大模型语音识别底座）论文链接：arXiv:2407.04675核心定位：工业级超大规模 Speech-LLM 旗舰基线，系统确立了 AcLLM（Audio">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Seed-ASR 深度剖析：火山引擎如何用 AcLLM 与分阶段对齐统一多语种及上下文语音识别">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/08/31/2026-08-31-Seed-ASR-Volcano-Engine-AcLLM-Architecture/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文标题：Seed-ASR: Understanding Diverse Speech and Contexts with LLM-based Speech Recognition作者单位：ByteDance &#x2F; 字节跳动火山引擎语音团队（豆包大模型语音识别底座）论文链接：arXiv:2407.04675核心定位：工业级超大规模 Speech-LLM 旗舰基线，系统确立了 AcLLM（Audio">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_seed_asr.jpg">
+<meta property="article:published_time" content="2026-08-31T10:00:00.000Z">
+<meta property="article:modified_time" content="2026-08-31T09:45:16.139Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="Context-Aware">
+<meta property="article:tag" content="MWER">
+<meta property="article:tag" content="Seed-ASR">
+<meta property="article:tag" content="Speech-LLM">
+<meta property="article:tag" content="字节跳动">
+<meta property="article:tag" content="强化学习">
+<meta property="article:tag" content="语音识别">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_seed_asr.jpg">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Seed-ASR 深度剖析：火山引擎如何用 AcLLM 与分阶段对齐统一多语种及上下文语音识别 - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/banner_seed_asr.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Seed-ASR 深度剖析：火山引擎如何用 AcLLM 与分阶段对齐统一多语种及上下文语音识别"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-08-31 18:00" pubdate>
+          2026年8月31日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          22 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Seed-ASR 深度剖析：火山引擎如何用 AcLLM 与分阶段对齐统一多语种及上下文语音识别</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年8月31日 下午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p><strong>论文标题</strong>：<em>Seed-ASR: Understanding Diverse Speech and Contexts with LLM-based Speech Recognition</em><br><strong>作者单位</strong>：ByteDance / 字节跳动火山引擎语音团队（豆包大模型语音识别底座）<br><strong>论文链接</strong>：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2407.04675">arXiv:2407.04675</a><br><strong>核心定位</strong>：工业级超大规模 Speech-LLM 旗舰基线，系统确立了 <strong>AcLLM（Audio-Conditioned LLM）</strong> 统一架构、四阶段渐进式训练法则（SSL $\to$ SFT $\to$ Context SFT $\to$ RL）、联合束搜索防幻觉解码（Joint Beam Search），以及覆盖多方言、多语种与动态长上下文的工业化评估标准。</p>
+</blockquote>
+<hr>
+<h2 id="1-为什么工业界需要重构端到端-ASR-范式？"><a href="#1-为什么工业界需要重构端到端-ASR-范式？" class="headerlink" title="1. 为什么工业界需要重构端到端 ASR 范式？"></a>1. 为什么工业界需要重构端到端 ASR 范式？</h2><p>过去十余年间，自动语音识别（ASR）技术经历了从 <strong>经典混合框架（Hybrid AM+LM）</strong> 到 <strong>端到端体系（End-to-End，如 CTC、RNN-T/Transducer、AED）</strong> 的演进。然而，传统端到端模型在真实多变的商业场景中正逐渐触碰到天花板：</p>
+<ol>
+<li><strong>常识推理与语义盲区</strong>：传统声学模型通常从零初始化训练，参数量主要消耗在时序声学对齐上，缺乏海量通用世界的文本常识，遇到同音同音异义词（Homophones）、生僻专有名词时，极度依赖外挂的 N-gram 或独立 Neural LM。</li>
+<li><strong>上下文利用生硬低效</strong>：在多轮对话、会议转写、音视频剪辑等场景下，传统做法依赖 FST 浅层热词偏置（Contextual Biasing），只能在解码图层面强行提分，无法理解复杂的长句提示或历史上下文。</li>
+<li><strong>多任务与多方言的割裂</strong>：传统系统针对普通话、方言、外语及带噪场景往往需要独立微调或维护多套子模型，难以统一表征。</li>
+</ol>
+<p>为突破上述瓶颈，字节跳动团队推出了 <strong>Seed-ASR</strong>。它并非简单地把音频编码器接入语言模型，而是提出了一套端到端的 <strong>音频条件大模型（Audio-Conditioned LLM, AcLLM）</strong> 架构与完整的工程闭环。</p>
+<hr>
+<h2 id="2-Seed-ASR-核心模型架构：AcLLM"><a href="#2-Seed-ASR-核心模型架构：AcLLM" class="headerlink" title="2. Seed-ASR 核心模型架构：AcLLM"></a>2. Seed-ASR 核心模型架构：AcLLM</h2><p>Seed-ASR 的核心哲学是：<strong>将语音时序表征与自然语言指令、场景上下文全部统一为 LLM 解码器的输入 Prompt</strong>。</p>
+<p><img src="/images/paper_figs/seed_asr/AcLLM.png" srcset="/img/loading.gif" lazyload alt="Seed-ASR 模型架构"></p>
+<h3 id="2-1-模块构成与数据流"><a href="#2-1-模块构成与数据流" class="headerlink" title="2.1 模块构成与数据流"></a>2.1 模块构成与数据流</h3><p>模型由三大核心组件构成：</p>
+<ol>
+<li><strong>超大规模自监督声学编码器（LUISE）</strong>：<ul>
+<li>采用近 <strong>20 亿参数（2B）</strong> 的 Conformer 结构，在数千万小时的无标注语音数据上完成大规模自监督预训练（SSL）。</li>
+<li>输出帧率为 <strong>40ms</strong> 的连续高维声学特征。</li>
+</ul>
+</li>
+<li><strong>时序转换器（Converter）</strong>：<ul>
+<li>负责完成跨模态降采样与语义维度映射。</li>
+<li>采用 <strong>帧拼接（Frame Splicing）</strong> 方案：将每 4 帧连续的 40ms 声学向量在特征维度拼接后，经由单层线性投射（Linear Projection）映射至 LLM 隐层空间。</li>
+<li>投射后送入 LLM 的语音 Token 帧率为 <strong>160ms/帧</strong>（大幅削减了 LLM 自注意力的序列长度）。</li>
+</ul>
+</li>
+<li><strong>专家混合（MoE）LLM 解码器</strong>：<ul>
+<li>参数量达数百亿规模的 MoE 解码器，负责融合指令、上下文文本与声学特征，以自回归的方式预测最终转录文本。</li>
+</ul>
+</li>
+</ol>
+<h3 id="2-2-统一的-Prompt-设计"><a href="#2-2-统一的-Prompt-设计" class="headerlink" title="2.2 统一的 Prompt 设计"></a>2.2 统一的 Prompt 设计</h3><p>当不存在额外上下文时，输入格式为：<br><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">Transcribe the speech into text: &lt;Speech Tokens&gt;<br></code></pre></td></tr></table></figure><br>当存在业务上下文（如会议摘要、上一轮对话、视频标题、用户偏好热词）时，格式统一为：<br><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">There are relevant contexts, transcribe the speech into text: &lt;Contexts&gt; &lt;Speech Tokens&gt;<br></code></pre></td></tr></table></figure></p>
+<hr>
+<h2 id="3-LUISE：20-亿参数自监督声学底座的迭代提纯"><a href="#3-LUISE：20-亿参数自监督声学底座的迭代提纯" class="headerlink" title="3. LUISE：20 亿参数自监督声学底座的迭代提纯"></a>3. LUISE：20 亿参数自监督声学底座的迭代提纯</h2><p>为了让 LLM 能高效解析声学信号，前端声学特征提取器 <strong>LUISE（Large-scale Unsupervised Iterative Speech Encoder）</strong> 采用了基于 BERT 掩码预测的迭代式离散标签预训练范式。</p>
+<p><img src="/images/paper_figs/seed_asr/LUISE.png" srcset="/img/loading.gif" lazyload alt="LUISE 训练流程"></p>
+<h3 id="3-1-迭代式离散-Tokenizer-机制"><a href="#3-1-迭代式离散-Tokenizer-机制" class="headerlink" title="3.1 迭代式离散 Tokenizer 机制"></a>3.1 迭代式离散 Tokenizer 机制</h3><ol>
+<li><strong>第 1 次迭代（Random Projection）</strong>：<ul>
+<li>从原始音频提取 80 维 Mel-filterbank 特征序列；</li>
+<li>通过一个随机初始化的投影矩阵映射至离散码本，采用最近邻查找为每一帧生成初始的伪离散标签（Discrete Labels）；</li>
+<li>在掩码帧上计算交叉熵损失进行 Masked Language Modeling 预训练。</li>
+</ul>
+</li>
+<li><strong>第 2 次迭代（K-Means 聚类特征）</strong>：<ul>
+<li>从第 1 轮预训练的模型隐层中提取声学表征，使用 K-Means 算法重构高质量声学码本；</li>
+<li>以新码本生成的伪标签重新训练 LUISE。</li>
+</ul>
+</li>
+</ol>
+<h3 id="3-2-隐层探针实验（Layer-Probing）确定最佳语义层"><a href="#3-2-隐层探针实验（Layer-Probing）确定最佳语义层" class="headerlink" title="3.2 隐层探针实验（Layer Probing）确定最佳语义层"></a>3.2 隐层探针实验（Layer Probing）确定最佳语义层</h3><p>为了确定哪一层的特征最适合用于第二轮迭代的码本聚类，作者冻结第一轮训练的 32 层 2B 编码器，并在每一层后外挂单层线性投影与 CTC 损失进行微调测试：</p>
+<p><img src="/images/paper_figs/seed_asr/layer_probing.png" srcset="/img/loading.gif" lazyload alt="LUISE 各隐层探针 WER 评估"></p>
+<ul>
+<li><strong>核心发现</strong>：在 32 层 Conformer 中，<strong>第 25 层</strong> 呈现出最低的字错误率（WER），表明该深度兼顾了声学保真度与高阶语义抽象，因此选定第 25 层表征作为后续离散化的基准。</li>
+</ul>
+<hr>
+<h2 id="4-四阶段渐进式训练法则（Training-Recipe）"><a href="#4-四阶段渐进式训练法则（Training-Recipe）" class="headerlink" title="4. 四阶段渐进式训练法则（Training Recipe）"></a>4. 四阶段渐进式训练法则（Training Recipe）</h2><p>Seed-ASR 成功的关键在于其清晰、解耦的四阶段训练流水线：</p>
+<p><img src="/images/paper_figs/seed_asr/train_stage.png" srcset="/img/loading.gif" lazyload alt="四阶段训练流程"></p>
+<h3 id="阶段-1：大规模无监督-SSL（Audio-Encoder-Pretraining）"><a href="#阶段-1：大规模无监督-SSL（Audio-Encoder-Pretraining）" class="headerlink" title="阶段 1：大规模无监督 SSL（Audio Encoder Pretraining）"></a>阶段 1：大规模无监督 SSL（Audio Encoder Pretraining）</h3><ul>
+<li>在 2000 万小时无标注多语种音频上预训练 LUISE，赋予编码器极致的声学泛化能力。</li>
+</ul>
+<h3 id="阶段-2：监督微调-SFT（Modality-Alignment）"><a href="#阶段-2：监督微调-SFT（Modality-Alignment）" class="headerlink" title="阶段 2：监督微调 SFT（Modality Alignment）"></a>阶段 2：监督微调 SFT（Modality Alignment）</h3><ul>
+<li><strong>训练数据</strong>：近 90 万小时的高精度语音-文本配对数据（Speech-Text Pairs）。</li>
+<li><strong>参数冻结策略</strong>：<strong>可训练的 Audio Encoder + 可训练的 Converter + 冻结的 LLM</strong>。</li>
+<li><strong>为什么固定 LLM？</strong>：如果放开 LLM 参数，在单调的 ASR 任务上极易出现“灾难性遗忘”，导致 LLM 原本强大的常识推理、世界知识与语言组织能力退化。固定 LLM 能强迫 Encoder 与 Converter 将声学表征严格对齐到 LLM 预设的语义流形中。</li>
+</ul>
+<h3 id="阶段-3：上下文感知微调（Context-SFT）"><a href="#阶段-3：上下文感知微调（Context-SFT）" class="headerlink" title="阶段 3：上下文感知微调（Context SFT）"></a>阶段 3：上下文感知微调（Context SFT）</h3><ul>
+<li><strong>痛点</strong>：普通 SFT 模型在面对口音歧义、同音异义词及生僻专有名词时，缺乏结合上下文推理的能力。</li>
+<li><strong>数据构造</strong>：构建 <code>&lt;Context, Speech, Text&gt;</code> 三元组数据。为了比拼接简单长文本历史或孤立热词更加自然，团队利用自研大语言模型生成包含完整语义的自然语言 Context。</li>
+<li><strong>混合训练</strong>：将三元组与通用配对数据按特定比例混合微调，激发 LLM 检索上下文线索并消除声学歧义的能力。</li>
+</ul>
+<h3 id="阶段-4：强化学习与加权-MWER-对齐（Reinforcement-Learning）"><a href="#阶段-4：强化学习与加权-MWER-对齐（Reinforcement-Learning）" class="headerlink" title="阶段 4：强化学习与加权 MWER 对齐（Reinforcement Learning）"></a>阶段 4：强化学习与加权 MWER 对齐（Reinforcement Learning）</h3><ul>
+<li><strong>动机</strong>：交叉熵（CE）在 Token 级计算损失，与序列级评估指标（WER / WWER）存在目标错位。</li>
+<li><strong>损失函数设计</strong>：将最小词错误率（Minimum Word Error Rate, MWER）目标与 CE 进行插值结合：</li>
+</ul>
+<script type="math/tex; mode=display">\mathcal{L}^{\text{N-best}}_{\text{MWER}}(\bm{x}, \bm{y}^*) = \frac{1}{N} \sum_{\bm{y}_i \in \text{N-best}(\bm{x}, N)} \hat{P}(\bm{y}_i | \bm{x}) \left( \mathcal{W}(\bm{y}_i, \bm{y}^*) - \bar{\mathcal{W}} \right) + \lambda \mathcal{L}_{\text{CE}}</script><p>其中 $\mathcal{W}(\bm{y}_i, \bm{y}^<em>)$ 为候选句与真值的加权错误率，对<em>*关键词错误（Keywords）赋予更高惩罚权重（WWER）</em></em>；$\bar{\mathcal{W}}$ 为 $N$-best 候选的平均错误率；归一化概率为：</p>
+<script type="math/tex; mode=display">\hat{P}(\bm{y}_i | \bm{x}) = \frac{P(\bm{y}_i | \bm{x})}{\sum_{\bm{y}_j \in \text{N-best}} P(\bm{y}_j | \bm{x})}</script><hr>
+<h2 id="5-解码期防幻觉：联合束搜索（Joint-Beam-Search）"><a href="#5-解码期防幻觉：联合束搜索（Joint-Beam-Search）" class="headerlink" title="5. 解码期防幻觉：联合束搜索（Joint Beam Search）"></a>5. 解码期防幻觉：联合束搜索（Joint Beam Search）</h2><p>在将 Context 作为 Prompt 输入 LLM 时，所有 Speech-LLM 都会面临严重的 <strong>“过度依赖上下文导致幻觉（Hallucination）”</strong> 问题（例如：文本上下文中提到某人名，音频中明明没说，LLM 却强行输出）。</p>
+<p><img src="/images/paper_figs/seed_asr/context_exp.png" srcset="/img/loading.gif" lazyload alt="上下文偏置与消歧示例"></p>
+<p>Seed-ASR 提出了一种 <strong>双流联合束搜索（Joint Beam Search）与声学校验剪枝</strong> 算法：</p>
+<script type="math/tex; mode=display">P_{\text{joint}}(\bm{y} | \bm{x}, \bm{c}) = \frac{\alpha}{1 + \alpha} P(\bm{y} | \bm{x}, \bm{c}) + \frac{1}{1 + \alpha} P(\bm{y} | \bm{x})</script><h3 id="核心解码执行流程："><a href="#核心解码执行流程：" class="headerlink" title="核心解码执行流程："></a>核心解码执行流程：</h3><ol>
+<li><strong>声学候选硬剪枝</strong>：在生成每个 Token 时，先计算无上下文概率 $P(\bm{y} | \bm{x})$，将声学上明显不合理的 Token 候选直接剔除；</li>
+<li><strong>插值平滑打分</strong>：在留下的高置信度声学候选上，计算加权联合分数 $P_{\text{joint}}$；</li>
+<li><strong>动态平衡</strong>：超参数 $\alpha$ 精准控制上下文先验与声学观测的权重。当输入语音清晰时，声学校验分支强力抑制上下文幻觉；当声学模糊时，上下文分支有效辅助消歧。</li>
+</ol>
+<hr>
+<h2 id="6-全面实验与工业级基准评估"><a href="#6-全面实验与工业级基准评估" class="headerlink" title="6. 全面实验与工业级基准评估"></a>6. 全面实验与工业级基准评估</h2><h3 id="6-1-中文基准（AISHELL-1-AISHELL-2）与多方言表现"><a href="#6-1-中文基准（AISHELL-1-AISHELL-2）与多方言表现" class="headerlink" title="6.1 中文基准（AISHELL-1 / AISHELL-2）与多方言表现"></a>6.1 中文基准（AISHELL-1 / AISHELL-2）与多方言表现</h3><p>Seed-ASR (CN) 在单个统一模型中支持普通话及 <strong>13 种主流汉语方言</strong>（粤语、四川话、闽南语、客家话、吴语等）：</p>
+<ul>
+<li><strong>AISHELL-1 测试集</strong>：字错误率达到惊人的 <strong>0.68%</strong>（对比 Paraformer-large 1.68%、Qwen-Audio 1.3%）；</li>
+<li><strong>13 种方言平均 CER</strong>：达到 <strong>19.09%</strong>，大幅优于微调版 Whisper Medium-v2（21.68%）；</li>
+<li><strong>11 种强口音中文识别</strong>：平均错误率降至 <strong>4.96%</strong>（传统端到端 Transducer 为 13.74%）。</li>
+</ul>
+<p><img src="/images/paper_figs/seed_asr/tr_acc_fig_v6.png" srcset="/img/loading.gif" lazyload alt="多场景与公开集准确率对比"></p>
+<h3 id="6-2-英文与多语种表现（Seed-ASR-ML-vs-Whisper-v3-USM）"><a href="#6-2-英文与多语种表现（Seed-ASR-ML-vs-Whisper-v3-USM）" class="headerlink" title="6.2 英文与多语种表现（Seed-ASR ML vs. Whisper v3 / USM）"></a>6.2 英文与多语种表现（Seed-ASR ML vs. Whisper v3 / USM）</h3><p>Seed-ASR (ML) 在 Librispeech、FLEURS 等公共测试集及海量工业场景中与 Google USM、Whisper Large-v3 进行了正面交锋：</p>
+<ul>
+<li><strong>Librispeech test-clean / other</strong>：WER 分别达到 <strong>1.3% / 2.7%</strong>；</li>
+<li><strong>小语种大幅领跑</strong>：在阿拉伯语（AR）、西班牙语（ES）、日语（JA）、印尼语（ID）等多语种多领域评测集上，Seed-ASR 的错误率相比 Whisper Large-v3 平均下降 <strong>20% ~ 40%</strong>（例如阿拉伯语错误率从 48.31% 骤降至 18.69%）。</li>
+</ul>
+<h3 id="6-3-强化学习与上下文-SFT-消融分析"><a href="#6-3-强化学习与上下文-SFT-消融分析" class="headerlink" title="6.3 强化学习与上下文 SFT 消融分析"></a>6.3 强化学习与上下文 SFT 消融分析</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">训练阶段 / 策略</th>
+<th style="text-align:center">多领域 WER $\downarrow$</th>
+<th style="text-align:center">Hardcase 专名 F1% $\uparrow$</th>
+<th style="text-align:center">Context Strict 召回率% $\uparrow$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Context SFT 基础模型</strong></td>
+<td style="text-align:center">2.02</td>
+<td style="text-align:center">93.39</td>
+<td style="text-align:center">80.63</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>+ RL (普通 WER Reward)</strong></td>
+<td style="text-align:center">1.98</td>
+<td style="text-align:center">93.39</td>
+<td style="text-align:center">75.34 <em>(出现退化)</em></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>+ RL (加权 WWER Reward)</strong></td>
+<td style="text-align:center">1.94</td>
+<td style="text-align:center"><strong>93.78</strong></td>
+<td style="text-align:center">78.01</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>+ RL (WWER + Context 混合数据)</strong></td>
+<td style="text-align:center"><strong>1.94</strong></td>
+<td style="text-align:center">93.72</td>
+<td style="text-align:center"><strong>80.63</strong> <em>(保持极致召回)</em></td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="7-总结与启示"><a href="#7-总结与启示" class="headerlink" title="7. 总结与启示"></a>7. 总结与启示</h2><p>Seed-ASR 的技术方案为下一代语音大模型的工业化落地树立了标杆：</p>
+<ol>
+<li><strong>AcLLM 纯 Prompt 统一范式</strong>：证明了无需在底层针对不同任务设计异构解码器，统一使用声学 Token + 文本 Prompt 是通往通用语音理解的必由之路；</li>
+<li><strong>冻结 LLM + 大规模预训练 Encoder</strong>：在保留百亿 LLM 通用推理能力的同时，通过 2B LUISE 极致对齐模态，兼顾了成本与泛化性；</li>
+<li><strong>联合束搜索与加权 RL 对齐</strong>：从算法层面有效攻克了大模型做 ASR 时的“幻觉臆造”与“关键词漏召”难题。</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech-LLM</a>
+      
+        <a href="/tags/Seed-ASR/" class="print-no-link">#Seed-ASR</a>
+      
+        <a href="/tags/Context-Aware/" class="print-no-link">#Context-Aware</a>
+      
+        <a href="/tags/%E5%AD%97%E8%8A%82%E8%B7%B3%E5%8A%A8/" class="print-no-link">#字节跳动</a>
+      
+        <a href="/tags/%E8%AF%AD%E9%9F%B3%E8%AF%86%E5%88%AB/" class="print-no-link">#语音识别</a>
+      
+        <a href="/tags/%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0/" class="print-no-link">#强化学习</a>
+      
+        <a href="/tags/MWER/" class="print-no-link">#MWER</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Seed-ASR 深度剖析：火山引擎如何用 AcLLM 与分阶段对齐统一多语种及上下文语音识别</div>
+      <div>https://smallsmartao.github.io/2026/08/31/2026-08-31-Seed-ASR-Volcano-Engine-AcLLM-Architecture/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年8月31日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年8月31日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/08/31/2026-08-31-Multimodal-Screen-Visual-Context-Speech-LLM-Survey/" title="从 PPT 文本到跨模态 CoT：视觉与屏幕上下文在 Speech-LLM 中的演进与融合">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">从 PPT 文本到跨模态 CoT：视觉与屏幕上下文在 Speech-LLM 中的演进与融合</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/08/31/2026-08-31-10-science-backed-climbing-training-methods/" title="10 个基于运动科学的攀岩高效训练法：如何在更短时间内变得更强">
+                        <span class="hidden-mobile">10 个基于运动科学的攀岩高效训练法：如何在更短时间内变得更强</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

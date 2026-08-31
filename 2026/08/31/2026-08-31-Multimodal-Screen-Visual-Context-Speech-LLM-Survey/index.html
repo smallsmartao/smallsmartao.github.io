@@ -1,0 +1,947 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="专题论文矩阵：  Do Slides Help? Multi-modal Context for Automatic Transcription of Technical Presentations (EMNLP 2024&#x2F;2025) ContextAVSR (Seeing the Context): Rich Visual Context-Aware Speech Recognition vi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从 PPT 文本到跨模态 CoT：视觉与屏幕上下文在 Speech-LLM 中的演进与融合">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/08/31/2026-08-31-Multimodal-Screen-Visual-Context-Speech-LLM-Survey/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="专题论文矩阵：  Do Slides Help? Multi-modal Context for Automatic Transcription of Technical Presentations (EMNLP 2024&#x2F;2025) ContextAVSR (Seeing the Context): Rich Visual Context-Aware Speech Recognition vi">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/cover_multimodal_screen_asr.jpg">
+<meta property="article:published_time" content="2026-08-31T10:30:00.000Z">
+<meta property="article:modified_time" content="2026-08-31T09:46:03.415Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="ContextAVSR">
+<meta property="article:tag" content="Do-Slides-Help">
+<meta property="article:tag" content="Multimodal">
+<meta property="article:tag" content="Speech-LLM">
+<meta property="article:tag" content="ViLaS">
+<meta property="article:tag" content="视觉上下文">
+<meta property="article:tag" content="跨模态推理">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/cover_multimodal_screen_asr.jpg">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>从 PPT 文本到跨模态 CoT：视觉与屏幕上下文在 Speech-LLM 中的演进与融合 - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/banner_multimodal_screen_asr.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="从 PPT 文本到跨模态 CoT：视觉与屏幕上下文在 Speech-LLM 中的演进与融合"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-08-31 18:30" pubdate>
+          2026年8月31日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          17 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">从 PPT 文本到跨模态 CoT：视觉与屏幕上下文在 Speech-LLM 中的演进与融合</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年8月31日 下午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <blockquote>
+<p><strong>专题论文矩阵</strong>：</p>
+<ol>
+<li><strong>Do Slides Help?</strong> <em>Multi-modal Context for Automatic Transcription of Technical Presentations</em> (EMNLP 2024/2025)</li>
+<li><strong>ContextAVSR (Seeing the Context)</strong>: <em>Rich Visual Context-Aware Speech Recognition via Multimodal Reasoning</em> (Interspeech 2026 / arXiv:2603.07263)</li>
+<li><strong>ViLaS</strong>: <em>Exploring the Effects of Vision and Language Context in Automatic Speech Recognition</em> (ICASSP / arXiv:2305.19972)</li>
+</ol>
+<p><strong>核心导读</strong>：当人类在会议室听学术报告或与智能体交互时，大脑不仅在听（Audio），还在看（Vision）——看着幻灯片上的专有名词缩写、屏幕 UI 或是周围的物理实体。传统的 ASR 系统往往是“闭着眼睛听”，导致生僻术语、同音异义词（Homophones）频繁错漏。本文系统剖析三篇代表性论文，揭示 <strong>“视觉/屏幕上下文如何从简单的外部 OCR 文本拼接，演进到跨模态端到端融合，再到基于多模态思维链（CoT）的深度消歧推理”</strong> 的完整技术脉络。</p>
+</blockquote>
+<hr>
+<h2 id="1-演进全景：视觉上下文辅助-ASR-的三个发展阶段"><a href="#1-演进全景：视觉上下文辅助-ASR-的三个发展阶段" class="headerlink" title="1. 演进全景：视觉上下文辅助 ASR 的三个发展阶段"></a>1. 演进全景：视觉上下文辅助 ASR 的三个发展阶段</h2><p>随着语音大模型（Speech-LLM）的发展，视觉信号作为辅助上下文融入 ASR 的技术路线经历了三次重大跃迁：</p>
+<figure class="highlight brainfuck"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><code class="hljs brainfuck"><span class="hljs-title">[</span><span class="hljs-comment">阶段一: 浅层解耦 (Late Fusion)</span><span class="hljs-title">]</span><br>  <span class="hljs-comment">PPT/屏幕截图</span> <span class="hljs-literal">---</span>&gt; <span class="hljs-comment">OCR 引擎</span> <span class="hljs-literal">---</span>&gt; <span class="hljs-comment">提取文本词表</span> <span class="hljs-literal">---</span>&gt; <span class="hljs-comment">ASR 热词 Prompt / FST 偏置</span><br>       <span class="hljs-comment">↓</span><br><span class="hljs-title">[</span><span class="hljs-comment">阶段二: 跨模态表征对齐 (Early Fusion / ViLaS)</span><span class="hljs-title">]</span><br>  <span class="hljs-comment">图像特征 (ViT)</span> <span class="hljs-literal">+</span> <span class="hljs-comment">语音特征 (Whisper/Conformer)</span> <span class="hljs-literal">---</span>&gt; <span class="hljs-comment">统一注入 LLM Cross</span><span class="hljs-literal">-</span><span class="hljs-comment">Attention / 隐层空间</span><br>       <span class="hljs-comment">↓</span><br><span class="hljs-title">[</span><span class="hljs-comment">阶段三: 跨模态思维链推理 (Multimodal CoT / ContextAVSR)</span><span class="hljs-title">]</span><br>  <span class="hljs-comment">视觉实体感知</span> <span class="hljs-literal">---</span>&gt; <span class="hljs-comment">跨模态候选关联</span> <span class="hljs-literal">---</span>&gt; <span class="hljs-comment">声学</span><span class="hljs-literal">-</span><span class="hljs-comment">语义 CoT 验证</span> <span class="hljs-literal">---</span>&gt; <span class="hljs-comment">高保真消歧转录</span><br></code></pre></td></tr></table></figure>
+<hr>
+<h2 id="2-阶段一：Do-Slides-Help-——-演讲场景下的静态屏幕与-PPT-OCR-上下文"><a href="#2-阶段一：Do-Slides-Help-——-演讲场景下的静态屏幕与-PPT-OCR-上下文" class="headerlink" title="2. 阶段一：Do Slides Help? —— 演讲场景下的静态屏幕与 PPT OCR 上下文"></a>2. 阶段一：Do Slides Help? —— 演讲场景下的静态屏幕与 PPT OCR 上下文</h2><h3 id="2-1-核心痛点与问题定义"><a href="#2-1-核心痛点与问题定义" class="headerlink" title="2.1 核心痛点与问题定义"></a>2.1 核心痛点与问题定义</h3><p>在学术会议（如 NeurIPS、ICASSP）或企业技术分享中，演讲者往往会高频口述生僻专业缩写（如“LoRA”、“MoE”、“DPO”）、专业名词甚至数学符号。这些词汇在通用 ASR 语料中属于极低频的长尾词（Long-tail words）。然而，这些词汇 <strong>几乎 100% 同步出现在当前演讲展示的 PPT 幻灯片（Slides）上</strong>。</p>
+<h3 id="2-2-核心方法架构"><a href="#2-2-核心方法架构" class="headerlink" title="2.2 核心方法架构"></a>2.2 核心方法架构</h3><p>论文提出了一套基于多模态时空对齐的上下文注入流程：</p>
+<ol>
+<li><strong>幻灯片流与时间戳对齐</strong>：视频流按翻页事件切片，获取当前语音时间段内对应的 Slide 图像；</li>
+<li><strong>多尺度 OCR 实体抽取</strong>：采用高精度 OCR 引擎提取幻灯片中的标题、正文、表格词汇，并过滤无意义停用词，构建局部上下文候选库 $\mathcal{C}_{\text{slide}}$；</li>
+<li><strong>动态 Prompt 注入与偏置</strong>：将抽取出的关键词序列与语音表征结合，构建结构化 Prompt 喂入语音模型：<script type="math/tex; mode=display">\mathcal{T} = \text{ASR}(\bm{x}_{\text{audio}} \mid \text{Prompt}(\mathcal{C}_{\text{slide}}))</script></li>
+</ol>
+<h3 id="2-3-关键结论与局限"><a href="#2-3-关键结论与局限" class="headerlink" title="2.3 关键结论与局限"></a>2.3 关键结论与局限</h3><ul>
+<li><strong>收益</strong>：专有名词与技术术语的字错误率（WER）平均下降 <strong>30% 以上</strong>，召回率提升超 45%；</li>
+<li><strong>局限</strong>：严重依赖 OCR 的解析准确率；当幻灯片包含复杂图表、未转化为文字的示意图或 OCR 识别出错时，容易引入误导性噪声。</li>
+</ul>
+<hr>
+<h2 id="3-阶段二：ViLaS-——-视觉图像与文本历史在-Speech-LLM-中的注意力竞争与融合边界"><a href="#3-阶段二：ViLaS-——-视觉图像与文本历史在-Speech-LLM-中的注意力竞争与融合边界" class="headerlink" title="3. 阶段二：ViLaS —— 视觉图像与文本历史在 Speech-LLM 中的注意力竞争与融合边界"></a>3. 阶段二：ViLaS —— 视觉图像与文本历史在 Speech-LLM 中的注意力竞争与融合边界</h2><p>为了摆脱对外部 OCR 管道的依赖，<strong>ViLaS</strong>（<em>Exploring the Effects of Vision and Language Context in ASR</em>）系统性地探索了将原始图像特征（Vision Embedding）与自然语言上下文（Language History）直接同时输入 Speech-LLM 的深层机制。</p>
+<p><img src="/images/paper_figs/vilas/ViLaS-en.png" srcset="/img/loading.gif" lazyload alt="ViLaS 跨模态对齐与架构"></p>
+<h3 id="3-1-跨模态端到端融合架构"><a href="#3-1-跨模态端到端融合架构" class="headerlink" title="3.1 跨模态端到端融合架构"></a>3.1 跨模态端到端融合架构</h3><p>ViLaS 采用多编码器-单解码器框架：</p>
+<ul>
+<li><strong>视觉流</strong>：通过预训练视觉编码器（如 CLIP ViT）提取整帧场景的高维视觉表征 $\bm{H}_V$；</li>
+<li><strong>语音流</strong>：通过语音编码器提取时序声学表征 $\bm{H}_A$；</li>
+<li><strong>语言上下文</strong>：拼接历史多轮文本对话 $\bm{H}_L$；</li>
+<li><strong>跨模态投影对齐</strong>：通过各自的线性映射层（Projectors）将视觉、语音、文本对齐到同一个隐层维度，拼接为统一输入序列：<script type="math/tex; mode=display">\bm{Z} = [\bm{P}_V(\bm{H}_V) \,\|\, \bm{P}_L(\bm{H}_L) \,\|\, \bm{P}_A(\bm{H}_A)]</script></li>
+</ul>
+<p><img src="/images/paper_figs/vilas/all_align-en.png" srcset="/img/loading.gif" lazyload alt="ViLaS 注意力矩阵与模态对齐"></p>
+<h3 id="3-2-深度洞察：模态间的注意力竞争（Attention-Competition）"><a href="#3-2-深度洞察：模态间的注意力竞争（Attention-Competition）" class="headerlink" title="3.2 深度洞察：模态间的注意力竞争（Attention Competition）"></a>3.2 深度洞察：模态间的注意力竞争（Attention Competition）</h3><p>ViLaS 的实验揭示了两个关键现象：</p>
+<ol>
+<li><strong>模态优先级排序</strong>：实验表明，LLM 解码器对输入模态的注意力权重天然呈现出 <strong>语音声学 $\gg$ 文本历史 $&gt;$ 视觉图像</strong> 的偏序；</li>
+<li><strong>视觉信息的消歧边界</strong>：当声学极其清晰时，视觉特征的介入几乎不改变预测分布；<strong>只有在声学遇到环境噪声（SNR 降低）或出现同音异义词（如 “flour” 面粉 vs “flower” 花）时，视觉场景特征才能显著激活并挽救识别错误</strong>。</li>
+</ol>
+<hr>
+<h2 id="4-阶段三：ContextAVSR-——-基于多模态思维链（CoT）的深度视觉推理"><a href="#4-阶段三：ContextAVSR-——-基于多模态思维链（CoT）的深度视觉推理" class="headerlink" title="4. 阶段三：ContextAVSR —— 基于多模态思维链（CoT）的深度视觉推理"></a>4. 阶段三：ContextAVSR —— 基于多模态思维链（CoT）的深度视觉推理</h2><p>2026 年最新的工作 <strong>ContextAVSR</strong>（<em>Seeing the Context: Rich Visual Context-Aware Speech Recognition via Multimodal Reasoning</em>）将视觉辅助 ASR 推向了全新高度：不再停留在被动的特征融合，而是让模型学会像人类一样进行 <strong>跨模态显式思维链（Audio-Visual CoT）推理</strong>。</p>
+<p><img src="/images/paper_figs/context_avsr/overall.png" srcset="/img/loading.gif" lazyload alt="ContextAVSR 总体理念"></p>
+<h3 id="4-1-核心机制：Audio-Visual-CoT-推理范式"><a href="#4-1-核心机制：Audio-Visual-CoT-推理范式" class="headerlink" title="4.1 核心机制：Audio-Visual CoT 推理范式"></a>4.1 核心机制：Audio-Visual CoT 推理范式</h3><p>ContextAVSR 指出，端到端黑盒生成往往容易在复杂视觉场景下“看走眼”或者产生幻觉。为此，模型在生成最终转录文本前，必须经过两步中间推理（CoT）：</p>
+<p><img src="/images/paper_figs/context_avsr/model.png" srcset="/img/loading.gif" lazyload alt="ContextAVSR 模型架构与推理步骤"></p>
+<ol>
+<li><strong>Step 1: 视觉实体检索与候选生成（Visual Entity Grounding）</strong><br>模型首先根据视觉画面和初始声学特征，显式识别并输出当前场景中存在的关键视觉实体候选集：<script type="math/tex; mode=display">\hat{\mathcal{E}} = \text{Reasoning}_{\text{visual}}(\bm{V}, \bm{A})</script></li>
+<li><strong>Step 2: 跨模态一致性校验（Acoustic-Visual Cross Verification）</strong><br>模型比对声学音素序列与视觉实体发音，排除声学上不匹配的视觉干扰项，确认上下文关键词；</li>
+<li><strong>Step 3: 最终高保真转录（Final Transcription）</strong><br>在 CoT 约束下生成最终转录句子，杜绝了无端幻觉。</li>
+</ol>
+<h3 id="4-2-实验表现与突破"><a href="#4-2-实验表现与突破" class="headerlink" title="4.2 实验表现与突破"></a>4.2 实验表现与突破</h3><p>在包含高难度同音词、视觉强相关语境的权威数据集上：</p>
+<ul>
+<li>相比于标准 Speech-LLM（仅纯语音），ContextAVSR 在视觉实体词上的识别准确率（Entity Recall）提升了 <strong>42.3%</strong>；</li>
+<li>彻底解决了多说话人场景中“只听声音分不清是谁”以及“同音词误判为常见词”的顽疾。</li>
+</ul>
+<hr>
+<h2 id="5-三大方案对比与工程落地选型指南"><a href="#5-三大方案对比与工程落地选型指南" class="headerlink" title="5. 三大方案对比与工程落地选型指南"></a>5. 三大方案对比与工程落地选型指南</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th style="text-align:left">维度</th>
+<th style="text-align:left">方案 1: Do Slides Help? (OCR 管道)</th>
+<th style="text-align:left">方案 2: ViLaS (跨模态特征拼接)</th>
+<th style="text-align:left">方案 3: ContextAVSR (多模态 CoT 推理)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>视觉输入形式</strong></td>
+<td style="text-align:left">静态 PPT 截图 $\to$ 结构化 OCR 文本</td>
+<td style="text-align:left">整帧原始图像 $\to$ ViT 密集特征向量</td>
+<td style="text-align:left">原始视频/图像流 + 动态检测框</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>架构改动</strong></td>
+<td style="text-align:left">零改动（纯 Prompt 工程或 FST 偏置）</td>
+<td style="text-align:left">需要新增 Vision Projector 联合微调</td>
+<td style="text-align:left">端到端多模态大模型 + CoT 训练微调</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>处理同音词能力</strong></td>
+<td style="text-align:left">中（依赖 OCR 是否覆盖该词）</td>
+<td style="text-align:left">良好（利用场景隐式语义消歧）</td>
+<td style="text-align:left"><strong>极强（显式跨模态逻辑校验）</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>幻觉风险</strong></td>
+<td style="text-align:left">较低（可通过文本硬匹配约束）</td>
+<td style="text-align:left">较高（容易过度拟合图像特征）</td>
+<td style="text-align:left"><strong>极低（两阶段 CoT 相互校验）</strong></td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>算力与延迟</strong></td>
+<td style="text-align:left">轻量，延迟主要在 OCR 阶段</td>
+<td style="text-align:left">中等（ViT 增加额外序列长度）</td>
+<td style="text-align:left">较高（自回归生成 CoT 带来额外 Token）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>推荐适用场景</strong></td>
+<td style="text-align:left">会议软件（Zoom/腾讯会议）屏幕共享转录</td>
+<td style="text-align:left">移动端智能助手（带摄像头随身交互）</td>
+<td style="text-align:left">高精度法庭/医疗/专业学术汇报多模态归档</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+<h2 id="6-总结与展望"><a href="#6-总结与展望" class="headerlink" title="6. 总结与展望"></a>6. 总结与展望</h2><p>从 <em>Do Slides Help</em> 的外挂文本偏置，到 <em>ViLaS</em> 的注意力机理探索，再到 <em>ContextAVSR</em> 的跨模态 CoT 逻辑推理，视觉与语音的融合已经完成了从“表层结合”向“深层认知”的蜕变。未来的智能语音交互系统，必然是视觉与听觉深度协同、互为校验的统一多模态具身大脑！</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E7%BB%BC%E8%BF%B0/" class="category-chain-item">论文综述</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech-LLM</a>
+      
+        <a href="/tags/Multimodal/" class="print-no-link">#Multimodal</a>
+      
+        <a href="/tags/ContextAVSR/" class="print-no-link">#ContextAVSR</a>
+      
+        <a href="/tags/ViLaS/" class="print-no-link">#ViLaS</a>
+      
+        <a href="/tags/Do-Slides-Help/" class="print-no-link">#Do-Slides-Help</a>
+      
+        <a href="/tags/%E8%A7%86%E8%A7%89%E4%B8%8A%E4%B8%8B%E6%96%87/" class="print-no-link">#视觉上下文</a>
+      
+        <a href="/tags/%E8%B7%A8%E6%A8%A1%E6%80%81%E6%8E%A8%E7%90%86/" class="print-no-link">#跨模态推理</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>从 PPT 文本到跨模态 CoT：视觉与屏幕上下文在 Speech-LLM 中的演进与融合</div>
+      <div>https://smallsmartao.github.io/2026/08/31/2026-08-31-Multimodal-Screen-Visual-Context-Speech-LLM-Survey/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年8月31日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年8月31日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/08/31/2026-08-31-Robust-Context-Noise-Learning-and-Gated-Biasing-Speech-LLM/" title="上下文也会骗人？Speech-LLM 的抗噪表征学习 (CNRL) 与动态置信度门控机制">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">上下文也会骗人？Speech-LLM 的抗噪表征学习 (CNRL) 与动态置信度门控机制</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/08/31/2026-08-31-Seed-ASR-Volcano-Engine-AcLLM-Architecture/" title="Seed-ASR 深度剖析：火山引擎如何用 AcLLM 与分阶段对齐统一多语种及上下文语音识别">
+                        <span class="hidden-mobile">Seed-ASR 深度剖析：火山引擎如何用 AcLLM 与分阶段对齐统一多语种及上下文语音识别</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
