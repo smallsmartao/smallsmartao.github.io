@@ -236,23 +236,23 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" target="_self">
-          <img src="/images/paper_img/conv_timing_asr_cover_pixel.png" srcset="/img/loading.gif" lazyload alt="On the Role of Conversational Timing in Synthetic Training Data for ASR">
+        <a href="/2026/07/10/2026-07-10-SpeechKV/" target="_self">
+          <img src="/images/paper_img/speechkv_cover_pixel.png" srcset="/img/loading.gif" lazyload alt="Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs">
         </a>
       </div>
     
     <article class="col-12 col-md-8 mx-auto index-info">
       <h2 class="index-header">
         
-        <a href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" target="_self">
-          On the Role of Conversational Timing in Synthetic Training Data for ASR
+        <a href="/2026/07/10/2026-07-10-SpeechKV/" target="_self">
+          Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs
         </a>
       </h2>
 
       
-      <a class="index-excerpt " href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" target="_self">
+      <a class="index-excerpt " href="/2026/07/10/2026-07-10-SpeechKV/" target="_self">
         <div>
-          为什么需要研究对话时序？合成多说话人对话数据已成为训练对话式 ASR 系统的标准做法。但一个核心问题长期被忽视：哪些时序属性（timing properties）使得模拟数据对下游模型真正有用？ 现有模拟管线的设计哲学几乎都围绕”真实感”（realism）——从真实语料估计停顿和重叠的分布，然后让合成对话复现这些统计量。这是合理的起点，但真实感并不等于训练有效性。一个忠实于语料的分布未必是 ASR
+          为什么需要 SpeechKV？Speech LLM 面临一个根本性的效率瓶颈：语音序列远长于文本。英语 ASR 中，一个文本 token 对应约 300ms 语音，而常见语音编码器每 80ms 产生一帧——同等语义信息下，语音序列长度约为文本的 4 倍。在自回归解码阶段，模型需在每一步 attend 所有前序位置，KV cache 的线性增长直接导致延迟和显存消耗随序列长度线性增长。 现有方案的标
         </div>
       </a>
 
@@ -291,13 +291,13 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
-            
               <a href="/tags/ASR/">#ASR</a>
             
-              <a href="/tags/Conversational-AI/">#Conversational AI</a>
+              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
             
-              <a href="/tags/Data-Augmentation/">#Data Augmentation</a>
+              <a href="/tags/Speech-LLM/">#Speech LLM</a>
+            
+              <a href="/tags/KV-Cache/">#KV Cache</a>
             
           </div>
         
@@ -441,9 +441,9 @@
             
               <a href="/tags/TTS/">#TTS</a>
             
-              <a href="/tags/Speech-Language-Model/">#Speech Language Model</a>
-            
               <a href="/tags/vLLM/">#vLLM</a>
+            
+              <a href="/tags/Speech-Language-Model/">#Speech Language Model</a>
             
               <a href="/tags/Inference/">#Inference</a>
             
@@ -512,9 +512,9 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
-            
               <a href="/tags/ASR/">#ASR</a>
+            
+              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
             
               <a href="/tags/LLM/">#LLM</a>
             
@@ -587,9 +587,9 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/Speech-LLM/">#Speech LLM</a>
-            
               <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
+            
+              <a href="/tags/Speech-LLM/">#Speech LLM</a>
             
               <a href="/tags/Model-Merging/">#Model Merging</a>
             
@@ -658,9 +658,9 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
-            
               <a href="/tags/ASR/">#ASR</a>
+            
+              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
             
               <a href="/tags/Speech-Processing/">#Speech Processing</a>
             
@@ -877,9 +877,9 @@
           <div class="post-meta">
             <i class="iconfont icon-tags"></i>
             
-              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
-            
               <a href="/tags/ASR/">#ASR</a>
+            
+              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
             
               <a href="/tags/Attention/">#Attention</a>
             
