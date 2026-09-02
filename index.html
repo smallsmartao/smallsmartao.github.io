@@ -236,6 +236,81 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2026/09/02/context-aware-interleaved-batching-whisperx/" target="_self">
+          <img src="/images/paper_img/whisperx_interleaved_batching.png" srcset="/img/loading.gif" lazyload alt="Context-Aware Interleaved Batching for WhisperX: 兼顾高吞吐并发与历史文本上下文的长音频转录方案">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/09/02/context-aware-interleaved-batching-whisperx/" target="_self">
+          Context-Aware Interleaved Batching for WhisperX: 兼顾高吞吐并发与历史文本上下文的长音频转录方案
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt " href="/2026/09/02/context-aware-interleaved-batching-whisperx/" target="_self">
+        <div>
+          在长音频自动语音识别（ASR）的实际落地部署中，系统往往面临吞吐量（Throughput）与上下文一致性（Context Awareness）不可兼得的核心工程矛盾：  标准 OpenAI Whisper：采用串行滑窗自回归解码，支持通过 condition_on_previous_text 传递前文文本上下文，但由于依赖模型内部不稳定的时间戳预测来移动音频窗口，极易陷入幻觉死循环（Halluci
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-09-02 10:31" pubdate>
+              2026-09-02
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/ASR/">#ASR</a>
+            
+              <a href="/tags/Whisper/">#Whisper</a>
+            
+              <a href="/tags/WhisperX/">#WhisperX</a>
+            
+              <a href="/tags/Batching/">#Batching</a>
+            
+              <a href="/tags/Speech-Recognition/">#Speech Recognition</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+      <div class="col-12 col-md-4 m-auto index-img">
         <a href="/2026/08/31/2026-08-31-Robust-Context-Noise-Learning-and-Gated-Biasing-Speech-LLM/" target="_self">
           <img src="/images/paper_img/cover_robust_gated_context_asr.jpg" srcset="/img/loading.gif" lazyload alt="上下文也会骗人？Speech-LLM 的抗噪表征学习 (CNRL) 与动态置信度门控机制">
         </a>
@@ -926,83 +1001,6 @@
               <a href="/tags/Implicit-CoT/">#Implicit CoT</a>
             
               <a href="/tags/Speech-to-Speech/">#Speech-to-Speech</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/08/24/turbobias-2/" target="_self">
-          <img src="/images/paper_img/cover_turbobias2.png" srcset="/img/loading.gif" lazyload alt="TurboBias 2.0: Streaming Context-Biasing for Production-Efficient ASR Systems">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/08/24/turbobias-2/" target="_self">
-          TurboBias 2.0: Streaming Context-Biasing for Production-Efficient ASR Systems
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/08/24/turbobias-2/" target="_self">
-        <div>
-          导读与核心背景在生产级自动语音识别（ASR）系统中，上下文偏置（Context-Biasing / Keyword Boosting）是保障专业领域词汇（如人名、公司名、医学术语、股票代码等）准确率的核心模块。尽管现有研究提出了多种基于 Deep Fusion（引入 Cross-Attention / 适配器）或 Shallow Fusion（解码打分修正）的热词增强方法，但在真实的工业落地场景中
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-08-24 10:10" pubdate>
-              2026-08-24
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/ASR/">#ASR</a>
-            
-              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
-            
-              <a href="/tags/Streaming/">#Streaming</a>
-            
-              <a href="/tags/Transducer/">#Transducer</a>
-            
-              <a href="/tags/Context-Biasing/">#Context Biasing</a>
-            
-              <a href="/tags/Beam-Search/">#Beam Search</a>
             
           </div>
         
