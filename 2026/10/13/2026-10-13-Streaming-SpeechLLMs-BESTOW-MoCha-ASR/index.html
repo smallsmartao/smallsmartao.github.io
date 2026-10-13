@@ -1,0 +1,1599 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="把 decoder-only 大语言模型接入语音识别并不困难：用语音编码器产生连续特征，将其映射为 LLM 可以读取的表示，再让 LLM 自回归生成转写即可。真正困难的是流式化。标准 decoder-only SpeechLLM 通常要求完整语音位于文本之前；而流式系统必须在音频仍持续到达时决定两个问题：当前信息是否足以输出下一个 token，以及输出后应当读取多少新语音。 本文联合解读两项沿着同">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Streaming SpeechLLMs: From BESTOW&#39;s Fixed Wait-k to MoCha-ASR&#39;s Adaptive Latency Optimization">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/10/13/2026-10-13-Streaming-SpeechLLMs-BESTOW-MoCha-ASR/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="把 decoder-only 大语言模型接入语音识别并不困难：用语音编码器产生连续特征，将其映射为 LLM 可以读取的表示，再让 LLM 自回归生成转写即可。真正困难的是流式化。标准 decoder-only SpeechLLM 通常要求完整语音位于文本之前；而流式系统必须在音频仍持续到达时决定两个问题：当前信息是否足以输出下一个 token，以及输出后应当读取多少新语音。 本文联合解读两项沿着同">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/streaming-speech-llm-bestow-mocha-asr.png">
+<meta property="article:published_time" content="2026-10-13T12:28:00.000Z">
+<meta property="article:modified_time" content="2026-10-13T12:35:07.228Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="Decoder-Only LLM">
+<meta property="article:tag" content="Latency Optimization">
+<meta property="article:tag" content="MoChA">
+<meta property="article:tag" content="Speech LLM">
+<meta property="article:tag" content="Streaming ASR">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/streaming-speech-llm-bestow-mocha-asr.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Streaming SpeechLLMs: From BESTOW&#39;s Fixed Wait-k to MoCha-ASR&#39;s Adaptive Latency Optimization - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/home-video-banner.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/streaming-speech-llm-bestow-mocha-asr.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Streaming SpeechLLMs: From BESTOW&#39;s Fixed Wait-k to MoCha-ASR&#39;s Adaptive Latency Optimization"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-13 20:28" pubdate>
+          2026年10月13日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          32 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Streaming SpeechLLMs: From BESTOW&#39;s Fixed Wait-k to MoCha-ASR&#39;s Adaptive Latency Optimization</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年10月13日 晚上
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <p>把 decoder-only 大语言模型接入语音识别并不困难：用语音编码器产生连续特征，将其映射为 LLM 可以读取的表示，再让 LLM 自回归生成转写即可。真正困难的是<strong>流式化</strong>。标准 decoder-only SpeechLLM 通常要求完整语音位于文本之前；而流式系统必须在音频仍持续到达时决定两个问题：当前信息是否足以输出下一个 token，以及输出后应当读取多少新语音。</p>
+<p>本文联合解读两项沿着同一问题连续推进的工作：</p>
+<ul>
+<li><strong>BESTOW: Efficient and Streamable Speech Language Model with the Best of Two Worlds in GPT and T5</strong>（NVIDIA，arXiv:2406.19954，2024）：将语音—文本融合从 LLM 主干中解耦为输入侧 cross-attention，并以固定 <strong>wait-$k$</strong> 策略实现统一的离线/流式、多任务 SpeechLLM。</li>
+<li><strong>Streaming Speech Recognition with Decoder-Only Large Language Models and Latency Optimization</strong>（中国科学技术大学、科大讯飞、陕西师范大学，arXiv:2601.22779，2026；下文简称 <strong>MoCha-ASR</strong>）：用基于 MoChA 的策略网络学习 token 级语音边界，以自适应 READ/WRITE 替代固定 wait-$k$，并通过最小延迟训练直接压缩输出滞后。</li>
+</ul>
+<p>两篇论文并不是两个互不相关的结构。BESTOW 首先证明：只要把“读多少语音”从 LLM 中分离出来，decoder-only LLM 就可以流式工作；MoCha-ASR 随后追问：<strong>既然 READ/WRITE 已经是独立决策，为什么仍由人工固定，而不能由模型根据每个 token 的声学证据自适应决定？</strong></p>
+<p>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2406.19954">BESTOW</a>；<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2601.22779">MoCha-ASR</a></p>
+<hr>
+<h2 id="1-统一问题：decoder-only-SpeechLLM-为什么难以流式化"><a href="#1-统一问题：decoder-only-SpeechLLM-为什么难以流式化" class="headerlink" title="1. 统一问题：decoder-only SpeechLLM 为什么难以流式化"></a>1. 统一问题：decoder-only SpeechLLM 为什么难以流式化</h2><h3 id="1-1-离线-SpeechLLM-的因果顺序与在线输入冲突"><a href="#1-1-离线-SpeechLLM-的因果顺序与在线输入冲突" class="headerlink" title="1.1 离线 SpeechLLM 的因果顺序与在线输入冲突"></a>1.1 离线 SpeechLLM 的因果顺序与在线输入冲突</h3><p>设语音编码器将输入 $X$ 转换为连续表示 $h_{1:N}$，目标文本为 $Y=(y_1,\ldots,y_L)$。典型 GPT-style SpeechLLM 把全部语音表示置于文本 token 之前：</p>
+<script type="math/tex; mode=display">
+[h_1,\ldots,h_N,y_1,\ldots,y_{L-1}],</script><p>并建模</p>
+<script type="math/tex; mode=display">
+P(Y\mid X)=\prod_{i=2}^{L}P(y_i\mid h_{1:N},y_{1:i-1};\theta_{\mathrm{LLM}}).</script><p>这种排列适合离线识别，但在 $y_2$ 生成之前便要求 $h_{1:N}$ 全部存在。若简单把不断到达的语音块插入已生成文本之间，输入格式便从 LLM 预训练时的连续文本序列变成“语音块—文本—语音块—文本”，甚至还要引入 WAIT、BLANK 等控制 token。结果是：</p>
+<ol>
+<li>离线与流式 prompt 格式不一致，削弱预训练 LLM 的知识迁移；</li>
+<li>每次追加语音都可能改变长前缀，KV cache 难以直接复用；</li>
+<li>固定音频块忽略不同 token 所需声学上下文的差异；</li>
+<li>如果依赖外部 CTC 或混合系统预先对齐，训练链路不再完全由目标任务端到端决定。</li>
+</ol>
+<h3 id="1-2-流式-SpeechLLM-本质上是-READ-WRITE-策略"><a href="#1-2-流式-SpeechLLM-本质上是-READ-WRITE-策略" class="headerlink" title="1.2 流式 SpeechLLM 本质上是 READ/WRITE 策略"></a>1.2 流式 SpeechLLM 本质上是 READ/WRITE 策略</h3><p>在任一输出步骤 $i$，系统只有两类操作：</p>
+<ul>
+<li><strong>READ</strong>：暂不输出，继续接收语音；</li>
+<li><strong>WRITE</strong>：利用当前已读语音与历史文本生成 $y_i$。</li>
+</ul>
+<p>因此，关键变量不是“是否使用 LLM”，而是每个 token 的读取边界 $t_i$：</p>
+<script type="math/tex; mode=display">
+0=t_1\le t_2\le\cdots\le t_L\le N.</script><p>一旦 $t_i$ 确定，流式识别可写为</p>
+<script type="math/tex; mode=display">
+P(Y\mid X)=\prod_{i=2}^{L}P\!\left(y_i\mid h_{1:t_i},y_{1:i-1}\right).</script><p>BESTOW 与 MoCha-ASR 的分歧正发生在这里：BESTOW 用人工定义的固定速率产生 $t_i$；MoCha-ASR 用单独的单调注意力策略网络学习 $t_i$。</p>
+<hr>
+<h2 id="2-BESTOW：先把语音读取从-LLM-主干中解耦"><a href="#2-BESTOW：先把语音读取从-LLM-主干中解耦" class="headerlink" title="2. BESTOW：先把语音读取从 LLM 主干中解耦"></a>2. BESTOW：先把语音读取从 LLM 主干中解耦</h2><h2 id="2-1-为什么-GPT-style-与-T5-style-都不理想"><a href="#2-1-为什么-GPT-style-与-T5-style-都不理想" class="headerlink" title="2.1 为什么 GPT-style 与 T5-style 都不理想"></a>2.1 为什么 GPT-style 与 T5-style 都不理想</h2><p>BESTOW 将已有 SpeechLLM 分为两类。</p>
+<p><strong>GPT-style / Speech-LLaMA-style</strong> 把语音 prompt 与文本 prompt 直接拼接，再送入 decoder-only LLM。设文本长度为 $L_t$、语音特征长度为 $L_a$，LLM self-attention 的复杂度为</p>
+<script type="math/tex; mode=display">
+O\!\left((L_t+L_a)^2\right)
+=O\!\left(L_t^2+L_a^2+2L_tL_a\right).</script><p>由于 $L_a\gg L_t$，主要成本来自每一层 LLM 对长语音序列反复进行 self-attention。大幅下采样虽可减轻成本，却可能损失语音细节。</p>
+<p><strong>T5-style / Flamingo-style</strong> 在 LLM 的多个层中加入 speech cross-attention。语音信息可以深入访问每层隐状态，但附加参数与计算随 LLM 深度增长，也更难保持主干完全模块化。</p>
+<p>BESTOW 的目标是保留两者优势：像 GPT-style 一样不改造每个 LLM block，又像 T5-style 一样通过 cross-attention 访问语音。</p>
+<h2 id="2-2-输入侧-cross-attention：文本作为-Query，语音作为-Key-Value"><a href="#2-2-输入侧-cross-attention：文本作为-Query，语音作为-Key-Value" class="headerlink" title="2.2 输入侧 cross-attention：文本作为 Query，语音作为 Key/Value"></a>2.2 输入侧 cross-attention：文本作为 Query，语音作为 Key/Value</h2><p><img src="/images/paper_figs/bestow_read_write_framework.png" srcset="/img/loading.gif" lazyload alt="BESTOW 将流式 SpeechLLM 表述为 READ/WRITE 策略问题"></p>
+<p><img src="/images/paper_figs/bestow_architecture_comparison.png" srcset="/img/loading.gif" lazyload alt="Speech-LLaMA/SALM 与 BESTOW 的架构对比"></p>
+<p>BESTOW 不把语音序列送入 LLM self-attention，而是在 LLM 输入之前放置一个小型 Transformer-like 特征提取器：</p>
+<ol>
+<li>语音编码器输出 $A=(a_1,\ldots,a_{L_a})$，作为 cross-attention 的 Key 与 Value；</li>
+<li>文本 prompt 与历史输出 token 经 LLM 原始 embedding 得到 $E=(e_1,\ldots,e_{L_t})$；</li>
+<li>因果 self-attention 先让当前文本 query 汇总历史文本；</li>
+<li>cross-attention 再以该文本状态为 Query，从语音特征中提取当前步骤相关的信息；</li>
+<li>cross-attention 输出与原始文本 embedding 残差相加，再送入未改变的 decoder-only LLM。</li>
+</ol>
+<p>可概括为</p>
+<script type="math/tex; mode=display">
+Q=\operatorname{CausalSelfAttn}(E),</script><script type="math/tex; mode=display">
+C=\operatorname{CrossAttn}(Q,A,A),</script><script type="math/tex; mode=display">
+Z=E+C,</script><p>其中 $Z$ 是 LLM 真正接收的输入表示。残差路径使模型在不需要语音时可以忽略 $C$，退化为原始文本 LLM；语音相关模块则集中在输入侧，便于冻结 LLM 或使用 LoRA。</p>
+<p>论文最终使用两层“causal self-attention + cross-attention”。这里的 self-attention 不是多余组件：它让当前 query 包含历史 token，否则 cross-attention 只能按孤立 token 查询语音。</p>
+<h3 id="2-2-1-复杂度为何下降"><a href="#2-2-1-复杂度为何下降" class="headerlink" title="2.2.1 复杂度为何下降"></a>2.2.1 复杂度为何下降</h3><p>BESTOW 的主要注意力成本变为</p>
+<script type="math/tex; mode=display">
+O(L_t^2+L_tL_a),</script><p>消除了发生在深层 LLM 中的 $L_a^2$ 项。论文将其描述为在 $L_a\gg L_t$ 时理论收益随语音长度增长。严格地说，实际端到端加速还受语音编码器、cross-attention、KV cache 与硬件利用率影响，不能直接把复杂度比值等同于墙钟加速；实验测得的收益是训练速度从 0.50 提高到 0.59–0.60 step/s，而不是数量级提升。</p>
+<h2 id="2-3-从离线到流式：固定-wait-k-策略"><a href="#2-3-从离线到流式：固定-wait-k-策略" class="headerlink" title="2.3 从离线到流式：固定 wait-$k$ 策略"></a>2.3 从离线到流式：固定 wait-$k$ 策略</h2><p>有了独立 cross-attention 后，LLM 每一步能看到多少语音不再由 LLM 输入长度决定，而由 cross-attention 的可见范围决定。BESTOW 采用固定策略：</p>
+<ul>
+<li>$P$：语音编码器下采样率；</li>
+<li>$L$：每次决策新增的编码器步数；</li>
+<li>单次 READ 对应 $L\times P\times10\text{ ms}$；</li>
+<li>$K$：首次 WRITE 前等待的决策块数。</li>
+</ul>
+<p>模型先读取 $K L$ 个语音 embedding，再生成第一个 subword；此后每新增 $L$ 个 embedding 生成一个 subword。若第 $i$ 个输出从 1 开始计，则其可见语音长度近似为</p>
+<script type="math/tex; mode=display">
+g(i)=\min\bigl(KL+(i-1)L,\,L_a\bigr).</script><p>这是一条固定斜率的读取轨迹。它的优点是简单、稳定、无需 token 级对齐；缺点是所有 token 按相同节奏前进，无法根据音节时长、停顿、语言顺序差异或语义歧义调整边界。</p>
+<p>训练时 $K$ 从一定范围随机采样，使同一模型在推理时可以改变 $K$，以延迟换质量。论文默认 $L=4$、$P=8$；ASR 使用 $K=6$，其余任务使用 $K=10$，训练时在 $[3,12]$ 采样 $K$。</p>
+<h2 id="2-4-两种流式语音编码器"><a href="#2-4-两种流式语音编码器" class="headerlink" title="2.4 两种流式语音编码器"></a>2.4 两种流式语音编码器</h2><p>仅限制 cross-attention 可见范围还不够；若语音编码器本身读取未来帧，系统仍不是真正的低延迟模型。BESTOW 给出两条路径。</p>
+<h3 id="2-4-1-BESTOW-S-bidi"><a href="#2-4-1-BESTOW-S-bidi" class="headerlink" title="2.4.1 BESTOW-S-bidi"></a>2.4.1 BESTOW-S-bidi</h3><p>保留双向编码器，每到一个新语音块便重新计算当前所有可用状态，并在推理时保留固定 13 帧右上下文以缓解训练/推理失配。其识别与翻译质量更高，但重复计算未计入论文主要 LAAL 指标，因此“算法滞后较低”不等于“计算感知延迟同样低”。</p>
+<h3 id="2-4-2-BESTOW-S-unid"><a href="#2-4-2-BESTOW-S-unid" class="headerlink" title="2.4.2 BESTOW-S-unid"></a>2.4.2 BESTOW-S-unid</h3><p>将 FastConformer 改为 cache-aware 单向流式编码器，因果卷积可选择上下文配置</p>
+<script type="math/tex; mode=display">
+[[70,13],[70,6],[70,1],[70,0]].</script><p>该版本可以缓存历史状态，在线计算更符合真实部署，但整体质量低于双向重算版本。论文先在 LibriLight 上用 wav2vec 2.0 目标预训练 cache-aware 编码器，再从离线 BESTOW 初始化流式模型并继续训练。</p>
+<hr>
+<h2 id="3-BESTOW-实验：效率、流式能力与多任务规模"><a href="#3-BESTOW-实验：效率、流式能力与多任务规模" class="headerlink" title="3. BESTOW 实验：效率、流式能力与多任务规模"></a>3. BESTOW 实验：效率、流式能力与多任务规模</h2><h2 id="3-1-数据、模型与优化"><a href="#3-1-数据、模型与优化" class="headerlink" title="3.1 数据、模型与优化"></a>3.1 数据、模型与优化</h2><p>训练数据由 31K 小时公开语音、54K 小时内部 ASR/AST 数据以及约 2K 小时合成 MSMARCO SpeechQA 和 DynamicSuperb 数据组成，总计约 87K 小时。四种主要语言的 ASR/AST 数据分别为英语 67.4K、德语 6.1K、西班牙语 6.6K、法语 5.1K 小时。</p>
+<p>模型配置为：</p>
+<ul>
+<li>语音编码器：Canary-1B 初始化；</li>
+<li>LLM：TinyLlama-1.1B-chat；</li>
+<li>融合模块：2 层 cross-attention Transformer；</li>
+<li>总参数量：约 1.8B，默认全参数训练；</li>
+<li>训练：128 张 A100 80GB、60K step、约一天；每卡 batch duration 360 秒；</li>
+<li>优化：Distributed Fused Adam，学习率 $10^{-4}$，权重衰减 $10^{-3}$，梯度裁剪 1.0。</li>
+</ul>
+<p>论文同时评估 ASR、语音翻译（AST）、SpeechQA（SQA）和未见过的 DynamicSuperb 任务；流式延迟使用 <strong>non-computation-aware LAAL</strong>。这一限定非常重要：它衡量输出相对输入的算法滞后，不包含双向重算与硬件执行时间。</p>
+<h2 id="3-2-离线与流式多任务结果"><a href="#3-2-离线与流式多任务结果" class="headerlink" title="3.2 离线与流式多任务结果"></a>3.2 离线与流式多任务结果</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th style="text-align:right">LAAL↓</th>
+<th style="text-align:right">LS WER↓</th>
+<th style="text-align:right">Giga WER↓</th>
+<th style="text-align:right">AST en-de↑</th>
+<th style="text-align:right">de-en↑</th>
+<th style="text-align:right">es-en↑</th>
+<th style="text-align:right">fr-en↑</th>
+<th style="text-align:right">SQA ROUGE-L↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QWEN-Audio</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">4.2</td>
+<td style="text-align:right">10.2</td>
+<td style="text-align:right">25.1</td>
+<td style="text-align:right">33.9</td>
+<td style="text-align:right">39.7</td>
+<td style="text-align:right">38.5</td>
+<td style="text-align:right">39.7</td>
+</tr>
+<tr>
+<td>SALMONN</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">4.9</td>
+<td style="text-align:right">10.0</td>
+<td style="text-align:right">18.6</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">48.8</td>
+</tr>
+<tr>
+<td><strong>BESTOW（离线）</strong></td>
+<td style="text-align:right">—</td>
+<td style="text-align:right"><strong>3.2</strong></td>
+<td style="text-align:right"><strong>9.9</strong></td>
+<td style="text-align:right">39.0</td>
+<td style="text-align:right"><strong>39.0</strong></td>
+<td style="text-align:right"><strong>41.1</strong></td>
+<td style="text-align:right"><strong>41.0</strong></td>
+<td style="text-align:right"><strong>59.8</strong></td>
+</tr>
+<tr>
+<td>BESTOW-S-bidi</td>
+<td style="text-align:right">ASR 3.0 / AST 3.9</td>
+<td style="text-align:right">3.5</td>
+<td style="text-align:right">10.4</td>
+<td style="text-align:right"><strong>39.2</strong></td>
+<td style="text-align:right">37.9</td>
+<td style="text-align:right">40.1</td>
+<td style="text-align:right">40.3</td>
+<td style="text-align:right">52.3</td>
+</tr>
+<tr>
+<td>BESTOW-S-unid</td>
+<td style="text-align:right">ASR 2.9 / AST 3.9</td>
+<td style="text-align:right">4.3</td>
+<td style="text-align:right">10.8</td>
+<td style="text-align:right">36.6</td>
+<td style="text-align:right">34.9</td>
+<td style="text-align:right">37.7</td>
+<td style="text-align:right">37.6</td>
+<td style="text-align:right">47.7</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>BESTOW 的核心证据不是单一 ASR 数字，而是<strong>同一骨干在流式状态下仍覆盖 ASR、AST、SQA 与未见任务</strong>。但代价也清晰：单向真流式编码器在 LS 上从离线 3.2 WER 退化到 4.3，双向重算版则为 3.5；SQA 从 59.8 降到 52.3/47.7。需要更长语义上下文的任务对早期 WRITE 更敏感。</p>
+<p>DynamicSuperb 六类未见任务结果如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th style="text-align:right">CNT</th>
+<th style="text-align:right">SPK</th>
+<th style="text-align:right">SEM</th>
+<th style="text-align:right">DEG</th>
+<th style="text-align:right">PRL</th>
+<th style="text-align:right">AUD</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Whisper-LLM</td>
+<td style="text-align:right">8.7</td>
+<td style="text-align:right">60.6</td>
+<td style="text-align:right">20.9</td>
+<td style="text-align:right">59.0</td>
+<td style="text-align:right">6.6</td>
+<td style="text-align:right">15.9</td>
+</tr>
+<tr>
+<td>BESTOW</td>
+<td style="text-align:right">100.0</td>
+<td style="text-align:right">81.0</td>
+<td style="text-align:right">75.0</td>
+<td style="text-align:right">43.5</td>
+<td style="text-align:right">46.0</td>
+<td style="text-align:right">2.0</td>
+</tr>
+<tr>
+<td>BESTOW-S-bidi</td>
+<td style="text-align:right">94.0</td>
+<td style="text-align:right">59.5</td>
+<td style="text-align:right">76.5</td>
+<td style="text-align:right">39.0</td>
+<td style="text-align:right">47.0</td>
+<td style="text-align:right">1.0</td>
+</tr>
+<tr>
+<td>BESTOW-S-unid</td>
+<td style="text-align:right">97.5</td>
+<td style="text-align:right">79.5</td>
+<td style="text-align:right">76.5</td>
+<td style="text-align:right">76.5</td>
+<td style="text-align:right">39.0</td>
+<td style="text-align:right">2.5</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>其中 AUD 任务明显偏弱，符合训练数据约 99% 为非音频事件语音数据这一限制。不同类别测试规模较小，逐列比较应谨慎看待。</p>
+<h2 id="3-3-离线-ASR-AST-与基础编码器对比"><a href="#3-3-离线-ASR-AST-与基础编码器对比" class="headerlink" title="3.3 离线 ASR/AST 与基础编码器对比"></a>3.3 离线 ASR/AST 与基础编码器对比</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th style="text-align:right">数据量</th>
+<th style="text-align:right">HF-Lead WER↓</th>
+<th style="text-align:right">En↓</th>
+<th style="text-align:right">De↓</th>
+<th style="text-align:right">Es↓</th>
+<th style="text-align:right">Fr↓</th>
+<th style="text-align:right">En→De BLEU↑</th>
+<th style="text-align:right">En→Es↑</th>
+<th style="text-align:right">En→Fr↑</th>
+<th style="text-align:right">De→En↑</th>
+<th style="text-align:right">Es→En↑</th>
+<th style="text-align:right">Fr→En↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SeamlessM4T-medium 1.2B</td>
+<td style="text-align:right">4M h</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">10.25</td>
+<td style="text-align:right">9.32</td>
+<td style="text-align:right">7.25</td>
+<td style="text-align:right">11.07</td>
+<td style="text-align:right">28.30</td>
+<td style="text-align:right">21.05</td>
+<td style="text-align:right">37.36</td>
+<td style="text-align:right">33.39</td>
+<td style="text-align:right">21.68</td>
+<td style="text-align:right">31.02</td>
+</tr>
+<tr>
+<td>SeamlessM4T-large-v2 2.3B</td>
+<td style="text-align:right">4M h</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">7.47</td>
+<td style="text-align:right">5.82</td>
+<td style="text-align:right">4.82</td>
+<td style="text-align:right">7.75</td>
+<td style="text-align:right"><strong>33.17</strong></td>
+<td style="text-align:right"><strong>23.72</strong></td>
+<td style="text-align:right"><strong>43.05</strong></td>
+<td style="text-align:right"><strong>37.06</strong></td>
+<td style="text-align:right"><strong>25.41</strong></td>
+<td style="text-align:right">30.94</td>
+</tr>
+<tr>
+<td>Whisper-large-v3 1.5B</td>
+<td style="text-align:right">5M h</td>
+<td style="text-align:right">7.16</td>
+<td style="text-align:right">9.92</td>
+<td style="text-align:right">6.17</td>
+<td style="text-align:right">4.94</td>
+<td style="text-align:right">11.18</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">33.40</td>
+<td style="text-align:right">22.70</td>
+<td style="text-align:right">33.70</td>
+</tr>
+<tr>
+<td>Canary-1B</td>
+<td style="text-align:right">85K h</td>
+<td style="text-align:right">6.67</td>
+<td style="text-align:right">7.97</td>
+<td style="text-align:right">4.61</td>
+<td style="text-align:right">3.99</td>
+<td style="text-align:right">6.53</td>
+<td style="text-align:right">32.15</td>
+<td style="text-align:right">22.66</td>
+<td style="text-align:right">40.77</td>
+<td style="text-align:right">33.99</td>
+<td style="text-align:right">21.80</td>
+<td style="text-align:right">30.95</td>
+</tr>
+<tr>
+<td><strong>BESTOW 1.8B</strong></td>
+<td style="text-align:right"><strong>87K h</strong></td>
+<td style="text-align:right"><strong>6.50</strong></td>
+<td style="text-align:right"><strong>7.31</strong></td>
+<td style="text-align:right"><strong>4.16</strong></td>
+<td style="text-align:right"><strong>3.77</strong></td>
+<td style="text-align:right"><strong>6.18</strong></td>
+<td style="text-align:right">31.98</td>
+<td style="text-align:right">23.08</td>
+<td style="text-align:right">41.90</td>
+<td style="text-align:right">35.75</td>
+<td style="text-align:right">23.86</td>
+<td style="text-align:right"><strong>35.10</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>BESTOW 相比其语音初始化来源 Canary-1B 在所有列均有改善，说明输入侧 cross-attention 并未阻断 LLM 文本知识迁移；但 AST 并非全面超过训练数据远多于它的 SeamlessM4T-large-v2。</p>
+<h2 id="3-4-架构效率与-cross-attention-消融"><a href="#3-4-架构效率与-cross-attention-消融" class="headerlink" title="3.4 架构效率与 cross-attention 消融"></a>3.4 架构效率与 cross-attention 消融</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th style="text-align:right">速度（step/s）↑</th>
+<th style="text-align:right">A100 显存占比↓</th>
+<th style="text-align:right">ASR En WER↓</th>
+<th style="text-align:right">De↓</th>
+<th style="text-align:right">AST En→De BLEU↑</th>
+<th style="text-align:right">De→En↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prepend（Speech-LLaMA）</td>
+<td style="text-align:right">0.50</td>
+<td style="text-align:right">69%</td>
+<td style="text-align:right">7.2</td>
+<td style="text-align:right">4.1</td>
+<td style="text-align:right"><strong>32.1</strong></td>
+<td style="text-align:right">36.0</td>
+</tr>
+<tr>
+<td>X-Attn（BESTOW）</td>
+<td style="text-align:right">0.59</td>
+<td style="text-align:right"><strong>58%</strong></td>
+<td style="text-align:right">7.3</td>
+<td style="text-align:right">4.1</td>
+<td style="text-align:right">32.0</td>
+<td style="text-align:right">35.8</td>
+</tr>
+<tr>
+<td>X-Attn + LoRA</td>
+<td style="text-align:right"><strong>0.60</strong></td>
+<td style="text-align:right">—</td>
+<td style="text-align:right"><strong>7.0</strong></td>
+<td style="text-align:right">4.1</td>
+<td style="text-align:right">31.6</td>
+<td style="text-align:right"><strong>36.2</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>与直接 prepend 相比，BESTOW 在近似精度下训练吞吐提高 18%，显存占比从 69% 降至 58%。LoRA 结果相近，但论文指出其收敛需要约 170K step，而全参数版本约 60K step，因此每步更便宜不等于总训练成本必然更低。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>融合结构</th>
+<th style="text-align:right">可训练参数</th>
+<th style="text-align:right">LibriSpeech test-other WER↓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8 ×（Self-Attn + X-Attn）</td>
+<td style="text-align:right">276M</td>
+<td style="text-align:right">5.6</td>
+</tr>
+<tr>
+<td><strong>2 ×（Self-Attn + X-Attn）</strong></td>
+<td style="text-align:right"><strong>175M</strong></td>
+<td style="text-align:right"><strong>5.6</strong></td>
+</tr>
+<tr>
+<td>1 ×（Self-Attn + X-Attn）</td>
+<td style="text-align:right">158M</td>
+<td style="text-align:right">5.8</td>
+</tr>
+<tr>
+<td>1 × X-Attn，无 Self-Attn</td>
+<td style="text-align:right">154M</td>
+<td style="text-align:right">6.1</td>
+</tr>
+<tr>
+<td>2 × RNN + 1 × X-Attn</td>
+<td style="text-align:right">203M</td>
+<td style="text-align:right">5.7</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>两层已经与八层持平；完全去掉 self-attention 则由 5.6 退化到 6.1。RNN 可恢复到 5.7，进一步说明关键不是某种特定 self-attention 形式，而是 cross-attention 的 query 必须编码文本历史。</p>
+<h2 id="3-5-延迟—质量曲线"><a href="#3-5-延迟—质量曲线" class="headerlink" title="3.5 延迟—质量曲线"></a>3.5 延迟—质量曲线</h2><p><img src="/images/paper_figs/bestow_laal_asr.png" srcset="/img/loading.gif" lazyload alt="BESTOW-S-bidi 流式 ASR 的延迟—质量权衡"></p>
+<p><img src="/images/paper_figs/bestow_laal_ast.png" srcset="/img/loading.gif" lazyload alt="BESTOW-S-bidi 同声传译的延迟—质量权衡"></p>
+<p>通过推理时改变 $K$，BESTOW 可以沿固定读取轨迹平移首个输出时刻，形成连续的延迟—质量折中。它解决了“同一模型如何切换延迟档位”，但没有解决“同一句话中不同 token 应等待多久”。这正是 MoCha-ASR 的起点。</p>
+<hr>
+<h2 id="4-MoCha-ASR：从固定节奏转向-token-级自适应边界"><a href="#4-MoCha-ASR：从固定节奏转向-token-级自适应边界" class="headerlink" title="4. MoCha-ASR：从固定节奏转向 token 级自适应边界"></a>4. MoCha-ASR：从固定节奏转向 token 级自适应边界</h2><h2 id="4-1-非流式基线：连续语音-soft-prompt"><a href="#4-1-非流式基线：连续语音-soft-prompt" class="headerlink" title="4.1 非流式基线：连续语音 soft prompt"></a>4.1 非流式基线：连续语音 soft prompt</h2><p><img src="/images/paper_figs/mocha_asr_offline_arch.png" srcset="/img/loading.gif" lazyload alt="非流式 decoder-only LLM ASR 架构"></p>
+<p>MoCha-ASR 首先建立标准非流式模型：Conformer 将 $X$ 编码为声学表示，前馈 adaptor 将其投影到 LLM 词嵌入空间，形成 $h_{1:N}$；decoder-only LLM 再按</p>
+<script type="math/tex; mode=display">
+P(Y\mid X)=\prod_{i=2}^{L}P(y_i\mid h_{1:N},y_{1:i-1};\theta_{\mathrm{LLM}})</script><p>生成文本。$y_1$ 和 $y_L$ 分别为 BOS 与 EOS。训练只在文本位置计算交叉熵，语音 prompt 位置被 mask；LLM 通过 LoRA 适配。</p>
+<h2 id="4-2-流式声学编码：只有历史上下文的-context-sensitive-chunking"><a href="#4-2-流式声学编码：只有历史上下文的-context-sensitive-chunking" class="headerlink" title="4.2 流式声学编码：只有历史上下文的 context-sensitive chunking"></a>4.2 流式声学编码：只有历史上下文的 context-sensitive chunking</h2><p>输入语音被切成固定 chunk，每个 chunk 附加历史上下文，不使用未来上下文。训练时各 chunk 可并行送入 Conformer；随后丢弃上下文帧对应输出，把有效区域重新拼接为 utterance-level 表示。实验设置为：</p>
+<ul>
+<li>chunk：0.4 秒；</li>
+<li>左上下文：1.6 秒；</li>
+<li>未来上下文：0；</li>
+<li>因此算法上的新增编码等待由当前 0.4 秒 chunk 决定，而不会额外偷看未来帧。</li>
+</ul>
+<p>这一步只保证声学编码可在线执行，尚未决定何时让 LLM输出。</p>
+<h2 id="4-3-MoChA-策略网络：学习每个-token-的读取终点"><a href="#4-3-MoChA-策略网络：学习每个-token-的读取终点" class="headerlink" title="4.3 MoChA 策略网络：学习每个 token 的读取终点"></a>4.3 MoChA 策略网络：学习每个 token 的读取终点</h2><p><img src="/images/paper_figs/mocha_asr_streaming_arch.png" srcset="/img/loading.gif" lazyload alt="MoCha-ASR 的流式架构与语音—文本交错序列"></p>
+<p>策略网络由轻量 decoder 与 Monotonic Chunkwise Attention（MoChA）构成。输出步骤 $i$ 从上次边界 $t_{i-1}$ 开始顺序扫描编码帧，对每个位置 $j$ 计算选择概率</p>
+<script type="math/tex; mode=display">
+p_{i,j}=\sigma\!\left(e_{i,j}\right),</script><p>其中 $e_{i,j}$ 由 decoder 状态与第 $j$ 帧声学表示共同决定。当 $p_{i,j}$ 超过阈值时，触发 WRITE，并令</p>
+<script type="math/tex; mode=display">
+t_i=j.</script><p>普通 hard monotonic attention 只选单帧；MoChA 在该硬边界附近再执行局部 soft chunkwise attention，使策略 decoder 可以汇聚一个小窗口，而非把 token 判断压在单帧上。最终得到与 $[y_2,\ldots,y_L]$ 同步的边界序列 $[t_1,\ldots,t_L]$，其中 $t_1=0$。</p>
+<p>直观上，token $y_i$ 只在收到新语音段</p>
+<script type="math/tex; mode=display">
+h_{t_{i-1}+1:t_i}</script><p>后生成。不同 token 的段长可以不同：短音节、清晰词可较早触发；歧义或长音节可以继续 READ。</p>
+<h2 id="4-4-把语音段与文本历史交错输入-LLM"><a href="#4-4-把语音段与文本历史交错输入-LLM" class="headerlink" title="4.4 把语音段与文本历史交错输入 LLM"></a>4.4 把语音段与文本历史交错输入 LLM</h2><p>根据策略网络边界，训练序列被重排为</p>
+<script type="math/tex; mode=display">
+H_y=
+[h_{t_1+1:t_2},y_1,
+ h_{t_2+1:t_3},y_2,
+ \ldots,
+ h_{t_{L-1}+1:t_L},y_{L-1}].</script><p>于是 LLM 的条件概率为</p>
+<script type="math/tex; mode=display">
+P(Y\mid X)=\prod_{i=2}^{L}
+P\!\left(
+ y_i\mid
+ h_{t_1+1:t_2},y_1,\ldots,
+ h_{t_{i-1}+1:t_i},y_{i-1};
+ \theta_{\mathrm{LLM}}
+\right).</script><p>$L_{\mathrm{LLM}}$ 只在每个语音段最后一个位置计算，用于预测紧随其后的 token。这样既保留 decoder-only LLM 的因果计算，又让每次追加的声学信息恰好位于需要它的文本 token 之前。</p>
+<p>这里与 BESTOW 有结构性差异：BESTOW 保持纯文本 prompt 格式，由 cross-attention mask 控制可见语音；MoCha-ASR 显式构造“新语音段—历史 token”的交错序列。前者更利于统一多任务 prompt，后者更直接地把自适应边界落实为 decoder-only 输入。</p>
+<h2 id="4-5-三部分训练目标"><a href="#4-5-三部分训练目标" class="headerlink" title="4.5 三部分训练目标"></a>4.5 三部分训练目标</h2><h3 id="4-5-1-LLM-token-损失"><a href="#4-5-1-LLM-token-损失" class="headerlink" title="4.5.1 LLM token 损失"></a>4.5.1 LLM token 损失</h3><script type="math/tex; mode=display">
+L_{\mathrm{LLM}}
+=-\sum_{i=2}^{L}\log P(y_i\mid H_{y,<i}).</script><p>它联合更新语音编码器、adaptor、策略网络所影响的边界以及 LLM LoRA 参数。</p>
+<h3 id="4-5-2-策略-decoder-损失"><a href="#4-5-2-策略-decoder-损失" class="headerlink" title="4.5.2 策略 decoder 损失"></a>4.5.2 策略 decoder 损失</h3><p>MoChA 内部的小 decoder 使用与 LLM 相同的词表，并以交叉熵 $L_{\mathrm{MoChA}}$ 学习目标 token。它的输出仅用于训练策略网络；推理时真正的文字输出仍来自 LLM，因此不会额外融合两个 decoder 的分数。</p>
+<h3 id="4-5-3-最小延迟训练（minLT）"><a href="#4-5-3-最小延迟训练（minLT）" class="headerlink" title="4.5.3 最小延迟训练（minLT）"></a>4.5.3 最小延迟训练（minLT）</h3><p>仅依赖识别交叉熵时，策略只要在足够晚的位置触发也能得到正确 token，缺乏主动提前的压力。作者用 HMM 混合 ASR 系统生成 token 边界 $b_i$，并对 MoChA 的边缘对齐概率 $\alpha_{i,j}$ 施加</p>
+<script type="math/tex; mode=display">
+L_{\mathrm{minLT}}
+=\frac{1}{L}\sum_{i=2}^{L}\sum_{j=1}^{N}
+\left|j\alpha_{i,j}-b_i\right|.</script><p>总目标为</p>
+<script type="math/tex; mode=display">
+L_{\mathrm{total}}
+=L_{\mathrm{LLM}}+L_{\mathrm{MoChA}}+\lambda L_{\mathrm{minLT}},</script><p>实验中 $\lambda=0.1$。这里保留的是论文正式版本印出的双重求和形式 $\sum_j|j\alpha_{i,j}-b_i|$；常见的“期望边界误差”写法则会把绝对值放在 $\sum_jj\alpha_{i,j}$ 之后。论文文字称其为 expected latency objective，但没有解释这两种形式的差别，复现时不能在不说明的情况下互换。</p>
+<p>这形成一个需要准确表述的边界：<strong>主识别路径与边界策略可以联合训练，但 minLT 的监督仍来自外部 HMM 强制对齐。</strong> 因而 MoCha-ASR 避免了推理期级联对齐，也允许联合优化；它并非在所有训练信号上都摆脱外部对齐器。</p>
+<h2 id="4-6-流式与非流式联合训练"><a href="#4-6-流式与非流式联合训练" class="headerlink" title="4.6 流式与非流式联合训练"></a>4.6 流式与非流式联合训练</h2><p>两种模式共享语音编码器、adaptor、LLM 及其 LoRA 参数，只在 forward 路径上不同。每个 batch 随机选择流式或非流式模式：</p>
+<ul>
+<li>非流式路径使用完整 $h_{1:N}$；</li>
+<li>流式路径使用 MoChA 产生的分段交错序列。</li>
+</ul>
+<p>这不是两个模型之间的知识蒸馏，而是参数完全共享的多路径训练。目标是用一套权重同时支持两种运行模式，减少训练和维护成本。</p>
+<h2 id="4-7-在线推理循环"><a href="#4-7-在线推理循环" class="headerlink" title="4.7 在线推理循环"></a>4.7 在线推理循环</h2><p>推理时重复以下过程：</p>
+<ol>
+<li>context-sensitive chunk encoder 接收新语音并产生增量表示；</li>
+<li>策略网络从上个边界继续扫描；</li>
+<li>未触发则继续 READ；</li>
+<li>触发后，将缓冲的新语音段与上一 token 输入 LLM；</li>
+<li>LLM 生成下一 token；</li>
+<li>该 token 同时反馈给 LLM 历史与 MoChA decoder；</li>
+<li>直到 LLM 输出 EOS。</li>
+</ol>
+<p>因此策略 decoder 决定“何时写”，LLM 决定“写什么”。模块职责是明确分离的。</p>
+<hr>
+<h2 id="5-MoCha-ASR-实验：识别率与-token-级延迟"><a href="#5-MoCha-ASR-实验：识别率与-token-级延迟" class="headerlink" title="5. MoCha-ASR 实验：识别率与 token 级延迟"></a>5. MoCha-ASR 实验：识别率与 token 级延迟</h2><h2 id="5-1-数据与模型配置"><a href="#5-1-数据与模型配置" class="headerlink" title="5.1 数据与模型配置"></a>5.1 数据与模型配置</h2><p>论文使用三个普通话数据集：</p>
+<ul>
+<li>AISHELL-1：165 小时，训练/开发/测试约 120K/14K/7K 条；</li>
+<li>AISHELL-2：1000 小时，开发 2500 条、测试 5000 条；</li>
+<li>内部多领域 MD：约 1 小时，仅测试，覆盖金融、教育、影视等领域。</li>
+</ul>
+<p>模型为 12 层 Conformer（8 头、hidden 512、FFN 2048），adaptor hidden 1024、GELU；LLM 为 Qwen2.5-1.5B（28 层、12 头、hidden 1536），保留原 tokenizer 与词表。LoRA 注入 attention 的 Q/K/V/O 投影，rank 32，$\alpha=64$。优化器为 AdamW，三角循环学习率在 0 与 $1.5\times10^{-4}$ 之间变化，每 25K step 一个周期，总计 100K step；测试 beam size 为 10。</p>
+<h2 id="5-2-AISHELL-1、AISHELL-2-与跨域结果"><a href="#5-2-AISHELL-1、AISHELL-2-与跨域结果" class="headerlink" title="5.2 AISHELL-1、AISHELL-2 与跨域结果"></a>5.2 AISHELL-1、AISHELL-2 与跨域结果</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>架构</th>
+<th style="text-align:center">流式</th>
+<th style="text-align:right">AISHELL-1 CER↓</th>
+<th style="text-align:right">AISHELL-2 CER↓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>WeNet-U2</td>
+<td>Encoder–Decoder</td>
+<td style="text-align:center">否</td>
+<td style="text-align:right">5.0</td>
+<td style="text-align:right">6.1</td>
+</tr>
+<tr>
+<td>Baseline-non-stream</td>
+<td>Encoder–Decoder</td>
+<td style="text-align:center">否</td>
+<td style="text-align:right">6.5</td>
+<td style="text-align:right">5.9</td>
+</tr>
+<tr>
+<td>Baseline-stream</td>
+<td>Encoder–Decoder + MoChA</td>
+<td style="text-align:center">是</td>
+<td style="text-align:right">6.9</td>
+<td style="text-align:right">6.1</td>
+</tr>
+<tr>
+<td>BTI</td>
+<td>Decoder-only</td>
+<td style="text-align:center">是</td>
+<td style="text-align:right">5.9</td>
+<td style="text-align:right">7.2</td>
+</tr>
+<tr>
+<td>BESTOW（作者复现）</td>
+<td>Decoder-only</td>
+<td style="text-align:center">是</td>
+<td style="text-align:right">5.3</td>
+<td style="text-align:right">5.6</td>
+</tr>
+<tr>
+<td><strong>MoCha-ASR</strong></td>
+<td>Decoder-only</td>
+<td style="text-align:center">否</td>
+<td style="text-align:right"><strong>4.9</strong></td>
+<td style="text-align:right"><strong>5.0</strong></td>
+</tr>
+<tr>
+<td><strong>MoCha-ASR</strong></td>
+<td>Decoder-only</td>
+<td style="text-align:center">是</td>
+<td style="text-align:right"><strong>5.1</strong></td>
+<td style="text-align:right"><strong>5.5</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>注意 BESTOW 数字是 MoCha-ASR 作者在其设置下的复现，不能与 BESTOW 原论文的英语 LibriSpeech WER 直接比较。相同普通话测试条件下，MoCha-ASR 相对 BESTOW 的改善为 AISHELL-1 绝对 0.2 CER、AISHELL-2 绝对 0.1 CER，优势存在但并不大；更实质的增量是它提供了可直接优化的 token 边界与延迟目标。</p>
+<p>内部 MD 集结果：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th style="text-align:center">流式</th>
+<th style="text-align:right">MD CER↓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Baseline-non-stream</td>
+<td style="text-align:center">否</td>
+<td style="text-align:right">8.0</td>
+</tr>
+<tr>
+<td>Baseline-stream</td>
+<td style="text-align:center">是</td>
+<td style="text-align:right">9.6</td>
+</tr>
+<tr>
+<td>MoCha-ASR</td>
+<td style="text-align:center">否</td>
+<td style="text-align:right"><strong>6.7</strong></td>
+</tr>
+<tr>
+<td>MoCha-ASR</td>
+<td style="text-align:center">是</td>
+<td style="text-align:right"><strong>7.6</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>流式模式较同权重非流式模式分别退化 AISHELL-1 0.2、AISHELL-2 0.5、MD 0.9 CER；跨域数据上的差距更大，提示策略边界在域外声学条件下仍是脆弱环节。</p>
+<h2 id="5-3-minLT-将平均-token-延迟从-640-ms-降到-240-ms"><a href="#5-3-minLT-将平均-token-延迟从-640-ms-降到-240-ms" class="headerlink" title="5.3 minLT 将平均 token 延迟从 640 ms 降到 240 ms"></a>5.3 minLT 将平均 token 延迟从 640 ms 降到 240 ms</h2><p>论文使用强制对齐边界衡量首 token、中间 token、末 token 和全序列平均延迟。每帧为 40 ms。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th style="text-align:right">CER↓</th>
+<th style="text-align:right">First（帧）</th>
+<th style="text-align:right">Mid（帧）</th>
+<th style="text-align:right">Last（帧）</th>
+<th style="text-align:right">Avg（帧）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Baseline-stream</td>
+<td style="text-align:right">6.1</td>
+<td style="text-align:right">19</td>
+<td style="text-align:right">15</td>
+<td style="text-align:right">7</td>
+<td style="text-align:right">15</td>
+</tr>
+<tr>
+<td>MoCha-ASR，无 minLT</td>
+<td style="text-align:right"><strong>5.4</strong></td>
+<td style="text-align:right">18</td>
+<td style="text-align:right">15</td>
+<td style="text-align:right">9</td>
+<td style="text-align:right">16</td>
+</tr>
+<tr>
+<td><strong>MoCha-ASR + minLT</strong></td>
+<td style="text-align:right">5.5</td>
+<td style="text-align:right"><strong>10</strong></td>
+<td style="text-align:right"><strong>5</strong></td>
+<td style="text-align:right"><strong>2</strong></td>
+<td style="text-align:right"><strong>6</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>换算为时间：</p>
+<ul>
+<li>平均：$16\times40=640$ ms → $6\times40=240$ ms，下降 <strong>62.5%</strong>；</li>
+<li>首 token：720 ms → 400 ms；</li>
+<li>中间 token：600 ms → 200 ms；</li>
+<li>末 token：360 ms → 80 ms；</li>
+<li>CER 只从 5.4% 增至 5.5%。</li>
+</ul>
+<p>这组结果还揭示了一个反直觉现象：没有 minLT 时，MoCha-ASR 虽然比 encoder–decoder 流式基线更准，却并不更快，平均延迟甚至从 15 帧升到 16 帧。<strong>可学习边界本身不会自动产生低延迟；必须在目标函数中显式赋予“尽早输出”价值。</strong></p>
+<h2 id="5-4-联合训练、LoRA-与预训练初始化消融"><a href="#5-4-联合训练、LoRA-与预训练初始化消融" class="headerlink" title="5.4 联合训练、LoRA 与预训练初始化消融"></a>5.4 联合训练、LoRA 与预训练初始化消融</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>设置</th>
+<th style="text-align:right">非流式 CER↓</th>
+<th style="text-align:right">流式 CER↓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>完整 MoCha-ASR</strong></td>
+<td style="text-align:right"><strong>5.0</strong></td>
+<td style="text-align:right"><strong>5.5</strong></td>
+</tr>
+<tr>
+<td>不联合训练</td>
+<td style="text-align:right">5.1</td>
+<td style="text-align:right">5.6</td>
+</tr>
+<tr>
+<td>不使用 LoRA，冻结 LLM</td>
+<td style="text-align:right">5.4</td>
+<td style="text-align:right">5.7</td>
+</tr>
+<tr>
+<td>不使用 Qwen 预训练初始化</td>
+<td style="text-align:right">6.5</td>
+<td style="text-align:right">7.2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>联合训练只带来 0.1 CER，但其意义在工程统一，而不是显著精度增益。冻结 LLM 而不使用 LoRA 造成 0.2–0.4 CER 损失；随机初始化 LLM 则造成 1.5–1.7 CER 损失，说明提升并非只来自一个拥有 1.5B 参数的随机 decoder，预训练语言知识确实参与了识别。</p>
+<hr>
+<h2 id="6-两项工作的直接对照：从“能流式”到“学会何时输出”"><a href="#6-两项工作的直接对照：从“能流式”到“学会何时输出”" class="headerlink" title="6. 两项工作的直接对照：从“能流式”到“学会何时输出”"></a>6. 两项工作的直接对照：从“能流式”到“学会何时输出”</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>BESTOW</th>
+<th>MoCha-ASR</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>核心问题</td>
+<td>如何兼顾流式、多任务与计算效率</td>
+<td>如何让 decoder-only ASR 自适应分段并降低 token 延迟</td>
+</tr>
+<tr>
+<td>语音注入</td>
+<td>LLM 输入前的 2 层 cross-attention</td>
+<td>语音段与文本 token 显式交错为 soft prompt</td>
+</tr>
+<tr>
+<td>READ/WRITE</td>
+<td>固定 wait-$k$</td>
+<td>MoChA 学习 token 级边界</td>
+</tr>
+<tr>
+<td>策略可适应内容</td>
+<td>否；同一固定速率</td>
+<td>是；不同 token 可读取不同长度</td>
+</tr>
+<tr>
+<td>延迟控制</td>
+<td>推理时调 $K$，形成全局档位</td>
+<td>minLT 直接约束边界，可压缩逐 token 延迟</td>
+</tr>
+<tr>
+<td>对齐依赖</td>
+<td>wait-$k$ 无需 token 强制对齐</td>
+<td>minLT 使用 HMM 强制对齐监督</td>
+</tr>
+<tr>
+<td>流式编码器</td>
+<td>双向重算或 cache-aware 单向 FastConformer</td>
+<td>无未来上下文的 context-sensitive chunking Conformer</td>
+</tr>
+<tr>
+<td>离线/流式统一</td>
+<td>同一 cross-attention 骨干，流式模型由离线模型继续训练</td>
+<td>全参数共享，batch 随机走两条 forward 路径</td>
+</tr>
+<tr>
+<td>任务范围</td>
+<td>ASR、AST、SQA、DynamicSuperb</td>
+<td>普通话 ASR</td>
+</tr>
+<tr>
+<td>LLM</td>
+<td>TinyLlama-1.1B-chat</td>
+<td>Qwen2.5-1.5B</td>
+</tr>
+<tr>
+<td>主要延迟指标</td>
+<td>non-computation-aware LAAL</td>
+<td>相对强制对齐边界的 token 延迟</td>
+</tr>
+<tr>
+<td>主要优势</td>
+<td>多任务、效率、prompt 兼容性</td>
+<td>自适应边界、低延迟、流/非流联合训练</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>二者的演进关系可以概括为三步：</p>
+<ol>
+<li><strong>结构解耦</strong>：BESTOW 把语音访问放到 LLM 外部的小型 cross-attention 中，证明 LLM 不必直接吞下整段语音序列；</li>
+<li><strong>策略显式化</strong>：一旦语音访问独立，流式就可以被写成 READ/WRITE；BESTOW 用固定 wait-$k$ 建立可运行基线；</li>
+<li><strong>策略学习化</strong>：MoCha-ASR 用单调策略网络取代固定节奏，并加入边界监督，让准确率与延迟进入同一个优化目标。</li>
+</ol>
+<p>但这不是简单的“新论文全面替代旧论文”。MoCha-ASR 在自适应延迟上更进一步，却没有复现 BESTOW 的多任务覆盖、输入侧复杂度优势和纯文本 prompt 兼容性；BESTOW 的固定策略不够灵活，却无需 HMM token 对齐，也更容易扩展到 AST、SQA 等不存在单调逐词对齐的任务。</p>
+<hr>
+<h2 id="7-尚未解决的问题"><a href="#7-尚未解决的问题" class="headerlink" title="7. 尚未解决的问题"></a>7. 尚未解决的问题</h2><h3 id="7-1-两篇论文使用不同延迟定义"><a href="#7-1-两篇论文使用不同延迟定义" class="headerlink" title="7.1 两篇论文使用不同延迟定义"></a>7.1 两篇论文使用不同延迟定义</h3><p>BESTOW 报告 non-computation-aware LAAL，描述输出相对输入的平均滞后；MoCha-ASR 报告输出 token 相对强制对齐边界晚了多少帧。它们不能直接用“3 秒对 240 毫秒”比较：一个是序列级 lagging，另一个是 token 边界偏移，参考原点与聚合方式不同。</p>
+<p>更完整的流式评测至少应同时报告：</p>
+<ul>
+<li>首 token 延迟（TTFT）；</li>
+<li>token 平均与尾部延迟；</li>
+<li>computation-aware LAAL；</li>
+<li>实时因子（RTF）；</li>
+<li>峰值显存和缓存规模；</li>
+<li>不同设备与 batch size 下的墙钟延迟。</li>
+</ul>
+<h3 id="7-2-自适应策略仍依赖外部边界"><a href="#7-2-自适应策略仍依赖外部边界" class="headerlink" title="7.2 自适应策略仍依赖外部边界"></a>7.2 自适应策略仍依赖外部边界</h3><p>MoCha-ASR 的识别主路径不需要推理期强制对齐，但最有效的 minLT 来自 HMM 边界。若目标语言缺乏可靠混合系统，或任务是语音翻译、问答等非单调映射，$b_i$ 并不容易定义。未来需要无监督、弱监督或风险最小化式延迟目标。</p>
+<h3 id="7-3-固定策略更通用，自适应策略更精细"><a href="#7-3-固定策略更通用，自适应策略更精细" class="headerlink" title="7.3 固定策略更通用，自适应策略更精细"></a>7.3 固定策略更通用，自适应策略更精细</h3><p>BESTOW 的 wait-$k$ 不理解内容，但可以直接用于 ASR、AST 与 SQA；MoChA 假设输入与输出大体单调，非常适合 ASR，却难以直接处理需要重排序的翻译或必须听完整问题的 SQA。一个自然方向是：在 BESTOW 的高效 cross-attention 骨干上，引入可针对任务切换的策略——ASR 用单调边界，AST 用可延迟重排的策略，SQA 用语义完备度判断。</p>
+<h3 id="7-4-双向重算与单向缓存之间仍有质量差距"><a href="#7-4-双向重算与单向缓存之间仍有质量差距" class="headerlink" title="7.4 双向重算与单向缓存之间仍有质量差距"></a>7.4 双向重算与单向缓存之间仍有质量差距</h3><p>BESTOW-S-bidi 质量优于单向版，但 computation-aware 成本更高；MoCha-ASR 避免未来上下文，却使用 0.4 秒 chunk 和 1.6 秒历史窗口。真正部署时还要考察 chunk 调度、encoder cache、LLM KV cache、beam search 以及网络抖动的共同影响。</p>
+<h3 id="7-5-关键复现参数仍不完整"><a href="#7-5-关键复现参数仍不完整" class="headerlink" title="7.5 关键复现参数仍不完整"></a>7.5 关键复现参数仍不完整</h3><p>MoCha-ASR 没有报告 MoChA 触发阈值、soft chunk window、策略 decoder 的层数与维度，也未说明长时间不触发时的 fallback/endpointer；这些参数都会直接改变 CER 与延迟。BESTOW 则没有完整给出输入侧 Transformer 的 attention head、归一化顺序等实现细节。两篇论文都公布了主结构和主要训练设置，但还不足以仅凭正文无歧义复现全部结果。</p>
+<hr>
+<h2 id="8-结论"><a href="#8-结论" class="headerlink" title="8. 结论"></a>8. 结论</h2><p>BESTOW 与 MoCha-ASR 共同说明，流式 decoder-only SpeechLLM 的核心不是把音频切成块，而是<strong>把语音读取权从 LLM 的静态前缀中释放出来</strong>。</p>
+<p>BESTOW 完成第一步：以输入侧 cross-attention 隔离语音与 LLM 主干，将复杂度从包含 $L_a^2$ 的长序列 self-attention 降为 $L_tL_a+L_t^2$，并用 wait-$k$ 在统一骨干上支持离线、流式和多任务。MoCha-ASR 完成第二步：用 MoChA 策略网络学习每个 token 的读取边界，再以 minLT 把平均 token 延迟从 640 ms 压到 240 ms，同时只增加 0.1 CER。</p>
+<p>从研究路径看，下一代系统最值得组合的不是两篇论文的表面模块，而是各自最强的约束：<strong>BESTOW 的高效、prompt 兼容、多任务 cross-attention骨干，加上 MoCha-ASR 的内容自适应策略与显式延迟优化</strong>。只有同时建模“读什么”“读到何时”和“计算是否来得及”，流式 SpeechLLM 才会从可演示的算法变成可部署的实时系统。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech LLM</a>
+      
+        <a href="/tags/Streaming-ASR/" class="print-no-link">#Streaming ASR</a>
+      
+        <a href="/tags/Decoder-Only-LLM/" class="print-no-link">#Decoder-Only LLM</a>
+      
+        <a href="/tags/MoChA/" class="print-no-link">#MoChA</a>
+      
+        <a href="/tags/Latency-Optimization/" class="print-no-link">#Latency Optimization</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Streaming SpeechLLMs: From BESTOW&#39;s Fixed Wait-k to MoCha-ASR&#39;s Adaptive Latency Optimization</div>
+      <div>https://smallsmartao.github.io/2026/10/13/2026-10-13-Streaming-SpeechLLMs-BESTOW-MoCha-ASR/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月13日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年10月13日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/13/2026-10-13-Word-Level-Timestamp-Alignment-Survey/" title="从路径搜索到时间 Token：Word Timing 与强制对齐的六条技术路线">
+                        <span class="hidden-mobile">从路径搜索到时间 Token：Word Timing 与强制对齐的六条技术路线</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+  
+<script src="/js/home-video-banner.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
