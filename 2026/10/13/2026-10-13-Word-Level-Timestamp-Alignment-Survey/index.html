@@ -21,19 +21,21 @@
   
     <meta name="description" content="给一句语音和它的转写，如何确定每个词究竟在第几秒开始、在第几秒结束？表面上，Montreal Forced Aligner、WhisperX、Whisper 的 word_timestamps&#x3D;True、Qwen3-ForcedAligner 与 RNN-T 都能输出类似 123今天  [0.32, 0.71]天气  [0.74, 1.16]很好  [1.20, 1.63] 的结果；但它们找到这些">
 <meta property="og:type" content="article">
-<meta property="og:title" content="从路径搜索到时间 Token：Word Timing 与强制对齐的六条技术路线">
+<meta property="og:title" content="从路径搜索到目标词活动：Word Timing 与强制对齐的七条技术路线">
 <meta property="og:url" content="https://smallsmartao.github.io/2026/10/13/2026-10-13-Word-Level-Timestamp-Alignment-Survey/index.html">
 <meta property="og:site_name" content="聪明的小奥">
 <meta property="og:description" content="给一句语音和它的转写，如何确定每个词究竟在第几秒开始、在第几秒结束？表面上，Montreal Forced Aligner、WhisperX、Whisper 的 word_timestamps&#x3D;True、Qwen3-ForcedAligner 与 RNN-T 都能输出类似 123今天  [0.32, 0.71]天气  [0.74, 1.16]很好  [1.20, 1.63] 的结果；但它们找到这些">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/word-level-timestamp-alignment-survey.png">
 <meta property="article:published_time" content="2026-10-13T03:05:00.000Z">
-<meta property="article:modified_time" content="2026-10-13T05:35:05.447Z">
+<meta property="article:modified_time" content="2026-10-14T04:04:03.649Z">
 <meta property="article:author" content="Ao Zhang">
 <meta property="article:tag" content="ASR">
 <meta property="article:tag" content="CTC">
 <meta property="article:tag" content="Forced Alignment">
+<meta property="article:tag" content="Lexicon-Free Alignment">
 <meta property="article:tag" content="Qwen3-ASR">
+<meta property="article:tag" content="TWAD">
 <meta property="article:tag" content="Whisper">
 <meta property="article:tag" content="Word Timestamp">
 <meta name="twitter:card" content="summary_large_image">
@@ -43,7 +45,7 @@
     <meta name="referrer" content="no-referrer-when-downgrade">
   
   
-  <title>从路径搜索到时间 Token：Word Timing 与强制对齐的六条技术路线 - 聪明的小奥</title>
+  <title>从路径搜索到目标词活动：Word Timing 与强制对齐的七条技术路线 - 聪明的小奥</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -224,7 +226,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="从路径搜索到时间 Token：Word Timing 与强制对齐的六条技术路线"></span>
+            <span id="subtitle" data-typed-text="从路径搜索到目标词活动：Word Timing 与强制对齐的七条技术路线"></span>
           
         </div>
 
@@ -309,12 +311,12 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">从路径搜索到时间 Token：Word Timing 与强制对齐的六条技术路线</h1>
+            <h1 id="seo-header">从路径搜索到目标词活动：Word Timing 与强制对齐的七条技术路线</h1>
             
               <p id="updated-time" class="note note-info" style="">
                 
                   
-                    本文最后更新于 2026年10月13日 下午
+                    本文最后更新于 2026年10月14日 中午
                   
                 
               </p>
@@ -325,8 +327,8 @@
                 <p>给一句语音和它的转写，如何确定每个词究竟在第几秒开始、在第几秒结束？表面上，Montreal Forced Aligner、WhisperX、Whisper 的 <code>word_timestamps=True</code>、Qwen3-ForcedAligner 与 RNN-T 都能输出类似</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">今天  [0.32, 0.71]<br>天气  [0.74, 1.16]<br>很好  [1.20, 1.63]<br></code></pre></td></tr></table></figure>
 <p>的结果；但它们找到这些数字的方式完全不同。有的在音素 HMM 状态图上执行 Viterbi，有的在 CTC trellis 上搜索，有的把 cross-attention 当作软对齐矩阵交给 DTW，有的直接把边界当分类目标，还有的只是读取流式 ASR 已经产生的触发位置。</p>
-<p>这些差别决定了系统是否需要发音词典、能否处理 OOV、是否适合流式、边界会偏向词首还是词尾，以及“20 ms 时间分辨率”究竟只是量化网格，还是能够被实验证明的定位精度。本文按<strong>时间证据的来源</strong>，把 Word Timing 分为六条路线，并统一讨论每条路线的监督信号、目标函数、推理路径、词边界恢复、资源依赖与误差来源。</p>
-<p><img src="/images/paper_figs/wordtiming_six_routes.svg" srcset="/img/loading.gif" lazyload alt="Word Timing 六条技术路线"></p>
+<p>这些差别决定了系统是否需要发音词典、能否处理 OOV、是否适合流式、边界会偏向词首还是词尾，以及“20 ms 时间分辨率”究竟只是量化网格，还是能够被实验证明的定位精度。本文按<strong>时间证据的来源</strong>，把 Word Timing 分为七条路线，并统一讨论每条路线的监督信号、目标函数、推理路径、词边界恢复、资源依赖与误差来源。</p>
+<p><img src="/images/paper_figs/wordtiming_seven_routes.svg" srcset="/img/loading.gif" lazyload alt="Word Timing 七条技术路线"></p>
 <hr>
 <h2 id="1-先定义问题：识别、强制对齐与词时间戳不是一回事"><a href="#1-先定义问题：识别、强制对齐与词时间戳不是一回事" class="headerlink" title="1. 先定义问题：识别、强制对齐与词时间戳不是一回事"></a>1. 先定义问题：识别、强制对齐与词时间戳不是一回事</h2><p>设声学特征为</p>
 <script type="math/tex; mode=display">
@@ -531,7 +533,222 @@ D_{i,j}=-M_{i,j}+
 </div>
 <p>这条路线适合<strong>不想部署第二个模型、只需近似逐词高亮</strong>的场景。若任务是法务检索、精确编辑或训练标签生成，应先在真实人工边界上验证，而不能把 20 ms encoder 网格当作 ±20 ms 精度承诺。</p>
 <hr>
-<h2 id="5-路线四：直接预测边界——Qwen3-ForcedAligner-的-slot-filling"><a href="#5-路线四：直接预测边界——Qwen3-ForcedAligner-的-slot-filling" class="headerlink" title="5. 路线四：直接预测边界——Qwen3-ForcedAligner 的 slot filling"></a>5. 路线四：直接预测边界——Qwen3-ForcedAligner 的 slot filling</h2><h3 id="5-1-任务重写：不是找路径，而是填时间槽"><a href="#5-1-任务重写：不是找路径，而是填时间槽" class="headerlink" title="5.1 任务重写：不是找路径，而是填时间槽"></a>5.1 任务重写：不是找路径，而是填时间槽</h3><p>Qwen3-ForcedAligner-0.6B 将文本改写为带 <code>[time]</code> 槽位的序列。用户可以在任意词或字符后插入起止槽位：</p>
+<h2 id="5-路线四：目标词活动检测-DTW——TWAD-的无词典对齐"><a href="#5-路线四：目标词活动检测-DTW——TWAD-的无词典对齐" class="headerlink" title="5. 路线四：目标词活动检测 + DTW——TWAD 的无词典对齐"></a>5. 路线四：目标词活动检测 + DTW——TWAD 的无词典对齐</h2><p>Microsoft 的 <em>Target Word Activity Detector: An Approach to Obtain ASR Word Boundaries without Lexicon</em> 提出了一条位于“attention 软对齐”和“显式边界分类”之间的路线。它不预测音素，也不直接回归每个词的 start/end；模型回答的是：</p>
+<blockquote>
+<p>对于每一帧语音，参考句中的哪一个词正在发声？</p>
+</blockquote>
+<p>这将词时间估计改写成一个 <strong>frame × word 的活动分类问题</strong>。模型输出词活动矩阵，再用 DTW 在矩阵上寻找覆盖给定词序列的单调路径。其关键价值是：推理时不需要发音词典、G2P、逐语言音素集合或逐 token 对齐标签，只需语音、词序列以及 ASR tokenizer/decoder embedding。</p>
+<p>论文地址：<a target="_blank" rel="noopener" href="https://www.microsoft.com/en-us/research/wp-content/uploads/2025/03/PhoneFreeWordTiming_final.pdf">Microsoft Research PDF</a></p>
+<h3 id="5-1-输入：冻结-ASR-的声学表示与词级-token-集合"><a href="#5-1-输入：冻结-ASR-的声学表示与词级-token-集合" class="headerlink" title="5.1 输入：冻结 ASR 的声学表示与词级 token 集合"></a>5.1 输入：冻结 ASR 的声学表示与词级 token 集合</h3><p>设冻结 ASR encoder 输出为</p>
+<script type="math/tex; mode=display">
+X=(x_1,\ldots,x_N)\in\mathbb R^{N\times F},</script><p>其中 $N$ 是 encoder 帧数、$F$ 是声学表示维度。给定转写包含 $W$ 个词：</p>
+<script type="math/tex; mode=display">
+t=(w_1,\ldots,w_W).</script><p>每个词 $w_i$ 被同一个 ASR tokenizer 拆成至多 $S$ 个 subword token：</p>
+<script type="math/tex; mode=display">
+w_i=(s_{i1},\ldots,s_{iS}).</script><p>ASR decoder embedding 将整句变成</p>
+<script type="math/tex; mode=display">
+T\in\mathbb R^{W\times S\times D},</script><p>其中 $D$ 是 token embedding 维度。这里不需要 subword 的时间标签；token 只负责提供“这个词是什么”的语义/词法表示。</p>
+<h3 id="5-2-Word-embedding-estimator：把多个-subword-压成一个目标词向量"><a href="#5-2-Word-embedding-estimator：把多个-subword-压成一个目标词向量" class="headerlink" title="5.2 Word embedding estimator：把多个 subword 压成一个目标词向量"></a>5.2 Word embedding estimator：把多个 subword 压成一个目标词向量</h3><p><img src="/images/paper_figs/wordtiming_twad_architecture.png" srcset="/img/loading.gif" lazyload alt="TWAD 架构：以冻结 ASR encoder 表示和 decoder token embedding 预测 frame × word 活动矩阵"></p>
+<p>每个词的 $S$ 个 token embedding 先经过双向 LSTM。正向与反向的最终状态拼接，再经线性层投影，得到词向量：</p>
+<script type="math/tex; mode=display">
+e_i=\operatorname{Linear}\!\left(
+[\overrightarrow h_{i,S};\overleftarrow h_{i,1}]
+\right)\in\mathbb R^{D_1}.</script><p>论文实现中，word-embedding BiLSTM 每个方向使用 512 hidden units，输出投影到 512 维。这个模块的作用不是预测词边界，而是用 ASR 已学到的 token embedding 构造一个类似 TS-VAD 中“目标说话人 embedding”的<strong>目标词 embedding</strong>。</p>
+<h3 id="5-3-将每个目标词与每个声学帧配对"><a href="#5-3-将每个目标词与每个声学帧配对" class="headerlink" title="5.3 将每个目标词与每个声学帧配对"></a>5.3 将每个目标词与每个声学帧配对</h3><p>对每个词 $w_i$，把词向量 $e_i$ 与所有声学帧 $x_n$ 拼接：</p>
+<script type="math/tex; mode=display">
+z_{i,n}=[e_i;x_n].</script><p>对所有 $W$ 个词执行后，形成</p>
+<script type="math/tex; mode=display">
+Z\in\mathbb R^{W\times N\times(F+D_1)}.</script><p>线性层先把联合表示压到较小维度；随后：</p>
+<ol>
+<li>沿<strong>时间轴</strong>应用两层 512-unit BiLSTM，建模同一词活动随帧变化的连续性；</li>
+<li>线性投影并转置；</li>
+<li>沿<strong>词轴</strong>应用一层 64-unit BiLSTM，建模句中相邻词的顺序与竞争关系；</li>
+<li>最后一层线性层产生每个 $(n,i)$ 的标量 logit；</li>
+<li>沿词轴 softmax，得到</li>
+</ol>
+<script type="math/tex; mode=display">
+\hat A_{n,i}=p(w_i\mid x_n),
+\qquad
+\hat A\in\mathbb R^{N\times W}.</script><p>第一个“词类别”固定为 silence，实际词按转写顺序排列；为便于 batch，论文将每句最大词数设为 100。所有 BiLSTM 使用 0.2 dropout。ASR encoder 与 decoder embedding 都被冻结，仅更新 TWAD 内部参数，因此增加对齐能力不会改变 ASR 本身的 WER。</p>
+<h3 id="5-4-训练只需要词级活动矩阵"><a href="#5-4-训练只需要词级活动矩阵" class="headerlink" title="5.4 训练只需要词级活动矩阵"></a>5.4 训练只需要词级活动矩阵</h3><p>训练标签为</p>
+<script type="math/tex; mode=display">
+A\in\{0,1\}^{N\times W},</script><p>其中 $I_n(w_i)=1$ 表示第 $n$ 帧属于第 $i$ 个词。交叉熵目标可写为</p>
+<script type="math/tex; mode=display">
+\mathcal L_{\mathrm{TWAD}}
+=-\sum_{n=1}^{N}\sum_{i=1}^{W}
+I_n(w_i)\log p(w_i\mid x_n).</script><p>与 phone-based baseline 相比，TWAD 不需要每个词的音素展开；与 SWAN 一类方法相比，它也不需要 subword/token 级对齐。训练仍然需要<strong>词级边界监督</strong>，论文由传统 hybrid forced aligner 产生，因此“无词典”指的是 TWAD 的模型输入和推理路径，而不是训练标签凭空产生。</p>
+<h3 id="5-5-为什么-softmax-后还需要-DTW"><a href="#5-5-为什么-softmax-后还需要-DTW" class="headerlink" title="5.5 为什么 softmax 后还需要 DTW"></a>5.5 为什么 softmax 后还需要 DTW</h3><p><img src="/images/paper_figs/wordtiming_twad_activity_matrix.png" srcset="/img/loading.gif" lazyload alt="TWAD 输出的词活动矩阵：高概率区域应沿词序形成单调阶梯路径"></p>
+<p>逐帧 <code>argmax</code> 得到的词类别可能抖动、跳词或短暂回退。TWAD 因此把 $-\log\hat A$ 构造成代价矩阵，并在词序约束下执行 DTW。对齐前在每两个词之间、句首和句尾插入可选 silence，使停顿不必被强行分配给某个词。回溯得到的最优单调路径将连续帧分配给词，词第一次和最后一次被访问的帧分别形成 start/end。</p>
+<p>因此 TWAD 的完整推理链是</p>
+<script type="math/tex; mode=display">
+(\text{audio},\text{word sequence})
+\rightarrow (X,T)
+\rightarrow \hat A_{N\times W}
+\rightarrow \text{DTW}
+\rightarrow \{(s_i,e_i)\}_{i=1}^{W}.</script><p>它与 Whisper attention + DTW 的共同点是最终都从二维软矩阵中寻找单调路径；区别是 Whisper 的 attention 只受识别目标间接训练，而 TWAD 的矩阵接受逐帧<strong>目标词活动监督</strong>，每一列有明确的词身份。</p>
+<h3 id="5-6-模型、数据与-80-ms-时间网格"><a href="#5-6-模型、数据与-80-ms-时间网格" class="headerlink" title="5.6 模型、数据与 80 ms 时间网格"></a>5.6 模型、数据与 80 ms 时间网格</h3><p>论文的基础 ASR 是 AED：Nemo-convolution 前端加 24 层 Conformer encoder、3 层 Transformer decoder。输入为 80 维 Mel filterbank，10 ms frame shift、25 ms window；前端进行 $8\times$ 下采样，因此 TWAD 的词活动切换只能发生在 <strong>80 ms</strong> 网格上。该网格是输出量化粒度，不等同于所有边界误差都小于 80 ms。</p>
+<p>ASR 和 TWAD 覆盖英语、法语、西班牙语、意大利语和德语，共用 15,911 大小的 BPE tokenizer。TWAD 使用与 phone baseline 相同的训练数据：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>语言</th>
+<th style="text-align:right">EN</th>
+<th style="text-align:right">FR</th>
+<th style="text-align:right">ES</th>
+<th style="text-align:right">IT</th>
+<th style="text-align:right">DE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>训练时长</td>
+<td style="text-align:right">75K h</td>
+<td style="text-align:right">25K h</td>
+<td style="text-align:right">28K h</td>
+<td style="text-align:right">41K h</td>
+<td style="text-align:right">12K h</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>phone baseline 对五种语言维护 420 个 context-independent phones，并依赖预测 LID 选择相应 lexicon；TWAD 的输出维度由当前句子的 $W$ 个词决定，而不是全局音素表，因此增加新语言不会扩展固定 phone softmax。</p>
+<h3 id="5-7-实验结果：词首相当，词尾并非全面优于-phone-baseline"><a href="#5-7-实验结果：词首相当，词尾并非全面优于-phone-baseline" class="headerlink" title="5.7 实验结果：词首相当，词尾并非全面优于 phone baseline"></a>5.7 实验结果：词首相当，词尾并非全面优于 phone baseline</h3><p>评测使用五个 Microsoft 内部数据集，参考边界来自传统 hybrid forced alignment。论文只在 <strong>ASR 正确识别的词</strong>上统计绝对时间误差，因此数字衡量的是“匹配词的定位质量”，不包含漏词、替换词或无法对齐词的惩罚。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>语言</th>
+<th style="text-align:right">时长</th>
+<th style="text-align:right">Utterances</th>
+<th style="text-align:right">Words</th>
+<th style="text-align:right">WER</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EN</td>
+<td style="text-align:right">5.4 h</td>
+<td style="text-align:right">113</td>
+<td style="text-align:right">23,548</td>
+<td style="text-align:right">11.9%</td>
+</tr>
+<tr>
+<td>FR</td>
+<td style="text-align:right">5.2 h</td>
+<td style="text-align:right">6,378</td>
+<td style="text-align:right">45,753</td>
+<td style="text-align:right">9.8%</td>
+</tr>
+<tr>
+<td>ES</td>
+<td style="text-align:right">4.2 h</td>
+<td style="text-align:right">8,852</td>
+<td style="text-align:right">23,236</td>
+<td style="text-align:right">3.1%</td>
+</tr>
+<tr>
+<td>IT</td>
+<td style="text-align:right">6.4 h</td>
+<td style="text-align:right">6,378</td>
+<td style="text-align:right">29,827</td>
+<td style="text-align:right">5.6%</td>
+</tr>
+<tr>
+<td>DE</td>
+<td style="text-align:right">10.1 h</td>
+<td style="text-align:right">4,492</td>
+<td style="text-align:right">53,064</td>
+<td style="text-align:right">6.9%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>五语种平均结果如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>边界</th>
+<th style="text-align:right">Mean↓</th>
+<th style="text-align:right">p50↓</th>
+<th style="text-align:right">p90↓</th>
+<th style="text-align:right">p95↓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CI-phone + lexicon baseline</td>
+<td>Start</td>
+<td style="text-align:right">47.7 ms</td>
+<td style="text-align:right">36 ms</td>
+<td style="text-align:right">78 ms</td>
+<td style="text-align:right">120 ms</td>
+</tr>
+<tr>
+<td>CI-phone + lexicon baseline</td>
+<td>End</td>
+<td style="text-align:right"><strong>48.9 ms</strong></td>
+<td style="text-align:right">36 ms</td>
+<td style="text-align:right"><strong>86 ms</strong></td>
+<td style="text-align:right"><strong>132 ms</strong></td>
+</tr>
+<tr>
+<td><strong>TWAD，无词典</strong></td>
+<td>Start</td>
+<td style="text-align:right"><strong>45.3 ms</strong></td>
+<td style="text-align:right">36 ms</td>
+<td style="text-align:right"><strong>76 ms</strong></td>
+<td style="text-align:right"><strong>94 ms</strong></td>
+</tr>
+<tr>
+<td><strong>TWAD，无词典</strong></td>
+<td>End</td>
+<td style="text-align:right">58.7 ms</td>
+<td style="text-align:right"><strong>34 ms</strong></td>
+<td style="text-align:right">92 ms</td>
+<td style="text-align:right">176 ms</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>结果应分开理解：</p>
+<ul>
+<li><strong>词首</strong>：TWAD 的平均、p90、p95 均优于强 phone baseline，特别是 p95 从 120 ms 降到 94 ms；</li>
+<li><strong>词尾</strong>：TWAD 的中位数略好，但平均和长尾更差，p95 从 132 ms 增至 176 ms；</li>
+<li>分语言看，TWAD start 在 FR/ES/IT/DE 更好，在 EN 更差；end 仅在 ES/DE 略好，在 EN/FR/IT 更差；</li>
+<li>因而论文最稳妥的结论是：TWAD 在不使用 lexicon 的前提下达到<strong>可比的总体定位质量，并在词首和多语言扩展上更有优势</strong>，而不是全面超过 phone alignment。</li>
+</ul>
+<h3 id="5-8-两个重要消融：文本规范化与-encoder-层选择"><a href="#5-8-两个重要消融：文本规范化与-encoder-层选择" class="headerlink" title="5.8 两个重要消融：文本规范化与 encoder 层选择"></a>5.8 两个重要消融：文本规范化与 encoder 层选择</h3><p>ASR 输出保留标点、大小写和数字显示格式，例如把 “two hundred dollars” 写成 “$200”；TWAD 训练却使用 normalized text。若直接把 display-format token 输入 TWAD，德语 start/end 由 <strong>34.9/34.5 ms</strong> 恶化到 <strong>49.2/51.5 ms</strong>，意大利语由 <strong>42.9/58.8 ms</strong> 恶化到 <strong>58.2/74.3 ms</strong>。这说明它虽不需要词典，却仍高度依赖训练/推理一致的文本规范化与 word-token 分组。</p>
+<p>层选择也与 phone baseline 完全相反：</p>
+<ul>
+<li>TWAD 使用最后一层 encoder（layer 23）最好，英语为 61.6/90.6 ms；layer 22、20、9 分别退化到 110.2/121.0、195.7/175.5、248.2/264.9 ms；</li>
+<li>CI-phone baseline 则在 layer 9 最好，高层因音素信息减少而变差。</li>
+</ul>
+<p>这表明 TWAD 依赖的是靠近 decoder token space 的高层词法表示，而 phone alignment 依赖中层保留的局部音系表示。</p>
+<h3 id="5-9-优势、局限与适用场景"><a href="#5-9-优势、局限与适用场景" class="headerlink" title="5.9 优势、局限与适用场景"></a>5.9 优势、局限与适用场景</h3><p><strong>优势</strong></p>
+<ul>
+<li>推理不需要发音词典、G2P、逐语言 phone inventory 或可靠的 word-level LID；</li>
+<li>一个模型共享多语言，新增语言不会增加全局 phone 输出维度；</li>
+<li>只需词级边界标签，不需要 phone/subword 对齐；</li>
+<li>ASR 主干冻结，模块可外挂到已有 AED；</li>
+<li>词活动矩阵可解释，DTW 显式保证顺序。</li>
+</ul>
+<p><strong>局限</strong></p>
+<ul>
+<li>仍是 forced alignment：必须已有大致正确的词序列；</li>
+<li>训练依赖 hybrid aligner 产生词级监督，教师偏差会被继承；</li>
+<li>$W\times N$ 联合表示和双轴 BiLSTM 随句长增长，论文用 $W\le100$ 控制 batch；</li>
+<li>8 倍下采样只提供 80 ms 网格；</li>
+<li>只在正确识别词上评估，会隐藏 ASR 错误导致的端到端失败；</li>
+<li>数据和参考边界均为内部资源，缺少公开复现与人工边界验证；</li>
+<li>词尾长尾明显弱于 phone baseline；</li>
+<li>文本规范化、标点、数字和“word”切分仍是语言相关工程问题。</li>
+</ul>
+<p>TWAD 最适合<strong>已有多语言 AED、能够获得词级伪标签、但不愿为每种语言维护 lexicon/phone set</strong>的离线批量对齐场景。它不是流式 ASR 的原生时间信号，也不是无需监督的即插即用方法。</p>
+<hr>
+<h2 id="6-路线五：直接预测边界——Qwen3-ForcedAligner-的-slot-filling"><a href="#6-路线五：直接预测边界——Qwen3-ForcedAligner-的-slot-filling" class="headerlink" title="6. 路线五：直接预测边界——Qwen3-ForcedAligner 的 slot filling"></a>6. 路线五：直接预测边界——Qwen3-ForcedAligner 的 slot filling</h2><h3 id="6-1-任务重写：不是找路径，而是填时间槽"><a href="#6-1-任务重写：不是找路径，而是填时间槽" class="headerlink" title="6.1 任务重写：不是找路径，而是填时间槽"></a>6.1 任务重写：不是找路径，而是填时间槽</h3><p>Qwen3-ForcedAligner-0.6B 将文本改写为带 <code>[time]</code> 槽位的序列。用户可以在任意词或字符后插入起止槽位：</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">今天 [time] [time] 天气 [time] [time] 很好 [time] [time]<br></code></pre></td></tr></table></figure>
 <p>AuT encoder 产生语音 embedding，文本经 tokenizer 后与语音表示共同输入 Qwen3-0.6B。时间戳先按 AuT encoder 的 80 ms 帧长离散化：</p>
 <script type="math/tex; mode=display">
@@ -541,16 +758,16 @@ k=\left\lfloor t/0.08\right\rfloor,\qquad \hat t=0.08\hat k.</script><p>最长 3
 =-\sum_{i\in\mathcal S}
 \log p_\theta(k_i\mid X,Z_{\le i}),</script><p>其中 $\mathcal S$ 是 timestamp slot 集合，$Z$ 是带槽位文本序列。</p>
 <p><img src="/images/paper_figs/wordtiming_qwen3_forced_aligner.png" srcset="/img/loading.gif" lazyload alt="Qwen3-ForcedAligner 的 slot-filling 架构，原图来自 Qwen3-ASR 论文"></p>
-<h3 id="5-2-非移位训练与非自回归推理"><a href="#5-2-非移位训练与非自回归推理" class="headerlink" title="5.2 非移位训练与非自回归推理"></a>5.2 非移位训练与非自回归推理</h3><p>普通 LLM 用“输入第 $i$ 个 token，预测第 $i+1$ 个 token”的 shifted next-token objective。Qwen3-ForcedAligner 保持输出与标签<strong>不移位</strong>，让 <code>[time]</code> 槽位直接预测自己的时间类别；推理时所有槽位可并行预测，不必自回归生成一串 timestamp token。</p>
+<h3 id="6-2-非移位训练与非自回归推理"><a href="#6-2-非移位训练与非自回归推理" class="headerlink" title="6.2 非移位训练与非自回归推理"></a>6.2 非移位训练与非自回归推理</h3><p>普通 LLM 用“输入第 $i$ 个 token，预测第 $i+1$ 个 token”的 shifted next-token objective。Qwen3-ForcedAligner 保持输出与标签<strong>不移位</strong>，让 <code>[time]</code> 槽位直接预测自己的时间类别；推理时所有槽位可并行预测，不必自回归生成一串 timestamp token。</p>
 <p>训练还随机决定在不同词/字符后插入哪些起止槽位，使模型在推理时能对用户指定的任意位置定位。其监督标签主要由 MFA 产生，因此这条路线本质上是把传统对齐器的大规模伪标签蒸馏进一个多语言语音-文本模型。</p>
 <p>Qwen3-ASR 论文公开了这些关键细节：slot filling、80 ms 离散索引、仅 timestamp slot 上的 CE、非移位 causal training、dynamic slot insertion 和 NAR inference。它并非一个“训练细节完全未知的黑箱”，也不应被误写成连续 start/end 回归。</p>
-<h3 id="5-3-结果该怎样解读"><a href="#5-3-结果该怎样解读" class="headerlink" title="5.3 结果该怎样解读"></a>5.3 结果该怎样解读</h3><p>论文使用 accumulated average shift（AAS）衡量预测槽位与参考槽位的平均绝对偏差。人标测试集上，Qwen3-ForcedAligner-0.6B 的平均 AAS 为 32.4 ms；论文报告其相对 Monotonic-Aligner/NFA 的下降约 67%–77%。但需保留三条边界：</p>
+<h3 id="6-3-结果该怎样解读"><a href="#6-3-结果该怎样解读" class="headerlink" title="6.3 结果该怎样解读"></a>6.3 结果该怎样解读</h3><p>论文使用 accumulated average shift（AAS）衡量预测槽位与参考槽位的平均绝对偏差。人标测试集上，Qwen3-ForcedAligner-0.6B 的平均 AAS 为 32.4 ms；论文报告其相对 Monotonic-Aligner/NFA 的下降约 67%–77%。但需保留三条边界：</p>
 <ol>
 <li>80 ms 是离散输出步长，平均 AAS 可以低于 80 ms，并不矛盾；平均误差不是单样本分辨率；</li>
 <li>MFA-labeled 与 human-labeled 结果不是同一种参考；</li>
 <li>这些数字来自论文规定的语种、数据和 AAS，不能直接与使用不同 collar 的 precision/recall 比较。</li>
 </ol>
-<h3 id="5-4-优势与局限"><a href="#5-4-优势与局限" class="headerlink" title="5.4 优势与局限"></a>5.4 优势与局限</h3><p><strong>优势</strong></p>
+<h3 id="6-4-优势与局限"><a href="#6-4-优势与局限" class="headerlink" title="6.4 优势与局限"></a>6.4 优势与局限</h3><p><strong>优势</strong></p>
 <ul>
 <li>单模型在论文实验中覆盖 10 种语言，并测试语码混合和最长 300 秒音频；</li>
 <li>不需要推理时的词典、G2P、trellis 或 DTW；</li>
@@ -567,7 +784,7 @@ k=\left\lfloor t/0.08\right\rfloor,\qquad \hat t=0.08\hat k.</script><p>最长 3
 </ul>
 <p>它适合<strong>多语言、长音频、高并发、文本已知且不想维护语言级词典/CTC 模型</strong>的场景。</p>
 <hr>
-<h2 id="6-路线五：把时间写进生成序列——Timestamp-Token"><a href="#6-路线五：把时间写进生成序列——Timestamp-Token" class="headerlink" title="6. 路线五：把时间写进生成序列——Timestamp Token"></a>6. 路线五：把时间写进生成序列——Timestamp Token</h2><h3 id="6-1-Whisper：生成的是-segment-时间，不是逐词时间"><a href="#6-1-Whisper：生成的是-segment-时间，不是逐词时间" class="headerlink" title="6.1 Whisper：生成的是 segment 时间，不是逐词时间"></a>6.1 Whisper：生成的是 segment 时间，不是逐词时间</h3><p>Whisper 把 0–30 秒量化为 1501 个 timestamp token：</p>
+<h2 id="7-路线六：把时间写进生成序列——Timestamp-Token"><a href="#7-路线六：把时间写进生成序列——Timestamp-Token" class="headerlink" title="7. 路线六：把时间写进生成序列——Timestamp Token"></a>7. 路线六：把时间写进生成序列——Timestamp Token</h2><h3 id="7-1-Whisper：生成的是-segment-时间，不是逐词时间"><a href="#7-1-Whisper：生成的是-segment-时间，不是逐词时间" class="headerlink" title="7.1 Whisper：生成的是 segment 时间，不是逐词时间"></a>7.1 Whisper：生成的是 segment 时间，不是逐词时间</h3><p>Whisper 把 0–30 秒量化为 1501 个 timestamp token：</p>
 <script type="math/tex; mode=display">
 \langle|0.00|\rangle,
 \langle|0.02|\rangle,\ldots,
@@ -576,12 +793,12 @@ k=\left\lfloor t/0.08\right\rfloor,\qquad \hat t=0.08\hat k.</script><p>最长 3
 <p>时间 token 与普通文本 token 一起接受自回归交叉熵监督。推理时，官方解码器通过 logits 规则限制时间单调、首个 timestamp 范围及成对结构；<code>transcribe()</code> 利用连续 timestamp token 切分 segment，并决定下一个 30 秒窗口从哪里继续。</p>
 <p>这里的 20 ms 是标签量化网格和 encoder 步长，<strong>不等于 segment 边界误差只会有 20 ms</strong>。网页字幕弱标签、解码错误、长音频窗口推进和幻觉都可能造成更大偏差。</p>
 <p>更重要的是：Whisper 原生 segment timestamp token 与上一节的 word-level attention + DTW 是两套机制——一个写入训练目标并由 decoder 生成，另一个在解码后读取 cross-attention 再对齐。</p>
-<h3 id="6-2-Canary：把每个词的起止时间都变成-token"><a href="#6-2-Canary：把每个词的起止时间都变成-token" class="headerlink" title="6.2 Canary：把每个词的起止时间都变成 token"></a>6.2 Canary：把每个词的起止时间都变成 token</h3><p>Hu et al. 的 <em>Word Level Timestamp Generation for Automatic Speech Recognition and Translation</em> 先用 NFA 为训练集产生逐词伪标签，再把每个词表示为</p>
+<h3 id="7-2-Canary：把每个词的起止时间都变成-token"><a href="#7-2-Canary：把每个词的起止时间都变成-token" class="headerlink" title="7.2 Canary：把每个词的起止时间都变成 token"></a>7.2 Canary：把每个词的起止时间都变成 token</h3><p>Hu et al. 的 <em>Word Level Timestamp Generation for Automatic Speech Recognition and Translation</em> 先用 NFA 为训练集产生逐词伪标签，再把每个词表示为</p>
 <figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs text">&lt;t_start&gt; word &lt;t_end&gt;<br></code></pre></td></tr></table></figure>
 <p>具体实现采用 80 ms 网格、0–450 的特殊 token，覆盖最长 36 秒；<code>&lt;|timestamp|&gt;</code> 与 <code>&lt;|notimestamp|&gt;</code> prompt 控制是否输出时间。时间 token 和文本 token 一同由 Canary decoder 自回归生成。</p>
 <p><img src="/images/paper_figs/wordtiming_canary_timestamp_format.png" srcset="/img/loading.gif" lazyload alt="Canary 逐词 timestamp token 的训练格式，原图来自 Hu et al. (2025)"></p>
 <p>论文在英语、德语、西班牙语和法语上用 8,877 小时 NFA 标注数据训练，timestamp 数据约占全部 ASR 训练数据的 15%。其正确判定要求词文本完全匹配，且 start/end 都落在 <strong>240 ms</strong> 以内：LibriSpeech test-other 的 precision/recall 为 <strong>93.7%/93.6%</strong>，起止绝对误差为 <strong>50/54 ms</strong>；四语种各测试条件的整体平均 precision/recall 为 <strong>89.3%/90.2%</strong>，起止误差为 <strong>55/66 ms</strong>。这些是相对于 NFA teacher 伪标签及特定 collar 的结果，不等价于相对人工词边界达到同样误差。</p>
-<h3 id="6-3-生成式时间-token-的性质"><a href="#6-3-生成式时间-token-的性质" class="headerlink" title="6.3 生成式时间 token 的性质"></a>6.3 生成式时间 token 的性质</h3><p><strong>优势</strong></p>
+<h3 id="7-3-生成式时间-token-的性质"><a href="#7-3-生成式时间-token-的性质" class="headerlink" title="7.3 生成式时间 token 的性质"></a>7.3 生成式时间 token 的性质</h3><p><strong>优势</strong></p>
 <ul>
 <li>文本和时间使用统一 vocabulary 与 seq2seq 训练框架；</li>
 <li>无需推理后的 DTW/trellis；</li>
@@ -599,7 +816,7 @@ k=\left\lfloor t/0.08\right\rfloor,\qquad \hat t=0.08\hat k.</script><p>最长 3
 </ul>
 <p>Qwen3-ForcedAligner 与 Canary 的关键区别是：前者在已知文本中的 <code>[time]</code> 槽位并行分类，后者把时间作为自回归输出序列的一部分。两者都显式学习时间，但推理依赖和错误传播方式不同。</p>
 <hr>
-<h2 id="7-路线六：利用-ASR-内部单调定位信号"><a href="#7-路线六：利用-ASR-内部单调定位信号" class="headerlink" title="7. 路线六：利用 ASR 内部单调定位信号"></a>7. 路线六：利用 ASR 内部单调定位信号</h2><h3 id="7-1-CIF：把-encoder-权重积分到一次“发射”"><a href="#7-1-CIF：把-encoder-权重积分到一次“发射”" class="headerlink" title="7.1 CIF：把 encoder 权重积分到一次“发射”"></a>7.1 CIF：把 encoder 权重积分到一次“发射”</h3><p>Continuous Integrate-and-Fire（CIF）为每个 encoder frame 预测非负权重 $\alpha_t$，沿时间累积；当累积达到阈值 $\beta$（通常为 1）时触发一个输出单元。若阈值在帧 $t$ 内被跨越，该帧的权重会被拆分给前后两个 token，得到长度与文本接近的声学表示：</p>
+<h2 id="8-路线七：利用-ASR-内部单调定位信号"><a href="#8-路线七：利用-ASR-内部单调定位信号" class="headerlink" title="8. 路线七：利用 ASR 内部单调定位信号"></a>8. 路线七：利用 ASR 内部单调定位信号</h2><h3 id="8-1-CIF：把-encoder-权重积分到一次“发射”"><a href="#8-1-CIF：把-encoder-权重积分到一次“发射”" class="headerlink" title="8.1 CIF：把 encoder 权重积分到一次“发射”"></a>8.1 CIF：把 encoder 权重积分到一次“发射”</h3><p>Continuous Integrate-and-Fire（CIF）为每个 encoder frame 预测非负权重 $\alpha_t$，沿时间累积；当累积达到阈值 $\beta$（通常为 1）时触发一个输出单元。若阈值在帧 $t$ 内被跨越，该帧的权重会被拆分给前后两个 token，得到长度与文本接近的声学表示：</p>
 <script type="math/tex; mode=display">
 h_u=\sum_t w_{u,t}h_t,
 \qquad
@@ -607,7 +824,7 @@ h_u=\sum_t w_{u,t}h_t,
 <script type="math/tex; mode=display">
 \mathcal L_{qua}=\left|\sum_t\alpha_t-U\right|.</script><p>触发位置天然单调，可用作 token 的代表时间。Dong 与 Xu 的 CIF 论文也将 acoustic boundary positioning 作为能力之一。</p>
 <p>但 fire time 表示“模型已积累足够证据产生 token”的时刻，不自动等于人工定义的 onset 或 offset。若要输出完整词区间，仍需把相邻 fire point 转为区间、聚合 subword，或额外预测 duration/boundary。</p>
-<h3 id="7-2-RNN-T：非-blank-emission-所在-encoder-帧"><a href="#7-2-RNN-T：非-blank-emission-所在-encoder-帧" class="headerlink" title="7.2 RNN-T：非 blank emission 所在 encoder 帧"></a>7.2 RNN-T：非 blank emission 所在 encoder 帧</h3><p>RNN-T 在二维 lattice 上建模 $(t,u)$：$t$ 是声学帧，$u$ 是已输出标签数。blank 转移推进时间，non-blank 转移产生 token。最佳对齐路径上生成 $y_u$ 的时间索引</p>
+<h3 id="8-2-RNN-T：非-blank-emission-所在-encoder-帧"><a href="#8-2-RNN-T：非-blank-emission-所在-encoder-帧" class="headerlink" title="8.2 RNN-T：非 blank emission 所在 encoder 帧"></a>8.2 RNN-T：非 blank emission 所在 encoder 帧</h3><p>RNN-T 在二维 lattice 上建模 $(t,u)$：$t$ 是声学帧，$u$ 是已输出标签数。blank 转移推进时间，non-blank 转移产生 token。最佳对齐路径上生成 $y_u$ 的时间索引</p>
 <script type="math/tex; mode=display">
 \tau_u=t\quad\text{when the path emits }y_u</script><p>可直接作为 token 时间。若一个词由多个 subword 构成，可以用首个 subword emission 作为词首、末个 subword emission 或下一词 emission 估计词尾。</p>
 <p>问题在于标准 RNN-T 只优化识别序列概率，同一文本可以对应许多发射路径。为了等待更多右侧声学证据，模型常延迟发射；因此 emission time 更像“何时决定输出”，而不是“语音何时开始”。代表改进包括：</p>
@@ -618,7 +835,7 @@ h_u=\sum_t w_{u,t}h_t,
 <li>增加 start/end 或 duration 辅助头。</li>
 </ul>
 <p>Xu et al. 的 <em>Efficient Sequence Transduction by Jointly Predicting Tokens and Durations</em> 让模型联合建模标签和 duration，减少逐帧 blank 解码；但 duration 的发射仍可能滞后，若目标是精确词首/词尾，需要专门时间监督与校准。</p>
-<h3 id="7-3-优势与局限"><a href="#7-3-优势与局限" class="headerlink" title="7.3 优势与局限"></a>7.3 优势与局限</h3><p><strong>优势</strong></p>
+<h3 id="8-3-优势与局限"><a href="#8-3-优势与局限" class="headerlink" title="8.3 优势与局限"></a>8.3 优势与局限</h3><p><strong>优势</strong></p>
 <ul>
 <li>内部路径本来就随流式识别计算，附加延迟和资源小；</li>
 <li>定位天然单调，适合实时字幕、语音助手 endpointing 与关键词高亮；</li>
@@ -634,7 +851,7 @@ h_u=\sum_t w_{u,t}h_t,
 </ul>
 <p>这条路线适合<strong>流式系统已有 CIF/RNN-T，且目标是低开销近似时间或控制延迟</strong>。如果需要人工标注级边界，应增加时间教师、duration/boundary loss，并单独评估起止偏差。</p>
 <hr>
-<h2 id="8-六条路线的统一对照"><a href="#8-六条路线的统一对照" class="headerlink" title="8. 六条路线的统一对照"></a>8. 六条路线的统一对照</h2><div class="table-container">
+<h2 id="9-七条路线的统一对照"><a href="#9-七条路线的统一对照" class="headerlink" title="9. 七条路线的统一对照"></a>9. 七条路线的统一对照</h2><div class="table-container">
 <table>
 <thead>
 <tr>
@@ -672,6 +889,14 @@ h_u=\sum_t w_{u,t}h_t,
 <td>attention 漂移、ASR 错词、head/tokenizer</td>
 </tr>
 <tr>
+<td><strong>目标词活动 + DTW（TWAD）</strong></td>
+<td><strong>逐帧词活动标签</strong></td>
+<td><strong>frame × word 分类矩阵 + DTW</strong></td>
+<td><strong>无需词典；训练需词边界</strong></td>
+<td><strong>通常离线</strong></td>
+<td><strong>词尾长尾、文本规范化、$W\times N$ 成本</strong></td>
+</tr>
+<tr>
 <td>直接边界预测</td>
 <td>人工或教师边界类别</td>
 <td>slot classification/regression</td>
@@ -703,21 +928,22 @@ h_u=\sum_t w_{u,t}h_t,
 <li><strong>音素研究、发音教学、精细语料标注</strong>：MFA/HMM 路线，保留 phone 边界与词典可解释性；</li>
 <li><strong>已有参考文本、常见语言、离线批处理</strong>：CTC/NFA，或 WhisperX 的 ASR + CTC 解耦方案；</li>
 <li><strong>已有 Whisper、部署依赖必须最少</strong>：官方 attention + DTW，但要做异常词和低置信度过滤；</li>
+<li><strong>已有多语言 AED、只具备词级伪标签且不想维护 lexicon</strong>：TWAD 的词活动矩阵 + DTW；</li>
 <li><strong>多语言、长音频、高并发 forced alignment</strong>：专门的 Qwen3-ForcedAligner 类 slot-filling 模型；</li>
 <li><strong>统一 ASR/翻译/字幕输出格式</strong>：逐词 timestamp token，但接受序列长度和自回归耦合；</li>
 <li><strong>实时字幕与语音助手</strong>：优先利用 RNN-T/CIF，再用延迟约束或 duration head 校准。</li>
 </ul>
 <hr>
-<h2 id="9-工程上最容易踩的五个坑"><a href="#9-工程上最容易踩的五个坑" class="headerlink" title="9. 工程上最容易踩的五个坑"></a>9. 工程上最容易踩的五个坑</h2><h3 id="9-1-把时间分辨率当成时间准确率"><a href="#9-1-把时间分辨率当成时间准确率" class="headerlink" title="9.1 把时间分辨率当成时间准确率"></a>9.1 把时间分辨率当成时间准确率</h3><p>20 ms、40 ms 或 80 ms 描述的是 encoder stride 或离散类别网格。实际误差还包括监督标签噪声、模型偏置、对齐路径和分词误差。输出两位小数同样不构成 10 ms 精度。</p>
-<h3 id="9-2-把所有“Whisper-时间戳”混成一件事"><a href="#9-2-把所有“Whisper-时间戳”混成一件事" class="headerlink" title="9.2 把所有“Whisper 时间戳”混成一件事"></a>9.2 把所有“Whisper 时间戳”混成一件事</h3><ul>
+<h2 id="10-工程上最容易踩的五个坑"><a href="#10-工程上最容易踩的五个坑" class="headerlink" title="10. 工程上最容易踩的五个坑"></a>10. 工程上最容易踩的五个坑</h2><h3 id="10-1-把时间分辨率当成时间准确率"><a href="#10-1-把时间分辨率当成时间准确率" class="headerlink" title="10.1 把时间分辨率当成时间准确率"></a>10.1 把时间分辨率当成时间准确率</h3><p>20 ms、40 ms 或 80 ms 描述的是 encoder stride 或离散类别网格。实际误差还包括监督标签噪声、模型偏置、对齐路径和分词误差。输出两位小数同样不构成 10 ms 精度。</p>
+<h3 id="10-2-把所有“Whisper-时间戳”混成一件事"><a href="#10-2-把所有“Whisper-时间戳”混成一件事" class="headerlink" title="10.2 把所有“Whisper 时间戳”混成一件事"></a>10.2 把所有“Whisper 时间戳”混成一件事</h3><ul>
 <li>Whisper segment timestamp token：训练目标的一部分，自回归生成；</li>
 <li>Whisper 官方 word timestamp：cross-attention + DTW 后处理；</li>
 <li>WhisperX word timestamp：独立 CTC forced alignment。</li>
 </ul>
 <p>三者的监督、模型和误差来源都不同。</p>
-<h3 id="9-3-忽略“word”如何定义"><a href="#9-3-忽略“word”如何定义" class="headerlink" title="9.3 忽略“word”如何定义"></a>9.3 忽略“word”如何定义</h3><p>英语可按空格聚合 BPE；中文、日文等必须说明是字符时间、token 时间还是外部分词后的词时间。标点、数字、emoji、缩写和前导空格都会改变边界。</p>
-<h3 id="9-4-只评估匹配词，却不报告-ASR-错误"><a href="#9-4-只评估匹配词，却不报告-ASR-错误" class="headerlink" title="9.4 只评估匹配词，却不报告 ASR 错误"></a>9.4 只评估匹配词，却不报告 ASR 错误</h3><p>若只在正确识别词上计算 MAE，模型可以通过删除困难词获得漂亮数字。完整报告应同时给 WER/CER、timestamp precision/recall，以及匹配词上的纯定位误差。</p>
-<h3 id="9-5-没有为文本失配设计失败模式"><a href="#9-5-没有为文本失配设计失败模式" class="headerlink" title="9.5 没有为文本失配设计失败模式"></a>9.5 没有为文本失配设计失败模式</h3><p>Forced alignment 假设参考文本与音频大致一致。生产系统至少应检测：</p>
+<h3 id="10-3-忽略“word”如何定义"><a href="#10-3-忽略“word”如何定义" class="headerlink" title="10.3 忽略“word”如何定义"></a>10.3 忽略“word”如何定义</h3><p>英语可按空格聚合 BPE；中文、日文等必须说明是字符时间、token 时间还是外部分词后的词时间。标点、数字、emoji、缩写和前导空格都会改变边界。</p>
+<h3 id="10-4-只评估匹配词，却不报告-ASR-错误"><a href="#10-4-只评估匹配词，却不报告-ASR-错误" class="headerlink" title="10.4 只评估匹配词，却不报告 ASR 错误"></a>10.4 只评估匹配词，却不报告 ASR 错误</h3><p>若只在正确识别词上计算 MAE，模型可以通过删除困难词获得漂亮数字。完整报告应同时给 WER/CER、timestamp precision/recall，以及匹配词上的纯定位误差。</p>
+<h3 id="10-5-没有为文本失配设计失败模式"><a href="#10-5-没有为文本失配设计失败模式" class="headerlink" title="10.5 没有为文本失配设计失败模式"></a>10.5 没有为文本失配设计失败模式</h3><p>Forced alignment 假设参考文本与音频大致一致。生产系统至少应检测：</p>
 <ul>
 <li>大片段无法对齐；</li>
 <li>路径代价异常；</li>
@@ -728,13 +954,13 @@ h_u=\sum_t w_{u,t}h_t,
 </ul>
 <p>“总能输出一组时间”不是可靠性的证明；恰恰相反，强约束搜索和 slot filling 都可能在输入错误时仍给出看似合法的边界。</p>
 <hr>
-<h2 id="10-结论"><a href="#10-结论" class="headerlink" title="10. 结论"></a>10. 结论</h2><p>Word Timing 的核心不是选择哪一个工具名，而是回答三个问题：</p>
+<h2 id="11-结论"><a href="#11-结论" class="headerlink" title="11. 结论"></a>11. 结论</h2><p>Word Timing 的核心不是选择哪一个工具名，而是回答三个问题：</p>
 <ol>
 <li><strong>时间证据从哪里来？</strong> HMM 状态、CTC 后验、attention、显式边界标签、时间 token，还是流式发射位置；</li>
 <li><strong>谁保证顺序？</strong> 参考图、CTC trellis、DTW、decoder 历史、slot context，还是 transducer lattice；</li>
 <li><strong>谁定义“边界”？</strong> 人工标注、MFA/NFA 教师、字幕 segment、模型触发点，还是工程 heuristic。</li>
 </ol>
-<p>传统 MFA 把语言知识和搜索约束写得最显式；CTC 将流水线简化为帧后验与 trellis；attention-DTW 从大模型内部挖掘未经边界监督的软定位；Qwen3-ForcedAligner 把问题改写为并行时间槽填充；Whisper/Canary 把时间纳入生成词表；CIF/RNN-T 则直接复用识别过程的单调轨迹。</p>
+<p>传统 MFA 把语言知识和搜索约束写得最显式；CTC 将流水线简化为帧后验与 trellis；attention-DTW 从大模型内部挖掘未经边界监督的软定位；TWAD 则用目标词 embedding 直接监督 frame × word 活动矩阵，再由 DTW 恢复单调词路径；Qwen3-ForcedAligner 把问题改写为并行时间槽填充；Whisper/Canary 把时间纳入生成词表；CIF/RNN-T 则直接复用识别过程的单调轨迹。</p>
 <p>它们最终都能输出 <code>[start, end]</code>，但这些数字的统计含义并不相同。真正可靠的系统，应在目标语言、目标噪声、真实文本失配和人工边界上分别校准，而不是只依据模型名称或时间网格做选择。</p>
 <hr>
 <h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
@@ -755,6 +981,7 @@ h_u=\sum_t w_{u,t}h_t,
 <li>Sainath, T. N. et al. <a target="_blank" rel="noopener" href="https://research.google/pubs/emitting-word-timings-with-end-to-end-models/">Emitting Word Timings with End-to-End Models</a>. Interspeech 2020.</li>
 <li>Xu, H. et al. <a target="_blank" rel="noopener" href="https://proceedings.mlr.press/v202/xu23d.html">Efficient Sequence Transduction by Jointly Predicting Tokens and Durations</a>. ICML 2023.</li>
 <li>Graves, A. et al. <a target="_blank" rel="noopener" href="https://www.cs.toronto.edu/~graves/icml_2006.pdf">Connectionist Temporal Classification: Labelling Unsegmented Sequence Data with Recurrent Neural Networks</a>. ICML 2006.</li>
+<li>Sivasankaran, S. et al. <a target="_blank" rel="noopener" href="https://www.microsoft.com/en-us/research/wp-content/uploads/2025/03/PhoneFreeWordTiming_final.pdf">Target Word Activity Detector: An Approach to Obtain ASR Word Boundaries without Lexicon</a>. Microsoft Speech and Language Group, 2025.</li>
 <li>Povey, D. et al. <a target="_blank" rel="noopener" href="https://doi.org/10.1109/ASRU.2011.6165026">The Kaldi Speech Recognition Toolkit</a>. IEEE ASRU 2011.</li>
 </ol>
 
@@ -802,6 +1029,10 @@ h_u=\sum_t w_{u,t}h_t,
       
         <a href="/tags/Qwen3-ASR/" class="print-no-link">#Qwen3-ASR</a>
       
+        <a href="/tags/TWAD/" class="print-no-link">#TWAD</a>
+      
+        <a href="/tags/Lexicon-Free-Alignment/" class="print-no-link">#Lexicon-Free Alignment</a>
+      
     </div>
   
 </div>
@@ -812,7 +1043,7 @@ h_u=\sum_t w_{u,t}h_t,
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>从路径搜索到时间 Token：Word Timing 与强制对齐的六条技术路线</div>
+      <div>从路径搜索到目标词活动：Word Timing 与强制对齐的七条技术路线</div>
       <div>https://smallsmartao.github.io/2026/10/13/2026-10-13-Word-Level-Timestamp-Alignment-Survey/</div>
     </div>
     <div class="license-meta">
@@ -831,7 +1062,7 @@ h_u=\sum_t w_{u,t}h_t,
       
         <div class="license-meta-item license-meta-date">
           <div>更新于</div>
-          <div>2026年10月13日</div>
+          <div>2026年10月14日</div>
         </div>
       
       
