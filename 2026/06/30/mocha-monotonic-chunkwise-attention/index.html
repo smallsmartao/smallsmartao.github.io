@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -340,28 +341,17 @@
 <p><strong>MoChA 的核心思想</strong>：在 Hard Monotonic Attention 确定的位置上，额外允许对一个小窗口（chunk）进行 Soft Attention——兼得在线解码与软对齐的优势。</p>
 <hr>
 <h2 id="2-方法详解"><a href="#2-方法详解" class="headerlink" title="2. 方法详解"></a>2. 方法详解</h2><h3 id="2-1-背景回顾：标准-Soft-Attention"><a href="#2-1-背景回顾：标准-Soft-Attention" class="headerlink" title="2.1 背景回顾：标准 Soft Attention"></a>2.1 背景回顾：标准 Soft Attention</h3><p>给定编码器隐状态序列 $\mathbf{h} = {h_1, \ldots, h_T}$ 和解码器状态 $s_{i-1}$，标准 Soft Attention 计算：</p>
-<script type="math/tex; mode=display">
-e_{i,j} = \text{Energy}(h_j, s_{i-1}) = v^\top \tanh(W_h h_j + W_s s_{i-1} + b)</script><script type="math/tex; mode=display">
-\alpha_{i,j} = \frac{\exp(e_{i,j})}{\sum_{k=1}^T \exp(e_{i,k})} = \text{softmax}(e_{i,:})_j</script><script type="math/tex; mode=display">
-c_i = \sum_{j=1}^T \alpha_{i,j} h_j</script><p>问题：计算 $c_i$ 需要所有 $h_j$（$j=1,\ldots,T$），无法在线。</p>
+\[e_{i,j} = \text{Energy}(h_j, s_{i-1}) = v^\top \tanh(W_h h_j + W_s s_{i-1} + b)\]\[\alpha_{i,j} = \frac{\exp(e_{i,j})}{\sum_{k=1}^T \exp(e_{i,k})} = \text{softmax}(e_{i,:})_j\]\[c_i = \sum_{j=1}^T \alpha_{i,j} h_j\]<p>问题：计算 $c_i$ 需要所有 $h_j$（$j=1,\ldots,T$），无法在线。</p>
 <h3 id="2-2-Hard-Monotonic-Attention"><a href="#2-2-Hard-Monotonic-Attention" class="headerlink" title="2.2 Hard Monotonic Attention"></a>2.2 Hard Monotonic Attention</h3><p>Hard Monotonic Attention 的解码过程：从上一步停下的位置 $t_{i-1}$ 开始，从左向右逐个检查记忆项，计算”选择概率”：</p>
-<script type="math/tex; mode=display">
-e_{i,j} = \text{MonotonicEnergy}(s_{i-1}, h_j)</script><script type="math/tex; mode=display">
-p_{i,j} = \sigma(e_{i,j})</script><script type="math/tex; mode=display">
-z_{i,j} \sim \text{Bernoulli}(p_{i,j})</script><p>一旦 $z_{i,j} = 1$，停止扫描，设 $t_i = j$，$c_i = h_{t_i}$。</p>
+\[e_{i,j} = \text{MonotonicEnergy}(s_{i-1}, h_j)\]\[p_{i,j} = \sigma(e_{i,j})\]\[z_{i,j} \sim \text{Bernoulli}(p_{i,j})\]<p>一旦 $z_{i,j} = 1$，停止扫描，设 $t_i = j$，$c_i = h_{t_i}$。</p>
 <p><strong>复杂度</strong>：$O(\max(T, U))$（线性），支持在线。</p>
 <p><strong>训练时</strong>：使用期望值替代采样，通过注意力概率分布的递推关系高效计算：</p>
-<script type="math/tex; mode=display">
-\alpha_{i,j} = p_{i,j} \left( \frac{(1-p_{i,j-1})\alpha_{i,j-1}}{p_{i,j-1}} + \alpha_{i-1,j} \right)</script><p>通过变量替换 $q_{i,j} = \alpha_{i,j}/p_{i,j}$，可以用并行的 <code>cumprod</code> 和 <code>cumsum</code> 高效求解。</p>
+\[\alpha_{i,j} = p_{i,j} \left( \frac{(1-p_{i,j-1})\alpha_{i,j-1}}{p_{i,j-1}} + \alpha_{i-1,j} \right)\]<p>通过变量替换 $q_{i,j} = \alpha_{i,j}/p_{i,j}$，可以用并行的 <code>cumprod</code> 和 <code>cumsum</code> 高效求解。</p>
 <p><strong>鼓励离散化</strong>：训练时向 sigmoid 输入加高斯噪声 $\epsilon \sim \mathcal{N}(0,1)$，迫使模型学习产生接近二值的 $p_{i,j}$。</p>
 <p><strong>能量函数</strong>修改为：</p>
-<script type="math/tex; mode=display">
-\text{MonotonicEnergy}(s_{i-1}, h_j) = g \frac{v^\top}{\|v\|} \tanh(W_s s_{i-1} + W_h h_j + b) + r</script><p>其中 $g, r$ 为可学习标量，缓解 sigmoid 的饱和与偏移问题。</p>
+\[\text{MonotonicEnergy}(s_{i-1}, h_j) = g \frac{v^\top}{\|v\|} \tanh(W_s s_{i-1} + W_h h_j + b) + r\]<p>其中 $g, r$ 为可学习标量，缓解 sigmoid 的饱和与偏移问题。</p>
 <h3 id="2-3-MoChA：单调分块注意力"><a href="#2-3-MoChA：单调分块注意力" class="headerlink" title="2.3 MoChA：单调分块注意力"></a>2.3 MoChA：单调分块注意力</h3><p>MoChA 的核心改进：Hard Monotonic 选定位置 $t_i$ 后，<strong>不再直接取 $h_{t_i}$，而是对 $t_i$ 前的长度为 $w$ 的窗口做 Soft Attention</strong>：</p>
-<script type="math/tex; mode=display">
-v = t_i - w + 1</script><script type="math/tex; mode=display">
-u_{i,k} = \text{ChunkEnergy}(s_{i-1}, h_k), \quad k \in \{v, v+1, \ldots, t_i\}</script><script type="math/tex; mode=display">
-c_i = \sum_{k=v}^{t_i} \frac{\exp(u_{i,k})}{\sum_{l=v}^{t_i} \exp(u_{i,l})} h_k</script><p>其中 <code>ChunkEnergy(·)</code> 是独立于 <code>MonotonicEnergy(·)</code> 的第二个能量函数。</p>
+\[v = t_i - w + 1\]\[u_{i,k} = \text{ChunkEnergy}(s_{i-1}, h_k), \quad k \in \{v, v+1, \ldots, t_i\}\]\[c_i = \sum_{k=v}^{t_i} \frac{\exp(u_{i,k})}{\sum_{l=v}^{t_i} \exp(u_{i,l})} h_k\]<p>其中 <code>ChunkEnergy(·)</code> 是独立于 <code>MonotonicEnergy(·)</code> 的第二个能量函数。</p>
 <p><strong>关键性质</strong>：</p>
 <ul>
 <li><strong>仍为在线解码</strong>：仅需 $h_1, \ldots, h_{t_i}$</li>
@@ -373,13 +363,10 @@ c_i = \sum_{k=v}^{t_i} \frac{\exp(u_{i,k})}{\sum_{l=v}^{t_i} \exp(u_{i,l})} h_k<
 
 <p><img src="/images/paper_figs/mocha/page_2.png" srcset="/img/loading.gif" lazyload alt="图1：三种注意力机制对比"></p>
 <h3 id="2-4-训练时的高效计算"><a href="#2-4-训练时的高效计算" class="headerlink" title="2.4 训练时的高效计算"></a>2.4 训练时的高效计算</h3><p>训练时需要计算 MoChA 诱导的概率分布 $\beta_{i,j}$：</p>
-<script type="math/tex; mode=display">
-\beta_{i,j} = \sum_{k=j}^{j+w-1} \alpha_{i,k} \frac{\exp(u_{i,j})}{\sum_{l=k-w+1}^{k} \exp(u_{i,l})}</script><p>直接计算含嵌套求和，效率低。论文给出高效并行方案——定义 <strong>MovingSum</strong> 操作：</p>
-<script type="math/tex; mode=display">
-\text{MovingSum}(x, b, f)_n := \sum_{m=n-(b-1)}^{n+f-1} x_m</script><p>（可通过与全 1 序列卷积实现）</p>
+\[\beta_{i,j} = \sum_{k=j}^{j+w-1} \alpha_{i,k} \frac{\exp(u_{i,j})}{\sum_{l=k-w+1}^{k} \exp(u_{i,l})}\]<p>直接计算含嵌套求和，效率低。论文给出高效并行方案——定义 <strong>MovingSum</strong> 操作：</p>
+\[\text{MovingSum}(x, b, f)_n := \sum_{m=n-(b-1)}^{n+f-1} x_m\]<p>（可通过与全 1 序列卷积实现）</p>
 <p>则 $\beta_{i,:}$ 可以一步并行计算：</p>
-<script type="math/tex; mode=display">
-\beta_{i,:} = \exp(u_{i,:}) \cdot \text{MovingSum}\left(\frac{\alpha_{i,:}}{\text{MovingSum}(\exp(u_{i,:}), w, 1)}, 1, w\right)</script><p><strong>完整训练算法</strong>（每个解码步 $i$）：</p>
+\[\beta_{i,:} = \exp(u_{i,:}) \cdot \text{MovingSum}\left(\frac{\alpha_{i,:}}{\text{MovingSum}(\exp(u_{i,:}), w, 1)}, 1, w\right)\]<p><strong>完整训练算法</strong>（每个解码步 $i$）：</p>
 <ol>
 <li>$e_{i,j} = \text{MonotonicEnergy}(s_{i-1}, h_j)$</li>
 <li>$p_{i,j} = \sigma(e_{i,j} + \epsilon)$，$\epsilon \sim \mathcal{N}(0,1)$</li>

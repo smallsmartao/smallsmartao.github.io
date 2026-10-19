@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -336,13 +337,13 @@
 <h3 id="LLM-语音提示"><a href="#LLM-语音提示" class="headerlink" title="LLM + 语音提示"></a>LLM + 语音提示</h3><p>映射网络（mapping network）将语音编码器输出转化为 LLM 兼容的声学提示。即使简单的线性投影层也展现了强大的对齐能力 (Fathullah et al., 2024; Ma et al., 2024)。部分方法通过堆叠向量或 CTC 压缩器来缩短序列长度 (Wu et al., 2023)。</p>
 <hr>
 <h2 id="3-方法论-Methodology"><a href="#3-方法论-Methodology" class="headerlink" title="3. 方法论 (Methodology)"></a>3. 方法论 (Methodology)</h2><h3 id="3-1-语音编码器结构-Structure-of-Speech-Encoder"><a href="#3-1-语音编码器结构-Structure-of-Speech-Encoder" class="headerlink" title="3.1 语音编码器结构 (Structure of Speech Encoder)"></a>3.1 语音编码器结构 (Structure of Speech Encoder)</h3><p>给定输入音频特征 $X_{1:T}$，预训练语音编码器将其转化为隐藏表示序列：</p>
-<script type="math/tex; mode=display">h_{1:T'} = \text{speech\_encoder}(X_{1:T}) \tag{1}</script><p>添加输出层 $W_o$ 并用 CTC loss 微调：</p>
-<script type="math/tex; mode=display">z_t = W_o \cdot h_t</script><script type="math/tex; mode=display">o_t = \text{softmax}(z_t) \tag{2}</script><p>CTC 损失函数定义为：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{CTC}(y_{1:N}, o_{1:T'}) = -\log \sum_{\pi \in \mathcal{A}(y)} \prod_{t=1}^{T'} o_t^{(\pi_t)} \tag{3}</script><p>其中 $\mathcal{A}(y)$ 表示目标序列 $y$ 的所有有效对齐路径集合。</p>
+\[h_{1:T'} = \text{speech\_encoder}(X_{1:T}) \tag{1}\]<p>添加输出层 $W_o$ 并用 CTC loss 微调：</p>
+\[z_t = W_o \cdot h_t\]\[o_t = \text{softmax}(z_t) \tag{2}\]<p>CTC 损失函数定义为：</p>
+\[\mathcal{L}_{CTC}(y_{1:N}, o_{1:T'}) = -\log \sum_{\pi \in \mathcal{A}(y)} \prod_{t=1}^{T'} o_t^{(\pi_t)} \tag{3}\]<p>其中 $\mathcal{A}(y)$ 表示目标序列 $y$ 的所有有效对齐路径集合。</p>
 <p><strong>关键设计</strong>：CTC 训练使用与 LLM 相同的词汇表。设 $|V|$ 为 LLM 词汇表大小，则 CTC 输出包含 $|V|+1$ 个 token（含 blank token）。</p>
 <h3 id="3-2-LegoSLM-连接方法-The-LegoSLM-Connection-Method"><a href="#3-2-LegoSLM-连接方法-The-LegoSLM-Connection-Method" class="headerlink" title="3.2 LegoSLM 连接方法 (The LegoSLM Connection Method)"></a>3.2 LegoSLM 连接方法 (The LegoSLM Connection Method)</h3>
 <p>核心思想：冻结语音编码器，仅微调 LLM。通过 CTC 后验与 LLM 嵌入表的加权求和，生成与文本嵌入空间对齐的语音表示：</p>
-<script type="math/tex; mode=display">s_t = E \cdot o_t \tag{4}</script><p>其中 $E$ 为 LLM 的嵌入表（embedding table），$o_t$ 为第 $t$ 帧的 CTC 后验概率分布。</p>
+\[s_t = E \cdot o_t \tag{4}\]<p>其中 $E$ 为 LLM 的嵌入表（embedding table），$o_t$ 为第 $t$ 帧的 CTC 后验概率分布。</p>
 <p>计算得到的语音嵌入 $s_{1:T’}$ 与文本嵌入拼接后送入后续 Transformer 层。</p>
 <p><strong>与 Speech Prompts 的区别</strong>：虽然都使用连续向量表示语音信息，但 LegoSLM 以文本嵌入作为”码本”进行语音嵌入重建，隐式地匹配了两种模态。</p>
 <p><strong>应用场景</strong>：</p>
@@ -352,7 +353,7 @@
 </ul>
 <h3 id="3-3-CTC-Blank-Token-讨论"><a href="#3-3-CTC-Blank-Token-讨论" class="headerlink" title="3.3 CTC Blank Token 讨论"></a>3.3 CTC Blank Token 讨论</h3><p>CTC 网络输出的特殊 token <code>&lt;blk&gt;</code> 不属于 LLM 词汇表。实验中将其映射到随机初始化的新嵌入向量 $e_{\langle blk\rangle}$。</p>
 <p>由于 blank token 通常出现频率远高于非 blank 符号且后验更尖锐，携带的内容信息有限，因此引入一个变体来抑制其概率：</p>
-<script type="math/tex; mode=display">\hat{z}_t^{\langle blk\rangle} = z_t^{\langle blk\rangle} - \log(\text{blk\_downscale}) \tag{5}</script><p>默认 <code>blk_downscale = 1</code>（无抑制）。变体 <strong>LegoSLM*</strong> 中设为 $10^4$，进一步增大不会带来额外提升。</p>
+\[\hat{z}_t^{\langle blk\rangle} = z_t^{\langle blk\rangle} - \log(\text{blk\_downscale}) \tag{5}\]<p>默认 <code>blk_downscale = 1</code>（无抑制）。变体 <strong>LegoSLM*</strong> 中设为 $10^4$，进一步增大不会带来额外提升。</p>
 <h3 id="3-4-零样本系统组合-Zero-shot-System-Combination"><a href="#3-4-零样本系统组合-Zero-shot-System-Combination" class="headerlink" title="3.4 零样本系统组合 (Zero-shot System Combination)"></a>3.4 零样本系统组合 (Zero-shot System Combination)</h3>
 <p>LegoSLM 的核心优势之一：由于 LLM 仅接收 CTC 后验（离散概率分布），训练完成后可以插入不同的语音编码器，只要其使用相同的 CTC 词汇表即可。</p>
 <p>具体流程：</p>
@@ -363,14 +364,14 @@
 </ol>
 <p>这在实际应用中非常有价值——当 ASR 编码器需要用更多数据更新或适应新领域时，LLM 无需重训。</p>
 <h3 id="3-5-AM-LM-频谱控制-AM-LM-Spectrum-Control"><a href="#3-5-AM-LM-频谱控制-AM-LM-Spectrum-Control" class="headerlink" title="3.5 AM/LM 频谱控制 (AM/LM Spectrum Control)"></a>3.5 AM/LM 频谱控制 (AM/LM Spectrum Control)</h3><p>在零样本组合中，编码器和解码器可能能力不对等。借鉴传统语音识别中声学模型（AM）和语言模型（LM）权重调节的思想，提出在 CTC softmax 层引入温度参数 $\tau &gt; 0$：</p>
-<script type="math/tex; mode=display">o_t^{(i)} = \frac{\exp(z_t^{(i)} / \tau)}{\sum_{j=1}^{|V|+1} \exp(z_t^{(j)} / \tau)} \tag{6}</script><ul>
+\[o_t^{(i)} = \frac{\exp(z_t^{(i)} / \tau)}{\sum_{j=1}^{|V|+1} \exp(z_t^{(j)} / \tau)} \tag{6}\]<ul>
 <li><strong>$\tau &gt; 1$</strong>：CTC 概率变平坦，LLM 在生成中获得更大自由度</li>
 <li><strong>$\tau &lt; 1$</strong>：CTC 概率变尖锐，语音编码器获得更大确定性</li>
 </ul>
 <p>这提供了一种简单有效的解码时控制手段，无需重新训练。</p>
 <h3 id="3-6-模型变体-Model-Variants"><a href="#3-6-模型变体-Model-Variants" class="headerlink" title="3.6 模型变体 (Model Variants)"></a>3.6 模型变体 (Model Variants)</h3><p>CTC 概率分布遵循长尾分布，大部分概率集中在 top-K 预测上。因此可以只保留每帧的 top-K 预测：</p>
 <h4 id="LegoTopS-Top-K-Softmax"><a href="#LegoTopS-Top-K-Softmax" class="headerlink" title="LegoTopS (Top-K + Softmax)"></a>LegoTopS (Top-K + Softmax)</h4><p>计算索引向量 $i_t$ 对应 $z_t$ 中 top-K 值的位置，然后用 top-K 预测的 softmax 作为权重重建语音嵌入：</p>
-<script type="math/tex; mode=display">i_t = \text{argmax\_k}(z_t)</script><script type="math/tex; mode=display">\tilde{s}_t = E[i_t] \cdot \text{softmax}(z_t[i_t]) \tag{7}</script><h4 id="LegoTopP-Top-K-Projection"><a href="#LegoTopP-Top-K-Projection" class="headerlink" title="LegoTopP (Top-K + Projection)"></a>LegoTopP (Top-K + Projection)</h4><p>将 top-K 预测对应的 LLM 嵌入拼接后，通过一个线性投影层映射到原始嵌入维度。该投影层随机初始化并与 LLM 权重联合训练。</p>
+\[i_t = \text{argmax\_k}(z_t)\]\[\tilde{s}_t = E[i_t] \cdot \text{softmax}(z_t[i_t]) \tag{7}\]<h4 id="LegoTopP-Top-K-Projection"><a href="#LegoTopP-Top-K-Projection" class="headerlink" title="LegoTopP (Top-K + Projection)"></a>LegoTopP (Top-K + Projection)</h4><p>将 top-K 预测对应的 LLM 嵌入拼接后，通过一个线性投影层映射到原始嵌入维度。该投影层随机初始化并与 LLM 权重联合训练。</p>
 <hr>
 <h2 id="4-实验设置-Experimental-Setup"><a href="#4-实验设置-Experimental-Setup" class="headerlink" title="4. 实验设置 (Experimental Setup)"></a>4. 实验设置 (Experimental Setup)</h2><h3 id="4-1-模型配置"><a href="#4-1-模型配置" class="headerlink" title="4.1 模型配置"></a>4.1 模型配置</h3><ul>
 <li><p><strong>语音编码器</strong>: USM (Universal Speech Model) 300M 参数</p>

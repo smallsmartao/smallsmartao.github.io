@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -395,7 +396,7 @@
 </ul>
 <p><strong>响应准确度 $R_{acc}$：</strong></p>
 <p>对于每个样本 $i$，综合评分定义为：</p>
-<script type="math/tex; mode=display">S_i = \frac{J(S_{c,i}, T_{p,i}, T_{g,i}) + J(S_{c,i}, R_{p,i}, R_{g,i})}{2} \cdot \mathbb{I}(\text{pred}_i = \text{gt}_i)</script><p>其中：</p>
+\[S_i = \frac{J(S_{c,i}, T_{p,i}, T_{g,i}) + J(S_{c,i}, R_{p,i}, R_{g,i})}{2} \cdot \mathbb{I}(\text{pred}_i = \text{gt}_i)\]<p>其中：</p>
 <ul>
 <li>$J(S_{c,i}, \cdot, \cdot) \in {0, 0.5, 1.0}$ 是 LLM-as-a-Judge 函数（使用 Qwen3-80B），以语义线索 $S_c$ 为评估上下文，判断预测输出与 ground truth 的功能合理性和对齐程度</li>
 <li>$T_{p,i}$, $T_{g,i}$：预测和真实的工具调用序列</li>

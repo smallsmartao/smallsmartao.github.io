@@ -76,6 +76,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -456,7 +457,7 @@
 </ul>
 <p>所有属性量化为 512 级离散值，形成大小为 512 的韵律 token 词表。</p>
 <h3 id="2-6-权重合并公式"><a href="#2-6-权重合并公式" class="headerlink" title="2.6 权重合并公式"></a>2.6 权重合并公式</h3><p>最终模型的参数为：</p>
-<script type="math/tex; mode=display">\theta_{SC} = \theta_{\text{base}} + \Delta\theta_{\text{speech}} + \lambda \cdot \Delta\theta_{\text{inst}}</script><p>其中：</p>
+\[\theta_{SC} = \theta_{\text{base}} + \Delta\theta_{\text{speech}} + \lambda \cdot \Delta\theta_{\text{inst}}\]<p>其中：</p>
 <ul>
 <li>$\Delta\theta_{\text{speech}}$：通过 LoRA（rank=64, α=16）在 30k 小时语音数据上连续预训练获得</li>
 <li>$\Delta\theta_{\text{inst}} = \theta_{\text{instruct}} - \theta_{\text{base}}$：文本 LLM 的指令方向</li>

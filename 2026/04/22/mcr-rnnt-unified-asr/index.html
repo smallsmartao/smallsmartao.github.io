@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -341,15 +342,15 @@
 <p>DCConv 的做法是让卷积操作感知当前的 chunk 配置。具体而言，在流式模式下，每个 Conformer block 的深度可分离卷积（depthwise convolution）之前，先将隐藏状态按当前 chunk size $C$ 进行 reshape，同时附带左右上下文各 $\frac{\text{kernel_size} - 1}{2}$ 帧。离线模式和流式模式共享相同的卷积参数，仅在输入组织方式上有区别。这种方式有效缩小了分块流式解码引入的 train-inference mismatch。</p>
 <h3 id="2-3-统一训练策略：Single-mode-vs-Dual-mode"><a href="#2-3-统一训练策略：Single-mode-vs-Dual-mode" class="headerlink" title="2.3 统一训练策略：Single-mode vs Dual-mode"></a>2.3 统一训练策略：Single-mode vs Dual-mode</h3><p>论文考察了两种统一训练策略：</p>
 <p><strong>Single-mode (SM)</strong>：每个优化步骤以概率 $p_{\text{off}}$ 随机采样一种模式 $m \in {\text{offline}, \text{streaming}}$，然后在该模式下执行一次前向-反向传播：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{\text{SM}} = \mathcal{L}^{(m)}_{\text{RNNT}}</script><p><strong>Dual-mode (DM)</strong>：每个优化步骤同时在同一 batch 上运行两种模式，并加权组合它们的 RNNT 损失：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{\text{DM}} = \alpha \, \mathcal{L}^{\text{off}}_{\text{RNNT}} + (1 - \alpha) \, \mathcal{L}^{\text{str}}_{\text{RNNT}}</script><p>其中 $\alpha \in [0, 1]$ 控制离线模式的权重。DM 策略每步计算开销是 SM 的两倍，但能更直接地耦合两种模式的优化过程。</p>
+\[\mathcal{L}_{\text{SM}} = \mathcal{L}^{(m)}_{\text{RNNT}}\]<p><strong>Dual-mode (DM)</strong>：每个优化步骤同时在同一 batch 上运行两种模式，并加权组合它们的 RNNT 损失：</p>
+\[\mathcal{L}_{\text{DM}} = \alpha \, \mathcal{L}^{\text{off}}_{\text{RNNT}} + (1 - \alpha) \, \mathcal{L}^{\text{str}}_{\text{RNNT}}\]<p>其中 $\alpha \in [0, 1]$ 控制离线模式的权重。DM 策略每步计算开销是 SM 的两倍，但能更直接地耦合两种模式的优化过程。</p>
 <h3 id="2-4-Mode-Consistency-Regularization-for-RNNT-MCR-RNNT"><a href="#2-4-Mode-Consistency-Regularization-for-RNNT-MCR-RNNT" class="headerlink" title="2.4 Mode-Consistency Regularization for RNNT (MCR-RNNT)"></a>2.4 Mode-Consistency Regularization for RNNT (MCR-RNNT)</h3><p>即使使用了上述 chunk-limited attention 和 DCConv，在极低延迟（&lt;0.5s）下流式性能仍会急剧退化——因为同一组参数需要同时表征两种上下文条件截然不同的模式。</p>
 <p><strong>从 CR-CTC 到 MCR-RNNT 的演进</strong>：作者首先尝试将 CR-CTC（对 CTC 后验做离线/流式对称一致性正则）扩展到 hybrid CTC-RNNT 训练中，但发现这<strong>反而损害了流式 RNNT 精度</strong>。原因分析：CTC 损失鼓励帧同步的、局部自信的 token 预测，而低延迟流式 RNNT 需要编码器在有限未来上下文下产出更丰富的表示。CTC 一致性正则导致共享编码器偏向于离线更容易实现、但不适合流式 Transducer 解码的对齐方式。</p>
 <p>因此，作者提出直接在 <strong>RNNT Joint 输出</strong>上施加一致性正则——即 MCR-RNNT。具体做法是：</p>
 <p>对于同一 batch 的输入，同时计算离线模式和流式模式下 RNNT Joint 网络的输出概率分布 $P^{\text{off}}(y | t, u)$ 和 $P^{\text{str}}(y | t, u)$，然后最小化它们之间的对称 KL 散度：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{\text{MCR}} = \frac{1}{2} \left[ D_{\text{KL}}(P^{\text{off}} \| P^{\text{str}}) + D_{\text{KL}}(P^{\text{str}} \| P^{\text{off}}) \right]</script><p>由于 RNNT Joint 输出的维度为 $(B, T, U, V)$（batch × 时间 × 标签序列长度 × 词表大小），直接计算 KL 散度内存开销巨大。作者使用 <strong>Triton</strong> 实现了高效的 fused kernel，避免了中间张量的完整具现化（materialization），使得 MCR-RNNT 在训练中仅增加约 10% 的计算开销。</p>
+\[\mathcal{L}_{\text{MCR}} = \frac{1}{2} \left[ D_{\text{KL}}(P^{\text{off}} \| P^{\text{str}}) + D_{\text{KL}}(P^{\text{str}} \| P^{\text{off}}) \right]\]<p>由于 RNNT Joint 输出的维度为 $(B, T, U, V)$（batch × 时间 × 标签序列长度 × 词表大小），直接计算 KL 散度内存开销巨大。作者使用 <strong>Triton</strong> 实现了高效的 fused kernel，避免了中间张量的完整具现化（materialization），使得 MCR-RNNT 在训练中仅增加约 10% 的计算开销。</p>
 <p>最终的 dual-mode 训练目标函数为：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{\text{DM}} = \alpha \, \mathcal{L}^{\text{off}}_{\text{RNNT}} + (1 - \alpha) \, \mathcal{L}^{\text{str}}_{\text{RNNT}} + \lambda \, \mathcal{L}_{\text{MCR}}</script><p>其中 $\lambda \geq 0$ 控制 MCR-RNNT 损失的强度。</p>
+\[\mathcal{L}_{\text{DM}} = \alpha \, \mathcal{L}^{\text{off}}_{\text{RNNT}} + (1 - \alpha) \, \mathcal{L}^{\text{str}}_{\text{RNNT}} + \lambda \, \mathcal{L}_{\text{MCR}}\]<p>其中 $\lambda \geq 0$ 控制 MCR-RNNT 损失的强度。</p>
 <p>作者还对比了几种 KL 散度的计算策略：（1）在完整 Joint 输出上计算 KLD；（2）在 ${p_{\text{blank}}, p_{\text{target}}, 1 - p_{\text{blank}} - p_{\text{target}}}$ 三元概率分布上计算；（3）使用 lattice posteriors。实验表明，直接在完整 Joint 输出上计算 KLD 效果最好且最稳定。</p>
 <h2 id="3-实验设置"><a href="#3-实验设置" class="headerlink" title="3. 实验设置"></a>3. 实验设置</h2><h3 id="3-1-模型架构与训练配置"><a href="#3-1-模型架构与训练配置" class="headerlink" title="3.1 模型架构与训练配置"></a>3.1 模型架构与训练配置</h3><ul>
 <li><strong>编码器</strong>：基于 FastConformer 的 RNNT 模型</li>

@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -351,8 +352,8 @@
 <li><strong>Non-blank predictor (Internal LM)</strong>: 输出 non-blank 概率</li>
 </ul>
 <p>Non-blank 概率 $P_{nb}$ 的计算通过将声学编码器输出 $\log P_{ac}$ 与内部 LM 输出 $\log P_{ilm}$ 相加并归一化：</p>
-<script type="math/tex; mode=display">P_{nb} = (1 - P_b) \cdot \text{softmax}(\log P_{ac} + \log P_{ilm})</script><p>解码时使用修改后的 non-blank token 评分：</p>
-<script type="math/tex; mode=display">\log\left((1 - P_b) \cdot \text{softmax}(\log P_{ac} + \alpha \log P_{ilm})\right) + \beta \log P_{ilm} \tag{1}</script><p>其中 $\alpha$ 和 $\beta$ 为超参数。</p>
+\[P_{nb} = (1 - P_b) \cdot \text{softmax}(\log P_{ac} + \log P_{ilm})\]<p>解码时使用修改后的 non-blank token 评分：</p>
+\[\log\left((1 - P_b) \cdot \text{softmax}(\log P_{ac} + \alpha \log P_{ilm})\right) + \beta \log P_{ilm} \tag{1}\]<p>其中 $\alpha$ 和 $\beta$ 为超参数。</p>
 <hr>
 <h2 id="III-Transducer-Llama-方法"><a href="#III-Transducer-Llama-方法" class="headerlink" title="III. Transducer-Llama 方法"></a>III. Transducer-Llama 方法</h2><p><img src="/images/paper_figs/transducer_llama_fig1.png" srcset="/img/loading.gif" lazyload alt="Transducer-Llama 架构图"><br><em>图 1: Transducer-Llama 框架示意图。⊕ 表示加法。LLM 参数冻结（frozen）。红色标注的 output layer 和 embedding layer 基于词表适配方法初始化。</em></p>
 <p>Transducer-Llama 使用 FT 架构，将 <strong>LLM 作为 non-blank predictor</strong> 在解码时建模因果依赖关系。Embedding layer 用作 blank predictor。整体框架结合词表适配、weak-to-strong LM swap 策略和 MWER 训练，实现高效训练并充分利用 LLM 提升 ASR 性能。</p>

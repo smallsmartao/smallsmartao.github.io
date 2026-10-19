@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -341,10 +342,10 @@
 <p><img src="/images/paper_figs/2604.09332_fig1.png" srcset="/img/loading.gif" lazyload alt="图1：两类语音-语言接口的总体架构。(a) Projector-based；(b) Phoneme-based"></p>
 <h3 id="2-1-Projector-based-接口"><a href="#2-1-Projector-based-接口" class="headerlink" title="2.1 Projector-based 接口"></a>2.1 Projector-based 接口</h3><p>该接口由语音编码器、下采样器、两层 MLP 投影器和 LoRA 适配的 LLM 组成。</p>
 <p><strong>编码器提取声学特征</strong>：</p>
-<script type="math/tex; mode=display">H_x = \text{Enc}(x), \quad H_x \in \mathbb{R}^{T \times d_s}</script><p>其中 $T$ 为帧数，$d_s$ 为编码器特征维度。</p>
+\[H_x = \text{Enc}(x), \quad H_x \in \mathbb{R}^{T \times d_s}\]<p>其中 $T$ 为帧数，$d_s$ 为编码器特征维度。</p>
 <p><strong>下采样</strong>（将每 $k$ 个连续帧拼接）：</p>
-<script type="math/tex; mode=display">\tilde{H}_x = \text{DownSampling}_k(H_x), \quad \tilde{H}_x \in \mathbb{R}^{N \times kd_s}, \quad N = \lfloor T/k \rfloor</script><p><strong>投影器</strong>（两层 MLP + ReLU）：</p>
-<script type="math/tex; mode=display">E_x = \text{Linear}_2\!\Big(\text{ReLU}\big(\text{Linear}_1(\tilde{H}_x)\big)\Big)</script><ul>
+\[\tilde{H}_x = \text{DownSampling}_k(H_x), \quad \tilde{H}_x \in \mathbb{R}^{N \times kd_s}, \quad N = \lfloor T/k \rfloor\]<p><strong>投影器</strong>（两层 MLP + ReLU）：</p>
+\[E_x = \text{Linear}_2\!\Big(\text{ReLU}\big(\text{Linear}_1(\tilde{H}_x)\big)\Big)\]<ul>
 <li>$\text{Linear}_1: \mathbb{R}^{kd_s} \to \mathbb{R}^{d_h}$，将声学特征映射到隐空间</li>
 <li>$\text{Linear}_2: \mathbb{R}^{d_h} \to \mathbb{R}^{d}$，将隐表示映射到 LLM 嵌入空间</li>
 </ul>
@@ -355,13 +356,13 @@
 <li><strong>Pr-Stage2</strong>：冻结投影器，用 LoRA 适配 LLM</li>
 </ul>
 <h3 id="2-2-Phoneme-based-接口"><a href="#2-2-Phoneme-based-接口" class="headerlink" title="2.2 Phoneme-based 接口"></a>2.2 Phoneme-based 接口</h3><p>离散接口将 ASR 分解为 <strong>语音到音素（S2P）</strong> 和 <strong>音素到字素（P2G）</strong> 两个阶段，通过对中间音素序列 $h$ 的边缘化建模：</p>
-<script type="math/tex; mode=display">p(y \mid x) = \sum_{h} p(h \mid x)\, p(y \mid h)</script><p>其中 $p(h \mid x)$ 由基于 CTC 的 S2P 模型实现，$p(y \mid h)$ 由 LoRA 适配的 LLM 实现。</p>
+\[p(y \mid x) = \sum_{h} p(h \mid x)\, p(y \mid h)\]<p>其中 $p(h \mid x)$ 由基于 CTC 的 S2P 模型实现，$p(y \mid h)$ 由 LoRA 适配的 LLM 实现。</p>
 <p><strong>Ph-Stage 1: S2P with CTC</strong></p>
 <p>在编码器之上添加 CTC 分类器，以 IPA 音素为目标词汇表，优化标准 CTC 目标函数，得到对齐路径的分布 $p(\pi \mid x)$。</p>
 <p><strong>Ph-Stage 2: P2G with S-SKM（简化采样-K 边缘化）</strong></p>
 <p>为在训练阶段向 LLM 暴露音素不确定性，从 CTC 模型中采样 $K$ 条路径并坍缩为音素序列：</p>
-<script type="math/tex; mode=display">\pi^{(k)} \sim p(\pi \mid x), \quad h^{(k)} = \mathcal{B}(\pi^{(k)})</script><p>其中 $\mathcal{B}(\cdot)$ 是 CTC 的 collapse 算子（去除 blank 与重复）。LLM 训练损失为蒙特卡洛近似：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{\text{S-SKM}} = -\log\!\left(\frac{1}{K}\sum_{k=1}^{K} p(y \mid h^{(k)})\right)</script><p>实验中 $K=8$。</p>
+\[\pi^{(k)} \sim p(\pi \mid x), \quad h^{(k)} = \mathcal{B}(\pi^{(k)})\]<p>其中 $\mathcal{B}(\cdot)$ 是 CTC 的 collapse 算子（去除 blank 与重复）。LLM 训练损失为蒙特卡洛近似：</p>
+\[\mathcal{L}_{\text{S-SKM}} = -\log\!\left(\frac{1}{K}\sum_{k=1}^{K} p(y \mid h^{(k)})\right)\]<p>实验中 $K=8$。</p>
 <h3 id="2-3-BPE-Phoneme-接口"><a href="#2-3-BPE-Phoneme-接口" class="headerlink" title="2.3 BPE-Phoneme 接口"></a>2.3 BPE-Phoneme 接口</h3><p>单音素序列不包含词边界信息。本文提出 <strong>BPE-Phoneme</strong> 接口：在音素转录上用 SentencePiece 学习 BPE 合并，同时保留词间空白。</p>
 <ul>
 <li>BPE-phoneme 单元作为 CTC 目标用于 S2P 训练</li>

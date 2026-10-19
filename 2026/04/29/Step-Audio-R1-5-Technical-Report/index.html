@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -336,7 +337,7 @@
 <h3 id="音频适配器-Audio-Adaptor"><a href="#音频适配器-Audio-Adaptor" class="headerlink" title="音频适配器 (Audio Adaptor)"></a>音频适配器 (Audio Adaptor)</h3><p>为连接连续声学模态与离散文本空间，音频适配器施加 <strong>2 倍时间降采样</strong>，将潜在表征有效压缩至 <strong>12.5 Hz</strong>。这一设计缓解了复杂多轮交互中的<strong>序列长度爆炸</strong>问题。</p>
 <h3 id="LLM-解码器-LLM-Decoder"><a href="#LLM-解码器-LLM-Decoder" class="headerlink" title="LLM 解码器 (LLM Decoder)"></a>LLM 解码器 (LLM Decoder)</h3><p>核心推理引擎为基于 <strong>Qwen2.5 32B</strong> 初始化的 LLM 解码器。它直接接收降采样后的音频特征，生成纯文本输出。为支持链式思维推理，生成过程被<strong>结构性分区</strong>：解码器首先被提示合成显式的中间推理轨迹（reasoning traces），随后自回归生成最终回复。这种将内部分析与外部回复解耦的设计至关重要——它构成了无缝整合 RLHF 的架构基础。</p>
 <h2 id="3-训练方法-Training-Method"><a href="#3-训练方法-Training-Method" class="headerlink" title="3 训练方法 (Training Method)"></a>3 训练方法 (Training Method)</h2><h3 id="3-1-以音频为中心的中间训练-Audio-Centric-Mid-Training"><a href="#3-1-以音频为中心的中间训练-Audio-Centric-Mid-Training" class="headerlink" title="3.1 以音频为中心的中间训练 (Audio-Centric Mid-Training)"></a>3.1 以音频为中心的中间训练 (Audio-Centric Mid-Training)</h3><p>给定基础音频-语言模型 $\pi_{\theta_0}$，在后训练对齐之前执行以音频为中心的中间训练阶段，以强化音频理解、音频驱动推理和通用审慎推理能力。训练目标在统一的监督目标下结合了音频驱动推理数据与辅助纯文本推理数据：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{\text{mid}} = \mathbb{E}_{(x,q,r,y) \sim \mathcal{D}_{\text{audio}}} [\log \pi_\theta(r, y \mid x, q)] + \mathbb{E}_{(q,r,y) \sim \mathcal{D}_{\text{text}}} [\log \pi_\theta(r, y \mid q)]</script><p>其中：</p>
+\[\mathcal{L}_{\text{mid}} = \mathbb{E}_{(x,q,r,y) \sim \mathcal{D}_{\text{audio}}} [\log \pi_\theta(r, y \mid x, q)] + \mathbb{E}_{(q,r,y) \sim \mathcal{D}_{\text{text}}} [\log \pi_\theta(r, y \mid q)]\]<p>其中：</p>
 <ul>
 <li>$(x, q, r, y)$：音频驱动样本，$x$ 为输入音频，$q$ 为关联文本上下文，$r$ 为推理轨迹，$y$ 为回复</li>
 <li>$(q, r, y)$：纯文本样本，$q$ 为上下文，$r$ 为推理轨迹，$y$ 为回复</li>
@@ -354,10 +355,10 @@
 <h3 id="3-3-基于评分准则的生成式奖励模型-RLHF-RLHF-with-Rubric-based-Generated-Reward-Model"><a href="#3-3-基于评分准则的生成式奖励模型-RLHF-RLHF-with-Rubric-based-Generated-Reward-Model" class="headerlink" title="3.3 基于评分准则的生成式奖励模型 RLHF (RLHF with Rubric-based Generated Reward Model)"></a>3.3 基于评分准则的生成式奖励模型 RLHF (RLHF with Rubric-based Generated Reward Model)</h3><p>多轮语音交互呈现<strong>高度异质的优化目标</strong>。部分行为由显式且局部化的约束治理（内容要求、格式规范、人设设定、跨轮次指令保持），其他行为本质上由偏好驱动且仅弱可规定（对话自然度、后续交互下的连贯性、语调适当性、整体对话流利度）。这些目标不仅形式不同，评估方式也应不同。</p>
 <p>为适应这种异质性，本文采用基于生成式奖励模型的<strong>统一 RLHF 框架</strong>，联合支持评分准则引导评估与常规偏好比较。</p>
 <p><strong>形式化定义</strong>：设 $H_{1:T} = {h_t}_{t=1}^T$ 为截至第 $T$ 轮的多轮对话历史。给定 $H_{1:T}$、策略回复 $y$、参考回复 $y_{\text{ref}}$ 和可选评分准则 $c$，生成式奖励模型产出相对质量判断：</p>
-<script type="math/tex; mode=display">g = R(H_{1:T}, y, y_{\text{ref}}; c), \quad c \in \mathcal{C} \cup \{\varnothing\}</script><p>其中 $c = \varnothing$ 对应常规成对偏好比较，$c \neq \varnothing$ 表示准则条件下的评估。判断 $g$ 随后映射为标量奖励：</p>
-<script type="math/tex; mode=display">r = \phi(g)</script><p>策略通过最大化 PPO 风格目标进行优化：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{\text{RLHF}}(\theta) = \mathbb{E}_t \left[ \min\left(\rho_t(\theta) \hat{A}_t, \text{clip}(\rho_t(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t \right) \right] - \beta D_{\text{KL}}(\pi_\theta(\cdot \mid H_{1:T}, c) \| \pi_{\text{ref}}(\cdot \mid H_{1:T}, c))</script><p>其中：</p>
-<script type="math/tex; mode=display">\rho_t(\theta) = \frac{\pi_\theta(y_t \mid H_{1:T}, c)}{\pi_{\theta_{\text{old}}}(y_t \mid H_{1:T}, c)}</script><p>$\hat{A}_t$ 为由生成式奖励估计的优势函数，$\pi_{\text{ref}}$ 为用于正则化的参考策略。</p>
+\[g = R(H_{1:T}, y, y_{\text{ref}}; c), \quad c \in \mathcal{C} \cup \{\varnothing\}\]<p>其中 $c = \varnothing$ 对应常规成对偏好比较，$c \neq \varnothing$ 表示准则条件下的评估。判断 $g$ 随后映射为标量奖励：</p>
+\[r = \phi(g)\]<p>策略通过最大化 PPO 风格目标进行优化：</p>
+\[\mathcal{L}_{\text{RLHF}}(\theta) = \mathbb{E}_t \left[ \min\left(\rho_t(\theta) \hat{A}_t, \text{clip}(\rho_t(\theta), 1-\epsilon, 1+\epsilon) \hat{A}_t \right) \right] - \beta D_{\text{KL}}(\pi_\theta(\cdot \mid H_{1:T}, c) \| \pi_{\text{ref}}(\cdot \mid H_{1:T}, c))\]<p>其中：</p>
+\[\rho_t(\theta) = \frac{\pi_\theta(y_t \mid H_{1:T}, c)}{\pi_{\theta_{\text{old}}}(y_t \mid H_{1:T}, c)}\]<p>$\hat{A}_t$ 为由生成式奖励估计的优势函数，$\pi_{\text{ref}}$ 为用于正则化的参考策略。</p>
 <p><strong>关键设计决策</strong>：两种形式的监督（准则引导评估和偏好比较）<strong>联合优化</strong>而非分阶段训练。原因在于两者的优化方向可能存在实质性差异；经验上，解耦训练倾向于引发非平凡的遗忘——后续在某一交互模式上的优化会退化在另一模式中习得的行为。联合优化提供了更稳定的路径，在单一策略内同时对齐指令敏感和偏好敏感两方面的多轮对话能力。</p>
 <p><strong>相对比较机制</strong>：奖励模型不对每个回复赋予绝对质量分数，而是在相同多轮对话上下文下将策略回复与参考回复进行比较，根据相对质量产出偏好判断。这种<strong>相对奖励公式</strong>更适合语音对话对齐——交互质量的许多重要方面难以用单一绝对分数校准。通过将奖励表示为具有多个序数等级的细粒度相对偏好信号，模型能够捕捉超越二元区分的不同程度的回复质量，产出更具判别性的策略优化监督信号。</p>
 <h2 id="4-评估-Evaluation"><a href="#4-评估-Evaluation" class="headerlink" title="4 评估 (Evaluation)"></a>4 评估 (Evaluation)</h2><h3 id="4-1-基准测试-Benchmarks"><a href="#4-1-基准测试-Benchmarks" class="headerlink" title="4.1 基准测试 (Benchmarks)"></a>4.1 基准测试 (Benchmarks)</h3><p>为全面评估 Step-Audio-R1.5 的推理和感知能力，本文采用一组语音到文本（Speech-to-Text, S2T）基准测试。S2T 评估通过要求文本回复来隔离模型理解和推理声学信号的能力。</p>

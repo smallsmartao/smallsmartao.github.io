@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -328,7 +329,7 @@
 <h2 id="1-背景：Speech-Language-Model-架构"><a href="#1-背景：Speech-Language-Model-架构" class="headerlink" title="1. 背景：Speech Language Model 架构"></a>1. 背景：Speech Language Model 架构</h2><p>本文面向的模型家族共享以下架构基础（如 Figure 1 所示）：</p>
 <p><img src="/images/paper_figs/vllm_audio_2607_02119_fig_page2.png" srcset="/img/loading.gif" lazyload alt="Figure 1: Speech language model architecture"></p>
 <h3 id="1-1-多-Token-预测（Multi-Token-Prediction）"><a href="#1-1-多-Token-预测（Multi-Token-Prediction）" class="headerlink" title="1.1 多 Token 预测（Multi-Token Prediction）"></a>1.1 多 Token 预测（Multi-Token Prediction）</h3><p>音频编码器将连续语音送入自回归 LLM。LLM 在统一词表上运行，词表被划分为文本子词表和 $S$ 个音频子词表。在音频输出阶段，每一步 $t$，LLM 骨干产生隐状态 $h_t$，然后 $S$ 个并行的码本头（Codebook Head）将该状态投影为各自的 logits $\ell^{(i)}$ 和采样 token $c_i$（$1 \le i \le S$）。具体地，每个头将一个可学习的流嵌入 $e_i$ 加到 $h_t$ 上再通过共享的语言建模头 $W_H$：</p>
-<script type="math/tex; mode=display">\ell^{(i)} = W_H(h_t + e_i)</script><h3 id="1-2-延迟交错模式（Delay-Interleave-Pattern）"><a href="#1-2-延迟交错模式（Delay-Interleave-Pattern）" class="headerlink" title="1.2 延迟交错模式（Delay Interleave Pattern）"></a>1.2 延迟交错模式（Delay Interleave Pattern）</h3><p>在延迟模式下，第 $i$ 个流偏移 $i$ 步——即步骤 $t$ 发射的 $S$ 个 token ${c_1, \ldots, c_S}$ 对应不同的时间位置。自回归反馈时，每步的输入表示聚合了先前生成的这些 token 的嵌入。生成结束后，得到的 $S \times T$ 码本矩阵（$T$ 为总声学帧数）经去交错（de-interleave）后送入声学解码器合成波形。</p>
+\[\ell^{(i)} = W_H(h_t + e_i)\]<h3 id="1-2-延迟交错模式（Delay-Interleave-Pattern）"><a href="#1-2-延迟交错模式（Delay-Interleave-Pattern）" class="headerlink" title="1.2 延迟交错模式（Delay Interleave Pattern）"></a>1.2 延迟交错模式（Delay Interleave Pattern）</h3><p>在延迟模式下，第 $i$ 个流偏移 $i$ 步——即步骤 $t$ 发射的 $S$ 个 token ${c_1, \ldots, c_S}$ 对应不同的时间位置。自回归反馈时，每步的输入表示聚合了先前生成的这些 token 的嵌入。生成结束后，得到的 $S \times T$ 码本矩阵（$T$ 为总声学帧数）经去交错（de-interleave）后送入声学解码器合成波形。</p>
 <p>这种统一词表设计天然支持混合模态响应（如文本无缝过渡到音频）。</p>
 <h3 id="1-3-验证模型"><a href="#1-3-验证模型" class="headerlink" title="1.3 验证模型"></a>1.3 验证模型</h3><p>本文在三个代表性开源 SpeechLM 上验证：</p>
 <div class="table-container">
@@ -388,7 +389,7 @@
 </ul>
 <hr>
 <h2 id="4-分类器无关引导的配对请求协同调度（§2-4）"><a href="#4-分类器无关引导的配对请求协同调度（§2-4）" class="headerlink" title="4. 分类器无关引导的配对请求协同调度（§2.4）"></a>4. 分类器无关引导的配对请求协同调度（§2.4）</h2><p>CFG 对每个码本流 $i$ 独立应用：</p>
-<script type="math/tex; mode=display">\tilde{\ell}^{(i)} = w \cdot \ell^{(i)}_{\text{cond}} + (1-w) \cdot \ell^{(i)}_{\text{uncond}}, \quad w > 1</script><p>朴素实现需要两个独立请求，引发严重的调度碎片化和跨请求同步开销，且由于需要逐步同步而不可行。</p>
+\[\tilde{\ell}^{(i)} = w \cdot \ell^{(i)}_{\text{cond}} + (1-w) \cdot \ell^{(i)}_{\text{uncond}}, \quad w &gt; 1\]<p>朴素实现需要两个独立请求，引发严重的调度碎片化和跨请求同步开销，且由于需要逐步同步而不可行。</p>
 <h3 id="4-1-配对协同调度机制（Paired-Request-Co-Scheduling）"><a href="#4-1-配对协同调度机制（Paired-Request-Co-Scheduling）" class="headerlink" title="4.1 配对协同调度机制（Paired Request Co-Scheduling）"></a>4.1 配对协同调度机制（Paired Request Co-Scheduling）</h3><p>端到端流程（Figure 2 右侧）：</p>
 <ol>
 <li><strong>输入自动分配</strong>：当服务器收到 CFG scale $w &gt; 1$ 的请求时，透明生成一个”伴侣请求（Companion）”（空 prompt）。引擎将此对视为原子调度单元，始终一起处理。</li>

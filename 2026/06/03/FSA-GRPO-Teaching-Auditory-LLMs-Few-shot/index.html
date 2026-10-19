@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -369,15 +370,15 @@
 </ul>
 <p>由于 GRPO 计算开销较大，实际使用经数据选择策略筛选的 2k 查询实例。</p>
 <h3 id="3-3-奖励设计"><a href="#3-3-奖励设计" class="headerlink" title="3.3 奖励设计"></a>3.3 奖励设计</h3><h4 id="ASR-奖励"><a href="#ASR-奖励" class="headerlink" title="ASR 奖励"></a>ASR 奖励</h4><p>主奖励基于词错误率（WER）：</p>
-<script type="math/tex; mode=display">r_{\text{ASR}}(x, y_i) = \max\left(0,\ 1 - \text{WER}(\tilde{y}_i, \tilde{y}^*)\right)</script><p>其中 $\tilde{y}_i = N(y_i)$、$\tilde{y}^<em> = N(y^</em>)$ 为归一化后的预测和参考转录。ASR 奖励允许模型在 demonstration 有用时利用之、无用时忽略之，从而在优化 few-shot 能力的同时避免 zero-shot 推理的灾难性遗忘。</p>
+\[r_{\text{ASR}}(x, y_i) = \max\left(0,\ 1 - \text{WER}(\tilde{y}_i, \tilde{y}^*)\right)\]<p>其中 $\tilde{y}_i = N(y_i)$、$\tilde{y}^<em> = N(y^</em>)$ 为归一化后的预测和参考转录。ASR 奖励允许模型在 demonstration 有用时利用之、无用时忽略之，从而在优化 few-shot 能力的同时避免 zero-shot 推理的灾难性遗忘。</p>
 <h4 id="语义对齐奖励-Semantic-Alignment-SA"><a href="#语义对齐奖励-Semantic-Alignment-SA" class="headerlink" title="语义对齐奖励 (Semantic Alignment, SA)"></a>语义对齐奖励 (Semantic Alignment, SA)</h4><p>动机：先前研究表明，语义相似的 in-context examples 对听觉 LLM 更为有效。SA 奖励鼓励模型生成与检索 demonstrations 语义对齐的响应。</p>
 <p>设 $I(x)$ 为检索到的 demonstration 转录集合。使用句子编码器 $f_\phi$ 对生成转录和检索转录分别编码并归一化：</p>
-<script type="math/tex; mode=display">z_i = \frac{f_\phi(y_i)}{\|f_\phi(y_i)\|_2}, \quad e_j = \frac{f_\phi(y_j)}{\|f_\phi(y_j)\|_2}, \quad j \in I(x)</script><p>计算与最近 demonstration 的语义相似度：</p>
-<script type="math/tex; mode=display">s_i = \max_{j \in I(x)} z_i^\top e_j</script><p>通过线性斜坡 (linear ramp) 将相似度转化为有界奖励：</p>
-<script type="math/tex; mode=display">r_{\text{SA}}(x, y_i) = \text{clip}\left(\frac{s_i - \tau_{\text{low}}^{g(x)}}{\tau_{\text{full}}^{g(x)} - \tau_{\text{low}}^{g(x)}},\ 0,\ 1\right)</script><p>其中 $\tau_{\text{low}}^{g(x)}$ 和 $\tau_{\text{full}}^{g(x)}$ 分别为组内经验相似度分布的第 25 和第 50 百分位数。低于 $\tau_{\text{low}}$ 的相似度获得零 SA 奖励，高于 $\tau_{\text{full}}$ 的获得满分。</p>
-<h4 id="综合奖励"><a href="#综合奖励" class="headerlink" title="综合奖励"></a>综合奖励</h4><script type="math/tex; mode=display">R_i = \lambda \cdot r_{\text{SA}}(x, y_i) + r_{\text{ASR}}(x, y_i)</script><p>$\lambda$ 控制 SA 奖励权重。</p>
+\[z_i = \frac{f_\phi(y_i)}{\|f_\phi(y_i)\|_2}, \quad e_j = \frac{f_\phi(y_j)}{\|f_\phi(y_j)\|_2}, \quad j \in I(x)\]<p>计算与最近 demonstration 的语义相似度：</p>
+\[s_i = \max_{j \in I(x)} z_i^\top e_j\]<p>通过线性斜坡 (linear ramp) 将相似度转化为有界奖励：</p>
+\[r_{\text{SA}}(x, y_i) = \text{clip}\left(\frac{s_i - \tau_{\text{low}}^{g(x)}}{\tau_{\text{full}}^{g(x)} - \tau_{\text{low}}^{g(x)}},\ 0,\ 1\right)\]<p>其中 $\tau_{\text{low}}^{g(x)}$ 和 $\tau_{\text{full}}^{g(x)}$ 分别为组内经验相似度分布的第 25 和第 50 百分位数。低于 $\tau_{\text{low}}$ 的相似度获得零 SA 奖励，高于 $\tau_{\text{full}}$ 的获得满分。</p>
+<h4 id="综合奖励"><a href="#综合奖励" class="headerlink" title="综合奖励"></a>综合奖励</h4>\[R_i = \lambda \cdot r_{\text{SA}}(x, y_i) + r_{\text{ASR}}(x, y_i)\]<p>$\lambda$ 控制 SA 奖励权重。</p>
 <h4 id="GRPO-优势计算"><a href="#GRPO-优势计算" class="headerlink" title="GRPO 优势计算"></a>GRPO 优势计算</h4><p>每个 prompt 采样 $G$ 个候选响应 ${y_i}_{i=1}^G$，优势按组内相对分布计算：</p>
-<script type="math/tex; mode=display">\hat{A}_i = \frac{R_i - \frac{1}{G}\sum_{j=1}^G R_j}{\sigma\left(\{R_j\}_{j=1}^G\right)}</script><h3 id="3-4-GRPO-训练细节"><a href="#3-4-GRPO-训练细节" class="headerlink" title="3.4 GRPO 训练细节"></a>3.4 GRPO 训练细节</h3><div class="table-container">
+\[\hat{A}_i = \frac{R_i - \frac{1}{G}\sum_{j=1}^G R_j}{\sigma\left(\{R_j\}_{j=1}^G\right)}\]<h3 id="3-4-GRPO-训练细节"><a href="#3-4-GRPO-训练细节" class="headerlink" title="3.4 GRPO 训练细节"></a>3.4 GRPO 训练细节</h3><div class="table-container">
 <table>
 <thead>
 <tr>

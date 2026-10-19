@@ -79,6 +79,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -344,7 +345,7 @@
 <h2 id="3-方法"><a href="#3-方法" class="headerlink" title="3. 方法"></a>3. 方法</h2><h3 id="3-1-词表扩展（Vocabulary-Expansion）"><a href="#3-1-词表扩展（Vocabulary-Expansion）" class="headerlink" title="3.1 词表扩展（Vocabulary Expansion）"></a>3.1 词表扩展（Vocabulary Expansion）</h3><p>为使 LLM 处理语音输入，首先对预训练 LLM 的 tokenizer 词表进行扩展，加入语音 token。遵循 OpusLM 的做法，通过结合语义 token 与声学 token 将语音转换为离散 token 序列，并将这些语音 token 追加到原始文本词表之后。对应地，嵌入层（embedding layer）随之扩容，并与新增层一起参与训练；原始嵌入权重保持冻结。</p>
 <h3 id="3-2-深度扩缩（Depth-Up-scaling）"><a href="#3-2-深度扩缩（Depth-Up-scaling）" class="headerlink" title="3.2 深度扩缩（Depth Up-scaling）"></a>3.2 深度扩缩（Depth Up-scaling）</h3><p>设预训练模型原有 $n$ 层 ${f_i}_{i=1}^n$，我们额外插入 $m$ 个新 transformer 层 ${g_j}_{j=1}^m$（如图1所示）。训练期间，所有原始层 ${f_i}$ 均被冻结，只有新增层 ${g_j}$ 参与梯度更新。</p>
 <p><strong>函数保持初始化（Function Preserving Initialization）</strong>是深度扩缩成功的关键属性：扩展后的模型在训练开始时应与原始模型行为完全一致，以避免新增层立即扰乱预训练表征、导致训练不稳定。每个新增层 $g_j$ 执行：</p>
-<script type="math/tex; mode=display">H = X + \text{MHSA}(\text{LN}(X)) \tag{1}</script><script type="math/tex; mode=display">Y = H + \text{FFN}(\text{LN}(H)) \tag{2}</script><p>其中 $X, Y \in \mathbb{R}^{T \times d}$ 分别为输入和输出，$T$ 为序列长度，$d$ 为隐藏维度，LN 为层归一化。遵循先前工作，对 MHSA 和 FFN 的<strong>输出投影矩阵采用零初始化</strong>，使得初始化时两者输出均为零。由于残差连接和无偏置项的设计，初始化时 $Y = X$，即每个新增层为恒等函数，训练过程中逐步学习语音适配。</p>
+\[H = X + \text{MHSA}(\text{LN}(X)) \tag{1}\]\[Y = H + \text{FFN}(\text{LN}(H)) \tag{2}\]<p>其中 $X, Y \in \mathbb{R}^{T \times d}$ 分别为输入和输出，$T$ 为序列长度，$d$ 为隐藏维度，LN 为层归一化。遵循先前工作，对 MHSA 和 FFN 的<strong>输出投影矩阵采用零初始化</strong>，使得初始化时两者输出均为零。由于残差连接和无偏置项的设计，初始化时 $Y = X$，即每个新增层为恒等函数，训练过程中逐步学习语音适配。</p>
 <p><strong>层位置策略</strong>对性能有重要影响，本文评估五种策略（每个新增层 $g_j$ 初始化为对应原始层 $f_i$ 的副本，并置于其后，形成 $g_j \circ f_i$ 的组合）：</p>
 <ul>
 <li><strong>INTERLEAVED</strong>：将新增层均匀分布于全部原始层中</li>
@@ -358,14 +359,14 @@
 <ul>
 <li><strong>全局提取分支（Global Extractor）</strong>：通过多头自注意力（MHSA）捕获长程依赖关系：</li>
 </ul>
-<script type="math/tex; mode=display">H_G = \text{MHSA}(\text{LN}(X)) \in \mathbb{R}^{T \times d} \tag{3}</script><ul>
+\[H_G = \text{MHSA}(\text{LN}(X)) \in \mathbb{R}^{T \times d} \tag{3}\]<ul>
 <li><strong>局部提取分支（Local Extractor）</strong>：通过卷积空间门控单元（CSGU）和门控 MLP（cgMLP）捕获局部模式：</li>
 </ul>
-<script type="math/tex; mode=display">H_L = \text{cgMLP}(\text{LN}(X)) \in \mathbb{R}^{T \times d} \tag{4}</script><p><strong>合并模块</strong>通过拼接、深度可分离卷积（DwConv）进行空间精炼，再投影回 $d$ 维：</p>
-<script type="math/tex; mode=display">H_{\text{Merge}} = (H_C + \text{DwConv}(H_C)) W_{\text{Merge}} \in \mathbb{R}^{T \times d} \tag{5}</script><p>其中 $H_C = \text{Concat}(H_G, H_L) \in \mathbb{R}^{T \times 2d}$，$W_{\text{Merge}} \in \mathbb{R}^{2d \times d}$ 为线性投影矩阵。合并输出 $H_{\text{Merge}}$ 经残差连接后通过 FFN（同公式2）。</p>
+\[H_L = \text{cgMLP}(\text{LN}(X)) \in \mathbb{R}^{T \times d} \tag{4}\]<p><strong>合并模块</strong>通过拼接、深度可分离卷积（DwConv）进行空间精炼，再投影回 $d$ 维：</p>
+\[H_{\text{Merge}} = (H_C + \text{DwConv}(H_C)) W_{\text{Merge}} \in \mathbb{R}^{T \times d} \tag{5}\]<p>其中 $H_C = \text{Concat}(H_G, H_L) \in \mathbb{R}^{T \times 2d}$，$W_{\text{Merge}} \in \mathbb{R}^{2d \times d}$ 为线性投影矩阵。合并输出 $H_{\text{Merge}}$ 经残差连接后通过 FFN（同公式2）。</p>
 <p>由于 cgMLP 分支专为声学处理设计，<strong>仅对语音 token 启用 cgMLP 和合并模块</strong>；文本 token 绕过这两个组件，只使用 MHSA 输出。</p>
 <p><strong>E-Branchformer 的函数保持初始化</strong>：标准 transformer 层可独立零初始化 MHSA 和 FFN 的输出投影，但 E-Branchformer 的两个分支共享一个合并投影 $W_{\text{Merge}}$，无法直接套用。本文采用如下初始化方案：</p>
-<script type="math/tex; mode=display">W_{\text{Merge}} = \begin{bmatrix} I \\ 0 \end{bmatrix}</script><p>其中 $I \in \mathbb{R}^{d \times d}$ 为单位矩阵，$0 \in \mathbb{R}^{d \times d}$ 为零矩阵；同时设 $W_O = 0$，深度可分离卷积的输出投影也置零。初始化时：$H_G = 0$（因为 $W_O = 0$），因此 $H_C W_{\text{Merge}} = [0, H_L] \cdot [I; 0] = 0$，层退化为恒等映射 $Y = X$，满足函数保持性质。</p>
+\[W_{\text{Merge}} = \begin{bmatrix} I \\ 0 \end{bmatrix}\]<p>其中 $I \in \mathbb{R}^{d \times d}$ 为单位矩阵，$0 \in \mathbb{R}^{d \times d}$ 为零矩阵；同时设 $W_O = 0$，深度可分离卷积的输出投影也置零。初始化时：$H_G = 0$（因为 $W_O = 0$），因此 $H_C W_{\text{Merge}} = [0, H_L] \cdot [I; 0] = 0$，层退化为恒等映射 $Y = X$，满足函数保持性质。</p>
 <h3 id="3-4-推理时层丢弃（Layer-Dropping-at-Inference）"><a href="#3-4-推理时层丢弃（Layer-Dropping-at-Inference）" class="headerlink" title="3.4 推理时层丢弃（Layer Dropping at Inference）"></a>3.4 推理时层丢弃（Layer Dropping at Inference）</h3><p>冻结全部原始层的直接好处是：推理时可简单移除新增层，类似随机深度（Stochastic Depth）或层 Dropout，<strong>精确还原预训练模型</strong>，从设计上保证文本任务零退化。当需要语音能力时使用完整模型；仅需文本能力时则丢弃新增层。</p>
 <p><img src="/images/paper_figs/2604.00489_fig1.png" srcset="/img/loading.gif" lazyload alt="图1：多模态深度扩缩架构示意图"></p>
 <p><em>图1：多模态深度扩缩策略。可训练的 E-Branchformer 块与冻结的 transformer 块交替排列，在保留预训练文本表征的同时获取语音能力。</em></p>

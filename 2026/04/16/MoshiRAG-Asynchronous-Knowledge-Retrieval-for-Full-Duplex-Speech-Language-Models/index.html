@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -360,11 +361,11 @@
 <li><strong>深度 Transformer（depth Transformer）</strong>：每个时间步预测 8 个音频 token</li>
 </ul>
 <p>在时间步 $i$，时间 Transformer 的输入向量为：</p>
-<script type="math/tex; mode=display">h_i = \text{emb}^{\text{model}}_{\text{text},i} + \text{emb}^{\text{model}}_{\text{speech},i} + \text{emb}^{\text{user}}_{\text{speech},i}</script><p>其中 $\text{emb}^r_{m,i}$ 表示角色 $r$（model 或 user）和模态 $m$（text 或 speech）在时间步 $i$ 的嵌入。</p>
+\[h_i = \text{emb}^{\text{model}}_{\text{text},i} + \text{emb}^{\text{model}}_{\text{speech},i} + \text{emb}^{\text{user}}_{\text{speech},i}\]<p>其中 $\text{emb}^r_{m,i}$ 表示角色 $r$（model 或 user）和模态 $m$（text 或 speech）在时间步 $i$ 的嵌入。</p>
 <p>具体而言，文本嵌入为 $\text{emb}^{\text{model}}_{\text{text},i} = \text{Emb}_{\text{text}}(t^{\text{model}}_i)$，语音嵌入为：</p>
-<script type="math/tex; mode=display">\text{emb}^r_{\text{speech},i} = \text{Emb}^r_{\text{speech},1}(s^r_{i,1}) + \sum_{j=2}^{8} \text{Emb}^r_{\text{speech},j}(s^r_{i-1,j})</script><p>其中 $s^r_{i,j}$ 是角色 $r$ 在时间 $i$ 的第 $j$ 层音频 token。</p>
+\[\text{emb}^r_{\text{speech},i} = \text{Emb}^r_{\text{speech},1}(s^r_{i,1}) + \sum_{j=2}^{8} \text{Emb}^r_{\text{speech},j}(s^r_{i-1,j})\]<p>其中 $s^r_{i,j}$ 是角色 $r$ 在时间 $i$ 的第 $j$ 层音频 token。</p>
 <p>当检索未激活时，MoshiRAG 的行为与原始 Moshi 完全一致。当 ⟨ret⟩ 信号在时间步 $i_{\text{ret}}$ 被预测，假设检索延迟为 $d$ 秒，检索到的参考文本被编码为嵌入序列 $\text{emb}^{\text{ref}}_{1:l}$（$l$ 为序列长度），经可训练线性投影层后，以流式方式与时间 Transformer 输入相加：</p>
-<script type="math/tex; mode=display">h'_i = \begin{cases} h_i + h^{\text{ref}}_{i - (i_{\text{ret}} + \frac{d}{f_r})} & \text{if } i_{\text{ret}} + \frac{d}{f_r} < i \leq i_{\text{ret}} + \frac{d}{f_r} + l \\ h_i & \text{otherwise} \end{cases}</script><p>其中 $h^{\text{ref}}_i = \text{proj}(\text{emb}^{\text{ref}}_i)$，$f_r$ 为 Moshi 的帧率。</p>
+\[h'_i = \begin{cases} h_i + h^{\text{ref}}_{i - (i_{\text{ret}} + \frac{d}{f_r})} &amp; \text{if } i_{\text{ret}} + \frac{d}{f_r} &lt; i \leq i_{\text{ret}} + \frac{d}{f_r} + l \\ h_i &amp; \text{otherwise} \end{cases}\]<p>其中 $h^{\text{ref}}_i = \text{proj}(\text{emb}^{\text{ref}}_i)$，$f_r$ 为 Moshi 的帧率。</p>
 <p>为解决长参考文档的问题（例如 250 个 token 对应 20 秒嵌入序列），系统采用预训练的序列压缩网络 <strong>ARC-Encoder</strong> 将参考序列长度缩减为原来的 <strong>四分之一</strong>。</p>
 <h4 id="3-3-2-流式-ASR（1B）"><a href="#3-3-2-流式-ASR（1B）" class="headerlink" title="3.3.2 流式 ASR（1B）"></a>3.3.2 流式 ASR（1B）</h4><p>使用预训练的流式 ASR 模型，延迟 0.5 秒，仅 1B 参数，计算成本相对较低。</p>
 <h4 id="3-3-3-检索后端"><a href="#3-3-3-检索后端" class="headerlink" title="3.3.3 检索后端"></a>3.3.3 检索后端</h4><p>⟨ret⟩ 被预测后，系统先等待 0.5 秒让 ASR 模型生成完整的用户发言转录，然后将对话转录发送至检索后端。本文考虑两种后端：</p>
@@ -460,7 +461,7 @@
 </div>
 <h3 id="4-2-训练"><a href="#4-2-训练" class="headerlink" title="4.2 训练"></a>4.2 训练</h3><p>⟨ret⟩ token 的放置利用多通道 TTS 模型提供的语音-文本强制对齐。具体地，将 RAG 启用的 Moshi 轮次中 lead 部分首个文本 token 之前的文本 token 替换为 ⟨ret⟩。</p>
 <p>检索延迟通过以下采样策略模拟：</p>
-<script type="math/tex; mode=display">d' = \begin{cases} \mathcal{U}(0, d_{\text{lead}}) & \text{if } d_{\text{lead}} < 2 \text{ or } p < 0.2 \\ \mathcal{U}(1.0, d_{\text{lead}} - 1.0) & \text{otherwise} \end{cases}</script><p>其中 $d’$ 为训练时模拟的检索延迟，$d_{\text{lead}}$ 为 lead 部分的持续时间，$p \sim \mathcal{U}(0,1)$。此设计确保在大多数情况下，检索延迟从区间 $(1.0, d_{\text{lead}} - 1.0)$ 采样，在 body 部分关键信息之前保证至少 1.0 秒的缓冲时间。</p>
+\[d' = \begin{cases} \mathcal{U}(0, d_{\text{lead}}) &amp; \text{if } d_{\text{lead}} &lt; 2 \text{ or } p &lt; 0.2 \\ \mathcal{U}(1.0, d_{\text{lead}} - 1.0) &amp; \text{otherwise} \end{cases}\]<p>其中 $d’$ 为训练时模拟的检索延迟，$d_{\text{lead}}$ 为 lead 部分的持续时间，$p \sim \mathcal{U}(0,1)$。此设计确保在大多数情况下，检索延迟从区间 $(1.0, d_{\text{lead}} - 1.0)$ 采样，在 body 部分关键信息之前保证至少 1.0 秒的缓冲时间。</p>
 <p><img src="/images/paper_figs/moshirag/delay_hist.png" srcset="/img/loading.gif" lazyload alt="检索延迟和关键词延迟的分布直方图。训练数据覆盖了比实际推理更宽的检索延迟范围。关键词延迟几乎总是长于实际检索延迟，为整合检索信息留下了充足时间。"></p>
 <p>训练配置：</p>
 <ul>

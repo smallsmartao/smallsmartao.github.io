@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -344,17 +345,14 @@
 <li>这证明编码器输出给解码器的 Cross-Attention 上下文中已经完整编码了“输入是否包含有效信息”的事实。</li>
 </ul>
 <h4 id="2-原生-Null-Token-对数几率审计"><a href="#2-原生-Null-Token-对数几率审计" class="headerlink" title="2. 原生 Null Token 对数几率审计"></a>2. 原生 Null Token 对数几率审计</h4><p>在自回归生成的第一步，模型原生赋予 <code>&lt;|endoftranscript|&gt;</code>（EOT）或 <code>&lt;eos&gt;</code> 的未归一化 Logit 记为 $z_{    ext{null}}$，最大非空 Token 的 Logit 记为 $z_{    ext{text}} = \max_{v<br>eq     ext{null}} z_v$。<br>定义原生判别裕度（Native Margin）：</p>
-<script type="math/tex; mode=display">
-\Delta_{    ext{native}} = z_{    ext{null}} - z_{    ext{text}}</script><p>统计表明，在发生幻觉的非语音样本上，尽管 $z_{    ext{text}} &gt; z_{    ext{null}}$ 导致模型最终选错了分支，但此时的 $\Delta_{    ext{native}}$ 依然显著高于正常语音样本。换言之，<strong>Null Token 的相对打分本身就是一个极其优良的连续弃权指示器</strong>。</p>
+\[\Delta_{    ext{native}} = z_{    ext{null}} - z_{    ext{text}}\]<p>统计表明，在发生幻觉的非语音样本上，尽管 $z_{    ext{text}} &gt; z_{    ext{null}}$ 导致模型最终选错了分支，但此时的 $\Delta_{    ext{native}}$ 依然显著高于正常语音样本。换言之，<strong>Null Token 的相对打分本身就是一个极其优良的连续弃权指示器</strong>。</p>
 <h3 id="2-2-RQ2：Null-坐标的干预手段与理论先验转移模型-Diagnostic-Audit-amp-Interventions"><a href="#2-2-RQ2：Null-坐标的干预手段与理论先验转移模型-Diagnostic-Audit-amp-Interventions" class="headerlink" title="2.2 RQ2：Null 坐标的干预手段与理论先验转移模型 (Diagnostic Audit &amp; Interventions)"></a>2.2 RQ2：Null 坐标的干预手段与理论先验转移模型 (Diagnostic Audit &amp; Interventions)</h3><p>既然 Null 坐标蕴含了真理，如何对其进行干预？作者形式化对比了三类不同侵入程度的干预机制：</p>
 <p><img src="/images/paper_figs/null_token_hallucination/logit_lens_summary.png" srcset="/img/loading.gif" lazyload alt="不同层级的 Null 坐标读取干预与 Logit 变化"></p>
 <h4 id="1-标量-Logit-偏置（Scalar-Logit-Shift-eta-Shift）"><a href="#1-标量-Logit-偏置（Scalar-Logit-Shift-eta-Shift）" class="headerlink" title="1. 标量 Logit 偏置（Scalar Logit Shift / $eta$-Shift）"></a>1. 标量 Logit 偏置（Scalar Logit Shift / $eta$-Shift）</h4><p>这是最轻量、零参数微调的干预方式：直接在第一步解码时为 Null Token 的 Logit 叠加一个全局常数偏置 $eta$：</p>
-<script type="math/tex; mode=display">
-    ilde{z}_{    ext{null}} = z_{    ext{null}} + eta</script><p>根据贝叶斯后验先验转移理论（Saerens et al., 2002）：当测试环境的无信息输入比例（Base Rate）发生漂移时，对输出 Logit 增加常数偏置在数学上等价于调整类别的先验几率（Prior Odds）：</p>
-<script type="math/tex; mode=display">
-\log rac{p(y=    ext{null} \mid x)}{p(y 
+\[ilde{z}_{    ext{null}} = z_{    ext{null}} + eta\]<p>根据贝叶斯后验先验转移理论（Saerens et al., 2002）：当测试环境的无信息输入比例（Base Rate）发生漂移时，对输出 Logit 增加常数偏置在数学上等价于调整类别的先验几率（Prior Odds）：</p>
+\[\log rac{p(y=    ext{null} \mid x)}{p(y 
 eq     ext{null} \mid x)} = \log rac{p_{    ext{train}}(y=    ext{null} \mid x)}{p_{    ext{train}}(y 
-eq     ext{null} \mid x)} + \log rac{\pi_{    ext{test}}(    ext{null})}{\pi_{    ext{test}}(    ext{non-null})} - \log rac{\pi_{    ext{train}}(    ext{null})}{\pi_{    ext{train}}(    ext{non-null})}</script><h4 id="2-监督线性行嫁接（Analytic-Row-Graft）"><a href="#2-监督线性行嫁接（Analytic-Row-Graft）" class="headerlink" title="2. 监督线性行嫁接（Analytic Row-Graft）"></a>2. 监督线性行嫁接（Analytic Row-Graft）</h4><p>通过闭式解将输出投影矩阵 $W_{    ext{out}}$ 中对应 Null Token 的这一行向量 $w_{    ext{null}}$ 替换为由隐状态线性回归得到的权重向量 $w^*_{    ext{probe}}$，并保持其他所有词表行完全冻结。</p>
+eq     ext{null} \mid x)} + \log rac{\pi_{    ext{test}}(    ext{null})}{\pi_{    ext{test}}(    ext{non-null})} - \log rac{\pi_{    ext{train}}(    ext{null})}{\pi_{    ext{train}}(    ext{non-null})}\]<h4 id="2-监督线性行嫁接（Analytic-Row-Graft）"><a href="#2-监督线性行嫁接（Analytic-Row-Graft）" class="headerlink" title="2. 监督线性行嫁接（Analytic Row-Graft）"></a>2. 监督线性行嫁接（Analytic Row-Graft）</h4><p>通过闭式解将输出投影矩阵 $W_{    ext{out}}$ 中对应 Null Token 的这一行向量 $w_{    ext{null}}$ 替换为由隐状态线性回归得到的权重向量 $w^*_{    ext{probe}}$，并保持其他所有词表行完全冻结。</p>
 <h4 id="3-训练行微调（Trained-Row）"><a href="#3-训练行微调（Trained-Row）" class="headerlink" title="3. 训练行微调（Trained Row）"></a>3. 训练行微调（Trained Row）</h4><p>在仅微调 $w_{    ext{null}}$ 单行权重的设定下进行有监督反向传播。</p>
 <h4 id="4-关键指标：抑制收益-vs-删除代价的严苛权衡"><a href="#4-关键指标：抑制收益-vs-删除代价的严苛权衡" class="headerlink" title="4. 关键指标：抑制收益 vs 删除代价的严苛权衡"></a>4. 关键指标：抑制收益 vs 删除代价的严苛权衡</h4><p>以往的研究往往只单向汇报“幻觉降低了多少”，却掩盖了正常语音被误杀的代价。论文强制引入双向评估指标：</p>
 <ul>

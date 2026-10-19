@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -409,8 +410,8 @@
 <li><strong>联合校准</strong>：解冻适配器和解码器，低学习率 $2 \times 10^{-5}$ 联合优化</li>
 </ol>
 <p>训练损失中分支权重按指数衰减：</p>
-<script type="math/tex; mode=display">w_h = \frac{\alpha^{h-1}}{\sum_{j=1}^{H} \alpha^{j-1}}, \quad H=5, \quad \alpha=0.9</script><p>总损失：</p>
-<script type="math/tex; mode=display">\mathcal{L}_t = \text{CE}(p_t, x_{t+1}) + \sum_{h=1}^{H} w_h \text{CE}(p_{t,h}, x_{t+1+h})</script><h3 id="数据"><a href="#数据" class="headerlink" title="数据"></a>数据</h3><ul>
+\[w_h = \frac{\alpha^{h-1}}{\sum_{j=1}^{H} \alpha^{j-1}}, \quad H=5, \quad \alpha=0.9\]<p>总损失：</p>
+\[\mathcal{L}_t = \text{CE}(p_t, x_{t+1}) + \sum_{h=1}^{H} w_h \text{CE}(p_{t,h}, x_{t+1+h})\]<h3 id="数据"><a href="#数据" class="headerlink" title="数据"></a>数据</h3><ul>
 <li><strong>短音频 SFT</strong>：约 10 万小时，覆盖普通话、英语、code-switching、专业术语、远场/高噪声场景，单样本 ≤30s</li>
 <li><strong>长音频伪标签</strong>：5 万小时，三系统转录 → ROVER 投票融合 → 不一致率 &gt;5% 的片段丢弃 → 相邻段拼接 → LLM 精修标点/术语一致性</li>
 </ul>
@@ -522,7 +523,7 @@
 <li><strong>全局+行内联合控制</strong>：使用带全局和行内指令标注的高质量数据，实现句内级别精细控制</li>
 </ol>
 <h4 id="强化学习（RLHF）"><a href="#强化学习（RLHF）" class="headerlink" title="强化学习（RLHF）"></a>强化学习（RLHF）</h4><p>训练生成式奖励模型（GRM）$r_\phi$。对每个 prompt $x$，给定高质量参考响应 $y^<em>$，策略模型 $\pi_\theta$ 生成候选 $y$，GRM 评估 $y$ 相对于 $y^</em>$ 的配对偏好得分：</p>
-<script type="math/tex; mode=display">r_{hf}(x, y, y^*) = s(r_\phi(x, y, y^*))</script><p>其中 $s(\cdot)$ 为奖励塑形变换。这使模型能处理复杂、抽象、高上下文依赖的指令，同时提升自然度和表现力。</p>
+\[r_{hf}(x, y, y^*) = s(r_\phi(x, y, y^*))\]<p>其中 $s(\cdot)$ 为奖励塑形变换。这使模型能处理复杂、抽象、高上下文依赖的指令，同时提升自然度和表现力。</p>
 <h3 id="SFT-数据构建"><a href="#SFT-数据构建" class="headerlink" title="SFT 数据构建"></a>SFT 数据构建</h3><p>两类数据源：</p>
 <ol>
 <li><strong>模型合成数据</strong>（全局指令控制）：使用 Step-Audio-EditX 模型生成大规模多样风格/情感变化的语音数据</li>
@@ -659,11 +660,11 @@
       
         <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
       
-        <a href="/tags/TTS/" class="print-no-link">#TTS</a>
-      
         <a href="/tags/Audio-LLM/" class="print-no-link">#Audio-LLM</a>
       
         <a href="/tags/RLHF/" class="print-no-link">#RLHF</a>
+      
+        <a href="/tags/TTS/" class="print-no-link">#TTS</a>
       
     </div>
   

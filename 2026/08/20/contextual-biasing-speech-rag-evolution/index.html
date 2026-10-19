@@ -80,6 +80,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -340,14 +341,14 @@
 <h2 id="3-代表作论文技术深度解构"><a href="#3-代表作论文技术深度解构" class="headerlink" title="3. 代表作论文技术深度解构"></a>3. 代表作论文技术深度解构</h2><h3 id="3-1-CLAR-CIF-局部声学定位与检索增强-Speech-LLM-arXiv-2603-25460"><a href="#3-1-CLAR-CIF-局部声学定位与检索增强-Speech-LLM-arXiv-2603-25460" class="headerlink" title="3.1 CLAR: CIF 局部声学定位与检索增强 Speech LLM (arXiv:2603.25460)"></a>3.1 CLAR: CIF 局部声学定位与检索增强 Speech LLM (arXiv:2603.25460)</h3><p><code>CLAR</code>（CIF-Localized Alignment for Retrieval-Augmented Speech LLM-Based Contextual ASR）由百融语音团队提出，系统性地解决了“在弱监督无时间戳条件下，如何用无标注连续语音波形在百万级实体库中精准检索并引导 Speech LLM”的问题。</p>
 <p><img src="/images/paper_figs/ctx_biasing_evolution/clar_fig1_pipeline.png" srcset="/img/loading.gif" lazyload alt="CLAR 系统架构与检索增强流水线"></p>
 <h4 id="1-双塔声学-文本检索器与-CIF-局部单调对齐"><a href="#1-双塔声学-文本检索器与-CIF-局部单调对齐" class="headerlink" title="1) 双塔声学-文本检索器与 CIF 局部单调对齐"></a>1) 双塔声学-文本检索器与 CIF 局部单调对齐</h4><p>在传统 RAG 中，检索查询（Query）是离散文本，而 ASR 的输入是连续音频序列 $\mathbf{X} \in \mathbb{R}^{T_0 \times F}$。普通双塔模型若采用全局均值池化，短实体（200-500ms）在整句向量中会被严重稀释（Feature Dilution）。CLAR 引入 <strong>Continuous Integrate-and-Fire (CIF)</strong> 预测器，对声学编码器隐状态 $\mathbf{H} \in \mathbb{R}^{T \times D}$ 预测帧级权重 $\alpha_t \in (0, 1)$：</p>
-<script type="math/tex; mode=display">\alpha_t = \sigma\Big(\text{Linear}\big(\text{ReLU}(\text{LayerNorm}(\text{Conv1d}(\mathbf{H})))\big)_t\Big)</script><p>当累加权重 $\sum \alpha_t \ge 1.0$ 时触发积分激发事件，在无时间戳弱监督下将连续帧自适应切分为 $K$ 个 Token 级别的时序声学边界 $[b_s, e_s]$。</p>
+\[\alpha_t = \sigma\Big(\text{Linear}\big(\text{ReLU}(\text{LayerNorm}(\text{Conv1d}(\mathbf{H})))\big)_t\Big)\]<p>当累加权重 $\sum \alpha_t \ge 1.0$ 时触发积分激发事件，在无时间戳弱监督下将连续帧自适应切分为 $K$ 个 Token 级别的时序声学边界 $[b_s, e_s]$。</p>
 <p><img src="/images/paper_figs/ctx_biasing_evolution/clar_fig2_retriever.png" srcset="/img/loading.gif" lazyload alt="CLAR 检索模块与长度感知局部匹配设计"></p>
 <h4 id="2-长度感知局部滑动均值池化（Length-aware-Localized-Mean-Slice）"><a href="#2-长度感知局部滑动均值池化（Length-aware-Localized-Mean-Slice）" class="headerlink" title="2) 长度感知局部滑动均值池化（Length-aware Localized Mean-Slice）"></a>2) 长度感知局部滑动均值池化（Length-aware Localized Mean-Slice）</h4><p>预先计算音频帧序列与词库中包含 $N$ 个热词的文本向量 $\mathbf{E} \in \mathbb{R}^{N \times D}$ 的帧级相似度矩阵：</p>
-<script type="math/tex; mode=display">\mathbf{S} = \tau \cdot \mathbf{A} \mathbf{E}^\top \in \mathbb{R}^{T \times N}</script><p>对于一个文本长度为 $L$ 的候选词 $j$，CLAR 在 CIF 划分的 Token 序列上滑动宽度为 $L$ 的声学窗口，在第 $s$ 个滑动位置 $[b_s, e_{s+L-1}]$ 计算局部均值得分：</p>
-<script type="math/tex; mode=display">\text{score}_j(s) = \frac{1}{e_{s+L-1} - b_s + 1} \sum_{t=b_s}^{e_{s+L-1}} \mathbf{S}_{t, j}</script><p>候选词 $j$ 的最终检索得分为所有有效滑动窗口的最大值：</p>
-<script type="math/tex; mode=display">\hat{r}_j = \max_s \text{score}_j(s)</script><p>通过前缀和（Prefix-Sum）与按长度分桶 Batch 计算，可在百万级实体库上实现毫秒级快速匹配。</p>
+\[\mathbf{S} = \tau \cdot \mathbf{A} \mathbf{E}^\top \in \mathbb{R}^{T \times N}\]<p>对于一个文本长度为 $L$ 的候选词 $j$，CLAR 在 CIF 划分的 Token 序列上滑动宽度为 $L$ 的声学窗口，在第 $s$ 个滑动位置 $[b_s, e_{s+L-1}]$ 计算局部均值得分：</p>
+\[\text{score}_j(s) = \frac{1}{e_{s+L-1} - b_s + 1} \sum_{t=b_s}^{e_{s+L-1}} \mathbf{S}_{t, j}\]<p>候选词 $j$ 的最终检索得分为所有有效滑动窗口的最大值：</p>
+\[\hat{r}_j = \max_s \text{score}_j(s)\]<p>通过前缀和（Prefix-Sum）与按长度分桶 Batch 计算，可在百万级实体库上实现毫秒级快速匹配。</p>
 <h4 id="3-多粒度对比学习损失函数（Multi-Granularity-Loss）"><a href="#3-多粒度对比学习损失函数（Multi-Granularity-Loss）" class="headerlink" title="3) 多粒度对比学习损失函数（Multi-Granularity Loss）"></a>3) 多粒度对比学习损失函数（Multi-Granularity Loss）</h4><p>为了保证局部声学定位与全局语义的一致性，CLAR 设计了多粒度联合优化目标：</p>
-<script type="math/tex; mode=display">\mathcal{L} = \mathcal{L}_{\text{local}} + \mathcal{L}_{\text{global}} + \mathcal{L}_{\text{cif}}</script><p>其中局部 InfoNCE 对比损失 $\mathcal{L}_{\text{local}} = \frac{1}{2}(\mathcal{L}_{a \to t} + \mathcal{L}_{t \to a})$ 在提取的声学片段与目标热词文本向量间进行双向拉近；$\mathcal{L}_{\text{cif}} = |\sum_t \alpha_t - K^*|$ 约束预测边界总数。</p>
+\[\mathcal{L} = \mathcal{L}_{\text{local}} + \mathcal{L}_{\text{global}} + \mathcal{L}_{\text{cif}}\]<p>其中局部 InfoNCE 对比损失 $\mathcal{L}_{\text{local}} = \frac{1}{2}(\mathcal{L}_{a \to t} + \mathcal{L}_{t \to a})$ 在提取的声学片段与目标热词文本向量间进行双向拉近；$\mathcal{L}_{\text{cif}} = |\sum_t \alpha_t - K^*|$ 约束预测边界总数。</p>
 <p><img src="/images/paper_figs/ctx_biasing_evolution/clar_fig3_heatmap.png" srcset="/img/loading.gif" lazyload alt="CLAR 热词局部声学定位热力图"></p>
 <ul>
 <li><strong>实验结果与收益</strong>：在 AISHELL-1-NE 测试集上，CLAR 检索器的 Top-1 召回率达到了 <strong>97.03%（F1 97.03%）</strong>，远超传统全局对比学习（33.29%）。在注入 <code>Step-Audio2-mini</code> 后，在含有 $N=400$ 个干扰词的完整测试集上，热词错误率（B-WER）从 <strong>12.92% 大幅降低至 2.78%</strong>，且非热词错误率（U-CER）维持在 0.83%（与无偏置基线的 0.80% 相当），有效消除了过度偏置。</li>
@@ -359,11 +360,11 @@
 <ul>
 <li>设定常用词典 $\mathcal{D}_{\text{common}}$，基于发音编辑距离（PED）与字符编辑距离（CED）计算目标生僻词 $w_{\text{rare}}$ 与常用词 $w_{\text{common}}$ 的相似度：</li>
 </ul>
-<script type="math/tex; mode=display">w_{\text{cue}} = \arg\min_{w \in \mathcal{D}_{\text{common}}} \Big( \alpha \cdot \text{PED}(w, w_{\text{rare}}) + (1-\alpha) \cdot \text{CED}(w, w_{\text{rare}}) \Big)</script><ul>
+\[w_{\text{cue}} = \arg\min_{w \in \mathcal{D}_{\text{common}}} \Big( \alpha \cdot \text{PED}(w, w_{\text{rare}}) + (1-\alpha) \cdot \text{CED}(w, w_{\text{rare}}) \Big)\]<ul>
 <li>将提取出的常用词作为 Prompt 显式注入：<code>Bias List: [天琪 (发音同: 天气), 铌酸锂 (发音同: 离散里)]</code>，引导模型复用成熟的常用词声学隐状态表征。</li>
 </ul>
 <h4 id="2-偏置词位置预测网络（Bias-Word-Position-Prediction）"><a href="#2-偏置词位置预测网络（Bias-Word-Position-Prediction）" class="headerlink" title="2) 偏置词位置预测网络（Bias Word Position Prediction）"></a>2) 偏置词位置预测网络（Bias Word Position Prediction）</h4><p>为了杜绝模型在没有出现偏置词的句子区域胡乱替换，作者在 Speech LLM 的 Projector 和 Transformer 隐藏层后挂载了一个轻量级位置判别网络（Positional Tag Predictor）：</p>
-<script type="math/tex; mode=display">p_{\text{bias}}(t) = \text{Softmax}(W_{\text{pos}} \cdot [\mathbf{h}_t^{\text{speech}} \,\|\, \mathbf{h}_t^{\text{LLM}}])</script><p>该模块在训练期监督识别当前时序位置是否属于偏置词（Tag: <code>B-BIAS</code>, <code>I-BIAS</code>, <code>O</code>）。<strong>在推理阶段，若预测当前窗口为 <code>O</code>（常规文本），则强行截断热词偏置分支的权重释放</strong>。</p>
+\[p_{\text{bias}}(t) = \text{Softmax}(W_{\text{pos}} \cdot [\mathbf{h}_t^{\text{speech}} \,\|\, \mathbf{h}_t^{\text{LLM}}])\]<p>该模块在训练期监督识别当前时序位置是否属于偏置词（Tag: <code>B-BIAS</code>, <code>I-BIAS</code>, <code>O</code>）。<strong>在推理阶段，若预测当前窗口为 <code>O</code>（常规文本），则强行截断热词偏置分支的权重释放</strong>。</p>
 <ul>
 <li><strong>实验结果</strong>：在含有 1,000+ 干扰词的极端偏置测试集下，未登录生僻词的相对错误率下降了 <strong>16.3%</strong>，在通用纯净测试集上的错误率（CER/WER）没有发生任何退化。</li>
 </ul>

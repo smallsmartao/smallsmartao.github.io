@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -362,10 +363,8 @@
 <li><strong>LLM + LoRA</strong>：以 Phi-4-mini-instruct（3.8B 参数）为主干，接收 $[A; I]$（speech prompt + text prompt embedding 拼接）并执行 next-token prediction。</li>
 </ol>
 <p>CoT-ASR 的生成目标序列 $y = (y_1, \ldots, y_N)$ 包含两部分：</p>
-<script type="math/tex; mode=display">
-\langle\text{CONTEXT}\rangle \text{上下文分析} \langle/\text{CONTEXT}\rangle \langle\text{TRANSCRIPT}\rangle \text{转录文本} \langle/\text{TRANSCRIPT}\rangle</script><p>整体生成概率建模为：</p>
-<script type="math/tex; mode=display">
-P(y \mid E, I) = \prod_{i=1}^{N} P(y_i \mid [A; I], y_{<i}) \tag{1}</script><p>其中 $[\cdot;\cdot]$ 表示时序维度的拼接，$y_{&lt;i}$ 表示前 $i-1$ 步已生成的 token。</p>
+\[\langle\text{CONTEXT}\rangle \text{上下文分析} \langle/\text{CONTEXT}\rangle \langle\text{TRANSCRIPT}\rangle \text{转录文本} \langle/\text{TRANSCRIPT}\rangle\]<p>整体生成概率建模为：</p>
+\[P(y \mid E, I) = \prod_{i=1}^{N} P(y_i \mid [A; I], y_{&lt;i}) \tag{1}\]<p>其中 $[\cdot;\cdot]$ 表示时序维度的拼接，$y_{&lt;i}$ 表示前 $i-1$ 步已生成的 token。</p>
 <p><img src="/images/paper_figs/2604.00610_fig1_architecture.png" srcset="/img/loading.gif" lazyload alt="CoT-ASR 整体架构图"></p>
 <p><em>图1：CoT-ASR 架构示意图。输入语音经语音编码器和 CTC-guided Modality Adapter 处理后，与文本 prompt embedding 拼接，输入 LLM。输出序列包括红色标注的上下文推理分析（CONTEXT）和绿色标注的最终转录（TRANSCRIPT），在单次生成中完成。</em></p>
 <h3 id="3-2-训练流程"><a href="#3-2-训练流程" class="headerlink" title="3.2 训练流程"></a>3.2 训练流程</h3><h4 id="3-2-1-推理增强数据构建"><a href="#3-2-1-推理增强数据构建" class="headerlink" title="3.2.1 推理增强数据构建"></a>3.2.1 推理增强数据构建</h4><p>训练的核心是将静态的 <code>(speech, transcript)</code> 对转化为动态的推理链数据 <code>(speech, context + transcript)</code>。具体做法是：</p>
@@ -376,9 +375,7 @@ P(y \mid E, I) = \prod_{i=1}^{N} P(y_i \mid [A; I], y_{<i}) \tag{1}</script><p>�
 </ul>
 <p>这一数据构建策略无需人工标注，可扩展到大规模数据集。</p>
 <h4 id="3-2-2-训练目标"><a href="#3-2-2-训练目标" class="headerlink" title="3.2.2 训练目标"></a>3.2.2 训练目标</h4><p>训练损失为交叉熵损失与 CTC 损失的加权组合：</p>
-<script type="math/tex; mode=display">
-\mathcal{L}_{CE} = -\sum_{i=1}^{N} \log P(y_i \mid [A; I], y_{<i}) \tag{2}</script><script type="math/tex; mode=display">
-\mathcal{L} = \mathcal{L}_{CE} + \lambda \mathcal{L}_{CTC} \tag{3}</script><p>其中 $\lambda = 0.5$ 为超参数。CTC 损失作用于 Speech Encoder 输出，通过 CTC-guided Modality Adapter 的线性输出层计算。</p>
+\[\mathcal{L}_{CE} = -\sum_{i=1}^{N} \log P(y_i \mid [A; I], y_{&lt;i}) \tag{2}\]\[\mathcal{L} = \mathcal{L}_{CE} + \lambda \mathcal{L}_{CTC} \tag{3}\]<p>其中 $\lambda = 0.5$ 为超参数。CTC 损失作用于 Speech Encoder 输出，通过 CTC-guided Modality Adapter 的线性输出层计算。</p>
 <h4 id="3-2-3-两阶段微调"><a href="#3-2-3-两阶段微调" class="headerlink" title="3.2.3 两阶段微调"></a>3.2.3 两阶段微调</h4><ul>
 <li><strong>Stage 1</strong>（2,000 步）：仅更新 Modality Adapter，固定 encoder 和 LLM；</li>
 <li><strong>Stage 2</strong>（15,000 步）：同时更新 encoder 和 Modality Adapter，LLM 通过 LoRA 微调。</li>
@@ -404,20 +401,15 @@ P(y \mid E, I) = \prod_{i=1}^{N} P(y_i \mid [A; I], y_{<i}) \tag{1}</script><p>�
 <h3 id="4-2-CTC-概率的显式计算"><a href="#4-2-CTC-概率的显式计算" class="headerlink" title="4.2 CTC 概率的显式计算"></a>4.2 CTC 概率的显式计算</h3><p>CTC-guided Modality Adapter 的核心思路是：利用 CTC 后验概率分布，显式地将语音帧表示映射到 LLM 文本 embedding 空间。</p>
 <p>给定 speech encoder 输出 $E = (e_1, \ldots, e_L)$，线性输出层首先将每帧投影到 CTC 词表大小（含 blank token）的 logits。</p>
 <p><strong>Blank 概率</strong>（sigmoid 计算，单独建模）：</p>
-<script type="math/tex; mode=display">
-p^b_t = \text{Sigmoid}(z^b_t) \tag{4}</script><p><strong>Non-blank 概率</strong>（softmax 计算）：</p>
-<script type="math/tex; mode=display">
-p^{nb}_t = \text{Softmax}(z^{nb}_t), \quad p^{nb}_t \in \mathbb{R}^V \tag{5}</script><p><strong>归一化 non-blank 分布</strong>（为保证 CTC 损失的概率归一化）：</p>
-<script type="math/tex; mode=display">
-\tilde{p}^{nb}_t = (1 - p^b_t) \cdot p^{nb}_t \tag{6}</script><p>这样，$p^b_t + \sum_v \tilde{p}^{nb}_{t,v} = 1$，满足概率归一性。</p>
+\[p^b_t = \text{Sigmoid}(z^b_t) \tag{4}\]<p><strong>Non-blank 概率</strong>（softmax 计算）：</p>
+\[p^{nb}_t = \text{Softmax}(z^{nb}_t), \quad p^{nb}_t \in \mathbb{R}^V \tag{5}\]<p><strong>归一化 non-blank 分布</strong>（为保证 CTC 损失的概率归一化）：</p>
+\[\tilde{p}^{nb}_t = (1 - p^b_t) \cdot p^{nb}_t \tag{6}\]<p>这样，$p^b_t + \sum_v \tilde{p}^{nb}_{t,v} = 1$，满足概率归一性。</p>
 <h3 id="4-3-LLM-Embedding-加权融合"><a href="#4-3-LLM-Embedding-加权融合" class="headerlink" title="4.3 LLM Embedding 加权融合"></a>4.3 LLM Embedding 加权融合</h3><p>利用 non-blank 概率分布 $p^{nb}_t$，对 LLM token embedding 矩阵 $W_{emb} \in \mathbb{R}^{V \times D}$ 做加权求和：</p>
-<script type="math/tex; mode=display">
-u_t = p^{nb}_t \otimes W_{emb} \tag{7}</script><p>其中 $\otimes$ 表示矩阵乘法，$D$ 为 LLM 隐层维度。得到的 $u_t$ 代表该帧在 LLM 文本空间中的模态对齐表示。</p>
+\[u_t = p^{nb}_t \otimes W_{emb} \tag{7}\]<p>其中 $\otimes$ 表示矩阵乘法，$D$ 为 LLM 隐层维度。得到的 $u_t$ 代表该帧在 LLM 文本空间中的模态对齐表示。</p>
 <p>引入启发式阈值 $\tau = 0.05$，对 $p^{nb}_t$ 的低置信激活（低于 $\tau$ 的分量）置零，抑制噪声。</p>
 <p><strong>直觉理解</strong>：当 $p^{nb}_t$ 退化为 one-hot 分布时，$u_t$ 恰好等于对应 LLM token 的 embedding 向量，实现了最精确的模态映射。</p>
 <h3 id="4-4-门控残差分支"><a href="#4-4-门控残差分支" class="headerlink" title="4.4 门控残差分支"></a>4.4 门控残差分支</h3><p>为保留语音编码器原始信息，设计门控残差连接：</p>
-<script type="math/tex; mode=display">
-a_t = u_t + g_t \cdot \text{Linear}(e_t) \tag{8}</script><p>其中 $g_t \in (0,1)$ 为帧级标量门控，由线性投影后接 sigmoid 计算。线性层将 $e_t$ 映射到 $(D+1)$ 维，前 $D$ 维作为残差表示，最后 1 维经 sigmoid 得到 $g_t$。</p>
+\[a_t = u_t + g_t \cdot \text{Linear}(e_t) \tag{8}\]<p>其中 $g_t \in (0,1)$ 为帧级标量门控，由线性投影后接 sigmoid 计算。线性层将 $e_t$ 映射到 $(D+1)$ 维，前 $D$ 维作为残差表示，最后 1 维经 sigmoid 得到 $g_t$。</p>
 <p>最终 $A = (a_1, \ldots, a_L)$ 作为 speech prompt 输入 LLM，长度与编码器输出相同，不做任何压缩。</p>
 <p><img src="/images/paper_figs/2604.00610_fig3_adapter.png" srcset="/img/loading.gif" lazyload alt="CTC-guided Modality Adapter 结构图"></p>
 <p><em>图3：CTC-guided Modality Adapter 结构。线性输出层将编码器输出投影至 CTC 词表大小的 logits，blank/non-blank 概率分别用 sigmoid/softmax 计算。⊗ 为矩阵乘法，⊕ 为加法，Gate 为帧级标量门控。</em></p>
@@ -443,8 +435,7 @@ a_t = u_t + g_t \cdot \text{Linear}(e_t) \tag{8}</script><p>其中 $g_t \in (0,1
 <li>按照 Phi-4-MultiModal 设计原则构建，作为公平基线。</li>
 </ul>
 <h3 id="5-3-评估指标"><a href="#5-3-评估指标" class="headerlink" title="5.3 评估指标"></a>5.3 评估指标</h3><p>除 WER 之外，本文重点采用 <strong>EER（Entity Error Rate）</strong> 作为主要评估指标。</p>
-<script type="math/tex; mode=display">
-\text{EER} = 1 - \text{Entity Recall}</script><p>EER 衡量 reference 中的关键实体（医学术语、人名、专有名词等）未被完整正确识别的比例。与 WER 不同，EER 对语义完整性的要求更严格：一个实体只有在其全部词均正确时才被计为识别成功。这更能反映真实用户体验，也更能考察 LLM 知识利用能力。</p>
+\[\text{EER} = 1 - \text{Entity Recall}\]<p>EER 衡量 reference 中的关键实体（医学术语、人名、专有名词等）未被完整正确识别的比例。与 WER 不同，EER 对语义完整性的要求更严格：一个实体只有在其全部词均正确时才被计为识别成功。这更能反映真实用户体验，也更能考察 LLM 知识利用能力。</p>
 <hr>
 <h2 id="6-实验结果"><a href="#6-实验结果" class="headerlink" title="6. 实验结果"></a>6. 实验结果</h2><h3 id="6-1-主要-ASR-结果"><a href="#6-1-主要-ASR-结果" class="headerlink" title="6.1 主要 ASR 结果"></a>6.1 主要 ASR 结果</h3><div class="table-container">
 <table>

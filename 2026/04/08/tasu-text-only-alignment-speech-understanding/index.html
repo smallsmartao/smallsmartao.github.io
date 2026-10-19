@@ -79,6 +79,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -351,14 +352,14 @@
 <h3 id="3-1-标签同步解码-Label-Synchronous-Decoding-LSD"><a href="#3-1-标签同步解码-Label-Synchronous-Decoding-LSD" class="headerlink" title="3.1 标签同步解码 (Label-Synchronous Decoding, LSD)"></a>3.1 标签同步解码 (Label-Synchronous Decoding, LSD)</h3><p>CTC 解码的原始输出有两个问题：大量的 blank 帧和连续的重复帧。直接送入 LLM 会传播冗余并淹没语义信息。LSD 通过两步操作来压缩序列：</p>
 <p><strong>（1）Blank 帧去除</strong></p>
 <p>给定后验序列 $P \in \mathbb{R}^{T \times V}$（$T$ 帧、词表大小 $V$），如果某帧的 blank 概率超过阈值 $\tau$，就直接丢弃：</p>
-<script type="math/tex; mode=display">P'_t = \begin{cases} \varnothing, & \text{if } P_t(\text{blank}) > \tau \\ P_t, & \text{otherwise} \end{cases}</script><p><strong>（2）连续帧合并</strong></p>
+\[P'_t = \begin{cases} \varnothing, &amp; \text{if } P_t(\text{blank}) &gt; \tau \\ P_t, &amp; \text{otherwise} \end{cases}\]<p><strong>（2）连续帧合并</strong></p>
 <p>设 $y_t = \arg\max_k P_t(k)$ 为帧 $t$ 的最大概率 token。对于连续相同 $y_t$ 的帧组 $S_j$，取其平均：</p>
-<script type="math/tex; mode=display">P''_j = \frac{1}{|S_j|} \sum_{t \in S_j} P'_t, \quad j = 1, \ldots, J</script><p>其中 $J$ 是去除 blank 后保留的帧组数。</p>
+\[P''_j = \frac{1}{|S_j|} \sum_{t \in S_j} P'_t, \quad j = 1, \ldots, J\]<p>其中 $J$ 是去除 blank 后保留的帧组数。</p>
 <p><strong>直觉理解</strong>：LSD 本质上是在做”CTC 折叠”的概率版本——不是硬折叠为离散 token，而是保留概率分布信息的软折叠。实验数据上，LSD 平均实现了接近 <strong>6 倍</strong>的下采样率，这对训练和推理速度的提升是巨大的。</p>
 <h3 id="3-2-CTC-后验模拟-CTC-Posterior-Simulation-CPS"><a href="#3-2-CTC-后验模拟-CTC-Posterior-Simulation-CPS" class="headerlink" title="3.2 CTC 后验模拟 (CTC Posterior Simulation, CPS)"></a>3.2 CTC 后验模拟 (CTC Posterior Simulation, CPS)</h3><p>CPS 是 TASU 实现”纯文本训练”的关键。它将每个 ground-truth token 序列转化为模拟真实 CTC 输出分布特性的伪后验序列 $\tilde{S}$，包含三个随机化阶段：</p>
 <p><strong>（1）随机标签平滑 (Random Label Smoothing)</strong></p>
 <p>给定 token $y$ 的 one-hot 向量 $\delta_y \in \mathbb{R}^V$，与均匀分布插值：</p>
-<script type="math/tex; mode=display">\tilde{p} = \alpha \delta_y + (1 - \alpha) \frac{1}{V} \mathbf{1}, \quad \alpha \sim \mathcal{U}(\lambda_{\text{low}}, \lambda_{\text{high}})</script><p>随机系数 $\alpha$ 使生成的分布覆盖不同的置信度水平，模拟真实声学后验的不确定性。实验中 $\lambda_{\text{low}} = 0.8$，$\lambda_{\text{high}} = 1.0$。</p>
+\[\tilde{p} = \alpha \delta_y + (1 - \alpha) \frac{1}{V} \mathbf{1}, \quad \alpha \sim \mathcal{U}(\lambda_{\text{low}}, \lambda_{\text{high}})\]<p>随机系数 $\alpha$ 使生成的分布覆盖不同的置信度水平，模拟真实声学后验的不确定性。实验中 $\lambda_{\text{low}} = 0.8$，$\lambda_{\text{high}} = 1.0$。</p>
 <p><strong>（2）随机删除 (Random Deletions)</strong></p>
 <p>以概率 $p_{\text{del}}$ 独立删除序列中的每个元素。这模拟了 CTC 对齐中非 blank token 偶尔消失的现象——迫使系统对缺失证据保持鲁棒性。</p>
 <p><strong>（3）随机插入 (Random Insertions)</strong></p>

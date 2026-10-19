@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -391,13 +392,13 @@
 </ul>
 <h3 id="3-2-相关性与问题形式化"><a href="#3-2-相关性与问题形式化" class="headerlink" title="3.2 相关性与问题形式化"></a>3.2 相关性与问题形式化</h3><p>设 $z_t$ 为LLM在步$t$的logits向量，$z_t^<em> \triangleq z_t[y_t]$ 为生成token $y_t$ 对应的logit标量。定义相关性函数 $\Phi(z_t^</em>)$ 为每个输入token相对于输出logit $z_t^*$ 的标量相关性分数。</p>
 <p>模态和文本token的总相关性定义为：</p>
-<script type="math/tex; mode=display">\Phi_\mathcal{M} = \sum_{i \in \mathcal{M}} \Phi_i, \quad \Phi_\mathcal{T} = \sum_{j \in \mathcal{T}} \Phi_j \tag{1}</script><h4 id="LRP相关性传播规则"><a href="#LRP相关性传播规则" class="headerlink" title="LRP相关性传播规则"></a>LRP相关性传播规则</h4><p>给定输出logit $z_t^*$，相关性从输出向输入token反向传播。基本LRP公式：</p>
-<script type="math/tex; mode=display">\Phi_j^\ell = \sum_i \frac{a_j^\ell W_{ji}^\ell}{\sum_k a_k^\ell W_{ki}^\ell} \Phi_i^{\ell+1}</script><p>其中 $a^\ell$ 为第$\ell$层输入，$W^\ell$ 为该层权重。分母确保相关性的适当归一化。通过递归应用此规则可获得低层的相关性。</p>
+\[\Phi_\mathcal{M} = \sum_{i \in \mathcal{M}} \Phi_i, \quad \Phi_\mathcal{T} = \sum_{j \in \mathcal{T}} \Phi_j \tag{1}\]<h4 id="LRP相关性传播规则"><a href="#LRP相关性传播规则" class="headerlink" title="LRP相关性传播规则"></a>LRP相关性传播规则</h4><p>给定输出logit $z_t^*$，相关性从输出向输入token反向传播。基本LRP公式：</p>
+\[\Phi_j^\ell = \sum_i \frac{a_j^\ell W_{ji}^\ell}{\sum_k a_k^\ell W_{ki}^\ell} \Phi_i^{\ell+1}\]<p>其中 $a^\ell$ 为第$\ell$层输入，$W^\ell$ 为该层权重。分母确保相关性的适当归一化。通过递归应用此规则可获得低层的相关性。</p>
 <p>在LIME的设置中，相关性传播通过由$\Delta$诱导的修改前向传播在LLM骨干中执行，得到$X$上的token级相关性分数。问题形式化为：<strong>在每个解码步找到$\Delta$，使得相关性向模态token偏移，同时模型保持接近其原始行为。</strong></p>
 <h3 id="3-3-推理时优化"><a href="#3-3-推理时优化" class="headerlink" title="3.3 推理时优化"></a>3.3 推理时优化</h3><p><img src="/images/paper_figs/lime/fig3.png" srcset="/img/loading.gif" lazyload alt="相关性演化过程"></p>
 <p>上图展示了推理时视觉相关性的演化过程。随着LIME优化步数增加（3→5→7步），相关性从最初的弥散状态逐渐集中到相关区域，表明grounding得到改善。</p>
 <h4 id="相关性目标函数"><a href="#相关性目标函数" class="headerlink" title="相关性目标函数"></a>相关性目标函数</h4><p>为促进对模态token的依赖增加，定义基于<strong>噪声对比估计（NCE）</strong>和对比学习原理的相关性目标。模态token被视为正样本，其余token隐式充当竞争替代：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{rel}(\Delta) = -\frac{1}{|\mathcal{M}|} \sum_{i \in \mathcal{M}} \log \frac{\exp(\Phi_{i,\Delta} / \tau)}{\sum_{k \in \mathcal{M} \cup \mathcal{T}} \exp(\Phi_{k,\Delta} / \tau)} \tag{2}</script><p>其中：</p>
+\[\mathcal{L}_{rel}(\Delta) = -\frac{1}{|\mathcal{M}|} \sum_{i \in \mathcal{M}} \log \frac{\exp(\Phi_{i,\Delta} / \tau)}{\sum_{k \in \mathcal{M} \cup \mathcal{T}} \exp(\Phi_{k,\Delta} / \tau)} \tag{2}\]<p>其中：</p>
 <ul>
 <li>$\tau &gt; 0$ 为温度参数</li>
 <li>$\Phi_{i,\Delta}$ 为在KV更新下第$i$个token的相关性</li>
@@ -405,9 +406,9 @@
 <li>最小化此损失增加多模态token的解释性贡献，同时抑制对文本上下文的过度依赖</li>
 </ul>
 <h4 id="KL散度正则化"><a href="#KL散度正则化" class="headerlink" title="KL散度正则化"></a>KL散度正则化</h4><p>为约束与预训练模型的偏离，使用KL散度正则器：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{KL}(\Delta) = D_{KL}(p_{\theta,\Delta}(y_t | X, y_{<t}) \| p_\theta(y_t | X, y_{<t})) \tag{3}</script><p>参考模型 $p_\theta(y_t | X, y_{&lt;t})$ 共享相同权重但不应用$\Delta$。此项确保对key和value表示的修改保持预训练模型的语言先验和解码稳定性。</p>
+\[\mathcal{L}_{KL}(\Delta) = D_{KL}(p_{\theta,\Delta}(y_t | X, y_{&lt;t}) \| p_\theta(y_t | X, y_{&lt;t})) \tag{3}\]<p>参考模型 $p_\theta(y_t | X, y_{&lt;t})$ 共享相同权重但不应用$\Delta$。此项确保对key和value表示的修改保持预训练模型的语言先验和解码稳定性。</p>
 <h4 id="复合损失优化"><a href="#复合损失优化" class="headerlink" title="复合损失优化"></a>复合损失优化</h4><p>组合两个损失项，$\Delta$变量在每个解码步通过最小化以下复合损失进行优化：</p>
-<script type="math/tex; mode=display">\arg\min_\Delta \mathcal{L}_{rel}(\Delta) + \lambda \mathcal{L}_{KL}(\Delta)</script><p>其中 $\lambda &gt; 0$ 控制促进多模态相关性与约束偏离参考模型之间的权衡。</p>
+\[\arg\min_\Delta \mathcal{L}_{rel}(\Delta) + \lambda \mathcal{L}_{KL}(\Delta)\]<p>其中 $\lambda &gt; 0$ 控制促进多模态相关性与约束偏离参考模型之间的权衡。</p>
 <p><strong>关键实现细节</strong>：</p>
 <ul>
 <li>相关性项促进增加感知证据的利用</li>
@@ -934,15 +935,15 @@
 </ol>
 <hr>
 <h2 id="5-方法细节：Transformer的LRP传播规则"><a href="#5-方法细节：Transformer的LRP传播规则" class="headerlink" title="5. 方法细节：Transformer的LRP传播规则"></a>5. 方法细节：Transformer的LRP传播规则</h2><h3 id="5-1-LRP基本原理"><a href="#5-1-LRP基本原理" class="headerlink" title="5.1 LRP基本原理"></a>5.1 LRP基本原理</h3><p>LRP是一类归因方法，通过将标量模型输出分解为中间表示和输入特征的加性贡献来解释模型。对于标量函数$f_j$和大小为$N$的输入向量$x$，LRP赋予相关性值 ${\Phi_{i \leftarrow j}}_{i=0}^{N-1}$，满足：</p>
-<script type="math/tex; mode=display">f_j(x) \propto \Phi_j = \sum_i \Phi_{i \leftarrow j} \tag{4}</script><p><strong>守恒律</strong>：当相关性通过分层网络反向传播时，总相关性跨层保持：</p>
-<script type="math/tex; mode=display">\Phi^{\ell-1} = \sum_i \Phi_i^{\ell-1} = \sum_j \Phi_j^\ell = \Phi^\ell \tag{6}</script><h3 id="5-2-Deep-Taylor-Decomposition"><a href="#5-2-Deep-Taylor-Decomposition" class="headerlink" title="5.2 Deep Taylor Decomposition"></a>5.2 Deep Taylor Decomposition</h3><p>LRP通过Deep Taylor Decomposition（DTD）推导传播规则。对于表示为标量函数$f_j(x)$的神经元$j$，在参考点$x^0$处进行一阶Taylor展开：</p>
-<script type="math/tex; mode=display">f_j(x) \approx f_j(x^0) + \sum_i \frac{\partial f_j}{\partial x_i}(x^0)(x_i - x_i^0)</script><p>由此得到标准LRP-z规则：</p>
-<script type="math/tex; mode=display">\Phi_j^\ell = \sum_i \frac{x_j^\ell W_{ji}^\ell}{\sum_k x_k^\ell W_{ki}^\ell} \Phi_i^{\ell+1}</script><h3 id="5-3-LRP-ε规则"><a href="#5-3-LRP-ε规则" class="headerlink" title="5.3 LRP-ε规则"></a>5.3 LRP-ε规则</h3><p>当分母趋近零时引入稳定化项：</p>
-<script type="math/tex; mode=display">\Phi_j^\ell = \sum_i \frac{x_j^\ell W_{ji}^\ell}{\sum_k x_k^\ell W_{ki}^\ell + \epsilon \cdot \text{sign}(\sum_m x_m^\ell W_{mi}^\ell)} \Phi_i^{\ell+1}</script><h3 id="5-4-Softmax的LRP规则"><a href="#5-4-Softmax的LRP规则" class="headerlink" title="5.4 Softmax的LRP规则"></a>5.4 Softmax的LRP规则</h3><p>Softmax引入维度间的竞争归一化：</p>
-<script type="math/tex; mode=display">a_j^\ell = \text{softmax}(x^\ell)_j = \frac{\exp(x_j^\ell)}{\sum_k \exp(x_k^\ell)}</script><p>相关性重新分配为：</p>
-<script type="math/tex; mode=display">\Phi_j^{\ell-1} = x_j^\ell \left( \Phi_j^\ell - a_j^\ell \sum_i \Phi_i^\ell \right)</script><h3 id="5-5-注意力矩阵分解的LRP规则"><a href="#5-5-注意力矩阵分解的LRP规则" class="headerlink" title="5.5 注意力矩阵分解的LRP规则"></a>5.5 注意力矩阵分解的LRP规则</h3><p>对于注意力-value交互 $O^\ell = A^\ell V^\ell$，赋予注意力项$A_{ji}^\ell$的相关性为：</p>
-<script type="math/tex; mode=display">\Phi_{ji}^{\ell-1} = \sum_p \frac{A_{ji}^\ell V_{ip}^\ell}{2O_{jp}^\ell + \epsilon} \Phi_{jp}^\ell</script><h3 id="5-6-LayerNorm和RMSNorm的LRP"><a href="#5-6-LayerNorm和RMSNorm的LRP" class="headerlink" title="5.6 LayerNorm和RMSNorm的LRP"></a>5.6 LayerNorm和RMSNorm的LRP</h3><p>归一化层主要重新缩放激活而非重新分配信息，因此使用恒等映射近似：</p>
-<script type="math/tex; mode=display">\Phi_i^{\ell-1} = \Phi_i^\ell</script><hr>
+\[f_j(x) \propto \Phi_j = \sum_i \Phi_{i \leftarrow j} \tag{4}\]<p><strong>守恒律</strong>：当相关性通过分层网络反向传播时，总相关性跨层保持：</p>
+\[\Phi^{\ell-1} = \sum_i \Phi_i^{\ell-1} = \sum_j \Phi_j^\ell = \Phi^\ell \tag{6}\]<h3 id="5-2-Deep-Taylor-Decomposition"><a href="#5-2-Deep-Taylor-Decomposition" class="headerlink" title="5.2 Deep Taylor Decomposition"></a>5.2 Deep Taylor Decomposition</h3><p>LRP通过Deep Taylor Decomposition（DTD）推导传播规则。对于表示为标量函数$f_j(x)$的神经元$j$，在参考点$x^0$处进行一阶Taylor展开：</p>
+\[f_j(x) \approx f_j(x^0) + \sum_i \frac{\partial f_j}{\partial x_i}(x^0)(x_i - x_i^0)\]<p>由此得到标准LRP-z规则：</p>
+\[\Phi_j^\ell = \sum_i \frac{x_j^\ell W_{ji}^\ell}{\sum_k x_k^\ell W_{ki}^\ell} \Phi_i^{\ell+1}\]<h3 id="5-3-LRP-ε规则"><a href="#5-3-LRP-ε规则" class="headerlink" title="5.3 LRP-ε规则"></a>5.3 LRP-ε规则</h3><p>当分母趋近零时引入稳定化项：</p>
+\[\Phi_j^\ell = \sum_i \frac{x_j^\ell W_{ji}^\ell}{\sum_k x_k^\ell W_{ki}^\ell + \epsilon \cdot \text{sign}(\sum_m x_m^\ell W_{mi}^\ell)} \Phi_i^{\ell+1}\]<h3 id="5-4-Softmax的LRP规则"><a href="#5-4-Softmax的LRP规则" class="headerlink" title="5.4 Softmax的LRP规则"></a>5.4 Softmax的LRP规则</h3><p>Softmax引入维度间的竞争归一化：</p>
+\[a_j^\ell = \text{softmax}(x^\ell)_j = \frac{\exp(x_j^\ell)}{\sum_k \exp(x_k^\ell)}\]<p>相关性重新分配为：</p>
+\[\Phi_j^{\ell-1} = x_j^\ell \left( \Phi_j^\ell - a_j^\ell \sum_i \Phi_i^\ell \right)\]<h3 id="5-5-注意力矩阵分解的LRP规则"><a href="#5-5-注意力矩阵分解的LRP规则" class="headerlink" title="5.5 注意力矩阵分解的LRP规则"></a>5.5 注意力矩阵分解的LRP规则</h3><p>对于注意力-value交互 $O^\ell = A^\ell V^\ell$，赋予注意力项$A_{ji}^\ell$的相关性为：</p>
+\[\Phi_{ji}^{\ell-1} = \sum_p \frac{A_{ji}^\ell V_{ip}^\ell}{2O_{jp}^\ell + \epsilon} \Phi_{jp}^\ell\]<h3 id="5-6-LayerNorm和RMSNorm的LRP"><a href="#5-6-LayerNorm和RMSNorm的LRP" class="headerlink" title="5.6 LayerNorm和RMSNorm的LRP"></a>5.6 LayerNorm和RMSNorm的LRP</h3><p>归一化层主要重新缩放激活而非重新分配信息，因此使用恒等映射近似：</p>
+\[\Phi_i^{\ell-1} = \Phi_i^\ell\]<hr>
 <h2 id="6-实验设置补充"><a href="#6-实验设置补充" class="headerlink" title="6. 实验设置补充"></a>6. 实验设置补充</h2><h3 id="6-1-超参数设置"><a href="#6-1-超参数设置" class="headerlink" title="6.1 超参数设置"></a>6.1 超参数设置</h3><div class="table-container">
 <table>
 <thead>

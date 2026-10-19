@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -490,7 +491,7 @@
 </div>
 <p><em>Table 1: 传统指标与人类感知的一致率。Equal 列表示该指标判为”两者相同”的比例。</em></p>
 <p>其中 Agreement 的计算方式为：</p>
-<script type="math/tex; mode=display">\text{Agreement} = \frac{\max(A, B)}{A + B}</script><p>其中 $A$ 和 $B$ 分别为标注员选择假设 A 和假设 B 的人数。</p>
+\[\text{Agreement} = \frac{\max(A, B)}{A + B}\]<p>其中 $A$ 和 $B$ 分别为标注员选择假设 A 和假设 B 的人数。</p>
 <p><strong>关键发现</strong>：GPT-4.1 达到 94%、Qwen3.5-35B 达到 92% 的一致率，远超 WER 的 63%，也超越了最佳语义指标 SemDist Sentence 的 90%。值得注意的是，开源模型 Qwen3.5-35B 的表现已可与闭源的 GPT-4.1 相媲美，表明开放模型在此任务上具有实用价值。此外，模型性能与参数量大致正相关，但并非线性关系——Qwen3-8B 以更小的体量超越了 gemma3-27b，Qwen3.5-27B 也优于参数量相近的 Qwen3-30B。</p>
 <h3 id="3-2-基于-Decoder-LLM-嵌入的语义指标"><a href="#3-2-基于-Decoder-LLM-嵌入的语义指标" class="headerlink" title="3.2 基于 Decoder LLM 嵌入的语义指标"></a>3.2 基于 Decoder LLM 嵌入的语义指标</h3><p>本节探索使用 decoder-based LLM 的隐层表示来计算 SemDist 指标。核心挑战在于：decoder 模型输出的是 token 序列的嵌入，需要通过 <strong>pooling</strong> 操作将其聚合为单一的定长向量。</p>
 <h4 id="Pooling-策略"><a href="#Pooling-策略" class="headerlink" title="Pooling 策略"></a>Pooling 策略</h4><p>设 $t_i$ 为第 $i$ 个 token 的嵌入，$n$ 为序列长度，作者比较了以下 7 种 pooling 方法：</p>
@@ -499,17 +500,17 @@
 <li><strong>Second-to-last</strong>: 取倒数第二个 token 的嵌入 $t_{n-1}$</li>
 <li><strong>Mean</strong>: 所有 token 嵌入的算术平均</li>
 </ul>
-<script type="math/tex; mode=display">\text{Mean} = \frac{1}{n}\sum_{i=1}^{n}t_i</script><ul>
+\[\text{Mean} = \frac{1}{n}\sum_{i=1}^{n}t_i\]<ul>
 <li><strong>Mean without last token</strong>: 排除最后一个 token 后的均值</li>
 </ul>
-<script type="math/tex; mode=display">\text{Mean*} = \frac{1}{n-1}\sum_{i=1}^{n-1}t_i</script><ul>
+\[\text{Mean*} = \frac{1}{n-1}\sum_{i=1}^{n-1}t_i\]<ul>
 <li><strong>Weighted mean</strong>: 按位置加权平均，越靠后的 token 权重越大</li>
 </ul>
-<script type="math/tex; mode=display">\text{Weighted Mean} = \frac{\sum_{i=1}^{n}i \cdot t_i}{\sum_{i=1}^{n}i}</script><ul>
+\[\text{Weighted Mean} = \frac{\sum_{i=1}^{n}i \cdot t_i}{\sum_{i=1}^{n}i}\]<ul>
 <li><strong>Weighted mean without last</strong>: 排除最后一个 token 的加权均值</li>
 <li><strong>Mean of last 4 tokens</strong>: 最后 4 个 token 嵌入的均值</li>
 </ul>
-<script type="math/tex; mode=display">\text{Mean Last 4} = \frac{1}{4}\sum_{i=n-3}^{n}t_i</script><h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><p>下表展示了不同模型与 pooling 策略组合在 HATS 数据集（100% 标注一致子集）上的 SemDist 一致率：</p>
+\[\text{Mean Last 4} = \frac{1}{4}\sum_{i=n-3}^{n}t_i\]<h4 id="实验结果"><a href="#实验结果" class="headerlink" title="实验结果"></a>实验结果</h4><p>下表展示了不同模型与 pooling 策略组合在 HATS 数据集（100% 标注一致子集）上的 SemDist 一致率：</p>
 <div class="table-container">
 <table>
 <thead>

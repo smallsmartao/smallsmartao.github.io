@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -334,24 +335,16 @@
 </ul>
 <hr>
 <h2 id="2-方法论"><a href="#2-方法论" class="headerlink" title="2. 方法论"></a>2. 方法论</h2><h3 id="2-1-时序变量与分解"><a href="#2-1-时序变量与分解" class="headerlink" title="2.1 时序变量与分解"></a>2.1 时序变量与分解</h3><p>令 $\delta \in \mathbb{R}$ 为话语间时序变量：$\delta &lt; 0$ 表示重叠，$\delta \geq 0$ 表示静默间隙。基于 SASC 框架，时序过程分解为均值分量和残差分量：</p>
-<script type="math/tex; mode=display">
-\delta_n = \begin{cases} \mu^{=}_{s,n} + v_n, & X_n = X_{n-1},\ v_n \sim V^{=} \\ \mu^{\neq}_{s,n} + v_n, & X_n \neq X_{n-1},\ v_n \sim V^{\neq} \end{cases}</script><p>本文仅修改<strong>均值时序项</strong>的分布，保持残差模型不变，从而隔离全局时序统计量（重叠概率和停顿长度分布）的影响。</p>
+\[\delta_n = \begin{cases} \mu^{=}_{s,n} + v_n, &amp; X_n = X_{n-1},\ v_n \sim V^{=} \\ \mu^{\neq}_{s,n} + v_n, &amp; X_n \neq X_{n-1},\ v_n \sim V^{\neq} \end{cases}\]<p>本文仅修改<strong>均值时序项</strong>的分布，保持残差模型不变，从而隔离全局时序统计量（重叠概率和停顿长度分布）的影响。</p>
 <h3 id="2-2-指数倾斜族（Exponential-Tilting-Family）"><a href="#2-2-指数倾斜族（Exponential-Tilting-Family）" class="headerlink" title="2.2 指数倾斜族（Exponential-Tilting Family）"></a>2.2 指数倾斜族（Exponential-Tilting Family）</h3><p>核心参数化工具。给定基密度 $p_0$，通过指数倾斜生成参数族：</p>
-<script type="math/tex; mode=display">
-p_\theta(\delta) = \frac{p_0(\delta) \exp\left(\theta^\top T(\delta)\right)}{Z(\theta)}</script><p>其中归一化常数 $Z(\theta) = \int p_0(u) \exp(\theta^\top T(u))\, du$，充分统计量向量为：</p>
-<script type="math/tex; mode=display">
-T(\delta) = \begin{bmatrix} \mathbf{1}(\delta < 0) \\ \delta \\ \max(0, \delta) \\ \min(0, \delta) \end{bmatrix}</script><p>四个分量分别控制：重叠质量、全局位移、正间隙侧调制、负重叠侧调制。由于线性依赖 $\delta = \max(0,\delta) + \min(0,\delta)$，密度在三维压缩坐标下可辨识：</p>
-<script type="math/tex; mode=display">
-\phi_1 = \theta_1, \quad \phi_2 = \theta_2 + \theta_3, \quad \phi_3 = \theta_2 + \theta_4</script><h3 id="2-3-基密度构建"><a href="#2-3-基密度构建" class="headerlink" title="2.3 基密度构建"></a>2.3 基密度构建</h3><p>基密度由 $K$ 个语料的 KDE 密度加权混合而成：</p>
-<script type="math/tex; mode=display">
-p_0(\delta) = \sum_{k=1}^K w_k p_k(\delta)</script><p>权重通过最小化各语料到倾斜族投影的平均 KL 散度选取：</p>
-<script type="math/tex; mode=display">
-\min_{w \in \Delta_{K-1}} \frac{1}{K} \sum_{k=1}^K D_{\text{KL}}\left(p_k \| p_{\theta_k^*(w)}\right)</script><h3 id="2-4-参数空间搜索"><a href="#2-4-参数空间搜索" class="headerlink" title="2.4 参数空间搜索"></a>2.4 参数空间搜索</h3><p>搜索域由语料嵌入的范围扩展而来。初始设计采用 <strong>Latin Hypercube Sampling (LHS)</strong> 提供广覆盖，随后使用<strong>多目标贝叶斯优化</strong>进行自适应精炼。</p>
+\[p_\theta(\delta) = \frac{p_0(\delta) \exp\left(\theta^\top T(\delta)\right)}{Z(\theta)}\]<p>其中归一化常数 $Z(\theta) = \int p_0(u) \exp(\theta^\top T(u))\, du$，充分统计量向量为：</p>
+\[T(\delta) = \begin{bmatrix} \mathbf{1}(\delta &lt; 0) \\ \delta \\ \max(0, \delta) \\ \min(0, \delta) \end{bmatrix}\]<p>四个分量分别控制：重叠质量、全局位移、正间隙侧调制、负重叠侧调制。由于线性依赖 $\delta = \max(0,\delta) + \min(0,\delta)$，密度在三维压缩坐标下可辨识：</p>
+\[\phi_1 = \theta_1, \quad \phi_2 = \theta_2 + \theta_3, \quad \phi_3 = \theta_2 + \theta_4\]<h3 id="2-3-基密度构建"><a href="#2-3-基密度构建" class="headerlink" title="2.3 基密度构建"></a>2.3 基密度构建</h3><p>基密度由 $K$ 个语料的 KDE 密度加权混合而成：</p>
+\[p_0(\delta) = \sum_{k=1}^K w_k p_k(\delta)\]<p>权重通过最小化各语料到倾斜族投影的平均 KL 散度选取：</p>
+\[\min_{w \in \Delta_{K-1}} \frac{1}{K} \sum_{k=1}^K D_{\text{KL}}\left(p_k \| p_{\theta_k^*(w)}\right)\]<h3 id="2-4-参数空间搜索"><a href="#2-4-参数空间搜索" class="headerlink" title="2.4 参数空间搜索"></a>2.4 参数空间搜索</h3><p>搜索域由语料嵌入的范围扩展而来。初始设计采用 <strong>Latin Hypercube Sampling (LHS)</strong> 提供广覆盖，随后使用<strong>多目标贝叶斯优化</strong>进行自适应精炼。</p>
 <p>每个目标由独立高斯过程建模：</p>
-<script type="math/tex; mode=display">
-f_j(\theta) \sim \mathcal{GP}(m_j(\theta), k_j(\theta, \theta'))</script><p>选择下一候选点通过最大化 <strong>Expected Hypervolume Improvement (EHVI)</strong>：</p>
-<script type="math/tex; mode=display">
-\theta_{t+1} = \arg\max_{\theta \in \Theta} \alpha_{\text{EHVI}}(\theta \mid \mathcal{D}_t)</script><p><img src="/images/paper_figs/conv_timing_asr/fig01_phase_overview.png" srcset="/img/loading.gif" lazyload alt="优化流程概览"></p>
+\[f_j(\theta) \sim \mathcal{GP}(m_j(\theta), k_j(\theta, \theta'))\]<p>选择下一候选点通过最大化 <strong>Expected Hypervolume Improvement (EHVI)</strong>：</p>
+\[\theta_{t+1} = \arg\max_{\theta \in \Theta} \alpha_{\text{EHVI}}(\theta \mid \mathcal{D}_t)\]<p><img src="/images/paper_figs/conv_timing_asr/fig01_phase_overview.png" srcset="/img/loading.gif" lazyload alt="优化流程概览"></p>
 <hr>
 <h2 id="3-实验设置"><a href="#3-实验设置" class="headerlink" title="3. 实验设置"></a>3. 实验设置</h2><h3 id="3-1-数据与评估"><a href="#3-1-数据与评估" class="headerlink" title="3.1 数据与评估"></a>3.1 数据与评估</h3><ul>
 <li><strong>基时序分布</strong>来源：BEA-Dialogue（匈牙利语）、CallHome（英语）、GRASS（奥地利德语）</li>
@@ -391,8 +384,7 @@ f_j(\theta) \sim \mathcal{GP}(m_j(\theta), k_j(\theta, \theta'))</script><p>选�
 </table>
 </div>
 <p>拟合混合的平均 KL 散度为 0.02392。</p>
-<h3 id="3-3-搜索域"><a href="#3-3-搜索域" class="headerlink" title="3.3 搜索域"></a>3.3 搜索域</h3><script type="math/tex; mode=display">
-\theta_1 \in [-1.37, 1.00], \quad \theta_2 \in [-1.92, 4.19], \quad \theta_3 \in [-6.65, 1.61], \quad \theta_4 \in [-1.85, 10.84]</script><h3 id="3-4-内在时序测量"><a href="#3-4-内在时序测量" class="headerlink" title="3.4 内在时序测量"></a>3.4 内在时序测量</h3><p>对每个生成的训练集，在 ASR 训练前计算：重叠率 $\Pr(\delta&lt;0)$、平均重叠 $E[-\delta|\delta&lt;0]$、平均间隙 $E[\delta|\delta\geq0]$、重叠尾部质量、间隙尾部质量、延迟均值、延迟标准差。</p>
+<h3 id="3-3-搜索域"><a href="#3-3-搜索域" class="headerlink" title="3.3 搜索域"></a>3.3 搜索域</h3>\[\theta_1 \in [-1.37, 1.00], \quad \theta_2 \in [-1.92, 4.19], \quad \theta_3 \in [-6.65, 1.61], \quad \theta_4 \in [-1.85, 10.84]\]<h3 id="3-4-内在时序测量"><a href="#3-4-内在时序测量" class="headerlink" title="3.4 内在时序测量"></a>3.4 内在时序测量</h3><p>对每个生成的训练集，在 ASR 训练前计算：重叠率 $\Pr(\delta&lt;0)$、平均重叠 $E[-\delta|\delta&lt;0]$、平均间隙 $E[\delta|\delta\geq0]$、重叠尾部质量、间隙尾部质量、延迟均值、延迟标准差。</p>
 <hr>
 <h2 id="4-结果与分析"><a href="#4-结果与分析" class="headerlink" title="4. 结果与分析"></a>4. 结果与分析</h2><h3 id="4-1-优化轨迹与可靠性（RQ5）"><a href="#4-1-优化轨迹与可靠性（RQ5）" class="headerlink" title="4.1 优化轨迹与可靠性（RQ5）"></a>4.1 优化轨迹与可靠性（RQ5）</h3><p>实验包含 10 个 LHS 配置 + 15 个 BO 配置。评估集上，BO 阶段的中位 cpWER 从 17.72 降至 17.61（Mann-Whitney $p=0.037$），cpCER 从 8.24 降至 8.15（$p&lt;0.001$）。但开发集未显示同样改善，提示不应从单一分割得出结论。</p>
 <p>开发-评估一致性：Pearson $r=0.849$（cpWER），但 Spearman $\rho=0.375$，表明线性趋势可靠但排序不稳定。</p>
@@ -771,8 +763,8 @@ f_j(\theta) \sim \mathcal{GP}(m_j(\theta), k_j(\theta, \theta'))</script><p>选�
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/07/10/2026-07-10-DuplexPO/" title="Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning">
-                        <span class="hidden-mobile">Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning</span>
+                      <a href="/2026/07/10/2026-07-10-Revisiting-PPL-WER/" title="Revisiting the Relation Between Language Model Perplexity and ASR Word Error Rate for Modern End-to-End Speech Recognition">
+                        <span class="hidden-mobile">Revisiting the Relation Between Language Model Perplexity and ASR Word Error Rate for Modern End-to-End Speech Recognition</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

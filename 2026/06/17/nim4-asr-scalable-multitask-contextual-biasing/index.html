@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -374,7 +375,7 @@
 </ol>
 <h4 id="2-2-2-Stage-2-对齐-Alignment-与-Stage-3-IA-SFT"><a href="#2-2-2-Stage-2-对齐-Alignment-与-Stage-3-IA-SFT" class="headerlink" title="2.2.2 Stage 2: 对齐 (Alignment) 与 Stage 3: IA-SFT"></a>2.2.2 Stage 2: 对齐 (Alignment) 与 Stage 3: IA-SFT</h4><p>NIM4-ASR 提出了一种<strong>encoder 迭代机制</strong>，允许对齐在预训练完成之前就开始，而 IA-SFT 在对齐完成后启动并与剩余预训练过程异步进行。</p>
 <p><strong>CKA 监控机制</strong>：使用 Centered Kernel Alignment (CKA) (Kornblith et al., 2019) 跟踪 encoder 表征动态，决定何时初始化或更新用于对齐和 IA-SFT 的 encoder。给定两组 encoder 表征 $E^{(a)}$, $E^{(b)}$：</p>
-<script type="math/tex; mode=display">CKA(E^{(a)}, E^{(b)}) = \frac{\langle \tilde{K}^{(a)}, \tilde{K}^{(b)} \rangle_F}{\sqrt{\langle \tilde{K}^{(a)}, \tilde{K}^{(a)} \rangle_F \cdot \langle \tilde{K}^{(b)}, \tilde{K}^{(b)} \rangle_F}}</script><p>其中 $\tilde{K}^{(x)} = C E^{(x)} {E^{(x)}}^\top C$，中心化矩阵 $C = I_L - \frac{1}{L} J_L$。CKA 测量表征空间的几何一致性，对正交变换和各向同性缩放不变。</p>
+\[CKA(E^{(a)}, E^{(b)}) = \frac{\langle \tilde{K}^{(a)}, \tilde{K}^{(b)} \rangle_F}{\sqrt{\langle \tilde{K}^{(a)}, \tilde{K}^{(a)} \rangle_F \cdot \langle \tilde{K}^{(b)}, \tilde{K}^{(b)} \rangle_F}}\]<p>其中 $\tilde{K}^{(x)} = C E^{(x)} {E^{(x)}}^\top C$，中心化矩阵 $C = I_L - \frac{1}{L} J_L$。CKA 测量表征空间的几何一致性，对正交变换和各向同性缩放不变。</p>
 <p><strong>Stage 2 对齐流程</strong>：</p>
 <ul>
 <li>预训练达到 500k steps 后开始监控</li>
@@ -426,17 +427,17 @@
 <h4 id="2-2-5-Stage-6-ASR-专用-RL"><a href="#2-2-5-Stage-6-ASR-专用-RL" class="headerlink" title="2.2.5 Stage 6: ASR 专用 RL"></a>2.2.5 Stage 6: ASR 专用 RL</h4><p>基于 <strong>GRPO (Group Relative Policy Optimization)</strong> (Shao et al., 2024) 引入 ASR 专用 RL 阶段，使用可验证奖励直接优化序列级转录行为。</p>
 <p>给定输入音频 $q$、真值 $y$，策略模型独立采样一组 $K$ 个候选假设 ${\tau_1, \ldots, \tau_K} \sim \pi_\theta(\cdot | q)$，使用以下 ASR 专用奖励函数评估：</p>
 <p><strong>准确率奖励 (Accuracy Reward)</strong>：</p>
-<script type="math/tex; mode=display">R_{acc}(\tau, y) = \exp(-\alpha \cdot CER(\tau, y))</script><p>其中 $\alpha = 2.0$。奖励值在 $(0, 1]$ 内，指数形式放大低 CER 假设间的差异，鼓励对接近正确的转录进行细粒度优化。</p>
+\[R_{acc}(\tau, y) = \exp(-\alpha \cdot CER(\tau, y))\]<p>其中 $\alpha = 2.0$。奖励值在 $(0, 1]$ 内，指数形式放大低 CER 假设间的差异，鼓励对接近正确的转录进行细粒度优化。</p>
 <p><strong>幻觉奖励 (Hallucination Reward)</strong>：</p>
 <p>对假设和真值进行混合粒度分词（中文字符级，英文词级），计算长度：</p>
-<script type="math/tex; mode=display">R_{hallu}(\tau, y) = \begin{cases} -1 & \text{if } len(\tau) > 2 \times len(y) \text{ or } len(\tau) < 0.5 \times len(y) \\ 0 & \text{otherwise} \end{cases}</script><p><strong>上下文奖励 (Context Reward)</strong>：</p>
+\[R_{hallu}(\tau, y) = \begin{cases} -1 &amp; \text{if } len(\tau) &gt; 2 \times len(y) \text{ or } len(\tau) &lt; 0.5 \times len(y) \\ 0 &amp; \text{otherwise} \end{cases}\]<p><strong>上下文奖励 (Context Reward)</strong>：</p>
 <p>使用 Qwen3-30B-A3B-Instruct 标注每个样本 0-2 个实体关键词。训练时随机选择子集注入 prompt。对每个关键词：命中 +0.5，未命中 -0.5。累积分数取平均得到样本级 $R_{context}(\tau, y)$。此外定义重要关键词列表，无论是否在 prompt 中提供都参与奖励计算。</p>
 <p><strong>总奖励</strong>：</p>
-<script type="math/tex; mode=display">R(\tau, y) = R_{acc}(\tau, y) + 0.5 R_{hallu}(\tau, y) + 0.5 R_{context}(\tau, y)</script><p><strong>GRPO 算法</strong>：</p>
+\[R(\tau, y) = R_{acc}(\tau, y) + 0.5 R_{hallu}(\tau, y) + 0.5 R_{context}(\tau, y)\]<p><strong>GRPO 算法</strong>：</p>
 <p>组归一化优势：</p>
-<script type="math/tex; mode=display">\hat{A}_{i,t} = \frac{R(\tau_i, y) - \text{mean}(\{R(\tau_j, y)\}_{j=1}^K)}{\text{std}(\{R(\tau_j, y)\}_{j=1}^K) + \epsilon}</script><p>GRPO 目标函数：</p>
-<script type="math/tex; mode=display">J_{GRPO} = \frac{1}{K} \sum_{i=1}^{K} \frac{1}{|\tau_i|} \sum_{t=1}^{|\tau_i|} \min\left( r_{i,t}(\theta) \hat{A}_{i,t}, \text{clip}(r_{i,t}(\theta), 1-\varepsilon, 1+\varepsilon) \hat{A}_{i,t} \right) - \beta D_{KL}(\pi_\theta \| \pi_{ref})</script><p>其中：</p>
-<script type="math/tex; mode=display">r_{i,t}(\theta) = \frac{\pi_\theta(\tau_{i,t} | q, \tau_{i,<t})}{\pi_{\theta_{old}}(\tau_{i,t} | q, \tau_{i,<t})}</script><p><strong>RL 训练框架实现细节</strong>：</p>
+\[\hat{A}_{i,t} = \frac{R(\tau_i, y) - \text{mean}(\{R(\tau_j, y)\}_{j=1}^K)}{\text{std}(\{R(\tau_j, y)\}_{j=1}^K) + \epsilon}\]<p>GRPO 目标函数：</p>
+\[J_{GRPO} = \frac{1}{K} \sum_{i=1}^{K} \frac{1}{|\tau_i|} \sum_{t=1}^{|\tau_i|} \min\left( r_{i,t}(\theta) \hat{A}_{i,t}, \text{clip}(r_{i,t}(\theta), 1-\varepsilon, 1+\varepsilon) \hat{A}_{i,t} \right) - \beta D_{KL}(\pi_\theta \| \pi_{ref})\]<p>其中：</p>
+\[r_{i,t}(\theta) = \frac{\pi_\theta(\tau_{i,t} | q, \tau_{i,&lt;t})}{\pi_{\theta_{old}}(\tau_{i,t} | q, \tau_{i,&lt;t})}\]<p><strong>RL 训练框架实现细节</strong>：</p>
 <ul>
 <li>对每个 batch，策略模型编码输入语句为语音嵌入，在 rollout 生成和策略模型 log-probability 计算间复用</li>
 <li>使用 <strong>vLLM</strong> 高效采样 $K$ 个假设</li>

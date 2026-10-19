@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -362,10 +363,10 @@
 <li><strong>动作分布</strong> $\pi$：逐句发射动作 $a \sim \pi(\cdot \mid H, s)$</li>
 <li><strong>输出</strong>：</li>
 </ul>
-<script type="math/tex; mode=display">\hat{y} = \begin{cases} M_\theta(H, s) & a = \text{act} \\ h_1 & a = \text{abstain} \end{cases}</script><ul>
+\[\hat{y} = \begin{cases} M_\theta(H, s) &amp; a = \text{act} \\ h_1 &amp; a = \text{abstain} \end{cases}\]<ul>
 <li><strong>联合概率</strong>：</li>
 </ul>
-<script type="math/tex; mode=display">p(\hat{y} \mid x, s) = \sum_a \pi(a \mid H, s) \, p_\theta(\hat{y} \mid H, s, a)</script><ul>
+\[p(\hat{y} \mid x, s) = \sum_a \pi(a \mid H, s) \, p_\theta(\hat{y} \mid H, s, a)\]<ul>
 <li><strong>优化器</strong> $Op$：异步修订文本状态 $s$，$\theta$ 和 $\varphi$ 始终固定</li>
 </ul>
 <h3 id="3-2-特殊策略恢复经典方法"><a href="#3-2-特殊策略恢复经典方法" class="headerlink" title="3.2 特殊策略恢复经典方法"></a>3.2 特殊策略恢复经典方法</h3><ul>
@@ -431,7 +432,7 @@
 <p><strong>备注（Remark 1）</strong>：LT 格式是前沿交互/后台分离范式的语音实例——listener 是同步交互路径，thinker 是异步后台路径，两者仅通过持久文本状态耦合。</p>
 <hr>
 <h2 id="4-Voice-Memory-方法细节"><a href="#4-Voice-Memory-方法细节" class="headerlink" title="4. Voice Memory 方法细节"></a>4. Voice Memory 方法细节</h2><h3 id="4-1-纠正的-Oracle-上界"><a href="#4-1-纠正的-Oracle-上界" class="headerlink" title="4.1 纠正的 Oracle 上界"></a>4.1 纠正的 Oracle 上界</h3><p>给定 $n$-best 假设 $H = (h_1, \ldots, h_n)$，oracle 逐句选取 $H$ 中与参考 WER 最低的假设，得到 $\text{WER}_{\text{oracle}}$。论文定义<strong>可恢复信息比（Recoverable Information Ratio, $\rho$）</strong>：</p>
-<script type="math/tex; mode=display">\rho = \frac{\text{WER}_{1\text{-best}} - \text{WER}_{\hat{y}}}{\text{WER}_{1\text{-best}} - \text{WER}_{\text{oracle}}}</script><ul>
+\[\rho = \frac{\text{WER}_{1\text{-best}} - \text{WER}_{\hat{y}}}{\text{WER}_{1\text{-best}} - \text{WER}_{\text{oracle}}}\]<ul>
 <li>$\rho = 1$：恰好弥合整个 gap</li>
 <li>$\rho &lt; 0$：damage 区域，纠正比保持 $h_1$ 更差</li>
 <li>$\rho &gt; 1$：纠正器恢复了任何假设中都不存在的 token，超过 oracle 界</li>
@@ -449,7 +450,7 @@
 <li><strong>Harmful</strong>：破坏了一个正确 token</li>
 <li><strong>Missed</strong>：遗漏</li>
 </ul>
-<script type="math/tex; mode=display">\text{HER} = \frac{\text{harmful edits}}{\text{total edits}}</script><p>HER 隔离了过度纠正问题：一个修改了已正确 token 的纠正器将具有高 HER。</p>
+\[\text{HER} = \frac{\text{harmful edits}}{\text{total edits}}\]<p>HER 隔离了过度纠正问题：一个修改了已正确 token 的纠正器将具有高 HER。</p>
 <h3 id="4-4-与权重空间适配的对比（Table-2）"><a href="#4-4-与权重空间适配的对比（Table-2）" class="headerlink" title="4.4 与权重空间适配的对比（Table 2）"></a>4.4 与权重空间适配的对比（Table 2）</h3><div class="table-container">
 <table>
 <thead>

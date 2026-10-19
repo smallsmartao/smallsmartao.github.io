@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -372,20 +373,20 @@
 <p>归一化后的频谱矩阵形状为 $[T, 80]$，通过卷积层投射到隐藏空间，同时将序列长度从 $T$ 降至 $T/r$，其中 $r$ 为时间缩减因子。ASR 实验中 $r=8$（即 12.5Hz token rate），TTS 中 $r=2$。当 $r=1$ 时卷积层被禁用。</p>
 <p><strong>Step 3: 线性投影</strong></p>
 <p>单层线性变换将特征投射到 LLM 隐藏维度：</p>
-<script type="math/tex; mode=display">E_s = W_{\text{proj}} \cdot e + b_{\text{proj}}, \quad W_{\text{proj}} \in \mathbb{R}^{d_{\text{LLM}} \times d_{\text{enc}}}</script><p>在 encoder-free 设定下，该投影层<strong>随机初始化</strong>（不像传统方案那样与编码器联合预训练），LLM 必须完全依靠自身参数学习原始频谱特征的语义。</p>
+\[E_s = W_{\text{proj}} \cdot e + b_{\text{proj}}, \quad W_{\text{proj}} \in \mathbb{R}^{d_{\text{LLM}} \times d_{\text{enc}}}\]<p>在 encoder-free 设定下，该投影层<strong>随机初始化</strong>（不像传统方案那样与编码器联合预训练），LLM 必须完全依靠自身参数学习原始频谱特征的语义。</p>
 <p><strong>Step 4: LLM 自回归解码</strong></p>
 <p>投射后的语音嵌入 $E_s$ 与文本 prompt 嵌入 $E_p$ 拼接后送入 LLM，自回归生成转录文本：</p>
-<script type="math/tex; mode=display">\hat{T} = \text{LLM}(\text{Concat}(E_s, E_p))</script><p>LLM 使用 LoRA（rank=320, $\alpha=640$）进行适配，基座参数冻结。</p>
+\[\hat{T} = \text{LLM}(\text{Concat}(E_s, E_p))\]<p>LLM 使用 LoRA（rank=320, $\alpha=640$）进行适配，基座参数冻结。</p>
 <h3 id="2-3-TTS：语音输出路径"><a href="#2-3-TTS：语音输出路径" class="headerlink" title="2.3 TTS：语音输出路径"></a>2.3 TTS：语音输出路径</h3><p>TTS 方向基于 MELLE 框架，LLM 在语音位置逐步生成连续 Mel 帧，无需向量量化（VQ）。</p>
 <p><strong>VAE 解码器</strong></p>
 <p>每个语音位置上，LLM 隐状态 $h \in \mathbb{R}^{d_{\text{LLM}}}$ 通过变分自编码器解码：</p>
-<script type="math/tex; mode=display">\mu, \log \sigma^2 = \text{split}(W_{\text{latent}} \cdot h)</script><script type="math/tex; mode=display">z = \mu + \sigma \cdot \epsilon, \quad \epsilon \sim \mathcal{N}(0, I)</script><script type="math/tex; mode=display">\hat{m} = z + \text{MLP}_{\text{res}}(z)</script><p>残差 MLP 由 3 层线性层组成，使用 tanh 激活和 dropout。</p>
+\[\mu, \log \sigma^2 = \text{split}(W_{\text{latent}} \cdot h)\]\[z = \mu + \sigma \cdot \epsilon, \quad \epsilon \sim \mathcal{N}(0, I)\]\[\hat{m} = z + \text{MLP}_{\text{res}}(z)\]<p>残差 MLP 由 3 层线性层组成，使用 tanh 激活和 dropout。</p>
 <p><strong>Postnet 精修</strong></p>
 <p>5 层 Conv1D 残差网络对解码后的 Mel 频谱进行细化：</p>
-<script type="math/tex; mode=display">\hat{m}_{\text{final}} = \hat{m} + \text{Postnet}(\hat{m})</script><p><strong>停止预测</strong></p>
+\[\hat{m}_{\text{final}} = \hat{m} + \text{Postnet}(\hat{m})\]<p><strong>停止预测</strong></p>
 <p>线性层在每个时间步通过 binary cross-entropy 预测是否为音频结尾。</p>
 <p><strong>训练目标</strong></p>
-<script type="math/tex; mode=display">\mathcal{L}_{\text{TTS}} = \mathcal{L}_{\text{reg}} + \lambda_{\text{KL}}\mathcal{L}_{\text{KL}} + \lambda_{\text{stop}}\mathcal{L}_{\text{stop}} + \lambda_{\text{flux}}\mathcal{L}_{\text{flux}}</script><p>其中 $\mathcal{L}_{\text{reg}}$ 为 L1+MSE 重建损失，$\mathcal{L}_{\text{KL}}$ 为 KL 散度，$\mathcal{L}_{\text{flux}}$ 鼓励时间平滑性。</p>
+\[\mathcal{L}_{\text{TTS}} = \mathcal{L}_{\text{reg}} + \lambda_{\text{KL}}\mathcal{L}_{\text{KL}} + \lambda_{\text{stop}}\mathcal{L}_{\text{stop}} + \lambda_{\text{flux}}\mathcal{L}_{\text{flux}}\]<p>其中 $\mathcal{L}_{\text{reg}}$ 为 L1+MSE 重建损失，$\mathcal{L}_{\text{KL}}$ 为 KL 散度，$\mathcal{L}_{\text{flux}}$ 鼓励时间平滑性。</p>
 <hr>
 <h2 id="3-实验设置"><a href="#3-实验设置" class="headerlink" title="3. 实验设置"></a>3. 实验设置</h2><h3 id="3-1-模型配置"><a href="#3-1-模型配置" class="headerlink" title="3.1 模型配置"></a>3.1 模型配置</h3><ul>
 <li><strong>LLM 基座</strong>：Phi-4-MM，隐藏维度 3072，32 层，24 注意力头，8 KV 头</li>

@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -330,23 +331,17 @@
 <p>本文（Zeineldeen et al., RWTH Aachen &amp; AppTek, arXiv 2607.05612, Jul 2026）系统性地重新检验了这一关系，回答五个核心问题。</p>
 <hr>
 <h2 id="问题形式化"><a href="#问题形式化" class="headerlink" title="问题形式化"></a>问题形式化</h2><h3 id="PPL-定义"><a href="#PPL-定义" class="headerlink" title="PPL 定义"></a>PPL 定义</h3><p>对自回归 LM，给定输出序列 $a_1^S$（augmented with BOS $a_0$ and EOS $a_{S+1}$），困惑度定义为：</p>
-<script type="math/tex; mode=display">
-\text{PPL} = \exp\left( -\frac{1}{S+1} \sum_{s=1}^{S+1} \log p(a_s \mid a_0^{s-1}) \right)</script><p>其中 label $a_s$ 可以是 word、character 或 subword token。<strong>PPL 仅在 label unit、normalization、evaluation text 完全一致时才可直接对比。</strong></p>
+\[\text{PPL} = \exp\left( -\frac{1}{S+1} \sum_{s=1}^{S+1} \log p(a_s \mid a_0^{s-1}) \right)\]<p>其中 label $a_s$ 可以是 word、character 或 subword token。<strong>PPL 仅在 label unit、normalization、evaluation text 完全一致时才可直接对比。</strong></p>
 <h3 id="Log-Log-线性假设"><a href="#Log-Log-线性假设" class="headerlink" title="Log-Log 线性假设"></a>Log-Log 线性假设</h3><p>经典假设为：</p>
-<script type="math/tex; mode=display">
-\log(\text{WER}) = \alpha \cdot \log(\text{PPL}) + \beta</script><p>斜率 $\alpha$ 度量 WER 对 PPL 相对变化的敏感度。若该关系局部成立，将 PPL 降低因子 $r$ 约使 WER 变化因子 $r^\alpha$。</p>
+\[\log(\text{WER}) = \alpha \cdot \log(\text{PPL}) + \beta\]<p>斜率 $\alpha$ 度量 WER 对 PPL 相对变化的敏感度。若该关系局部成立，将 PPL 降低因子 $r$ 约使 WER 变化因子 $r^\alpha$。</p>
 <h3 id="回归协议"><a href="#回归协议" class="headerlink" title="回归协议"></a>回归协议</h3><p>对每个 ASR 条件，使用相同识别设置下的多个 LM 变体拟合上式。当散点图显示明显斜率变化时，额外拟合分段线性模型并报告两区域斜率。</p>
 <hr>
 <h2 id="ASR-与-LM-集成方法"><a href="#ASR-与-LM-集成方法" class="headerlink" title="ASR 与 LM 集成方法"></a>ASR 与 LM 集成方法</h2><h3 id="CTC-ASR"><a href="#CTC-ASR" class="headerlink" title="CTC ASR"></a>CTC ASR</h3><p>CTC 通过对齐求和建模后验：</p>
-<script type="math/tex; mode=display">
-p_{\text{CTC}}(a_1^S \mid x_1^T) = \sum_{y_1^T \in \mathcal{B}^{-1}(a_1^S)} \prod_{t=1}^T p(y_t \mid x_1^T)</script><p>带外部 LM 的解码使用帧同步搜索，log-linear 融合：</p>
-<script type="math/tex; mode=display">
-\hat{a}_1^{\hat{S}} = \arg\max_{a_1^S} \left\{ \max_{y_1^T \in \mathcal{B}^{-1}(a_1^S)} \sum_{t=1}^T \left[ \log p(y_t \mid x_1^T) - \mu \log p_{\text{prior}}(y_t) \right] + \lambda \log p_{\text{LM}}(a_1^S) \right\}</script><p>其中 $\lambda$ 为 LM scale，$\mu$ 为 frame-wise prior scale。LM 状态仅在非 blank label 发射时推进。</p>
+\[p_{\text{CTC}}(a_1^S \mid x_1^T) = \sum_{y_1^T \in \mathcal{B}^{-1}(a_1^S)} \prod_{t=1}^T p(y_t \mid x_1^T)\]<p>带外部 LM 的解码使用帧同步搜索，log-linear 融合：</p>
+\[\hat{a}_1^{\hat{S}} = \arg\max_{a_1^S} \left\{ \max_{y_1^T \in \mathcal{B}^{-1}(a_1^S)} \sum_{t=1}^T \left[ \log p(y_t \mid x_1^T) - \mu \log p_{\text{prior}}(y_t) \right] + \lambda \log p_{\text{LM}}(a_1^S) \right\}\]<p>其中 $\lambda$ 为 LM scale，$\mu$ 为 frame-wise prior scale。LM 状态仅在非 blank label 发射时推进。</p>
 <h3 id="AED-ASR"><a href="#AED-ASR" class="headerlink" title="AED ASR"></a>AED ASR</h3><p>AED 直接自回归分解：</p>
-<script type="math/tex; mode=display">
-p_{\text{AED}}(a_1^S \mid x_1^T) = \prod_{s=1}^{S+1} p(a_s \mid a_0^{s-1}, x_1^T)</script><p>带外部 LM 和 ILM 减除的解码：</p>
-<script type="math/tex; mode=display">
-\hat{a}_1^{\hat{S}} = \arg\max_{a_1^S} \left\{ \log p_{\text{AED}}(a_1^S \mid x_1^T) + \lambda \log p_{\text{LM}}(a_1^S) - \gamma \log p_{\text{ILM}}(a_1^S) \right\}</script><p>其中 $p_{\text{ILM}}$ 为 decoder 内部语言模型的估计（Mini-LSTM 方法），$\gamma$ 为 ILM 减除 scale。</p>
+\[p_{\text{AED}}(a_1^S \mid x_1^T) = \prod_{s=1}^{S+1} p(a_s \mid a_0^{s-1}, x_1^T)\]<p>带外部 LM 和 ILM 减除的解码：</p>
+\[\hat{a}_1^{\hat{S}} = \arg\max_{a_1^S} \left\{ \log p_{\text{AED}}(a_1^S \mid x_1^T) + \lambda \log p_{\text{LM}}(a_1^S) - \gamma \log p_{\text{ILM}}(a_1^S) \right\}\]<p>其中 $p_{\text{ILM}}$ 为 decoder 内部语言模型的估计（Mini-LSTM 方法），$\gamma$ 为 ILM 减除 scale。</p>
 <hr>
 <h2 id="实验设置"><a href="#实验设置" class="headerlink" title="实验设置"></a>实验设置</h2><h3 id="数据集"><a href="#数据集" class="headerlink" title="数据集"></a>数据集</h3><div class="table-container">
 <table>
@@ -747,9 +742,9 @@ p_{\text{AED}}(a_1^S \mid x_1^T) = \prod_{s=1}^{S+1} p(a_s \mid a_0^{s-1}, x_1^T
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/07/10/2026-07-10-DuplexPO/" title="Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning">
+                      <a href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" title="On the Role of Conversational Timing in Synthetic Training Data for ASR">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning</span>
+                        <span class="hidden-mobile">On the Role of Conversational Timing in Synthetic Training Data for ASR</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -757,8 +752,8 @@ p_{\text{AED}}(a_1^S \mid x_1^T) = \prod_{s=1}^{S+1} p(a_s \mid a_0^{s-1}, x_1^T
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/07/10/2026-07-10-SpeechKV/" title="Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs">
-                        <span class="hidden-mobile">Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs</span>
+                      <a href="/2026/07/10/2026-07-10-DuplexPO/" title="Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning">
+                        <span class="hidden-mobile">Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

@@ -79,6 +79,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -334,8 +335,7 @@
 <p>论文地址：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2610.13807">arXiv:2610.13807</a></p>
 <hr>
 <h2 id="1-问题定义：总错误率掩盖了什么"><a href="#1-问题定义：总错误率掩盖了什么" class="headerlink" title="1. 问题定义：总错误率掩盖了什么"></a>1. 问题定义：总错误率掩盖了什么</h2><p>设参考序列含有 $N$ 个单位，识别输出与参考通过 Levenshtein 对齐后产生替换数 $S$、删除数 $D$ 与插入数 $I$。WER、PER 或 CER 都具有相同形式：</p>
-<script type="math/tex; mode=display">
-\mathrm{ER}=\frac{S+D+I}{N}.</script><p>区别仅在于单位分别是词、音素或字符。这个标量可以回答“错了多少”，但不能回答：</p>
+\[\mathrm{ER}=\frac{S+D+I}{N}.\]<p>区别仅在于单位分别是词、音素或字符。这个标量可以回答“错了多少”，但不能回答：</p>
 <ul>
 <li>错误是否集中在声调、重音、腭化等语言学上关键的区别特征；</li>
 <li>某种增强是在减少替换，还是以增加删除为代价抑制插入；</li>
@@ -354,30 +354,24 @@
 </ul>
 <p>它们对数据分布施加的约束完全不同，因此错误模式也不同。</p>
 <h3 id="3-1-1-文本修改"><a href="#3-1-1-文本修改" class="headerlink" title="3.1.1 文本修改"></a>3.1.1 文本修改</h3><h4 id="基于标签的替换（Tag-Based-Replacement）"><a href="#基于标签的替换（Tag-Based-Replacement）" class="headerlink" title="基于标签的替换（Tag-Based Replacement）"></a>基于标签的替换（Tag-Based Replacement）</h4><p>标签序列被保留为句法模板。对被选中的位置 $i$，替换词从训练词表中与原词具有相同标签的词类型集合采样：</p>
-<script type="math/tex; mode=display">
-\tilde{y}_i \sim \mathrm{Unif}\{w\in V:\operatorname{tag}(w)=t_i\}.</script><p>若精确标签对应的候选过少，方法使用标签编辑距离寻找最近标签，保证达到目标替换比例。该方法不保证语义连贯，但保留标签序列，因此保留了大部分句法结构以及自然语料中各标签类别的出现频率。</p>
+\[\tilde{y}_i \sim \mathrm{Unif}\{w\in V:\operatorname{tag}(w)=t_i\}.\]<p>若精确标签对应的候选过少，方法使用标签编辑距离寻找最近标签，保证达到目标替换比例。该方法不保证语义连贯，但保留标签序列，因此保留了大部分句法结构以及自然语料中各标签类别的出现频率。</p>
 <h4 id="随机替换（Random-Replacement）"><a href="#随机替换（Random-Replacement）" class="headerlink" title="随机替换（Random Replacement）"></a>随机替换（Random Replacement）</h4><p>随机替换不再要求标签一致，对被选中的位置直接从训练词类型集合 $V$ 均匀采样：</p>
-<script type="math/tex; mode=display">
-\tilde{y}_i \sim \mathrm{Unif}(V).</script><p>所有新词仍在词表内，但句子可能不符合语法。关键是“按词类型均匀采样”会压平原始长尾词频：低频词相对更常出现，高频词的主导程度下降。论文后续证明，这正是随机替换能够修复声调和腭化错误的核心机制。</p>
+\[\tilde{y}_i \sim \mathrm{Unif}(V).\]<p>所有新词仍在词表内，但句子可能不符合语法。关键是“按词类型均匀采样”会压平原始长尾词频：低频词相对更常出现，高频词的主导程度下降。论文后续证明，这正是随机替换能够修复声调和腭化错误的核心机制。</p>
 <p>两种方法都以替换比例 $r$ 控制被替换位置占比，并在每种语言上从</p>
-<script type="math/tex; mode=display">
-r\in\{0,0.2,0.4,0.6,0.8,1.0\}</script><p>调参。$r=0$ 表示不改文本、只把原转写重新合成为语音，用来区分收益究竟来自新文本还是额外合成音频。实验中没有任何语言选择 $r=0$，说明有效信息来自<strong>新文本分布</strong>，而非简单增加 TTS 时长。</p>
+\[r\in\{0,0.2,0.4,0.6,0.8,1.0\}\]<p>调参。$r=0$ 表示不改文本、只把原转写重新合成为语音，用来区分收益究竟来自新文本还是额外合成音频。实验中没有任何语言选择 $r=0$，说明有效信息来自<strong>新文本分布</strong>，而非简单增加 TTS 时长。</p>
 <p>合成器使用支持 IPA 和正字法的开源 Kokoro-82M，所有语言固定使用 5 个声音。由于单说话人数据不足，作者没有进行声音克隆；此前尝试的声音转换也没有带来收益。</p>
 <h3 id="3-1-2-音频修改"><a href="#3-1-2-音频修改" class="headerlink" title="3.1.2 音频修改"></a>3.1.2 音频修改</h3><h4 id="速度扰动（Speed-Perturbation）"><a href="#速度扰动（Speed-Perturbation）" class="headerlink" title="速度扰动（Speed Perturbation）"></a>速度扰动（Speed Perturbation）</h4><p>速度扰动对波形施加 $s\in[0.9,1.1]$ 的时间缩放：</p>
-<script type="math/tex; mode=display">
-\tilde{x}(t)=x(st).</script><p>这种处理不仅改变时长，也会移动基频 $F_0$，因此可能同时影响重音和声调。作者在 10%–50% 的施加概率上调参，最终四种语言统一选择 30%。</p>
+\[\tilde{x}(t)=x(st).\]<p>这种处理不仅改变时长，也会移动基频 $F_0$，因此可能同时影响重音和声调。作者在 10%–50% 的施加概率上调参，最终四种语言统一选择 30%。</p>
 <h4 id="SpecAugment"><a href="#SpecAugment" class="headerlink" title="SpecAugment"></a>SpecAugment</h4><p>SpecAugment 在 wav2vec2 特征编码器输出上进行连续的时间与频率掩码。若编码序列为 $H=(h_1,\ldots,h_T)$，时间掩码可表示为：</p>
-<script type="math/tex; mode=display">
-\tilde{h}_t=
+\[\tilde{h}_t=
 \begin{cases}
-0,&t\in[m,m+\ell),\\
-h_t,&\text{otherwise}.
-\end{cases}</script><p>作者对掩码长度 3–10、掩码概率 5%–50% 做验证集网格搜索，最终所有语言统一使用长度 5、概率 30%。这种局部遮挡迫使模型整合更长上下文，但也可能完整遮掉只依赖单一声学线索、且训练曝光不足的类别。</p>
+0,&amp;t\in[m,m+\ell),\\
+h_t,&amp;\text{otherwise}.
+\end{cases}\]<p>作者对掩码长度 3–10、掩码概率 5%–50% 做验证集网格搜索，最终所有语言统一使用长度 5、概率 30%。这种局部遮挡迫使模型整合更长上下文，但也可能完整遮掉只依赖单一声学线索、且训练曝光不足的类别。</p>
 <h3 id="3-2-Wav2Vec2-微调"><a href="#3-2-Wav2Vec2-微调" class="headerlink" title="3.2 Wav2Vec2 微调"></a>3.2 Wav2Vec2 微调</h3><p>基础模型为 <code>wav2vec2-large-xlsr-53</code>。给定编码表示 $H_\theta(x)$ 与目标单位序列 $z$，模型使用 CTC 目标：</p>
-<script type="math/tex; mode=display">
-\mathcal{L}_{\mathrm{CTC}}(x,z)
+\[\mathcal{L}_{\mathrm{CTC}}(x,z)
 =-\log\sum_{\pi\in\mathcal{B}^{-1}(z)}
-\prod_{t=1}^{T}p_\theta(\pi_t\mid H_\theta(x)),</script><p>其中 $\pi$ 是包含 blank 与重复标签的帧级路径，$\mathcal{B}$ 将其折叠为目标序列。学习率固定为 $10^{-4}$；训练轮数从 ${5,10,15,20,30,40,45,50,55,60,80,100}$ 中按语言选择。原始与合成数据比例则在 1:1 至 1:5 之间调参。</p>
+\prod_{t=1}^{T}p_\theta(\pi_t\mid H_\theta(x)),\]<p>其中 $\pi$ 是包含 blank 与重复标签的帧级路径，$\mathcal{B}$ 将其折叠为目标序列。学习率固定为 $10^{-4}$；训练轮数从 ${5,10,15,20,30,40,45,50,55,60,80,100}$ 中按语言选择。原始与合成数据比例则在 1:1 至 1:5 之间调参。</p>
 <p>所有训练在单张 NVIDIA A10 上进行，随数据规模和合成比例不同耗时约 3–160 小时。</p>
 <hr>
 <h2 id="4-实验设置"><a href="#4-实验设置" class="headerlink" title="4. 实验设置"></a>4. 实验设置</h2><h3 id="4-1-数据"><a href="#4-1-数据" class="headerlink" title="4.1 数据"></a>4.1 数据</h3><p>四种目标语言都不超过 5 小时：Vatlongos、Nashta、Shinekhen Buryat 与 Kakabe。它们均提供 IPA 转写、翻译和行间注释；Kakabe 标声调，Nashta 标重音，Nashta 与 Shinekhen Buryat 标腭化。作者允许训练、验证和测试划分之间存在说话人重叠，因为目标应用是辅助同一田野语言学者转写其尚未标注的语料库，该使用场景本身就会包含说话人重叠。</p>
@@ -453,9 +447,8 @@ h_t,&\text{otherwise}.
 </div>
 <h3 id="4-2-评估与训练曝光量"><a href="#4-2-评估与训练曝光量" class="headerlink" title="4.2 评估与训练曝光量"></a>4.2 评估与训练曝光量</h3><p>四种 IPA 语料报告 WER 与 PER，英语报告 WER 与 CER。统计显著性通过配对 bootstrap 重采样评估，共 10,000 次采样，显著性水平 $\alpha=0.05$。逐类别比较再使用 Holm–Bonferroni 校正；在判断“文本增强是否修复 SpecAugment 错误”时，作者还直接比较 <code>SpecAugment</code> 与 <code>SpecAugment + 文本增强</code>，而不是只分别对基线检验。</p>
 <p>对每个音素单位，作者按其训练 token 数排序。设音素清单为 $\mathcal{U}$，单位 $u$ 的训练计数为 $c(u)$，则其曝光百分位可写为：</p>
-<script type="math/tex; mode=display">
-E(u)=100\cdot
-\frac{|\{v\in\mathcal{U}:c(v)\le c(u)\}|}{|\mathcal{U}|}.</script><p>某个类别的 <strong>training exposure percentile</strong> 是该类别成员 $E(u)$ 的中位数。该归一化使不同语言、不同音素库存规模之间可以比较。每个替换、插入和删除错误随后被同时标注其音系类别，用于追踪增强方法的具体代价。</p>
+\[E(u)=100\cdot
+\frac{|\{v\in\mathcal{U}:c(v)\le c(u)\}|}{|\mathcal{U}|}.\]<p>某个类别的 <strong>training exposure percentile</strong> 是该类别成员 $E(u)$ 的中位数。该归一化使不同语言、不同音素库存规模之间可以比较。每个替换、插入和删除错误随后被同时标注其音系类别，用于追踪增强方法的具体代价。</p>
 <hr>
 <h2 id="5-结果与讨论"><a href="#5-结果与讨论" class="headerlink" title="5. 结果与讨论"></a>5. 结果与讨论</h2><h3 id="5-1-总体性能"><a href="#5-1-总体性能" class="headerlink" title="5.1 总体性能"></a>5.1 总体性能</h3><p><img src="/images/paper_figs/2610.13807_table2.png" srcset="/img/loading.gif" lazyload alt="四种低资源语言与不同规模 LibriSpeech 上的完整结果"></p>
 <p>四种低资源语言的主结果如下。星号表示相对基线在 $\alpha=.05$ 下显著；每列最优值均由 <code>随机替换 + SpecAugment</code> 获得。</p>

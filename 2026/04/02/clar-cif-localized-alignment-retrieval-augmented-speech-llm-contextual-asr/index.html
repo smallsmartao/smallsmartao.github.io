@@ -79,6 +79,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -352,45 +353,36 @@
 </li>
 </ul>
 <p>两个模态分别通过独立的投影层映射到共享嵌入空间 $\mathbb{R}^D$：</p>
-<script type="math/tex; mode=display">
-a_t = \frac{f_a(h_t)}{\|f_a(h_t)\|_2}, \quad e_j = \frac{f_t(z_j)}{\|f_t(z_j)\|_2}
-\tag{1}</script><p>其中 $z_j$ 为第 $j$ 个候选的文本编码器池化输出，$a_t, e_j \in \mathbb{R}^D$ 均经过 $\ell_2$ 归一化。投影层 $f_a(\cdot)$ 和 $f_t(\cdot)$ 各为两层带 ReLU 激活的前馈网络。</p>
+\[a_t = \frac{f_a(h_t)}{\|f_a(h_t)\|_2}, \quad e_j = \frac{f_t(z_j)}{\|f_t(z_j)\|_2}
+\tag{1}\]<p>其中 $z_j$ 为第 $j$ 个候选的文本编码器池化输出，$a_t, e_j \in \mathbb{R}^D$ 均经过 $\ell_2$ 归一化。投影层 $f_a(\cdot)$ 和 $f_t(\cdot)$ 各为两层带 ReLU 激活的前馈网络。</p>
 <h4 id="CIF-单调对齐"><a href="#CIF-单调对齐" class="headerlink" title="CIF 单调对齐"></a>CIF 单调对齐</h4><p>CLAR 的核心模块是 <strong>CIF 预测器</strong>（Continuous Integrate-and-Fire），作用于编码器输出 $\mathbf{H}$，生成帧级权重序列 $\alpha = [\alpha_1, \ldots, \alpha_T]$，其中 $\alpha_t \in (0, 1)$：</p>
-<script type="math/tex; mode=display">
-\alpha_t = \sigma\!\left(\text{Linear}\!\left(\text{ReLU}\!\left(\text{LayerNorm}\!\left(\text{Conv1d}(\mathbf{H})\right)\right)\right)_t\right)
-\tag{2}</script><p>CIF 通过累计计数器 $C_t = C_{t-1} + \alpha_t$ 积累权重。当 $C_t \geq \theta$（默认 $\theta = 1.0$）时触发一次”发射”（fire event），定义一个单调声学边界，余量由 $C_t \leftarrow C_t - \theta$ 携带至下一帧。帧 $t$ 对应的 token 索引为：</p>
-<script type="math/tex; mode=display">
-\text{tok}(t) = 1 + \sum_{j=1}^{t-1} \mathbf{1}[C_j \geq \theta]
-\tag{3}</script><p>这一映射是非递减的，从而为下游语音-文本匹配提供长度感知的局部窗口。</p>
+\[\alpha_t = \sigma\!\left(\text{Linear}\!\left(\text{ReLU}\!\left(\text{LayerNorm}\!\left(\text{Conv1d}(\mathbf{H})\right)\right)\right)_t\right)
+\tag{2}\]<p>CIF 通过累计计数器 $C_t = C_{t-1} + \alpha_t$ 积累权重。当 $C_t \geq \theta$（默认 $\theta = 1.0$）时触发一次”发射”（fire event），定义一个单调声学边界，余量由 $C_t \leftarrow C_t - \theta$ 携带至下一帧。帧 $t$ 对应的 token 索引为：</p>
+\[\text{tok}(t) = 1 + \sum_{j=1}^{t-1} \mathbf{1}[C_j \geq \theta]
+\tag{3}\]<p>这一映射是非递减的，从而为下游语音-文本匹配提供长度感知的局部窗口。</p>
 <p><strong>训练阶段的 CIF 约束</strong>：采用缩放策略，将预测权重序列 $\alpha$ 乘以标量使得 $\sum_t \alpha_t$ 与真实 token 长度对齐，以教师强制约束稳定对齐学习。CIF 相关参数从 Paraformer 对应组件初始化。</p>
 <p><img src="/images/paper_figs/clar_fig2_retriever_p1.png" srcset="/img/loading.gif" lazyload alt="CLAR检索器架构：双编码器、CIF单调对齐与长度感知局部匹配"></p>
 <h3 id="2-3-CIF-局部化热词检索（CIF-Localized-Hotword-Retrieval）"><a href="#2-3-CIF-局部化热词检索（CIF-Localized-Hotword-Retrieval）" class="headerlink" title="2.3 CIF 局部化热词检索（CIF-Localized Hotword Retrieval）"></a>2.3 CIF 局部化热词检索（CIF-Localized Hotword Retrieval）</h3><p>本节是 CLAR 的核心贡献：利用 token 级对齐实现细粒度可变长度跨模态匹配。</p>
 <h4 id="跨模态相似度矩阵"><a href="#跨模态相似度矩阵" class="headerlink" title="跨模态相似度矩阵"></a>跨模态相似度矩阵</h4><p>给定语音话语的投影归一化帧级嵌入 $\mathbf{A} = [a_1, \ldots, a_T] \in \mathbb{R}^{T \times D}$，以及包含 $N$ 个预计算文本嵌入的热词词库 $\mathbf{E} = [e_1, \ldots, e_N] \in \mathbb{R}^{N \times D}$，帧级跨模态相似度矩阵计算为：</p>
-<script type="math/tex; mode=display">
-\mathbf{S} = \tau \cdot \mathbf{A}\mathbf{E}^\top \in \mathbb{R}^{T \times N}
-\tag{4}</script><p>其中 $\tau$ 为可学习的对数尺度参数（逆温度），控制相似度分布的锐度。</p>
+\[\mathbf{S} = \tau \cdot \mathbf{A}\mathbf{E}^\top \in \mathbb{R}^{T \times N}
+\tag{4}\]<p>其中 $\tau$ 为可学习的对数尺度参数（逆温度），控制相似度分布的锐度。</p>
 <h4 id="Token-Span-均值切片聚合"><a href="#Token-Span-均值切片聚合" class="headerlink" title="Token Span 均值切片聚合"></a>Token Span 均值切片聚合</h4><p>关键创新在于相似度矩阵 $\mathbf{S}$ 的聚合方式。与全局池化不同，本方法利用 CIF 预测的 token 边界进行局部滑动窗口聚合：</p>
 <p>CIF 对齐将 token 索引 $k$ 映射到声学帧区间 $[b_k, e_k]$（分别为首帧与末帧）。CIF 预测器以与文本编码器分词粒度相同的粒度输出声学 token。对于文本 token 长度为 $L$ 的候选热词，在 CIF 发射的 token 序列上滑动宽度为 $L$ 的声学窗口。对窗口位置 $s \in {0, 1, \ldots, K - L}$（$K$ 为 CIF 发射的总 token 数），对应声学区间为 $[b_s, e_{s+L-1}]$，第 $j$ 个候选在窗口位置 $s$ 的均值切片得分为：</p>
-<script type="math/tex; mode=display">
-\text{score}_j(s) = \frac{1}{e_{s+L-1} - b_s + 1} \sum_{t=b_s}^{e_{s+L-1}} S_{t,j}
-\tag{5}</script><p>候选 $j$ 的最终检索得分取所有有效窗口位置的最大值：</p>
-<script type="math/tex; mode=display">
-\hat{r}_j = \max_s \text{score}_j(s)
-\tag{6}</script><p>这一设计有两大优势：</p>
+\[\text{score}_j(s) = \frac{1}{e_{s+L-1} - b_s + 1} \sum_{t=b_s}^{e_{s+L-1}} S_{t,j}
+\tag{5}\]<p>候选 $j$ 的最终检索得分取所有有效窗口位置的最大值：</p>
+\[\hat{r}_j = \max_s \text{score}_j(s)
+\tag{6}\]<p>这一设计有两大优势：</p>
 <ul>
 <li><strong>支持可变长度匹配</strong>：将每个候选与长度成比例的窗口对齐，自然处理不同长度的热词。</li>
 <li><strong>保留显著局部线索</strong>：避免全局池化的稀释效应；同时使用前缀和窗口计分与按长度分批的候选批处理，保证实际计算效率。</li>
 </ul>
 <p>完整推理流程见 Algorithm 1（原文第2页）。</p>
 <h3 id="2-4-训练目标与检索增强解码"><a href="#2-4-训练目标与检索增强解码" class="headerlink" title="2.4 训练目标与检索增强解码"></a>2.4 训练目标与检索增强解码</h3><h4 id="多粒度训练目标"><a href="#多粒度训练目标" class="headerlink" title="多粒度训练目标"></a>多粒度训练目标</h4><p>CLAR 检索器采用多级对比学习框架，总损失为三项之和：</p>
-<script type="math/tex; mode=display">
-\mathcal{L} = \mathcal{L}_{\text{local}} + \mathcal{L}_{\text{global}} + \mathcal{L}_{\text{cif}}
-\tag{7}</script><p><strong>局部热词级对比损失 $\mathcal{L}_{\text{local}}$</strong>：在热词跨度级别提供细粒度监督。对每个样本，CIF 推导的 token 对齐识别出被标注热词所在的帧，对这些帧的嵌入做均值池化，得到热词级语音嵌入，然后与对应热词文本嵌入进行对称交叉熵对比：</p>
-<script type="math/tex; mode=display">
-\mathcal{L}_{\text{local}} = \frac{1}{2}(\mathcal{L}_{a \to t} + \mathcal{L}_{t \to a})
-\tag{8}</script><p>其中：</p>
-<script type="math/tex; mode=display">
-\mathcal{L}_{a \to t} = -\frac{1}{B}\sum_i \sum_j y_{ij} \log \frac{\exp(\tau\, a_i^\top e_j)}{\sum_{j'} \exp(\tau\, a_i^\top e_{j'})}</script><p>$\mathcal{L}_{t \to a}$ 对称定义，$y_{ij}$ 为由样本身份推导的软目标。</p>
+\[\mathcal{L} = \mathcal{L}_{\text{local}} + \mathcal{L}_{\text{global}} + \mathcal{L}_{\text{cif}}
+\tag{7}\]<p><strong>局部热词级对比损失 $\mathcal{L}_{\text{local}}$</strong>：在热词跨度级别提供细粒度监督。对每个样本，CIF 推导的 token 对齐识别出被标注热词所在的帧，对这些帧的嵌入做均值池化，得到热词级语音嵌入，然后与对应热词文本嵌入进行对称交叉熵对比：</p>
+\[\mathcal{L}_{\text{local}} = \frac{1}{2}(\mathcal{L}_{a \to t} + \mathcal{L}_{t \to a})
+\tag{8}\]<p>其中：</p>
+\[\mathcal{L}_{a \to t} = -\frac{1}{B}\sum_i \sum_j y_{ij} \log \frac{\exp(\tau\, a_i^\top e_j)}{\sum_{j'} \exp(\tau\, a_i^\top e_{j'})}\]<p>$\mathcal{L}_{t \to a}$ 对称定义，$y_{ij}$ 为由样本身份推导的软目标。</p>
 <p><strong>全局句级对比损失 $\mathcal{L}_{\text{global}}$</strong>：将话语级语音嵌入（对有效编码器帧做掩码均值池化）与句级文本嵌入对齐，以保留全局语义。引入全局目标的作用是融合完整话语级语义上下文，进一步提升局部特征的判别力。</p>
 <p><strong>CIF 数量约束 $\mathcal{L}_{\text{cif}}$</strong>：通过最小化预测 token 计数 $\sum_t \alpha_t$ 与真实文本长度之间的 L1 距离，规范对齐，稳定训练时的 CIF 边界。</p>
 <h4 id="检索增强解码"><a href="#检索增强解码" class="headerlink" title="检索增强解码"></a>检索增强解码</h4><p>推理时，训练好的 CLAR 检索器处理输入语音，生成帧级嵌入与 CIF 对齐，对热词词库中所有候选执行局部均值切片聚合打分，将 Top-K 候选拼接为文本提示，作为动态上下文偏置前置于 Speech LLM 指令。Speech LLM 对 SFT 基座进行 LoRA 微调后，在音频输入和增强提示共同条件下进行自回归解码。</p>

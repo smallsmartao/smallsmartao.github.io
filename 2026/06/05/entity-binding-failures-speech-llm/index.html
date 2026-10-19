@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -389,7 +390,7 @@
 </ul>
 <p>这些控制确保了 EA-CoT 在 Web of Lies 上的不成比例收益反映的是 <strong>定向语义修复</strong> 而非通用 CoT 效益。</p>
 <h3 id="4-3-Token-预算控制"><a href="#4-3-Token-预算控制" class="headerlink" title="4.3 Token 预算控制"></a>4.3 Token 预算控制</h3><p>将生成上限从 256 扩展到 1024 tokens 引入了混淆因素——模型可能仅因为有更多推理空间而提升。作者通过以下分解消除此混淆：</p>
-<script type="math/tex; mode=display">\Delta_{\text{Total}} = \underbrace{[\text{BL}_{1024} - \text{BL}_{256}]}_{\text{budget}} + \underbrace{[\text{CoT} - \text{BL}_{1024}]}_{\text{instruction}}</script><p>在保持默认指令的情况下将 token 上限提升至 1024（记为 BL(1024)），然后分别度量预算效应与指令效应。</p>
+\[\Delta_{\text{Total}} = \underbrace{[\text{BL}_{1024} - \text{BL}_{256}]}_{\text{budget}} + \underbrace{[\text{CoT} - \text{BL}_{1024}]}_{\text{instruction}}\]<p>在保持默认指令的情况下将 token 上限提升至 1024（记为 BL(1024)），然后分别度量预算效应与指令效应。</p>
 <hr>
 <h2 id="5-实验"><a href="#5-实验" class="headerlink" title="5. 实验"></a>5. 实验</h2><h3 id="5-1-实验设置"><a href="#5-1-实验设置" class="headerlink" title="5.1 实验设置"></a>5.1 实验设置</h3><ul>
 <li><strong>模型</strong>：Qwen2.5-Omni-7B（含内部 thinker module）、Phi-4-Multimodal（直接生成）</li>

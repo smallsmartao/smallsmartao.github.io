@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -350,16 +351,13 @@
 <h3 id="1-4-与-Transducer-的等价关系"><a href="#1-4-与-Transducer-的等价关系" class="headerlink" title="1.4 与 Transducer 的等价关系"></a>1.4 与 Transducer 的等价关系</h3><p>一个有趣的发现是：这个简单修改使得模型在数学上等价于一个<strong>在块而非帧上操作的 Transducer 模型</strong>，其中 End-of-Chunk（EOC）符号对应 Transducer 中的 blank 符号。本文进一步探讨了标准 Transducer 与本模型之间的剩余差异。</p>
 <hr>
 <h2 id="2-基线模型：全局-AED-Global-AED-Baseline"><a href="#2-基线模型：全局-AED-Global-AED-Baseline" class="headerlink" title="2. 基线模型：全局 AED (Global AED Baseline)"></a>2. 基线模型：全局 AED (Global AED Baseline)</h2><p>全局 AED 模型作为对比基线。标准做法是使用全局注意力的 Conformer 编码器处理整个输入序列：</p>
-<script type="math/tex; mode=display">
-h_{1:T'} = \text{GlobalEncoder}(x_{1:T}) \in \mathbb{R}^{T' \times D_{\text{enc}}}</script><p>解码器通过全局交叉注意力访问整个编码器输出来生成标签序列。</p>
+\[h_{1:T'} = \text{GlobalEncoder}(x_{1:T}) \in \mathbb{R}^{T' \times D_{\text{enc}}}\]<p>解码器通过全局交叉注意力访问整个编码器输出来生成标签序列。</p>
 <hr>
 <h2 id="3-流式分块-AED-模型-Streamable-Chunked-AED"><a href="#3-流式分块-AED-模型-Streamable-Chunked-AED" class="headerlink" title="3. 流式分块 AED 模型 (Streamable Chunked AED)"></a>3. 流式分块 AED 模型 (Streamable Chunked AED)</h2><h3 id="3-1-分块机制"><a href="#3-1-分块机制" class="headerlink" title="3.1 分块机制"></a>3.1 分块机制</h3><p><img src="/images/paper_figs/chunked_aed/chunking.drawio.png" srcset="/img/loading.gif" lazyload alt="Chunking 示意图"><br><em>图1：输入帧 $x_{1:T}$ 上的分块操作，chunk center 大小为 $T_w$，右上下文 $T_r$，步长 $T_s$，其中 $T_s = T_w$。</em></p>
 <p>将输入帧 $x_{1:T}$ 按固定步长 $T_s$ 分成 $K = \lceil T/T_s \rceil$ 个块，每个块表示为：</p>
-<script type="math/tex; mode=display">
-x'_{k,t} = x_{(k-1) \cdot T_s + t} \in \mathbb{R}^D, \quad t \in \{1, \ldots, T_w\}</script><p>重组后得到 $x’_{1:K, 1:T_w} \in \mathbb{R}^{K \times T_w \times D}$。此外，可以额外扩展 $T_r$ 帧作为右侧上下文（lookahead）。</p>
+\[x'_{k,t} = x_{(k-1) \cdot T_s + t} \in \mathbb{R}^D, \quad t \in \{1, \ldots, T_w\}\]<p>重组后得到 $x’_{1:K, 1:T_w} \in \mathbb{R}^{K \times T_w \times D}$。此外，可以额外扩展 $T_r$ 帧作为右侧上下文（lookahead）。</p>
 <p>对于流式模型，分块直接应用于输入特征（如每 10ms 的 log-mel 特征），然后 Conformer 变体在各块上计算编码器输出：</p>
-<script type="math/tex; mode=display">
-h'_{1:K, 1:T'_w} = \text{ChunkedEncoder}(x'_{1:K, 1:T_w}) \in \mathbb{R}^{K \times T'_w \times D_{\text{enc}}}</script><p>其中 $T’_w = \lceil T_w / 6 \rceil$（因为编码器有 6 倍下采样）。</p>
+\[h'_{1:K, 1:T'_w} = \text{ChunkedEncoder}(x'_{1:K, 1:T_w}) \in \mathbb{R}^{K \times T'_w \times D_{\text{enc}}}\]<p>其中 $T’_w = \lceil T_w / 6 \rceil$（因为编码器有 6 倍下采样）。</p>
 <h3 id="3-2-流式分块编码器-Streamable-Chunked-Encoder"><a href="#3-2-流式分块编码器-Streamable-Chunked-Encoder" class="headerlink" title="3.2 流式分块编码器 (Streamable Chunked Encoder)"></a>3.2 流式分块编码器 (Streamable Chunked Encoder)</h3><p><img src="/images/paper_figs/chunked_aed/chunk-self-att.drawio.png" srcset="/img/loading.gif" lazyload alt="分块自注意力"><br><em>图2：编码器中的分块自注意力。每个块的自注意力可以看到当前块的所有帧以及前一个块。</em></p>
 <p>起点是标准 Conformer，但工作在各个块上而非整个序列。自注意力的计算规则：</p>
 <ul>
@@ -379,8 +377,7 @@ h'_{1:K, 1:T'_w} = \text{ChunkedEncoder}(x'_{1:K, 1:T_w}) \in \mathbb{R}^{K \tim
 <li>解码器与全局 AED 完全相同，只是全局注意力被替换为<strong>对当前块的注意力</strong></li>
 </ol>
 <p>下一个标签的概率建模为：</p>
-<script type="math/tex; mode=display">
-P(a_s | a_1, \ldots, a_{s-1}, h'_{k, 1:T'_w})</script><p>其中 $k$ 是当前块索引，随 EOC 的输出而递增。</p>
+\[P(a_s | a_1, \ldots, a_{s-1}, h'_{k, 1:T'_w})\]<p>其中 $k$ 是当前块索引，随 EOC 的输出而递增。</p>
 <h3 id="3-4-训练-Training"><a href="#3-4-训练-Training" class="headerlink" title="3.4 训练 (Training)"></a>3.4 训练 (Training)</h3><p>训练流程：</p>
 <ol>
 <li>从已有的<strong>帧级对齐（framewise alignment）</strong>生成<strong>块级对齐（chunkwise alignment）</strong></li>
@@ -394,12 +391,11 @@ P(a_s | a_1, \ldots, a_{s-1}, h'_{k, 1:T'_w})</script><p>其中 $k$ 是当前块
 </ul>
 <h3 id="3-5-波束搜索-Beam-Search"><a href="#3-5-波束搜索-Beam-Search" class="headerlink" title="3.5 波束搜索 (Beam Search)"></a>3.5 波束搜索 (Beam Search)</h3><p>搜索策略：<strong>对齐同步搜索（alignment-synchronous search）</strong>——每一步所有假设具有相同数量的标签（包括 EOC），与对齐同步 Transducer 搜索 [12, 40] 完全相同。</p>
 <p>对于最佳结果，使用外部语言模型（LM）和内部语言模型（ILM）先验校正 [41]。得分计算：</p>
-<script type="math/tex; mode=display">
-P(a_s | \ldots) = \begin{cases}
-P^{\alpha}_{\text{AED}}(a_s | \ldots) \cdot P^{\beta}_{\text{LM}}(a_s | \ldots) \cdot P^{-\lambda}_{\text{ILM}}(a_s | \ldots), & a_s \neq \text{EOC} \\
-P_{\text{AED}}(\text{EOC} | \ldots), & a_s = \text{EOC},\, k < K \\
-P^{\alpha}_{\text{AED}}(\text{EOC} | \ldots) \cdot P^{\beta}_{\text{LM}}(\text{EOS} | \ldots) \cdot P^{-\lambda}_{\text{ILM}}(\text{EOS} | \ldots), & a_s = \text{EOC},\, k = K
-\end{cases}</script><p>其中 $\alpha, \beta, \lambda$ 是调优的缩放因子，$\alpha = 1 - \beta$。当 $k &lt; K$ 时，$P_{\text{LM}}(\text{EOS}|\ldots)$ 和 $P_{\text{ILM}}(\text{EOS}|\ldots)$ 设为 0 并重新归一化。使用 Mini-LSTM ILM 方法 [41]。</p>
+\[P(a_s | \ldots) = \begin{cases}
+P^{\alpha}_{\text{AED}}(a_s | \ldots) \cdot P^{\beta}_{\text{LM}}(a_s | \ldots) \cdot P^{-\lambda}_{\text{ILM}}(a_s | \ldots), &amp; a_s \neq \text{EOC} \\
+P_{\text{AED}}(\text{EOC} | \ldots), &amp; a_s = \text{EOC},\, k &lt; K \\
+P^{\alpha}_{\text{AED}}(\text{EOC} | \ldots) \cdot P^{\beta}_{\text{LM}}(\text{EOS} | \ldots) \cdot P^{-\lambda}_{\text{ILM}}(\text{EOS} | \ldots), &amp; a_s = \text{EOC},\, k = K
+\end{cases}\]<p>其中 $\alpha, \beta, \lambda$ 是调优的缩放因子，$\alpha = 1 - \beta$。当 $k &lt; K$ 时，$P_{\text{LM}}(\text{EOS}|\ldots)$ 和 $P_{\text{ILM}}(\text{EOS}|\ldots)$ 设为 0 并重新归一化。使用 Mini-LSTM ILM 方法 [41]。</p>
 <hr>
 <h2 id="4-实验-Experiments"><a href="#4-实验-Experiments" class="headerlink" title="4. 实验 (Experiments)"></a>4. 实验 (Experiments)</h2><p>实验在 <strong>LibriSpeech 960h</strong> [43] 和 <strong>TED-LIUM-v2 200h</strong> [44] 上进行，使用 BPE 标签 [45]，基于 RETURNN [46] / TensorFlow [47]。</p>
 <h3 id="模型配置"><a href="#模型配置" class="headerlink" title="模型配置"></a>模型配置</h3><ul>

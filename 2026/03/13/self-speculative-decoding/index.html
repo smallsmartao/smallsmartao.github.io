@@ -80,6 +80,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -351,10 +352,10 @@
 <p><img src="/images/mj/ssd-flow.png" srcset="/img/loading.gif" lazyload alt="整体流程图"></p>
 <h3 id="2-2-关键技术"><a href="#2-2-关键技术" class="headerlink" title="2.2 关键技术"></a>2.2 关键技术</h3><p><strong>1. 帧级熵阈值 (Frame Entropy Threshold)</strong></p>
 <p>使用 CTC 输出分布的帧级熵作为置信度指标：</p>
-<script type="math/tex; mode=display">\sum_{a \in \bar{Y}} -p(a|h_t) \log p(a|h_t) < \tau_{CTC}</script><p>熵低说明模型对当前帧的预测很确定，可以直接接受。</p>
+\[\sum_{a \in \bar{Y}} -p(a|h_t) \log p(a|h_t) &lt; \tau_{CTC}\]<p>熵低说明模型对当前帧的预测很确定，可以直接接受。</p>
 <p><strong>2. Token 似然验证 (LLM Verification)</strong></p>
 <p>用 LLM 验证 CTC hypothesis：</p>
-<script type="math/tex; mode=display">p(y_i|\hat{y}_{<i}, g) > \tau_{SLM}</script><p>由于 LLM 是因果模型，所有 token 的验证可以在<strong>一次前向传播</strong>中并行完成。</p>
+\[p(y_i|\hat{y}_{&lt;i}, g) &gt; \tau_{SLM}\]<p>由于 LLM 是因果模型，所有 token 的验证可以在<strong>一次前向传播</strong>中并行完成。</p>
 <p><strong>3. 宽松接受准则 (Relaxed Acceptance Criterion)</strong></p>
 <p>验证失败时，不需要完全匹配，只需找到最长已验证前缀，然后从该前缀继续 AR 解码。这比传统的 speculative decoding 更灵活。</p>
 <h3 id="2-3-与之前工作的区别"><a href="#2-3-与之前工作的区别" class="headerlink" title="2.3 与之前工作的区别"></a>2.3 与之前工作的区别</h3><div class="table-container">

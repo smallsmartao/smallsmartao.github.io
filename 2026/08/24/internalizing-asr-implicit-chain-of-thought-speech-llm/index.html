@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -337,7 +338,7 @@
 <h2 id="方法架构与数学原理"><a href="#方法架构与数学原理" class="headerlink" title="方法架构与数学原理"></a>方法架构与数学原理</h2><h3 id="2-1-基础架构与-A-T-T-A-显式基线"><a href="#2-1-基础架构与-A-T-T-A-显式基线" class="headerlink" title="2.1 基础架构与 A-T-T-A 显式基线"></a>2.1 基础架构与 A-T-T-A 显式基线</h3><p>研究基于开源的多模态离散大模型 <strong>AnyGPT</strong>（基于 LLaMA-2 7B 底座），其语音模态采用 <strong>SpeechTokenizer</strong> 提取离散语音单元。</p>
 <p>显式 A-T-T-A 的生成模板格式如下：<br><figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs css"><span class="hljs-selector-attr">[CoT Prompt]</span> <span class="hljs-selector-attr">[Input Audio Tokens x]</span> <span class="hljs-selector-attr">[Audio Transcript z^ASR]</span> <span class="hljs-selector-attr">[Text Response z^TTS]</span> <span class="hljs-selector-attr">[Output Audio Tokens y]</span><br></code></pre></td></tr></table></figure></p>
 <p>在标准的自回归训练中，模型参数 $\theta$ 的优化目标为最大化完整联合对数似然：</p>
-<script type="math/tex; mode=display">\min_\theta -\log P_\theta(y, z^{TTS}_{1:n}, z^{ASR}_{1:m} \mid x)</script><p>这一显式管道保证了推理时模型在生成文本回复前，注意力机制（Attention）能够充分 attend 到已生成的 ASR 文本 Token $z^{ASR}$，但缺陷是推理时必须显式吐出所有 $z^{ASR}$ Token。</p>
+\[\min_\theta -\log P_\theta(y, z^{TTS}_{1:n}, z^{ASR}_{1:m} \mid x)\]<p>这一显式管道保证了推理时模型在生成文本回复前，注意力机制（Attention）能够充分 attend 到已生成的 ASR 文本 Token $z^{ASR}$，但缺陷是推理时必须显式吐出所有 $z^{ASR}$ Token。</p>
 <hr>
 <h3 id="2-2-渐进式-ASR-内化算法（A-T-A-ASR-ICoT）"><a href="#2-2-渐进式-ASR-内化算法（A-T-A-ASR-ICoT）" class="headerlink" title="2.2 渐进式 ASR 内化算法（A-T-A ASR ICoT）"></a>2.2 渐进式 ASR 内化算法（A-T-A ASR ICoT）</h3><p>为了在推理阶段省去 $z^{ASR}$ 的显式生成，研究团队设计了一套<strong>渐进式课程退火内化算法（Curriculum ICoT Training）</strong>。</p>
 <p><img src="/images/paper_figs/icot2.png" srcset="/img/loading.gif" lazyload alt="ICoT 训练与生成架构图"></p>
@@ -346,14 +347,14 @@
 <li><strong>阶段二：LoRA 隐式思维链内化（LoRA ICoT Training）</strong><br>固定基座模型的大部分参数，仅在 Attention 模块上加载 LoRA（rank=32, $\alpha=32$），在后续 24k steps 中线性削减 ASR 文本 Token 的可见前缀长度。</li>
 </ol>
 <h4 id="2-动态-Token-剥离函数与平滑正则"><a href="#2-动态-Token-剥离函数与平滑正则" class="headerlink" title="2. 动态 Token 剥离函数与平滑正则"></a>2. 动态 Token 剥离函数与平滑正则</h4><p>在训练步数 $t$ 处，从 ASR 文本序列 $z^{ASR}$ 的开头起剥离 $s(t)$ 个 Token：</p>
-<script type="math/tex; mode=display">s(t) = \min\left( \left\lfloor \frac{t}{T} + o \right\rfloor, K_i \right)</script><p>其中：</p>
+\[s(t) = \min\left( \left\lfloor \frac{t}{T} + o \right\rfloor, K_i \right)\]<p>其中：</p>
 <ul>
 <li>$T$ 为每剥离 1 个 Token 所需的训练步数（文中设为 $T=500$）；</li>
 <li>$K_i$ 为样本 $i$ 的 ASR 文本 Token 总数；</li>
 <li>$o \sim \text{Exp}(\lambda)$ 是从指数分布采样的平滑随机扰动（$\lambda=4$），防止由于固定步长阶梯式突变导致梯度震荡。</li>
 </ul>
 <p>此时阶段二的条件似然优化目标变为：</p>
-<script type="math/tex; mode=display">\min_\theta -\log P_\theta(y, z^{TTS}_{1:n}, z^{ASR}_{s(t):m} \mid x)</script><h4 id="3-优化器重置策略（Optimizer-Reset）"><a href="#3-优化器重置策略（Optimizer-Reset）" class="headerlink" title="3. 优化器重置策略（Optimizer Reset）"></a>3. 优化器重置策略（Optimizer Reset）</h4><p>当 $s(t)$ 步进递增时，由于模型前向上下文发生结构性截断，AdamW 优化器中的二阶动量估计（Second-order Gradient Moments）会瞬间产生异常尖峰，极易引发训练崩塌。为此，训练过程中每隔 $T$ 步强制重置优化器状态（将一阶动量 $m_t$ 和二阶动量 $v_t$ 清零），有效确保了隐层注意力权重向隐式声学表征平滑过渡。</p>
+\[\min_\theta -\log P_\theta(y, z^{TTS}_{1:n}, z^{ASR}_{s(t):m} \mid x)\]<h4 id="3-优化器重置策略（Optimizer-Reset）"><a href="#3-优化器重置策略（Optimizer-Reset）" class="headerlink" title="3. 优化器重置策略（Optimizer Reset）"></a>3. 优化器重置策略（Optimizer Reset）</h4><p>当 $s(t)$ 步进递增时，由于模型前向上下文发生结构性截断，AdamW 优化器中的二阶动量估计（Second-order Gradient Moments）会瞬间产生异常尖峰，极易引发训练崩塌。为此，训练过程中每隔 $T$ 步强制重置优化器状态（将一阶动量 $m_t$ 和二阶动量 $v_t$ 清零），有效确保了隐层注意力权重向隐式声学表征平滑过渡。</p>
 <p>最终，当 $s(t) \ge K_i$ 时，$z^{ASR}$ 被完全移除，模型在推理时直接接收音频 Token $x$，跳过 ASR 生成，直接输出文本回复 $z^{TTS}$ 并合成语音 $y$（<strong>A-T-A</strong>）。</p>
 <hr>
 <h2 id="实验设置与合成数据集构建"><a href="#实验设置与合成数据集构建" class="headerlink" title="实验设置与合成数据集构建"></a>实验设置与合成数据集构建</h2><h3 id="3-1-1000小时合成对话数据集（SODA-TTS）"><a href="#3-1-1000小时合成对话数据集（SODA-TTS）" class="headerlink" title="3.1 1000小时合成对话数据集（SODA-TTS）"></a>3.1 1000小时合成对话数据集（SODA-TTS）</h3><p>由于开源的高质量 Speech-to-Speech 多轮对话语料极度匮乏，作者基于包含丰富社交常识与逻辑推理的 <strong>SODA</strong> 文本对话基准，利用 <strong>ChatTTS</strong> 高拟真语音合成工具构建了大规模语音对话语料库：</p>

@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -421,7 +422,7 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs python"><span class="hljs-comment"># 音频处理示例</span><br>audio_tokens = speech_encoder(audio_input)  <span class="hljs-comment"># 12.5 Hz 采样</span><br><span class="hljs-comment"># 每个 chunk: 15 个 token, 160ms 音频</span><br></code></pre></td></tr></table></figure>
 <h3 id="3-4-文本引导的状态预测（交错-Token-前向过程详解）"><a href="#3-4-文本引导的状态预测（交错-Token-前向过程详解）" class="headerlink" title="3.4 文本引导的状态预测（交错 Token 前向过程详解）"></a>3.4 文本引导的状态预测（交错 Token 前向过程详解）</h3><p>这是 SoulX 的核心创新点。下面完整拆解前向过程。</p>
 <h4 id="整体序列结构"><a href="#整体序列结构" class="headerlink" title="整体序列结构"></a>整体序列结构</h4><p>论文公式(1)定义的模型输入/输出序列为：</p>
-<script type="math/tex; mode=display">\{A_1, T_1, S_1, A_2, T_2, S_2, \ldots, A_T, T_T, S_T\}</script><p>每个时间步 $t$（对应 160ms 音频 chunk）有三组 token <strong>严格按顺序排列</strong>：</p>
+\[\{A_1, T_1, S_1, A_2, T_2, S_2, \ldots, A_T, T_T, S_T\}\]<p>每个时间步 $t$（对应 160ms 音频 chunk）有三组 token <strong>严格按顺序排列</strong>：</p>
 <div class="table-container">
 <table>
 <thead>

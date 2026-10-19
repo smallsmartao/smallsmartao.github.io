@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -365,7 +366,7 @@
 </ol>
 <p>这一策略使词级交错在大规模训练中变得可行。</p>
 <h3 id="2-3-段级交错（Segment-Level-Interleave）"><a href="#2-3-段级交错（Segment-Level-Interleave）" class="headerlink" title="2.3 段级交错（Segment-Level Interleave）"></a>2.3 段级交错（Segment-Level Interleave）</h3><p>段级交错以<strong>短语或句子</strong>为对齐单元。构造的序列格式为：</p>
-<script type="math/tex; mode=display">\langle s \rangle, A_1, \langle N \rangle, T_2, \langle N \rangle, A_3, \langle N \rangle, T_4, \ldots, \langle N \rangle, T_n, \langle /s \rangle</script><p>其中 $\langle N \rangle$ 是一个前导token，用于与纯ASR任务区分。段边界的确定有两种策略：</p>
+\[\langle s \rangle, A_1, \langle N \rangle, T_2, \langle N \rangle, A_3, \langle N \rangle, T_4, \ldots, \langle N \rangle, T_n, \langle /s \rangle\]<p>其中 $\langle N \rangle$ 是一个前导token，用于与纯ASR任务区分。段边界的确定有两种策略：</p>
 <ul>
 <li><strong>仅声学静音（silence）</strong>：基于语音中的停顿切分</li>
 <li><strong>静音+标点（silence + punctuation）</strong>：同时利用文本标点信号切分</li>
@@ -381,7 +382,7 @@
 </ul>
 <p>多个样本通过packed SFT打包到同一个8k上下文中，使用FlashAttention的<code>cu_seqlens</code>确保注意力在样本边界重置，无跨样本泄漏。</p>
 <h3 id="2-6-统一的训练目标"><a href="#2-6-统一的训练目标" class="headerlink" title="2.6 统一的训练目标"></a>2.6 统一的训练目标</h3><p>最终，ASR-only、段级交错、词级交错和text-only四种数据在统一的next-token prediction目标下共同训练。与传统ASR训练的公式 $P(t_i | A, t_{&lt;i})$ 不同，JSTIP使模型暴露于如下分布：</p>
-<script type="math/tex; mode=display">P(T_j | A_i, T_{i+1}, \ldots)</script><p>即在混合了语音和文本上下文的条件下预测文本，从而保持文本建模行为并实现知识迁移。</p>
+\[P(T_j | A_i, T_{i+1}, \ldots)\]<p>即在混合了语音和文本上下文的条件下预测文本，从而保持文本建模行为并实现知识迁移。</p>
 <hr>
 <h2 id="三、实验设置"><a href="#三、实验设置" class="headerlink" title="三、实验设置"></a>三、实验设置</h2><h3 id="3-1-训练数据"><a href="#3-1-训练数据" class="headerlink" title="3.1 训练数据"></a>3.1 训练数据</h3><div class="table-container">
 <table>
@@ -866,9 +867,9 @@
       
         <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
       
-        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
-      
         <a href="/tags/Speech-LLM/" class="print-no-link">#Speech-LLM</a>
+      
+        <a href="/tags/LLM/" class="print-no-link">#LLM</a>
       
         <a href="/tags/Interleaved-Pretraining/" class="print-no-link">#Interleaved Pretraining</a>
       

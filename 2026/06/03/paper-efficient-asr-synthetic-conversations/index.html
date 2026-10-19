@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -347,20 +348,20 @@
 <hr>
 <h2 id="3-方法论（Methodology）"><a href="#3-方法论（Methodology）" class="headerlink" title="3. 方法论（Methodology）"></a>3. 方法论（Methodology）</h2><p>本文提出三阶段流水线：(i) LLM 场景与对话生成；(ii) 元数据条件化 TTS 合成；(iii) 说话人感知对话模拟。</p>
 <h3 id="3-1-问题设定与符号"><a href="#3-1-问题设定与符号" class="headerlink" title="3.1 问题设定与符号"></a>3.1 问题设定与符号</h3><p>设原始 ASR 训练集为 $D_{\text{real}} = {(x_i, y_i)}_{i=1}^N$，其中 $x_i$ 为音频段，$y_i$ 为转录文本。目标是构建合成对话集 $D_{\text{syn}} = {(\tilde{x}_k, \tilde{y}_k)}_{k=1}^K$，在合并数据上训练：</p>
-<script type="math/tex; mode=display">D_{\text{train}} = D_{\text{real}} \cup D_{\text{syn}} \tag{1}</script><h3 id="3-2-阶段一：LLM-场景与对话生成"><a href="#3-2-阶段一：LLM-场景与对话生成" class="headerlink" title="3.2 阶段一：LLM 场景与对话生成"></a>3.2 阶段一：LLM 场景与对话生成</h3><p>采用两步提示协议（two-step prompting protocol）。</p>
+\[D_{\text{train}} = D_{\text{real}} \cup D_{\text{syn}} \tag{1}\]<h3 id="3-2-阶段一：LLM-场景与对话生成"><a href="#3-2-阶段一：LLM-场景与对话生成" class="headerlink" title="3.2 阶段一：LLM 场景与对话生成"></a>3.2 阶段一：LLM 场景与对话生成</h3><p>采用两步提示协议（two-step prompting protocol）。</p>
 <p><strong>场景生成</strong>。对每个合成对话 $k$，生成场景：</p>
-<script type="math/tex; mode=display">c_k = (t_k, M_k), \quad M_k = \{m_{k,1}, \ldots, m_{k,S_k}\} \tag{2}</script><p>其中 $t_k$ 为话题，$m_{k,j}$ 为说话人 $j$ 的元数据元组：</p>
-<script type="math/tex; mode=display">m_{k,j} = (a_{k,j},\; g_{k,j},\; o_{k,j},\; r_{k,j}) \tag{3}</script><p>分别对应年龄 $a$、性别 $g$、职业 $o$、对话角色 $r$。提示设计鼓励话题多样性、自传式/经验式讨论、避免过于宽泛或过于冷门的话题，以及年龄和职业的真实变化。</p>
+\[c_k = (t_k, M_k), \quad M_k = \{m_{k,1}, \ldots, m_{k,S_k}\} \tag{2}\]<p>其中 $t_k$ 为话题，$m_{k,j}$ 为说话人 $j$ 的元数据元组：</p>
+\[m_{k,j} = (a_{k,j},\; g_{k,j},\; o_{k,j},\; r_{k,j}) \tag{3}\]<p>分别对应年龄 $a$、性别 $g$、职业 $o$、对话角色 $r$。提示设计鼓励话题多样性、自传式/经验式讨论、避免过于宽泛或过于冷门的话题，以及年龄和职业的真实变化。</p>
 <p><strong>对话生成</strong>。以场景 $c_k$ 为条件，生成轮次级对话：</p>
-<script type="math/tex; mode=display">U_k = \left((z_{k,1}, u_{k,1}), \ldots, (z_{k,T_k}, u_{k,T_k})\right) \tag{4}</script><p>其中 $u_{k,t}$ 为第 $t$ 轮文本，$z_{k,t} \in {1,\ldots,S_k}$ 为当前说话人索引。使用固定示例对话稳定风格与轮次结构，输出经基本质量过滤（有效说话人标签、非空轮次、正确格式）。</p>
+\[U_k = \left((z_{k,1}, u_{k,1}), \ldots, (z_{k,T_k}, u_{k,T_k})\right) \tag{4}\]<p>其中 $u_{k,t}$ 为第 $t$ 轮文本，$z_{k,t} \in {1,\ldots,S_k}$ 为当前说话人索引。使用固定示例对话稳定风格与轮次结构，输出经基本质量过滤（有效说话人标签、非空轮次、正确格式）。</p>
 <h3 id="3-3-阶段二：元数据条件化-TTS-合成"><a href="#3-3-阶段二：元数据条件化-TTS-合成" class="headerlink" title="3.3 阶段二：元数据条件化 TTS 合成"></a>3.3 阶段二：元数据条件化 TTS 合成</h3><p>每个语句 $u_{k,t}$ 由从参考池中选择的说话人配置文件合成。使用 xTTS-v2 神经 TTS 模型，逐句合成，利用其语音克隆能力。</p>
 <p>设参考库为 $R$，每个样本 $r \in R$ 有人口统计标注 $(a^{(r)}, g^{(r)})$。对场景 $k$ 中的说话人 $j$，选择最匹配参考：</p>
-<script type="math/tex; mode=display">\rho^*_{k,j} = \arg\min_{r \in R:\; g^{(r)} = g_{k,j}} |a^{(r)} - a_{k,j}| \tag{5}</script><p>即在性别匹配的参考中选择年龄最接近者。然后合成：</p>
-<script type="math/tex; mode=display">\hat{x}_{k,t} = G\left(u_{k,t},\; \rho^*_{k,z_{k,t}}\right) \tag{6}</script><p>其中 $G(\cdot)$ 为 TTS 模型。这一映射在保持 LLM 生成的语言多样性的同时，提供对说话人身份的显式控制。</p>
+\[\rho^*_{k,j} = \arg\min_{r \in R:\; g^{(r)} = g_{k,j}} |a^{(r)} - a_{k,j}| \tag{5}\]<p>即在性别匹配的参考中选择年龄最接近者。然后合成：</p>
+\[\hat{x}_{k,t} = G\left(u_{k,t},\; \rho^*_{k,z_{k,t}}\right) \tag{6}\]<p>其中 $G(\cdot)$ 为 TTS 模型。这一映射在保持 LLM 生成的语言多样性的同时，提供对说话人身份的显式控制。</p>
 <h3 id="3-4-阶段三：说话人感知对话模拟"><a href="#3-4-阶段三：说话人感知对话模拟" class="headerlink" title="3.4 阶段三：说话人感知对话模拟"></a>3.4 阶段三：说话人感知对话模拟</h3><p>将合成轮次 ${\hat{x}_{k,t}}_{t=1}^{T_k}$ 转换为单个对话波形。设 $d_{k,t}$ 为语句 $t$ 的时长，递归定义起始时间：</p>
-<script type="math/tex; mode=display">\tau_{k,1} = 0 \tag{7}</script><script type="math/tex; mode=display">\tau_{k,t} = \tau_{k,t-1} + d_{k,t-1} + \Delta_{k,t} \quad (t > 1) \tag{8}</script><p>其中 $\Delta_{k,t}$ 为采样的轮间偏移。若 $z_{k,t} = z_{k,t-1}$（同一说话人），则 $\Delta_{k,t} \sim P_{\text{same}}$；否则 $\Delta_{k,t} \sim P_{\text{switch}}$。负值允许重叠，正值模拟停顿。</p>
+\[\tau_{k,1} = 0 \tag{7}\]\[\tau_{k,t} = \tau_{k,t-1} + d_{k,t-1} + \Delta_{k,t} \quad (t &gt; 1) \tag{8}\]<p>其中 $\Delta_{k,t}$ 为采样的轮间偏移。若 $z_{k,t} = z_{k,t-1}$（同一说话人），则 $\Delta_{k,t} \sim P_{\text{same}}$；否则 $\Delta_{k,t} \sim P_{\text{switch}}$。负值允许重叠，正值模拟停顿。</p>
 <p>最终混合对话：</p>
-<script type="math/tex; mode=display">\tilde{x}_k(\tau) = \sum_{t=1}^{T_k} \hat{x}_{k,t}(\tau - \tau_{k,t}) \tag{9}</script><p>转录 $\tilde{y}_k$ 由有序轮次及其时间戳构成。该阶段的目的是在不依赖对话级 TTS 模型（多数语言不可用）的情况下，生成更接近对话 ASR 条件的训练样本。</p>
+\[\tilde{x}_k(\tau) = \sum_{t=1}^{T_k} \hat{x}_{k,t}(\tau - \tau_{k,t}) \tag{9}\]<p>转录 $\tilde{y}_k$ 由有序轮次及其时间戳构成。该阶段的目的是在不依赖对话级 TTS 模型（多数语言不可用）的情况下，生成更接近对话 ASR 条件的训练样本。</p>
 <h3 id="3-5-流水线输出"><a href="#3-5-流水线输出" class="headerlink" title="3.5 流水线输出"></a>3.5 流水线输出</h3><p>输出带时间戳的多说话人对话及对齐转录，适用于端到端 ASR 训练。</p>
 <hr>
 <h2 id="4-实验设置（Experiments）"><a href="#4-实验设置（Experiments）" class="headerlink" title="4. 实验设置（Experiments）"></a>4. 实验设置（Experiments）</h2><p>实验围绕三个研究问题：(i) 合成对话是否改善仅用真实数据的训练？(ii) 下游性能对 LLM 选择的敏感度如何？(iii) 生成器混合是否带来互补增益？</p>

@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -385,35 +386,35 @@
 </div>
 <p>本文提出的核心原则是<strong>语义完备性（Semantic Completeness）</strong>。</p>
 <h4 id="2-2-2-语义对齐编码器（SAE）"><a href="#2-2-2-语义对齐编码器（SAE）" class="headerlink" title="2.2.2 语义对齐编码器（SAE）"></a>2.2.2 语义对齐编码器（SAE）</h4><p><strong>定义</strong>：给定图像 $I$ 和查询 $Q$，若离散表示 $z = {idx_1, \ldots, idx_n}$ 满足：</p>
-<script type="math/tex; mode=display">P(A \mid z, Q) \approx P(A \mid I, Q) \tag{1}</script><p>则称 $z$ 满足语义完备性。该等价关系蕴含两个属性：</p>
+\[P(A \mid z, Q) \approx P(A \mid I, Q) \tag{1}\]<p>则称 $z$ 满足语义完备性。该等价关系蕴含两个属性：</p>
 <ul>
 <li><strong>判别不变性（Discriminative Invariance）</strong>：量化过程不应降低下游判别性能。</li>
 <li><strong>生成充分性（Generative Sufficiency）</strong>：离散码 $z$ 应提供足够的语义描述，使逆分词器 $\mathcal{D}(\cdot)$ 能够重建结构与纹理内容（$I’ \approx \mathcal{D}(z)$）。</li>
 </ul>
 <p>SAE 的训练目标为多方面视觉-语言对齐：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{\text{SAE}} = \mathbb{E}_{(I,Q,A)}\left[-\log P(A \mid z_p, Q)\right] \tag{2}</script><p>在实践中，现有视觉-语言预训练模型（如 QwenViT、MoonViT、AIMv2）可直接作为 SAE 近似使用，无需从头训练。</p>
+\[\mathcal{L}_{\text{SAE}} = \mathbb{E}_{(I,Q,A)}\left[-\log P(A \mid z_p, Q)\right] \tag{2}\]<p>在实践中，现有视觉-语言预训练模型（如 QwenViT、MoonViT、AIMv2）可直接作为 SAE 近似使用，无需从头训练。</p>
 <h4 id="2-2-3-分词（Tokenization）"><a href="#2-2-3-分词（Tokenization）" class="headerlink" title="2.2.3 分词（Tokenization）"></a>2.2.3 分词（Tokenization）</h4><p>SAE 提供了语义完备的连续流形，离散化采用<strong>残差向量量化（Residual Vector Quantization，RVQ）</strong>：</p>
-<script type="math/tex; mode=display">r_0 = f_{\text{proj}}(z), \quad \hat{q}_l = \text{VQ}(r_{l-1}), \quad r_l = r_{l-1} - \hat{q}_l, \quad \hat{z} = \sum_{l=1}^{L} \hat{q}_l \tag{3}</script><ul>
+\[r_0 = f_{\text{proj}}(z), \quad \hat{q}_l = \text{VQ}(r_{l-1}), \quad r_l = r_{l-1} - \hat{q}_l, \quad \hat{z} = \sum_{l=1}^{L} \hat{q}_l \tag{3}\]<ul>
 <li>$r_0$：投影后的潜在表示</li>
 <li>$\hat{q}_l$：第 $l$ 层量化特征</li>
 <li>$r_l$：第 $l$ 层残差误差</li>
 <li>$\hat{z}$：最终量化表示</li>
 </ul>
 <p><strong>码本更新</strong>采用指数移动平均（EMA）：</p>
-<script type="math/tex; mode=display">e_k \leftarrow \frac{m_k}{N_k} \tag{4}</script><p>其中 $N_k \leftarrow \gamma N_k + (1-\gamma)|S_k|$，$m_k \leftarrow \gamma m_k + (1-\gamma)\sum_{j \in S_k} r_j$，$\gamma$ 为衰减因子。</p>
+\[e_k \leftarrow \frac{m_k}{N_k} \tag{4}\]<p>其中 $N_k \leftarrow \gamma N_k + (1-\gamma)|S_k|$，$m_k \leftarrow \gamma m_k + (1-\gamma)\sum_{j \in S_k} r_j$，$\gamma$ 为衰减因子。</p>
 <p>量化目标为：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{\text{quant}} = \lambda_c \mathcal{L}_{\text{commit}} + \lambda_s \mathcal{L}_{\text{semantic}} \tag{5}</script><p>其中 $\mathcal{L}_{\text{commit}}$ 为标准承诺损失，$\mathcal{L}_{\text{semantic}}$ 为基于余弦相似度的语义重建损失。</p>
+\[\mathcal{L}_{\text{quant}} = \lambda_c \mathcal{L}_{\text{commit}} + \lambda_s \mathcal{L}_{\text{semantic}} \tag{5}\]<p>其中 $\mathcal{L}_{\text{commit}}$ 为标准承诺损失，$\mathcal{L}_{\text{semantic}}$ 为基于余弦相似度的语义重建损失。</p>
 <p><strong>本地分辨率分词</strong>的两大优势：</p>
 <ol>
 <li><strong>语义结构化</strong>：离散 token 继承视觉-语言预训练的自然关联性。</li>
 <li><strong>原生分辨率</strong>：直接在编码器原生分辨率的潜在表示上操作，支持任意输入分辨率。</li>
 </ol>
 <h4 id="2-2-4-逆分词（De-tokenization）"><a href="#2-2-4-逆分词（De-tokenization）" class="headerlink" title="2.2.4 逆分词（De-tokenization）"></a>2.2.4 逆分词（De-tokenization）</h4><p>分词训练完成后，SAE 编码器与码本均被冻结。逆分词器以一个像素解码器为核心（400M 参数的 ViT，从零训练），训练目标为：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{\text{dec}} = \lambda_1 \mathcal{L}_{\text{pixel}} + \lambda_2 \mathcal{L}_{\text{percep}} + \lambda_3 \mathcal{L}_{\text{align}} \tag{6}</script><p>为进一步改善视觉保真度（减少过度平滑问题），引入<strong>基于 flow matching 的图像精修器</strong>（Image Refiner），以像素解码器重建结果和离散码嵌入为条件，聚焦于高频纹理细节的增强。</p>
+\[\mathcal{L}_{\text{dec}} = \lambda_1 \mathcal{L}_{\text{pixel}} + \lambda_2 \mathcal{L}_{\text{percep}} + \lambda_3 \mathcal{L}_{\text{align}} \tag{6}\]<p>为进一步改善视觉保真度（减少过度平滑问题），引入<strong>基于 flow matching 的图像精修器</strong>（Image Refiner），以像素解码器重建结果和离散码嵌入为条件，聚焦于高频纹理细节的增强。</p>
 
 <p><strong>关于信息恢复的讨论</strong></p>
 <p>一个有趣的发现：即使是随机初始化的 ViT-Base 也具备强重建能力，甚至优于预训练版本。原因在于现代视觉编码器的<strong>残差架构</strong>天然保留了低层信号传播的潜在通道：</p>
-<script type="math/tex; mode=display">z_p = x_0 + \sum_{l=1}^{L} F_l(x_{l-1}), \quad x_l = x_{l-1} + F_l(x_{l-1}) \tag{7}</script><p>恒等映射 $x_{l-1}$ 确保早期层的细粒度视觉信号不被高层语义抽象覆盖，而是通过网络逐步积累进入 $z_p$，使其与原始图像保持高互信息 $I(I; z_p)$。</p>
+\[z_p = x_0 + \sum_{l=1}^{L} F_l(x_{l-1}), \quad x_l = x_{l-1} + F_l(x_{l-1}) \tag{7}\]<p>恒等映射 $x_{l-1}$ 确保早期层的细粒度视觉信号不被高层语义抽象覆盖，而是通过网络逐步积累进入 $z_p$，使其与原始图像保持高互信息 $I(I; z_p)$。</p>
 
 <p><strong>各编码器重建性能定量对比：</strong></p>
 <div class="table-container">
@@ -474,7 +475,7 @@
 </li>
 </ol>
 <p>训练目标：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{\text{audio}} = \lambda_1 \mathcal{L}_{\text{recon}} + \lambda_2 \mathcal{L}_{\text{commit}} + \lambda_3 \mathcal{L}_{\text{llm}} \tag{8}</script><p>训练语料约 <strong>250 万小时</strong>，分三阶段：</p>
+\[\mathcal{L}_{\text{audio}} = \lambda_1 \mathcal{L}_{\text{recon}} + \lambda_2 \mathcal{L}_{\text{commit}} + \lambda_3 \mathcal{L}_{\text{llm}} \tag{8}\]<p>训练语料约 <strong>250 万小时</strong>，分三阶段：</p>
 <ol>
 <li><strong>阶段1</strong>：解码器热身（编码器和 LLM 冻结）</li>
 <li><strong>阶段2</strong>：语义-声学联合训练（启用 RVQ）</li>
@@ -1612,7 +1613,7 @@
 <h2 id="6-强化学习与未来工作"><a href="#6-强化学习与未来工作" class="headerlink" title="6 强化学习与未来工作"></a>6 强化学习与未来工作</h2><h3 id="6-1-强化学习"><a href="#6-1-强化学习" class="headerlink" title="6.1 强化学习"></a>6.1 强化学习</h3><p>离散视觉潜在空间天然适合 RL：作为有限 MDP 结构的动作空间，与 GRPO 等语言 RL 方法无缝兼容，无需 ODE-to-SDE 转换。</p>
 <p><strong>文本生成图像的 RL</strong>：给定输入提示，策略生成离散 token 序列后由冻结解码器生成图像，多维奖励模型计算标量奖励。</p>
 <p>多级 GRPO 目标（跨 RVQ 各层加权）：</p>
-<script type="math/tex; mode=display">r_t^{(l)} = \frac{\pi_\theta^{(l)}(a_t^{(l)} | s_t)}{\pi_{\text{old}}^{(l)}(a_t^{(l)} | s_t)} \tag{9}</script><script type="math/tex; mode=display">\mathcal{L}_{\text{GRPO}} = \mathbb{E}\left[\sum_{l=1}^{L} w_l \cdot \min\left(r_t^{(l)} \cdot \hat{A}_t, \text{clip}(r_t^{(l)}, 1-\epsilon, 1+\epsilon) \cdot \hat{A}_t\right)\right] \tag{10}</script><p><strong>四维奖励模型：</strong></p>
+\[r_t^{(l)} = \frac{\pi_\theta^{(l)}(a_t^{(l)} | s_t)}{\pi_{\text{old}}^{(l)}(a_t^{(l)} | s_t)} \tag{9}\]\[\mathcal{L}_{\text{GRPO}} = \mathbb{E}\left[\sum_{l=1}^{L} w_l \cdot \min\left(r_t^{(l)} \cdot \hat{A}_t, \text{clip}(r_t^{(l)}, 1-\epsilon, 1+\epsilon) \cdot \hat{A}_t\right)\right] \tag{10}\]<p><strong>四维奖励模型：</strong></p>
 <ol>
 <li>综合能力增强（对象计数/颜色准确性/空间定位/属性一致性）</li>
 <li>OCR 能力增强（GOT-OCR 2.0 识别，编辑距离衡量文本保真度）</li>
@@ -1622,7 +1623,7 @@
 <p><strong>图像理解的 RL——熵爆炸问题及解决方案</strong></p>
 <p>RL 训练图像理解时面临严重的熵爆炸问题：策略熵与训练-推理不一致度正相关增长，低概率 token 进入训练数据后通过正反馈循环急剧放大。</p>
 <p>提出<strong>序列级过滤</strong>机制：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{\text{GRPO-Filtered}} = \mathbb{E}_{(s_t, a_t) \sim \mathcal{D}}\left[\underbrace{\mathbb{I}\{H_{\text{seq}}(s_t) \leq \mu_H + n\sigma_H\}}_{\text{(1) 熵过滤}} \cdot \underbrace{\mathbb{I}\{\max_{t' \in T_y} |\pi_{\text{sampler}}(a_{t'}|s_{t'}) - \pi_{\text{actor}}(a_{t'}|s_{t'})| \leq \delta\}}_{\text{(2) 概率差过滤}} \cdot \min\left(r_t(\theta) \cdot \hat{A}_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \cdot \hat{A}_t\right)\right] \tag{11}</script><ul>
+\[\mathcal{L}_{\text{GRPO-Filtered}} = \mathbb{E}_{(s_t, a_t) \sim \mathcal{D}}\left[\underbrace{\mathbb{I}\{H_{\text{seq}}(s_t) \leq \mu_H + n\sigma_H\}}_{\text{(1) 熵过滤}} \cdot \underbrace{\mathbb{I}\{\max_{t' \in T_y} |\pi_{\text{sampler}}(a_{t'}|s_{t'}) - \pi_{\text{actor}}(a_{t'}|s_{t'})| \leq \delta\}}_{\text{(2) 概率差过滤}} \cdot \min\left(r_t(\theta) \cdot \hat{A}_t, \text{clip}(r_t(\theta), 1-\epsilon, 1+\epsilon) \cdot \hat{A}_t\right)\right] \tag{11}\]<ul>
 <li><strong>熵过滤</strong>：序列熵超过批均值 $n$ 个标准差则剔除</li>
 <li><strong>训练-推理差异过滤</strong>：序列中任意 token 的采样策略与训练策略概率差超过阈值 $\delta$ 则剔除</li>
 </ul>

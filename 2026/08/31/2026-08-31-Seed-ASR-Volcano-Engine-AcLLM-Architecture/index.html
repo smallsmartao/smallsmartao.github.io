@@ -81,6 +81,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -398,12 +399,12 @@
 <li><strong>动机</strong>：交叉熵（CE）在 Token 级计算损失，与序列级评估指标（WER / WWER）存在目标错位。</li>
 <li><strong>损失函数设计</strong>：将最小词错误率（Minimum Word Error Rate, MWER）目标与 CE 进行插值结合：</li>
 </ul>
-<script type="math/tex; mode=display">\mathcal{L}^{\text{N-best}}_{\text{MWER}}(\bm{x}, \bm{y}^*) = \frac{1}{N} \sum_{\bm{y}_i \in \text{N-best}(\bm{x}, N)} \hat{P}(\bm{y}_i | \bm{x}) \left( \mathcal{W}(\bm{y}_i, \bm{y}^*) - \bar{\mathcal{W}} \right) + \lambda \mathcal{L}_{\text{CE}}</script><p>其中 $\mathcal{W}(\bm{y}_i, \bm{y}^<em>)$ 为候选句与真值的加权错误率，对<em>*关键词错误（Keywords）赋予更高惩罚权重（WWER）</em></em>；$\bar{\mathcal{W}}$ 为 $N$-best 候选的平均错误率；归一化概率为：</p>
-<script type="math/tex; mode=display">\hat{P}(\bm{y}_i | \bm{x}) = \frac{P(\bm{y}_i | \bm{x})}{\sum_{\bm{y}_j \in \text{N-best}} P(\bm{y}_j | \bm{x})}</script><hr>
+\[\mathcal{L}^{\text{N-best}}_{\text{MWER}}(\bm{x}, \bm{y}^*) = \frac{1}{N} \sum_{\bm{y}_i \in \text{N-best}(\bm{x}, N)} \hat{P}(\bm{y}_i | \bm{x}) \left( \mathcal{W}(\bm{y}_i, \bm{y}^*) - \bar{\mathcal{W}} \right) + \lambda \mathcal{L}_{\text{CE}}\]<p>其中 $\mathcal{W}(\bm{y}_i, \bm{y}^<em>)$ 为候选句与真值的加权错误率，对<em>*关键词错误（Keywords）赋予更高惩罚权重（WWER）</em></em>；$\bar{\mathcal{W}}$ 为 $N$-best 候选的平均错误率；归一化概率为：</p>
+\[\hat{P}(\bm{y}_i | \bm{x}) = \frac{P(\bm{y}_i | \bm{x})}{\sum_{\bm{y}_j \in \text{N-best}} P(\bm{y}_j | \bm{x})}\]<hr>
 <h2 id="5-解码期防幻觉：联合束搜索（Joint-Beam-Search）"><a href="#5-解码期防幻觉：联合束搜索（Joint-Beam-Search）" class="headerlink" title="5. 解码期防幻觉：联合束搜索（Joint Beam Search）"></a>5. 解码期防幻觉：联合束搜索（Joint Beam Search）</h2><p>在将 Context 作为 Prompt 输入 LLM 时，所有 Speech-LLM 都会面临严重的 <strong>“过度依赖上下文导致幻觉（Hallucination）”</strong> 问题（例如：文本上下文中提到某人名，音频中明明没说，LLM 却强行输出）。</p>
 <p><img src="/images/paper_figs/seed_asr/context_exp.png" srcset="/img/loading.gif" lazyload alt="上下文偏置与消歧示例"></p>
 <p>Seed-ASR 提出了一种 <strong>双流联合束搜索（Joint Beam Search）与声学校验剪枝</strong> 算法：</p>
-<script type="math/tex; mode=display">P_{\text{joint}}(\bm{y} | \bm{x}, \bm{c}) = \frac{\alpha}{1 + \alpha} P(\bm{y} | \bm{x}, \bm{c}) + \frac{1}{1 + \alpha} P(\bm{y} | \bm{x})</script><h3 id="核心解码执行流程："><a href="#核心解码执行流程：" class="headerlink" title="核心解码执行流程："></a>核心解码执行流程：</h3><ol>
+\[P_{\text{joint}}(\bm{y} | \bm{x}, \bm{c}) = \frac{\alpha}{1 + \alpha} P(\bm{y} | \bm{x}, \bm{c}) + \frac{1}{1 + \alpha} P(\bm{y} | \bm{x})\]<h3 id="核心解码执行流程："><a href="#核心解码执行流程：" class="headerlink" title="核心解码执行流程："></a>核心解码执行流程：</h3><ol>
 <li><strong>声学候选硬剪枝</strong>：在生成每个 Token 时，先计算无上下文概率 $P(\bm{y} | \bm{x})$，将声学上明显不合理的 Token 候选直接剔除；</li>
 <li><strong>插值平滑打分</strong>：在留下的高置信度声学候选上，计算加权联合分数 $P_{\text{joint}}$；</li>
 <li><strong>动态平衡</strong>：超参数 $\alpha$ 精准控制上下文先验与声学观测的权重。当输入语音清晰时，声学校验分支强力抑制上下文幻觉；当声学模糊时，上下文分支有效辅助消歧。</li>

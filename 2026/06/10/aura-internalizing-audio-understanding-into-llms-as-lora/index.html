@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -375,8 +376,7 @@
 </ul>
 <h3 id="2-2-Audio-Patch-Embedding（音频-Patch-嵌入）"><a href="#2-2-Audio-Patch-Embedding（音频-Patch-嵌入）" class="headerlink" title="2.2 Audio Patch Embedding（音频 Patch 嵌入）"></a>2.2 Audio Patch Embedding（音频 Patch 嵌入）</h3><p>输入原始音频波形经预处理后得到 Whisper 风格的 Mel 频谱图 $X \in \mathbb{R}^{M \times T}$（$M=128$ 个 Mel bins，$T$ 帧）。时间轴填充/截断到固定长度 $\bar{T}$，按步长 $p=16$ 帧划分为不重叠的 patch，共得到 $P = \lceil \bar{T}/p \rceil$ 个 patch。</p>
 <p>第 $k$ 个 patch 展平为 $\mathbf{x}_k \in \mathbb{R}^{Mp}$，投影到 LLM 隐藏维度 $d$：</p>
-<script type="math/tex; mode=display">
-\mathbf{a}_k = \text{LN}(W_a \mathbf{x}_k + \mathbf{b}_a + \mathbf{r}_k), \quad k = 1, \ldots, P</script><p>其中：</p>
+\[\mathbf{a}_k = \text{LN}(W_a \mathbf{x}_k + \mathbf{b}_a + \mathbf{r}_k), \quad k = 1, \ldots, P\]<p>其中：</p>
 <ul>
 <li>$W_a \in \mathbb{R}^{d \times Mp}$：可学习投影矩阵</li>
 <li>$\mathbf{b}_a$：偏置</li>
@@ -384,11 +384,9 @@
 <li>$\text{LN}$：Layer Normalization</li>
 </ul>
 <p>最终音频 token 序列为：</p>
-<script type="math/tex; mode=display">
-A = [\mathbf{a}_1, \ldots, \mathbf{a}_P] \in \mathbb{R}^{P \times d}</script><p>该序列替换文本 prompt 中的音频占位符，与文本 token 共享同一 embedding 空间和 transformer 上下文，二者通过标准自注意力直接交互，无需单独的融合模块。同时构造二元音频掩码 $\mathbf{m}^a \in {0,1}^S$，音频 token 位置被排除在语言建模目标之外。</p>
+\[A = [\mathbf{a}_1, \ldots, \mathbf{a}_P] \in \mathbb{R}^{P \times d}\]<p>该序列替换文本 prompt 中的音频占位符，与文本 token 共享同一 embedding 空间和 transformer 上下文，二者通过标准自注意力直接交互，无需单独的融合模块。同时构造二元音频掩码 $\mathbf{m}^a \in {0,1}^S$，音频 token 位置被排除在语言建模目标之外。</p>
 <h3 id="2-3-LoRA-adapted-LLM-Student"><a href="#2-3-LoRA-adapted-LLM-Student" class="headerlink" title="2.3 LoRA-adapted LLM Student"></a>2.3 LoRA-adapted LLM Student</h3><p>LLM 主干完全冻结，仅在前 $N=4$ 层插入 LoRA 适配器。对每个目标线性层，冻结的投影 $W$ 被增量更新：</p>
-<script type="math/tex; mode=display">
-\text{LoRA}(\mathbf{x}) = W\mathbf{x} + \frac{\alpha}{r} BA\mathbf{x}</script><p>其中：</p>
+\[\text{LoRA}(\mathbf{x}) = W\mathbf{x} + \frac{\alpha}{r} BA\mathbf{x}\]<p>其中：</p>
 <ul>
 <li>$A \in \mathbb{R}^{r \times d_{in}}$，$B \in \mathbb{R}^{d_{out} \times r}$：低秩可训练矩阵</li>
 <li>$r = 256$：LoRA 秩</li>
@@ -398,28 +396,21 @@ A = [\mathbf{a}_1, \ldots, \mathbf{a}_P] \in \mathbb{R}^{P \times d}</script><p>
 <p>适配器应用于注意力投影 ${q, k, v, o}$ 和 MLP 投影 ${up, gate, down}$。</p>
 <p><strong>设计动机</strong>：音频以低级连续 token 进入模型，需要在浅层将声学/音素线索转化为文本兼容的隐藏状态；深层冻结的 LLM 保留高层语义和推理能力。这使得音频特定学习局限于轻量参数集，浅层适配层充当语音→文本表征的桥梁。</p>
 <h3 id="2-4-Teacher-Student-Distillation（教师-学生蒸馏）"><a href="#2-4-Teacher-Student-Distillation（教师-学生蒸馏）" class="headerlink" title="2.4 Teacher-Student Distillation（教师-学生蒸馏）"></a>2.4 Teacher-Student Distillation（教师-学生蒸馏）</h3><h4 id="学生音频状态提取"><a href="#学生音频状态提取" class="headerlink" title="学生音频状态提取"></a>学生音频状态提取</h4><p>对样本 $b$，第 $i$ 层适配后的 LLM 隐藏状态为 $H_i^{(b)} \in \mathbb{R}^{L_b \times d}$。通过音频掩码提取音频 token 对应的隐藏状态：</p>
-<script type="math/tex; mode=display">
-H_i^{a,(b)} = H_i^{(b)}[\mathbf{m}^{a,(b)} = 1] \in \mathbb{R}^{P_b \times d}</script><h4 id="教师层对齐与时间对齐"><a href="#教师层对齐与时间对齐" class="headerlink" title="教师层对齐与时间对齐"></a>教师层对齐与时间对齐</h4><p>教师编码器第 $j$ 层隐藏状态为 $Z_j \in \mathbb{R}^{T_w \times d_w}$。每个学生适配层 $i$ 对应一个教师层 $m(i)$，默认采用低层一一映射 $m(i) = i$。</p>
+\[H_i^{a,(b)} = H_i^{(b)}[\mathbf{m}^{a,(b)} = 1] \in \mathbb{R}^{P_b \times d}\]<h4 id="教师层对齐与时间对齐"><a href="#教师层对齐与时间对齐" class="headerlink" title="教师层对齐与时间对齐"></a>教师层对齐与时间对齐</h4><p>教师编码器第 $j$ 层隐藏状态为 $Z_j \in \mathbb{R}^{T_w \times d_w}$。每个学生适配层 $i$ 对应一个教师层 $m(i)$，默认采用低层一一映射 $m(i) = i$。</p>
 <p>由于教师以 segment batch 处理长音频，需先按样本重组、丢弃 padding 帧并沿时间拼接：</p>
-<script type="math/tex; mode=display">
-Z_{m(i)}^{(b)} = \text{Concat}_t\left(\bar{Z}_{m(i)}^{(b,s)}\right)_{s=1}^{K_b}</script><p>再对齐到学生音频 token 长度 $P_b$：</p>
-<script type="math/tex; mode=display">
-\tilde{Z}_{m(i)}^{(b)} = \mathcal{A}(Z_{m(i)}^{(b)}, P_b)</script><p>对齐函数 $\mathcal{A}$ 的定义：</p>
-<script type="math/tex; mode=display">
-\mathcal{A}(Z, P) = \begin{cases} \text{AvgPool}_P(Z), & T > P \\ Z, & T = P \\ \text{Interp}_P^{\text{linear}}(Z), & T < P \end{cases}</script><p>即当教师序列更长时用自适应平均池化下采样，更短时用线性插值上采样。</p>
+\[Z_{m(i)}^{(b)} = \text{Concat}_t\left(\bar{Z}_{m(i)}^{(b,s)}\right)_{s=1}^{K_b}\]<p>再对齐到学生音频 token 长度 $P_b$：</p>
+\[\tilde{Z}_{m(i)}^{(b)} = \mathcal{A}(Z_{m(i)}^{(b)}, P_b)\]<p>对齐函数 $\mathcal{A}$ 的定义：</p>
+\[\mathcal{A}(Z, P) = \begin{cases} \text{AvgPool}_P(Z), &amp; T &gt; P \\ Z, &amp; T = P \\ \text{Interp}_P^{\text{linear}}(Z), &amp; T &lt; P \end{cases}\]<p>即当教师序列更长时用自适应平均池化下采样，更短时用线性插值上采样。</p>
 <h4 id="投影与蒸馏损失"><a href="#投影与蒸馏损失" class="headerlink" title="投影与蒸馏损失"></a>投影与蒸馏损失</h4><p>每层一个投影头 $g_i: \mathbb{R}^d \to \mathbb{R}^{d_w}$ 将学生隐藏状态映射到教师空间：</p>
-<script type="math/tex; mode=display">
-\hat{Z}_i = g_i(H_i^a) \in \mathbb{R}^{P \times d_w}</script><p>$g_i$ 的结构为：RMS Norm → Linear → GELU → Linear。</p>
+\[\hat{Z}_i = g_i(H_i^a) \in \mathbb{R}^{P \times d_w}\]<p>$g_i$ 的结构为：RMS Norm → Linear → GELU → Linear。</p>
 <p>逐层蒸馏损失结合余弦距离和均方误差：</p>
-<script type="math/tex; mode=display">
-\mathcal{L}_{\text{audio}}^{(i)} = \lambda_{\cos}\left(1 - \cos(\hat{Z}_i, \tilde{Z}_{m(i)})\right) + \lambda_{\text{mse}} \frac{1}{P d_w} \|\hat{Z}_i - \tilde{Z}_{m(i)}\|_F^2</script><ul>
+\[\mathcal{L}_{\text{audio}}^{(i)} = \lambda_{\cos}\left(1 - \cos(\hat{Z}_i, \tilde{Z}_{m(i)})\right) + \lambda_{\text{mse}} \frac{1}{P d_w} \|\hat{Z}_i - \tilde{Z}_{m(i)}\|_F^2\]<ul>
 <li>余弦项对齐<strong>方向</strong>（语义对齐）</li>
 <li>MSE 项约束<strong>绝对尺度</strong>（稳定训练）</li>
 <li>$\lambda_{\cos} = 1.0$，$\lambda_{\text{mse}} = 0.1$</li>
 </ul>
 <p>最终音频蒸馏目标在所有适配层上取平均：</p>
-<script type="math/tex; mode=display">
-\mathcal{L}_{\text{audio}} = \frac{1}{N} \sum_{i=0}^{N-1} \mathcal{L}_{\text{audio}}^{(i)}</script><h3 id="2-5-训练与推理"><a href="#2-5-训练与推理" class="headerlink" title="2.5 训练与推理"></a>2.5 训练与推理</h3><ul>
+\[\mathcal{L}_{\text{audio}} = \frac{1}{N} \sum_{i=0}^{N-1} \mathcal{L}_{\text{audio}}^{(i)}\]<h3 id="2-5-训练与推理"><a href="#2-5-训练与推理" class="headerlink" title="2.5 训练与推理"></a>2.5 训练与推理</h3><ul>
 <li><strong>训练时</strong>：音频蒸馏损失 $\mathcal{L}_{\text{audio}}$ + 标准自回归交叉熵损失（在转录 token 上）联合优化</li>
 <li><strong>文本输入时</strong>：仍可正常使用交叉熵损失进行文本 QA</li>
 <li><strong>推理时</strong>：丢弃教师编码器和所有投影头 ${g_i}$，仅保留音频 patch 嵌入模块 + LoRA-adapted LLM</li>

@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -335,19 +336,16 @@
 <h2 id="2-核心方法详解-Methodology"><a href="#2-核心方法详解-Methodology" class="headerlink" title="2. 核心方法详解 (Methodology)"></a>2. 核心方法详解 (Methodology)</h2><p>系统的整体工作流如上图所示。整个流水线分为：离线概率缓存构建、在线查表与退避打分、关键歧义项的选择性替补打分、局部检索 $n$-gram 适配特征以及多特征线性插值融合。</p>
 <h3 id="2-1-基于缓存的概率打分-Cached-Probability-Scoring"><a href="#2-1-基于缓存的概率打分-Cached-Probability-Scoring" class="headerlink" title="2.1 基于缓存的概率打分 (Cached Probability Scoring)"></a>2.1 基于缓存的概率打分 (Cached Probability Scoring)</h3><p>设针对某语音输入 $x$，基座 ASR 识别器输出的 $N$-best 候选集为 $\mathcal{H}(x) = {y^{(1)}, y^{(2)}, \dots, y^{(N)}}$。每一个候选序列 $y$ 经过教师 LLM 的 Tokenizer 分词为 token 序列 $y = (y_1, y_2, \dots, y_T)$。</p>
 <p>设定最大上下文长度为 $K$，则候选序列 $y$ 的缓存 LLM 概率得分为：</p>
-<script type="math/tex; mode=display">
-S_K(y) = \sum_{t=1}^{T} \log p_    heta\left(y_t \mid y_{\max(1, t-K) : t-1}
-ight)</script><p>其中 $    heta$ 表示本地因果教师 LLM（如 Qwen2.5-0.5B 或 Qwen3-8B）。在系统实现中，每个缓存键（Cache Key）由上下文 token 序列与目标 token ID 共同构成：</p>
-<script type="math/tex; mode=display">
-    ext{Key} = \left([y_{t-K}, \dots, y_{t-1}], y_t
-ight) \quad \longrightarrow \quad     ext{Value} = \log p_    heta(y_t \mid y_{t-K:t-1})</script><ul>
+\[S_K(y) = \sum_{t=1}^{T} \log p_    heta\left(y_t \mid y_{\max(1, t-K) : t-1}
+ight)\]<p>其中 $    heta$ 表示本地因果教师 LLM（如 Qwen2.5-0.5B 或 Qwen3-8B）。在系统实现中，每个缓存键（Cache Key）由上下文 token 序列与目标 token ID 共同构成：</p>
+\[ext{Key} = \left([y_{t-K}, \dots, y_{t-1}], y_t
+ight) \quad \longrightarrow \quad     ext{Value} = \log p_    heta(y_t \mid y_{t-K:t-1})\]<ul>
 <li><strong>诊断性评估（Diagnostic Setting）</strong>：从评估集 $N$-best 列表中直接提取 key 并填充缓存，用于探究 LLM 概率对特定候选空间的理论重排序上限；</li>
 <li><strong>可落地部署评估（Deployable / Leakage-Free Setting）</strong>：严格禁止任何测试集泄漏，仅使用训练集、开发集、领域匹配文本构建缓存。</li>
 </ul>
 <h3 id="2-2-上下文退避策略与选择性替补-Backoff-and-Selective-Substitution"><a href="#2-2-上下文退避策略与选择性替补-Backoff-and-Selective-Substitution" class="headerlink" title="2.2 上下文退避策略与选择性替补 (Backoff and Selective Substitution)"></a>2.2 上下文退避策略与选择性替补 (Backoff and Selective Substitution)</h3><p>在严格无泄漏的测试场景下，测试集候选序列中的某些长上下文 token 组合必然会遭遇缓存未命中（Cache Miss）。为此，论文设计了两种互补策略：</p>
 <h4 id="1-本地分级截断退避（Local-Backoff-Policy）"><a href="#1-本地分级截断退避（Local-Backoff-Policy）" class="headerlink" title="1. 本地分级截断退避（Local Backoff Policy）"></a>1. 本地分级截断退避（Local Backoff Policy）</h4><p>当在最大上下文长度 $K$ 下查询未命中时，系统自动将上下文长度按 2 的幂次向下截断回退：</p>
-<script type="math/tex; mode=display">
-K \longrightarrow rac{K}{2} \longrightarrow rac{K}{4} \longrightarrow \dots \longrightarrow 1</script><p>如果从 $K$ 退避至 1 依然全部未命中，则赋予一个中性的兜底分数（Fallback Score）。该策略为<strong>纯本地计算</strong>，在推理阶段零调用 LLM，具有极高的吞吐与零推理开销。</p>
+\[K \longrightarrow rac{K}{2} \longrightarrow rac{K}{4} \longrightarrow \dots \longrightarrow 1\]<p>如果从 $K$ 退避至 1 依然全部未命中，则赋予一个中性的兜底分数（Fallback Score）。该策略为<strong>纯本地计算</strong>，在推理阶段零调用 LLM，具有极高的吞吐与零推理开销。</p>
 <h4 id="2-选择性替补策略（Selective-Substitution-Policy）"><a href="#2-选择性替补策略（Selective-Substitution-Policy）" class="headerlink" title="2. 选择性替补策略（Selective Substitution Policy）"></a>2. 选择性替补策略（Selective Substitution Policy）</h4><p>为了在极度关键的决策边界获得 LLM 的精细判断，系统引入了一个基于置信度边界的触发机制：</p>
 <ul>
 <li>计算当前 Top-1 候选与 Top-2 候选之间的综合得分差距 $\Delta_{    ext{margin}}$；</li>
@@ -368,9 +366,8 @@ K \longrightarrow rac{K}{2} \longrightarrow rac{K}{4} \longrightarrow \dots \l
 <li><strong>严格受限评估</strong>：为了保证对比公平，GER 模型强制在识别器的 $N$-best 候选集合内进行选择（Rank Constraint），避免生成式模型脱离候选集生成幻觉文本。</li>
 </ul>
 <h3 id="2-5-特征标准化与多特征融合-Fusion"><a href="#2-5-特征标准化与多特征融合-Fusion" class="headerlink" title="2.5 特征标准化与多特征融合 (Fusion)"></a>2.5 特征标准化与多特征融合 (Fusion)</h3><p>所有参与重打分的特征在语料库内部进行 Z-score 标准化，并通过加权插值确定最终的最佳候选：</p>
-<script type="math/tex; mode=display">
-\hat{y} = rg\max_{y \in \mathcal{H}(x)} \left( \lambda_a z_a(y) + \lambda_q z_q(y) + \lambda_r z_r(y) 
-ight)</script><p>其中：</p>
+\[\hat{y} = rg\max_{y \in \mathcal{H}(x)} \left( \lambda_a z_a(y) + \lambda_q z_q(y) + \lambda_r z_r(y) 
+ight)\]<p>其中：</p>
 <ul>
 <li>$z_a(y)$：归一化后的基座 ASR 声学/解码得分；</li>
 <li>$z_q(y)$：归一化后的缓存 LLM 概率检索得分（Local 或 Selective）；</li>

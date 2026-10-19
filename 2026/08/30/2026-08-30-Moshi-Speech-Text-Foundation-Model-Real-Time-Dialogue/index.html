@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -325,7 +326,7 @@
 </blockquote>
 <hr>
 <h2 id="1-为什么我们需要-Moshi？（Why-Moshi）"><a href="#1-为什么我们需要-Moshi？（Why-Moshi）" class="headerlink" title="1. 为什么我们需要 Moshi？（Why Moshi）"></a>1. 为什么我们需要 Moshi？（Why Moshi）</h2><p>在过去的大模型语音交互体系中，绝大多数系统采用的是<strong>分立级联（Cascaded Pipeline）</strong>方案，即：</p>
-<script type="math/tex; mode=display">\text{User Audio} \xrightarrow{\quad\text{ASR}\quad} \text{Text Tokens} \xrightarrow{\quad\text{LLM}\quad} \text{Response Text} \xrightarrow{\quad\text{TTS}\quad} \text{Agent Audio}</script><p>这种架构存在三大本质难以弥合的结构性痛点：</p>
+\[\text{User Audio} \xrightarrow{\quad\text{ASR}\quad} \text{Text Tokens} \xrightarrow{\quad\text{LLM}\quad} \text{Response Text} \xrightarrow{\quad\text{TTS}\quad} \text{Agent Audio}\]<p>这种架构存在三大本质难以弥合的结构性痛点：</p>
 <ol>
 <li><strong>高昂的端到端延迟（High Latency）</strong>：系统必须等待用户完全停顿，经过端点检测（VAD）、ASR 整句识别、LLM 首字生成及 TTS 音频分块合成，物理延迟普遍在 $1.5\text{s} \sim 3\text{s}$ 以上，远落后于人类真实交谈平均 $\approx 200\text{ms}$ 的轮次切换时延。</li>
 <li><strong>半双工（Turn-based）的僵硬交互</strong>：系统在“听”的时候不能“说”，在“说”的时候无法“听”。它无法在用户长发言期间适时给出自然的<strong>轻量反馈信号（Backchanneling，如“嗯”、“对”、“确实”）</strong>，也无法在用户插入发言时敏锐优雅地主动<strong>打断与让权（Interruption Handling）</strong>。</li>
@@ -355,16 +356,16 @@
 </ul>
 <h4 id="2-语义-声学解耦的-Split-RVQ-机制"><a href="#2-语义-声学解耦的-Split-RVQ-机制" class="headerlink" title="(2) 语义-声学解耦的 Split RVQ 机制"></a>(2) 语义-声学解耦的 Split RVQ 机制</h4><p>为了让离散 Codebook 不仅能高质量还原声音细节，还能表达高级语言学语义，Mimi 创新性地引入了 <strong>Split RVQ</strong>：</p>
 <ul>
-<li><strong>第 1 层码本（$Q_0$）</strong>：作为<strong>语义码本（Semantic Codebook）</strong>，在训练中被施加了对自监督语音模型 <strong>WavLM</strong> 最后一层隐层特征的余弦相似度蒸馏损失：<script type="math/tex; mode=display">\mathcal{L}_{\text{semantic}} = 1 - \frac{\langle z_{\text{quant}}^{(0)}, z_{\text{WavLM}} \rangle}{\|z_{\text{quant}}^{(0)}\|_2 \|z_{\text{WavLM}}\|_2}</script></li>
+<li><strong>第 1 层码本（$Q_0$）</strong>：作为<strong>语义码本（Semantic Codebook）</strong>，在训练中被施加了对自监督语音模型 <strong>WavLM</strong> 最后一层隐层特征的余弦相似度蒸馏损失：\[\mathcal{L}_{\text{semantic}} = 1 - \frac{\langle z_{\text{quant}}^{(0)}, z_{\text{WavLM}} \rangle}{\|z_{\text{quant}}^{(0)}\|_2 \|z_{\text{WavLM}}\|_2}\]</li>
 <li><strong>第 $2 \sim 8$ 层码本（$Q_1 \sim Q_7$）</strong>：作为<strong>声学码本（Acoustic Codebooks）</strong>，采用标准的残差矢量量化（Residual VQ），负责补偿发音人音色、背景声学环境和高频相位细节。</li>
-<li><strong>联合重构损失</strong>：结合时域 Multi-scale STFT 损失、Multi-Period/Multi-Scale 判别器对抗损失（GAN Loss）以及 Codebook 承诺损失（Commitment Loss）：<script type="math/tex; mode=display">\mathcal{L}_{\text{Mimi}} = \mathcal{L}_{\text{recons}} + \lambda_{\text{adv}}\mathcal{L}_{\text{adv}} + \lambda_{\text{feat}}\mathcal{L}_{\text{feat}} + \lambda_{\text{commit}}\mathcal{L}_{\text{commit}} + \lambda_{\text{sem}}\mathcal{L}_{\text{semantic}}</script></li>
+<li><strong>联合重构损失</strong>：结合时域 Multi-scale STFT 损失、Multi-Period/Multi-Scale 判别器对抗损失（GAN Loss）以及 Codebook 承诺损失（Commitment Loss）：\[\mathcal{L}_{\text{Mimi}} = \mathcal{L}_{\text{recons}} + \lambda_{\text{adv}}\mathcal{L}_{\text{adv}} + \lambda_{\text{feat}}\mathcal{L}_{\text{feat}} + \lambda_{\text{commit}}\mathcal{L}_{\text{commit}} + \lambda_{\text{sem}}\mathcal{L}_{\text{semantic}}\]</li>
 </ul>
 <hr>
 <h3 id="2-3-层次化自回归生成模型（Generative-Audio-Modeling）"><a href="#2-3-层次化自回归生成模型（Generative-Audio-Modeling）" class="headerlink" title="2.3 层次化自回归生成模型（Generative Audio Modeling）"></a>2.3 层次化自回归生成模型（Generative Audio Modeling）</h3><p>在一秒钟内，用户输入包含 $12.5 \times 8 = 100$ 个音频 token，模型输出同样包含 100 个音频 token 加若干文本 token。如果用单体自回归模型扁平化展开，序列长度将暴增。Moshi 采用了 <strong>RQ-Transformer 分层建模</strong>方案。</p>
 <p><img src="/images/paper_figs/moshi/rqtransformer.png" srcset="/img/loading.gif" lazyload alt="RQ-Transformer 层次化建模：Temporal Transformer 负责时序演进，Depth Transformer 负责同一时间步内的残差量化码本生成"></p>
 <h4 id="1-Temporal-Transformer-与-Depth-Transformer-的解耦"><a href="#1-Temporal-Transformer-与-Depth-Transformer-的解耦" class="headerlink" title="(1) Temporal Transformer 与 Depth Transformer 的解耦"></a>(1) Temporal Transformer 与 Depth Transformer 的解耦</h4><ul>
 <li><strong>Temporal Transformer（主干 7B）</strong>：以 $12.5\text{ Hz}$ 的主时钟（每步 $80\text{ms}$）运行，接收历史所有帧的聚合 Embedding，自回归预测下一个时间步的<strong>文本 Token $W_t$</strong> 以及<strong>主声学量化码 $C_t^0$</strong>。</li>
-<li><strong>Depth Transformer（轻量级 Transformer，约 1B）</strong>：在固定时间步 $t$ 内，以深度方向逐层自回归预测剩余的细粒度残差码本：<script type="math/tex; mode=display">P(C_t^1, \dots, C_t^{K-1} \mid C_t^0, H_t^{\text{temp}}) = \prod_{k=1}^{K-1} P\left(C_t^k \mid C_t^0, \dots, C_t^{k-1}, H_t^{\text{temp}}\right)</script></li>
+<li><strong>Depth Transformer（轻量级 Transformer，约 1B）</strong>：在固定时间步 $t$ 内，以深度方向逐层自回归预测剩余的细粒度残差码本：\[P(C_t^1, \dots, C_t^{K-1} \mid C_t^0, H_t^{\text{temp}}) = \prod_{k=1}^{K-1} P\left(C_t^k \mid C_t^0, \dots, C_t^{k-1}, H_t^{\text{temp}}\right)\]</li>
 <li>这种结构保证了 7B 核心网络在时间轴上只前进一步，大幅降低了推理显存带宽消耗，确保单步耗时极短（$\text{RTF} \ll 1$）。</li>
 </ul>
 <h4 id="2-多流时序对齐（Multi-Stream-Modeling）"><a href="#2-多流时序对齐（Multi-Stream-Modeling）" class="headerlink" title="(2) 多流时序对齐（Multi-Stream Modeling）"></a>(2) 多流时序对齐（Multi-Stream Modeling）</h4><p><img src="/images/paper_figs/moshi/rainbow.png" srcset="/img/loading.gif" lazyload alt="多流自回归建模中用户音频流、模型内心独白文本流与模型输出音频流的并行交互"></p>

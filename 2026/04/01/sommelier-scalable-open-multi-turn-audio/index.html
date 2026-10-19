@@ -79,6 +79,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -349,7 +350,7 @@
 <li><strong>重叠段定位</strong>：系统的核心并不完全信任 Diarization 对于重叠段的聚类结果。相反，只要 VAD/Diarization 识别出特定时间窗口内有多于一个声源特征激活，就会打上 <strong>Overlap 标记</strong>，并将该混合音频送入下一个核心模块：盲源分离。</li>
 </ul>
 <h3 id="2-3-语音重叠解耦-Overlap-Speech-Separation"><a href="#2-3-语音重叠解耦-Overlap-Speech-Separation" class="headerlink" title="2.3 语音重叠解耦 (Overlap Speech Separation)"></a>2.3 语音重叠解耦 (Overlap Speech Separation)</h3><p>当两人的声音混合在单声道中时：</p>
-<script type="math/tex; mode=display">S_{mix}(t) = S_1(t) + S_2(t) + N(t)</script><p>直接送入 ASR 会导致较弱的信号 $S_2(t)$ 被忽略。Sommelier 采用了盲源分离（BSS，如基于 TF-GridNet 或 SepFormer 的模型）。</p>
+\[S_{mix}(t) = S_1(t) + S_2(t) + N(t)\]<p>直接送入 ASR 会导致较弱的信号 $S_2(t)$ 被忽略。Sommelier 采用了盲源分离（BSS，如基于 TF-GridNet 或 SepFormer 的模型）。</p>
 <ul>
 <li><strong>输入</strong>：一段被标记为 Overlap 的单声道混合音频 $S_{mix}$。</li>
 <li><strong>输出</strong>：将其解耦为两路或多路纯净的独立音频流 $S_1’$ 和 $S_2’$。<br>这一步极其关键，它彻底解开了多说话人同时抢话时的缠绕，使得每个人说的话能够被后续 ASR 独立识别，从而完美保留了 Full-duplex 模型训练中所需的“打断（Interruption）”与“回应（Backchanneling）”样本。</li>

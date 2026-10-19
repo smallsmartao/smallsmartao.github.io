@@ -79,6 +79,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -416,15 +417,15 @@
 </ol>
 <p>对于第 $i \in {1, \dots, K}$ 个 Token 进行逐步检验：</p>
 <ul>
-<li><strong>接受判定</strong>：从均匀分布 $r \sim U[0, 1]$ 采样，若满足：<script type="math/tex; mode=display">r \le \min\left(1, \; \frac{p(\tilde{x}_i)}{q(\tilde{x}_i)}\right)</script>则接受 $\tilde{x}_i$，并继续校验第 $i+1$ 个候选 Token。</li>
-<li><strong>拒绝与残差重采样</strong>：若在第 $n$ 个位置首次出现 $r &gt; \frac{p(\tilde{x}_n)}{q(\tilde{x}_n)}$，则拒绝该 Token 及后续所有 $\tilde{x}_{n+1 \dots K}$，并<strong>直接从修正残差分布 $p’(x)$ 中采样一个新 Token</strong> 作为第 $n$ 个位置的输出：<script type="math/tex; mode=display">p'(x) = \frac{\max(0, \; p(x) - q(x))}{\sum_{v \in V} \max(0, \; p(v) - q(v))}</script></li>
+<li><strong>接受判定</strong>：从均匀分布 $r \sim U[0, 1]$ 采样，若满足：\[r \le \min\left(1, \; \frac{p(\tilde{x}_i)}{q(\tilde{x}_i)}\right)\]则接受 $\tilde{x}_i$，并继续校验第 $i+1$ 个候选 Token。</li>
+<li><strong>拒绝与残差重采样</strong>：若在第 $n$ 个位置首次出现 $r &gt; \frac{p(\tilde{x}_n)}{q(\tilde{x}_n)}$，则拒绝该 Token 及后续所有 $\tilde{x}_{n+1 \dots K}$，并<strong>直接从修正残差分布 $p’(x)$ 中采样一个新 Token</strong> 作为第 $n$ 个位置的输出：\[p'(x) = \frac{\max(0, \; p(x) - q(x))}{\sum_{v \in V} \max(0, \; p(v) - q(v))}\]</li>
 </ul>
 <h4 id="数学同分布证明："><a href="#数学同分布证明：" class="headerlink" title="数学同分布证明："></a>数学同分布证明：</h4><p>最终输出 Token $x$ 的概率分布为接受路径与拒绝重采样路径的边际和：</p>
-<script type="math/tex; mode=display">\begin{aligned}
-\mathbb{P}(x \text{ is emitted}) &= q(x) \cdot \min\left(1, \frac{p(x)}{q(x)}\right) + \left(1 - \sum_{y} q(y)\min\left(1, \frac{p(y)}{q(y)}\right)\right) \cdot p'(x) \\
-&= \min(q(x), p(x)) + (1 - \beta) \cdot \frac{p(x) - \min(p(x), q(x))}{1 - \beta} \\
-&= p(x)
-\end{aligned}</script><p>该数学证明确立了投机解码的核心价值：<strong>无论 Draft 模型多么弱，采样输出的整体概率分布与直接运行 Target 大模型严格一致（Exactness Guarantee）</strong>。</p>
+\[\begin{aligned}
+\mathbb{P}(x \text{ is emitted}) &amp;= q(x) \cdot \min\left(1, \frac{p(x)}{q(x)}\right) + \left(1 - \sum_{y} q(y)\min\left(1, \frac{p(y)}{q(y)}\right)\right) \cdot p'(x) \\
+&amp;= \min(q(x), p(x)) + (1 - \beta) \cdot \frac{p(x) - \min(p(x), q(x))}{1 - \beta} \\
+&amp;= p(x)
+\end{aligned}\]<p>该数学证明确立了投机解码的核心价值：<strong>无论 Draft 模型多么弱，采样输出的整体概率分布与直接运行 Target 大模型严格一致（Exactness Guarantee）</strong>。</p>
 <hr>
 <h2 id="2-自投机与树状掩码注意力：Medusa-amp-EAGLE"><a href="#2-自投机与树状掩码注意力：Medusa-amp-EAGLE" class="headerlink" title="2. 自投机与树状掩码注意力：Medusa &amp; EAGLE"></a>2. 自投机与树状掩码注意力：Medusa &amp; EAGLE</h2><p><img src="/images/paper_figs/speech_speculative_evolution/medusa_arch.png" srcset="/img/loading.gif" lazyload alt="Medusa 多头预测架构" style="max-width: 100%; border-radius: 8px; margin: 16px 0;" /></p>
 <h3 id="2-1-抛弃独立小模型的自投机（Self-Speculative）"><a href="#2-1-抛弃独立小模型的自投机（Self-Speculative）" class="headerlink" title="2.1 抛弃独立小模型的自投机（Self-Speculative）"></a>2.1 抛弃独立小模型的自投机（Self-Speculative）</h3><p>独立小模型在实际部署中存在显存争抢、额外参数常驻以及双模型通信开销。<strong>自投机</strong>方案直接利用 Target 模型自身的隐层表征生成草稿：</p>
@@ -463,13 +464,13 @@
 <h3 id="4-2-三步自适应状态机数学机制"><a href="#4-2-三步自适应状态机数学机制" class="headerlink" title="4.2 三步自适应状态机数学机制"></a>4.2 三步自适应状态机数学机制</h3><figure class="highlight less"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><code class="hljs less">            <span class="hljs-selector-attr">[ 语音波形输入 x ]</span><br>                   │<br>                   ▼<br>      <span class="hljs-selector-attr">[ Conformer Acoustic Encoder ]</span><br>                   │<br>         ┌─────────┴─────────┐<br>         ▼                   ▼<br><span class="hljs-selector-attr">[ Acoustic Embeddings ]</span>  <span class="hljs-selector-attr">[ CTC Head (Posteriors p_CTC) ]</span><br>         │                   │<br>         │                   ▼<br>         │           <span class="hljs-selector-attr">[ 贪婪 CTC 假说 ŷ ]</span><br>         │           <span class="hljs-selector-attr">[ 帧信息熵计算 H(t) ]</span><br>         │                   │<br>         │        ┌──────────┴──────────┐<br>         │     (<span class="hljs-built_in">H</span>(t) &lt; τ_CTC)        (存在 <span class="hljs-built_in">H</span>(t) &gt;= τ_CTC)<br>         │        │                     │<br>         │        ▼                     ▼<br>         │ <span class="hljs-selector-attr">[ Step 1: CTC直出 ]</span>    <span class="hljs-selector-attr">[ Step 2: LLM 单步并行校验 ]</span><br>         │  (跳过LLM, 耗时~<span class="hljs-number">0</span>)   <span class="hljs-selector-tag">p_SLM</span>(ŷ_i | ŷ_&lt;i, g) &gt; τ<span class="hljs-selector-tag">_SLM</span> ?<br>         │                              │<br>         │                   ┌──────────┴──────────┐<br>         │                (全部满足)            (存在位置 j 失败)<br>         │                   │                     │<br>         │                   ▼                     ▼<br>         │             <span class="hljs-selector-attr">[ 接受 CTC 假说 ]</span>     <span class="hljs-selector-attr">[ Step 3: 回退 AR 接管 ]</span><br>         │                                  (从 ŷ_&lt;j 前缀开始 AR 解码)<br>         │                                         │<br>         └─────────────────────────────────────────┘<br></code></pre></td></tr></table></figure>
 <ol>
 <li><strong>Step 1: CTC 帧熵门控与极速直出</strong><ul>
-<li>提取 CTC 输出每一帧的后验概率分布 $p_{\text{CTC}}(v \mid t)$，计算帧信息熵：<script type="math/tex; mode=display">H(t) = -\sum_{v \in V_{\text{CTC}}} p_{\text{CTC}}(v \mid t) \log p_{\text{CTC}}(v \mid t)</script></li>
+<li>提取 CTC 输出每一帧的后验概率分布 $p_{\text{CTC}}(v \mid t)$，计算帧信息熵：\[H(t) = -\sum_{v \in V_{\text{CTC}}} p_{\text{CTC}}(v \mid t) \log p_{\text{CTC}}(v \mid t)\]</li>
 <li>若全句所有发音帧的熵均低于阈值 $\tau_{\text{CTC}}$（声学特征极度清晰），<strong>直接将 CTC 贪婪去重后的文本 $\hat{y}$ 作为最终识别结果</strong>，完全绕过 LLM 的任何前向计算。</li>
 </ul>
 </li>
 <li><strong>Step 2: LLM 单步并行似然验证</strong><ul>
 <li>若存在高熵模糊帧，将 CTC 生成的整句 Token 序列 $\hat{y}$ 作为 Draft 传入 LLM Decoder；</li>
-<li>利用 LLM 因果掩码在<strong>单次前向（Single Forward Pass）</strong>中并行打分所有位置的条件对数似然：<script type="math/tex; mode=display">p_{\text{SLM}}(\hat{y}_i \mid \hat{y}_{<i}, g) > \tau_{\text{SLM}}, \quad \forall i \in \{1, \dots, |\hat{y}|\}</script></li>
+<li>利用 LLM 因果掩码在<strong>单次前向（Single Forward Pass）</strong>中并行打分所有位置的条件对数似然：\[p_{\text{SLM}}(\hat{y}_i \mid \hat{y}_{&lt;i}, g) &gt; \tau_{\text{SLM}}, \quad \forall i \in \{1, \dots, |\hat{y}|\}\]</li>
 <li>若全部满足，则以单步代价完整接受该 CTC 句子。</li>
 </ul>
 </li>
@@ -493,8 +494,8 @@
 <h3 id="5-2-解决方案：AnchorDraft-高斯引导注意力锚定训练"><a href="#5-2-解决方案：AnchorDraft-高斯引导注意力锚定训练" class="headerlink" title="5.2 解决方案：AnchorDraft 高斯引导注意力锚定训练"></a>5.2 解决方案：AnchorDraft 高斯引导注意力锚定训练</h3><p>为了在零额外推理开销（Zero Runtime Overhead）的前提下消除漂移，AnchorDraft 在训练阶段引入了<strong>高斯引导注意力损失</strong>：</p>
 <ol>
 <li>利用强制对齐工具（MMS-FA）获取训练集中每个 Token $t$ 对应的真实音频中心帧索引 $c_t$；</li>
-<li>构建以 $c_t$ 为中心的归一化目标高斯分布：<script type="math/tex; mode=display">q_t(j) \propto \exp\left(-\frac{(j - c_t)^2}{2\sigma^2}\right)</script></li>
-<li>提取 Drafter 第一层跨注意力头在音频帧 $j$ 上的平均注意力权重 $\bar{A}_t(j) = \frac{1}{H} \sum_{h=1}^H A_{t,h,j}$，并在训练 Loss 中施加正则约束：<script type="math/tex; mode=display">\mathcal{L}_{\text{anchor}} = \frac{1}{|T|} \sum_{t \in T} \|\bar{A}_t - q_t\|_2^2</script></li>
+<li>构建以 $c_t$ 为中心的归一化目标高斯分布：\[q_t(j) \propto \exp\left(-\frac{(j - c_t)^2}{2\sigma^2}\right)\]</li>
+<li>提取 Drafter 第一层跨注意力头在音频帧 $j$ 上的平均注意力权重 $\bar{A}_t(j) = \frac{1}{H} \sum_{h=1}^H A_{t,h,j}$，并在训练 Loss 中施加正则约束：\[\mathcal{L}_{\text{anchor}} = \frac{1}{|T|} \sum_{t \in T} \|\bar{A}_t - q_t\|_2^2\]</li>
 </ol>
 <p><img src="/images/paper_figs/speech_speculative_evolution/anchordraft_boundary.png" srcset="/img/loading.gif" lazyload alt="AnchorDraft 训练校正带来的端到端加速收益" style="max-width: 100%; border-radius: 8px; margin: 16px 0;" /></p>
 <p>AnchorDraft 强迫草稿模块的内部注意力紧密跟随发音时间推进，将深层步长的草稿接受率提高了近一倍，且在完全不改变推理计算图的情况下获得了扎实的端到端加速。</p>

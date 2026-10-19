@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -361,12 +362,10 @@
 <p>三者在时序上的共同逻辑是：<strong>不等推理完成就开始产生输出</strong>。但实现路径迥异，形成互补的研究图谱。</p>
 <hr>
 <h2 id="2-Mind-Paced-Speaking（MPS）：双脑框架"><a href="#2-Mind-Paced-Speaking（MPS）：双脑框架" class="headerlink" title="2. Mind-Paced Speaking（MPS）：双脑框架"></a>2. Mind-Paced Speaking（MPS）：双脑框架</h2><h3 id="2-1-问题定义：顺序生成的延迟瓶颈"><a href="#2-1-问题定义：顺序生成的延迟瓶颈" class="headerlink" title="2.1 问题定义：顺序生成的延迟瓶颈"></a>2.1 问题定义：顺序生成的延迟瓶颈</h3><p>标准的 Think-Before-Speaking（TBS）范式可以形式化如下。给定用户语音输入 $X_{\text{spc}}$ 和可选文本指令 $X_{\text{txt}}$，模型首先生成完整的 CoT token 序列 $Y^{\text{cot}} \in \mathbb{R}^{T_c}$：</p>
-<script type="math/tex; mode=display">
-P_{\theta_l}(Y^{\text{cot}} | \langle X_{\text{spc}}, X_{\text{txt}} \rangle) = \prod_{t=1}^{T_c} P_{\theta_l}(Y^{\text{cot}}_t | \langle Y^{\text{cot}}_{1:t-1}, X_{\text{spc}}, X_{\text{txt}} \rangle)
-\tag{1}</script><p>然后基于完整 CoT 生成回复 token $Y^{\text{res}} \in \mathbb{R}^{T_r}$：</p>
-<script type="math/tex; mode=display">
-P_{\theta_l}(Y^{\text{res}} | \langle Y^{\text{cot}}, X_{\text{spc}}, X_{\text{txt}} \rangle) = \prod_{t=1}^{T_r} P_{\theta_l}(Y^{\text{res}}_t | \langle Y^{\text{res}}_{1:t-1}, Y^{\text{cot}}_{1:T_c}, X_{\text{spc}}, X_{\text{txt}} \rangle)
-\tag{2}</script><p>这一范式的首 token 延迟（First-Token Latency）等于生成全部 $T_c$ 个 CoT token 所需时间。在 Spoken-MQA 基准上，作者测量到 TBS 方法（MPS-tbs）在生成第一个回复 token 之前平均需要额外生成 <strong>762 个 token</strong>，对实时对话而言代价极高。</p>
+\[P_{\theta_l}(Y^{\text{cot}} | \langle X_{\text{spc}}, X_{\text{txt}} \rangle) = \prod_{t=1}^{T_c} P_{\theta_l}(Y^{\text{cot}}_t | \langle Y^{\text{cot}}_{1:t-1}, X_{\text{spc}}, X_{\text{txt}} \rangle)
+\tag{1}\]<p>然后基于完整 CoT 生成回复 token $Y^{\text{res}} \in \mathbb{R}^{T_r}$：</p>
+\[P_{\theta_l}(Y^{\text{res}} | \langle Y^{\text{cot}}, X_{\text{spc}}, X_{\text{txt}} \rangle) = \prod_{t=1}^{T_r} P_{\theta_l}(Y^{\text{res}}_t | \langle Y^{\text{res}}_{1:t-1}, Y^{\text{cot}}_{1:T_c}, X_{\text{spc}}, X_{\text{txt}} \rangle)
+\tag{2}\]<p>这一范式的首 token 延迟（First-Token Latency）等于生成全部 $T_c$ 个 CoT token 所需时间。在 Spoken-MQA 基准上，作者测量到 TBS 方法（MPS-tbs）在生成第一个回复 token 之前平均需要额外生成 <strong>762 个 token</strong>，对实时对话而言代价极高。</p>
 <h3 id="2-2-架构设计：Thinking-Brain-vs-Speaking-Brain"><a href="#2-2-架构设计：Thinking-Brain-vs-Speaking-Brain" class="headerlink" title="2.2 架构设计：Thinking Brain vs. Speaking Brain"></a>2.2 架构设计：Thinking Brain vs. Speaking Brain</h3><p>MPS 的核心洞察来自认知神经科学：人类大脑中，负责高级认知推理的前额叶-颞叶网络（prefrontal-temporal cortex）与负责语音运动控制的运动皮层-皮下通路（motor cortex and subcortical pathways）是两套高度专业化且<strong>并行协作</strong>的系统。语言产生并非严格的”先思后说”，而是思考的后半段与表达的前半段在时间上重叠的增量过程。</p>
 <p>受此启发，MPS 将单个 LLM 拆分为两个独立但共享参数的 LLM：</p>
 <ul>
@@ -375,9 +374,8 @@ P_{\theta_l}(Y^{\text{res}} | \langle Y^{\text{cot}}, X_{\text{spc}}, X_{\text{t
 </ul>
 <p>关键区别在于：Articulation Brain <strong>无需等待 Formulation Brain 完成全部推理</strong>。每当 Formulation Brain 产出一个 think 段 $S^{\text{cot}}_n$，Articulation Brain 即刻基于目前已有的推理内容生成对应的回复段 $S^{\text{res}}_n$。</p>
 <h3 id="2-3-核心机制"><a href="#2-3-核心机制" class="headerlink" title="2.3 核心机制"></a>2.3 核心机制</h3><p>将 CoT tokens $Y^{\text{cot}}$ 切分为 $N$ 段 $[S^{\text{cot}}_1, S^{\text{cot}}_2, \ldots, S^{\text{cot}}_N]$，Articulation Brain 的分段生成过程可写作：</p>
-<script type="math/tex; mode=display">
-P_{\theta_l}(S^{\text{res}} | \langle S^{\text{cot}}, X_{\text{spc}}, X_{\text{txt}} \rangle) = \prod_{n=1}^{N} P_{\theta_l}\!\left(S^{\text{res}}_n \Big| \langle S^{\text{res}}_{1:n-1},\, S^{\text{cot}}_{1:n},\, X_{\text{spc}},\, X_{\text{txt}} \rangle\right)
-\tag{3}</script><p>每个 $S^{\text{res}}_n$ 的生成以 $\langle \texttt{<think>}\, S^{\text{cot}}_{1:n}\, \texttt{</think>} \rangle$ 为前缀，确保回复段与当前已知推理内容保持语义对齐。</p>
+\[P_{\theta_l}(S^{\text{res}} | \langle S^{\text{cot}}, X_{\text{spc}}, X_{\text{txt}} \rangle) = \prod_{n=1}^{N} P_{\theta_l}\!\left(S^{\text{res}}_n \Big| \langle S^{\text{res}}_{1:n-1},\, S^{\text{cot}}_{1:n},\, X_{\text{spc}},\, X_{\text{txt}} \rangle\right)
+\tag{3}\]<p>每个 $S^{\text{res}}_n$ 的生成以 $\langle \texttt{<think>}\, S^{\text{cot}}_{1:n}\, \texttt{</think>} \rangle$ 为前缀，确保回复段与当前已知推理内容保持语义对齐。</p>
 <p><strong>MPS 的两种时序变体：</strong></p>
 <ul>
 <li><strong>MPS-thkfirst（Think-First）</strong>：Formulation Brain 先生成 $T_c$ 个 think token，Articulation Brain 随即生成 $T_r$ 个 response token 并合成语音。首 token 延迟 = $T_c$ 个 token 的时间 + 流式 TTS 缓冲，通常约 80 个 token。</li>
@@ -607,33 +605,25 @@ P_{\theta_l}(S^{\text{res}} | \langle S^{\text{cot}}, X_{\text{spc}}, X_{\text{t
 <h2 id="3-Can-Speech-LLMs-Think-While-Listening？：CoT-与多流架构"><a href="#3-Can-Speech-LLMs-Think-While-Listening？：CoT-与多流架构" class="headerlink" title="3. Can Speech LLMs Think While Listening？：CoT 与多流架构"></a>3. Can Speech LLMs Think While Listening？：CoT 与多流架构</h2><h3 id="3-1-问题：监听时如何同步推理"><a href="#3-1-问题：监听时如何同步推理" class="headerlink" title="3.1 问题：监听时如何同步推理"></a>3.1 问题：监听时如何同步推理</h3><p>上述 MPS 及类似工作解决的是”说话时如何思考（Think-While-Speaking）”——即输出 response 与 CoT 并发。然而，仍存在另一个更早阶段的延迟：<strong>用户说完问题之后、模型开始生成 CoT 之前</strong>。</p>
 <p>Meta 的工作《Can Speech LLMs Think while Listening?》提出了互补的视角：<strong>边听边想（Think-While-Listening）</strong>。其核心观察来自神经科学：人类在倾听时并非被动接受，而是实时预测和推理。当问题的主要信息量已经传达（即使用户尚未说完），人类便开始在心中构思答案。能否让语音模型复现这一认知模式？</p>
 <h3 id="3-2-多流-Speech-LLM-架构"><a href="#3-2-多流-Speech-LLM-架构" class="headerlink" title="3.2 多流 Speech LLM 架构"></a>3.2 多流 Speech LLM 架构</h3><p>本工作以 <strong>Moshi</strong>（Défossez et al., 2024）为基础模型，这是一个全双工多流语音对话模型，在每个时间步同时处理三路 token 流：</p>
-<script type="math/tex; mode=display">
-\text{User Audio: } A^U \in \{1,\ldots,N_A\}^{L \times 8}</script><script type="math/tex; mode=display">
-\text{System Audio: } A^S \in \{1,\ldots,N_A\}^{L \times 8}</script><script type="math/tex; mode=display">
-\text{System Text: } T^S \in \{1,\ldots,N_T\}^L</script><p>其中 $N_A = 2048$ 为 Mimi 音频编码本大小，$N_T = 32000$ 为文本词表大小，$L$ 为时间长度。模型的训练目标为：</p>
-<script type="math/tex; mode=display">
-p(A^S_{t+1},\, T^S_{t+1} \mid A^S_{\le t},\, T^S_{\le t},\, A^U_{\le t})
-\tag{4}</script><p>多流架构的关键优势在于：<strong>System Text（text monologue）流可以独立修改</strong>，无需与 System Audio 流严格时间对齐。这为在文本流中插入推理 token 提供了结构上的可能性。</p>
+\[\text{User Audio: } A^U \in \{1,\ldots,N_A\}^{L \times 8}\]\[\text{System Audio: } A^S \in \{1,\ldots,N_A\}^{L \times 8}\]\[\text{System Text: } T^S \in \{1,\ldots,N_T\}^L\]<p>其中 $N_A = 2048$ 为 Mimi 音频编码本大小，$N_T = 32000$ 为文本词表大小，$L$ 为时间长度。模型的训练目标为：</p>
+\[p(A^S_{t+1},\, T^S_{t+1} \mid A^S_{\le t},\, T^S_{\le t},\, A^U_{\le t})
+\tag{4}\]<p>多流架构的关键优势在于：<strong>System Text（text monologue）流可以独立修改</strong>，无需与 System Audio 流严格时间对齐。这为在文本流中插入推理 token 提供了结构上的可能性。</p>
 <h3 id="3-3-CoT-Fine-tuning-策略"><a href="#3-3-CoT-Fine-tuning-策略" class="headerlink" title="3.3 CoT Fine-tuning 策略"></a>3.3 CoT Fine-tuning 策略</h3><p><strong>为何用文本 CoT 而非语音 CoT？</strong> 论文通过 GSM8K 消融实验证明，文本 CoT 与语音 CoT 在准确率上持平（17.5% vs. 17.2%），但文本 CoT 的序列长度仅为语音 CoT 的 <strong>1/3</strong>（119.0 ± 54.4 vs. 368.8 ± 190.3 个 token）。这从信息密度的角度解释了选择：文本每 token 携带更多语义信息，因此相同推理内容用文本表达更高效。</p>
 <p><strong>CoT 在 text monologue 流中的嵌入方式：</strong> 使用 <code>&lt;start_cot&gt;</code> 和 <code>&lt;end_cot&gt;</code> 特殊 token 在 system text 流中划定推理区域；同时引入<strong>流式 ASR（Streaming ASR）</strong> 将用户语音转录文本插入 text monologue 流（右移 $k=6$ 个 token，约 480ms 的前瞻延迟），帮助模型建立用户问题文本与 CoT 之间的语义关联。</p>
 <p>训练序列结构（示意）：<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs xml">[PAD]*k, user_ASR_tokens, <span class="hljs-tag">&lt;<span class="hljs-name">start_cot</span>&gt;</span>, reasoning_tokens, <span class="hljs-tag">&lt;<span class="hljs-name">end_cot</span>&gt;</span>, response_text_tokens<br></code></pre></td></tr></table></figure></p>
 <p><strong>流式 ASR 的作用：</strong> 消融实验显示，移除流式 ASR 后推理任务准确率大幅下降（ARC-E: 77.7% → 55.8%；ARC-C: 59.8% → 44.0%），而事实性任务（LLaMA-QS）变化不大。这说明 ASR 辅助的主要贡献在于帮助模型”理解”用户问题，而非单纯记忆事实。</p>
 <h3 id="3-4-提前思考：Question-Completeness-指标"><a href="#3-4-提前思考：Question-Completeness-指标" class="headerlink" title="3.4 提前思考：Question Completeness 指标"></a>3.4 提前思考：Question Completeness 指标</h3><p><strong>核心思想：</strong> 给定训练样本的问题 $Q_{1:N}$（$N$ 个词）、推理 $R$、答案 $A$，定义<strong>问题完备度（Question Completeness）</strong> $\zeta$ 为：</p>
-<script type="math/tex; mode=display">
-\zeta(p) = 1 - \frac{D_{KL}(X_N \| X_p)}{D_{KL}(X_N \| X_0)}
-\tag{5}</script><p>其中 $X_p = \Pr[R, A \mid Q_{0:p}]$ 为只见到前 $p$ 个词时对 $(R, A)$ 的联合概率估计（用外部语言模型近似），$D_{KL}$ 为 KL 散度。</p>
+\[\zeta(p) = 1 - \frac{D_{KL}(X_N \| X_p)}{D_{KL}(X_N \| X_0)}
+\tag{5}\]<p>其中 $X_p = \Pr[R, A \mid Q_{0:p}]$ 为只见到前 $p$ 个词时对 $(R, A)$ 的联合概率估计（用外部语言模型近似），$D_{KL}$ 为 KL 散度。</p>
 <p>由定义，$\zeta(0) = 0$，$\zeta(N) = 1$，$\zeta$ 可视为问题语义完备进度条。推理触发点 $\hat{p}$ 为：</p>
-<script type="math/tex; mode=display">
-\hat{p} = \min\{p : \zeta(p) \ge \theta\}
-\tag{6}</script><p>实验取 $\theta = 0.95$。将训练数据中的 CoT 起始点左移至 $\hat{p}$，即可教会模型在问题未说完时即开始推理。</p>
+\[\hat{p} = \min\{p : \zeta(p) \ge \theta\}
+\tag{6}\]<p>实验取 $\theta = 0.95$。将训练数据中的 CoT 起始点左移至 $\hat{p}$，即可教会模型在问题未说完时即开始推理。</p>
 <p><strong>与启发式词偏移（Word-Shift）基线的对比：</strong> QC 方法提供了更平滑、可控的准确率-延迟权衡曲线；而直接按固定词数偏移的 WS-N 方法在 PIQA 和 GSM8K 上无法稳定降低延迟，说明语义感知的触发比简单时间偏移更关键。</p>
 <h3 id="3-5-DPO-偏好微调：进一步压缩延迟"><a href="#3-5-DPO-偏好微调：进一步压缩延迟" class="headerlink" title="3.5 DPO 偏好微调：进一步压缩延迟"></a>3.5 DPO 偏好微调：进一步压缩延迟</h3><p>通过拒绝采样（Rejection Sampling）构造偏好对 $(y_w, y_l)$，再用 DPO 损失微调：</p>
-<script type="math/tex; mode=display">
-\mathcal{L}_{\text{DPO}} = -\mathbb{E}_{(x,y_w,y_l) \sim \mathcal{D}} \left[ \log \sigma\!\left( \beta \log \frac{\pi_\Theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \beta \log \frac{\pi_\Theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)} \right) \right]
-\tag{7}</script><p>训练总损失加入 NLL 正则：</p>
-<script type="math/tex; mode=display">
-\mathcal{L}_{\text{pref}} = \mathcal{L}_{\text{DPO}} - \lambda\, \mathbb{E}_{(x,y_w) \sim \mathcal{D}}\left[\log \pi_\Theta(y_w|x)\right]
-\tag{8}</script><ul>
+\[\mathcal{L}_{\text{DPO}} = -\mathbb{E}_{(x,y_w,y_l) \sim \mathcal{D}} \left[ \log \sigma\!\left( \beta \log \frac{\pi_\Theta(y_w|x)}{\pi_{\text{ref}}(y_w|x)} - \beta \log \frac{\pi_\Theta(y_l|x)}{\pi_{\text{ref}}(y_l|x)} \right) \right]
+\tag{7}\]<p>训练总损失加入 NLL 正则：</p>
+\[\mathcal{L}_{\text{pref}} = \mathcal{L}_{\text{DPO}} - \lambda\, \mathbb{E}_{(x,y_w) \sim \mathcal{D}}\left[\log \pi_\Theta(y_w|x)\right]
+\tag{8}\]<ul>
 <li><strong>正确性偏好（Correctness-DPO）</strong>：以回复正确性为偏好标准，提升早推理场景下的准确率。</li>
 <li><strong>长度偏好（Length-DPO）</strong>：以推理链长度为偏好标准，在不损失准确率的前提下缩短 CoT。</li>
 </ul>
@@ -793,12 +783,10 @@ p(A^S_{t+1},\, T^S_{t+1} \mid A^S_{\le t},\, T^S_{\le t},\, A^U_{\le t})
 <p>两种路径均无法同时满足<strong>正确率高、延迟低、输出简洁</strong>三个目标。</p>
 <h3 id="4-2-Token-级交错生成机制"><a href="#4-2-Token-级交错生成机制" class="headerlink" title="4.2 Token 级交错生成机制"></a>4.2 Token 级交错生成机制</h3><p><strong>核心创新：</strong> Mini-Omni-Reasoner 利用了一个硬件层面的不对称性——现代 GPU 上大型语言模型的 token 生成速率（&gt;100 tokens/s）远超音频播放速率（~12.5 tokens/s，对应 Mimi 编解码的帧率；或约 20 tokens/s 用于流畅语音合成）。</p>
 <p>基于此，模型以固定比率 $p:q = 2:8$ 交错生成 response token 和 reasoning token：</p>
-<script type="math/tex; mode=display">
-t_{1:(p+q) \cdot K} = \bigcup_{i=1}^{K} \Big\{ \underbrace{t^{\text{resp}}_{(i-1)(p+q)+1}, \ldots, t^{\text{resp}}_{(i-1)(p+q)+p}}_{p \text{ 个回复 token}},\; \underbrace{t^{\text{reason}}_{(i-1)(p+q)+p+1}, \ldots, t^{\text{reason}}_{i(p+q)}}_{q \text{ 个推理 token}} \Big\}
-\tag{9}</script><p>Talker 模块只对 response token $t^{\text{resp}}_i$ 合成语音：</p>
-<script type="math/tex; mode=display">
-\hat{x}^a_i = D_{\text{audio}}\!\left(T_{\text{talker}}(t^{\text{resp}}_i)\right)
-\tag{10}</script><p>reasoning token $t^{\text{reason}}$ 保持静默，仅作为后续 response token 生成的上下文。</p>
+\[t_{1:(p+q) \cdot K} = \bigcup_{i=1}^{K} \Big\{ \underbrace{t^{\text{resp}}_{(i-1)(p+q)+1}, \ldots, t^{\text{resp}}_{(i-1)(p+q)+p}}_{p \text{ 个回复 token}},\; \underbrace{t^{\text{reason}}_{(i-1)(p+q)+p+1}, \ldots, t^{\text{reason}}_{i(p+q)}}_{q \text{ 个推理 token}} \Big\}
+\tag{9}\]<p>Talker 模块只对 response token $t^{\text{resp}}_i$ 合成语音：</p>
+\[\hat{x}^a_i = D_{\text{audio}}\!\left(T_{\text{talker}}(t^{\text{resp}}_i)\right)
+\tag{10}\]<p>reasoning token $t^{\text{reason}}$ 保持静默，仅作为后续 response token 生成的上下文。</p>
 <p><strong>比率设计的三重理由：</strong></p>
 <ol>
 <li><strong>可控性</strong>：短回复块（2 个 token）避免过多语音输出先于充分推理。</li>
@@ -808,18 +796,14 @@ t_{1:(p+q) \cdot K} = \bigcup_{i=1}^{K} \Big\{ \underbrace{t^{\text{resp}}_{(i-1
 <p><strong>控制 token 设计：</strong> 论文比较了三种策略——无显式标记、有显式标记（含损失加权）、masked 标记（插入切换 token 但从 loss 计算中屏蔽）。实验证明 masked 策略最有效：避免过拟合到 split token，同时在推理时通过手动插入 marker 引导生成模式。每个推理块后额外附加 8 个 padding token，以稳定下游 Talker 的对齐。</p>
 <p><strong>Thinker-Talker 架构回顾：</strong></p>
 <p>给定原始音频 $x^a$，音频编码器提取 token：</p>
-<script type="math/tex; mode=display">
-h^a_{1:T} = E_a(x^a)
-\tag{11}</script><p>Thinker LLM 自回归生成 response token：</p>
-<script type="math/tex; mode=display">
-t^{\text{resp}}_{1:N} = T_{\text{thinker}}(h^a_{1:T})
-\tag{12}</script><p>Talker LLM 将每个 response token 映射为音频 token：</p>
-<script type="math/tex; mode=display">
-z^a_j = T_{\text{talker}}(t^{\text{resp}}_j)
-\tag{13}</script><p>音频解码器在滑动窗口上重建语音段：</p>
-<script type="math/tex; mode=display">
-\hat{x}^a_i = D_a\!\left(z^a_{s_i : s_i + \ell - 1}\right)
-\tag{14}</script><p>在 Thinking-in-Speaking 模式下，Thinker 的输出序列按式 (9) 交错，Talker 只处理 $t^{\text{resp}}$ 部分（图见下方架构图）。</p>
+\[h^a_{1:T} = E_a(x^a)
+\tag{11}\]<p>Thinker LLM 自回归生成 response token：</p>
+\[t^{\text{resp}}_{1:N} = T_{\text{thinker}}(h^a_{1:T})
+\tag{12}\]<p>Talker LLM 将每个 response token 映射为音频 token：</p>
+\[z^a_j = T_{\text{talker}}(t^{\text{resp}}_j)
+\tag{13}\]<p>音频解码器在滑动窗口上重建语音段：</p>
+\[\hat{x}^a_i = D_a\!\left(z^a_{s_i : s_i + \ell - 1}\right)
+\tag{14}\]<p>在 Thinking-in-Speaking 模式下，Thinker 的输出序列按式 (9) 交错，Talker 只处理 $t^{\text{resp}}$ 部分（图见下方架构图）。</p>
 <h3 id="4-3-训练方法与数据"><a href="#4-3-训练方法与数据" class="headerlink" title="4.3 训练方法与数据"></a>4.3 训练方法与数据</h3><p><strong>SPOKEN-MATH-PROBLEMS-3M 数据集：</strong> 针对语音数学推理，从公开文本数学数据集（GSM8K、MetaMath、Orca-Math、SingleOp 等）重采样 300 万样本，经四阶段流水线构建：</p>
 <ol>
 <li><strong>数据收集</strong>：聚合多样化数学题文本语料（~3.2M 题）。</li>
@@ -1148,9 +1132,9 @@ z^a_j = T_{\text{talker}}(t^{\text{resp}}_j)
       
         <a href="/tags/%E5%85%A8%E5%8F%8C%E5%B7%A5/" class="print-no-link">#全双工</a>
       
-        <a href="/tags/%E7%BB%BC%E8%BF%B0/" class="print-no-link">#综述</a>
-      
         <a href="/tags/%E5%AE%9E%E6%97%B6%E6%8E%A8%E7%90%86/" class="print-no-link">#实时推理</a>
+      
+        <a href="/tags/%E7%BB%BC%E8%BF%B0/" class="print-no-link">#综述</a>
       
         <a href="/tags/CoT/" class="print-no-link">#CoT</a>
       

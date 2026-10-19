@@ -79,6 +79,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -345,7 +346,7 @@
 </ul>
 <h4 id="2-状态势能平滑打分机制（State-Potential-Scoring）"><a href="#2-状态势能平滑打分机制（State-Potential-Scoring）" class="headerlink" title="2. 状态势能平滑打分机制（State Potential Scoring）"></a>2. 状态势能平滑打分机制（State Potential Scoring）</h4><p>由于变异 BPE 图中同一短语存在不同长度和不同 Token 粒度的匹配路径，如果对每条弧分配相同权重，会导致按字符细粒度匹配的路径累计得分远高于大粒度 Token 路径；反之如果仅在合并弧末端打分，又会导致部分匹配时的前缀奖励被延迟。</p>
 <p>TurboBias 2.0 引入了<strong>累积状态势能分配算法</strong>：<br>以小写贪心 BPE 分词作为打分基准骨干。假设第 $k$ 个贪心 BPE Token 对应的 TurboBias 目标增益为 $w_k$，其拆解为 $m_k$ 个字符片段，则在该 Token 内部的第 $i$ 个字符状态上分配的增量权重 $\Delta_{k,i}$ 定义为：</p>
-<script type="math/tex; mode=display">\Delta_{k,i} = w_k \frac{\exp((i + 1)^{\tau})}{\sum_{j=0}^{m_k - 1} \exp((j + 1)^{\tau})}, \quad i = 0,\dots,m_k-1</script><p>其中 $\tau$ 为分布集中度超参数：</p>
+\[\Delta_{k,i} = w_k \frac{\exp((i + 1)^{\tau})}{\sum_{j=0}^{m_k - 1} \exp((j + 1)^{\tau})}, \quad i = 0,\dots,m_k-1\]<p>其中 $\tau$ 为分布集中度超参数：</p>
 <ul>
 <li>当 $\tau = 0$ 时，增益在字符状态间均匀分配（Uniform Split）；</li>
 <li>当 $\tau &gt; 0$ 时，增益向 Token 尾部状态集中。</li>

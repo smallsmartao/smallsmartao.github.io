@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -349,18 +350,14 @@
 <li>$m=2$：零样本 TTS，$z_s$ 编码参考前缀</li>
 </ul>
 <h3 id="1-4-DeepFusion-MM-DiT"><a href="#1-4-DeepFusion-MM-DiT" class="headerlink" title="1.4 DeepFusion MM-DiT"></a>1.4 DeepFusion MM-DiT</h3><p>这是本文的核心创新。DiT 的通道输入为：</p>
-<script type="math/tex; mode=display">
-X = [z_t \| z_s \| m] \in \mathbb{R}^{(2C+1) \times T'}</script><p>Conv-MLP 嵌入器 $\mathcal{E}$ 将 $X$ 映射为 $h_0 \in \mathbb{R}^{T’ \times d}$。连接 $z_s$ 和 $m$ 的权重零初始化，使早期训练表现为纯去噪，模型逐步学习使用源和任务通道。</p>
+\[X = [z_t \| z_s \| m] \in \mathbb{R}^{(2C+1) \times T'}\]<p>Conv-MLP 嵌入器 $\mathcal{E}$ 将 $X$ 映射为 $h_0 \in \mathbb{R}^{T’ \times d}$。连接 $z_s$ 和 $m$ 的权重零初始化，使早期训练表现为纯去噪，模型逐步学习使用源和任务通道。</p>
 <p><strong>逐层深度 LLM 融合（Layer-wise Deep LLM Fusion）</strong>：</p>
 <p>冻结的 Qwen2.5-Omni-7B Thinker 对指令执行一次前向，返回所有层隐状态 $E^{(l)}$，$l = 1, \ldots, L$（$L=28$）。由于 DiT 块数 $D$ 可能不同于 $L$，通过均匀采样选取：</p>
-<script type="math/tex; mode=display">
-i_k = \left\lfloor 1 + k \cdot \frac{L-1}{D-1} \right\rfloor</script><p>对应投影：</p>
-<script type="math/tex; mode=display">
-\tilde{E}_k = E^{(i_k)} W_k, \quad W_k \in \mathbb{R}^{3584 \times d}</script><p>这确保浅层 DiT 块接收浅层 Qwen 表示（词汇/句法信息），深层块处理抽象语义特征。</p>
+\[i_k = \left\lfloor 1 + k \cdot \frac{L-1}{D-1} \right\rfloor\]<p>对应投影：</p>
+\[\tilde{E}_k = E^{(i_k)} W_k, \quad W_k \in \mathbb{R}^{3584 \times d}\]<p>这确保浅层 DiT 块接收浅层 Qwen 表示（词汇/句法信息），深层块处理抽象语义特征。</p>
 <p><strong>双流块（Double-Stream Block）</strong>：块 $k$ 接收 $(h_k, \tilde{E}_k)$。AdaLN 注入时间步 $t$；联合注意力让音频和文本 token 互相关注。仅 $h_k$ 通过 MLP 更新为 $h_{k+1}$。$\tilde{E}_k$ <strong>不</strong>传递到下一块——每个深度接收来自 Qwen 的新鲜条件。这避免了重新学习完整语言结构，同时跳过文本 MLP 节省计算。</p>
 <h3 id="1-5-训练与推理"><a href="#1-5-训练与推理" class="headerlink" title="1.5 训练与推理"></a>1.5 训练与推理</h3><p><strong>流匹配损失</strong>：</p>
-<script type="math/tex; mode=display">
-\mathcal{L} = \mathbb{E}_{t,z,\epsilon} \left[ \| v_\theta(X, \{\tilde{E}_k\}, t) - u \|_2^2 \odot M_{\text{loss}} \right]</script><p>其中目标速度 $u = \epsilon - z$，$M_{\text{loss}}$ 在零样本 TTS 中将参考前缀的梯度归零。文本条件以概率 0.1 丢弃以支持 Classifier-Free Guidance（CFG scale $\omega=4.5$，100 步 Euler ODE）。</p>
+\[\mathcal{L} = \mathbb{E}_{t,z,\epsilon} \left[ \| v_\theta(X, \{\tilde{E}_k\}, t) - u \|_2^2 \odot M_{\text{loss}} \right]\]<p>其中目标速度 $u = \epsilon - z$，$M_{\text{loss}}$ 在零样本 TTS 中将参考前缀的梯度归零。文本条件以概率 0.1 丢弃以支持 Classifier-Free Guidance（CFG scale $\omega=4.5$，100 步 Euler ODE）。</p>
 <h3 id="1-6-在线多任务数据合成"><a href="#1-6-在线多任务数据合成" class="headerlink" title="1.6 在线多任务数据合成"></a>1.6 在线多任务数据合成</h3><p>GPU 侧在线合成管线实时构造任务特定元组，处理 RMS 归一化（SNR 控制混合）、边界淡入淡出和随机化时间偏移。</p>
 <h3 id="1-7-课程训练与同质批处理"><a href="#1-7-课程训练与同质批处理" class="headerlink" title="1.7 课程训练与同质批处理"></a>1.7 课程训练与同质批处理</h3><ul>
 <li><strong>两阶段课程</strong>：Stage 1 仅训练生成任务（前 150K 步），建立稳定的生成先验；Stage 2 引入所有编辑任务（约 70% 生成、30% 编辑）。</li>

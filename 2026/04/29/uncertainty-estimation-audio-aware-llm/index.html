@@ -76,6 +76,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -361,21 +362,21 @@
 </ol>
 <p>对于 P(True)，则直接对低温度预测 $\hat{y}$ 进行自验证。</p>
 <h3 id="III-C-不确定性估计方法"><a href="#III-C-不确定性估计方法" class="headerlink" title="III-C. 不确定性估计方法"></a>III-C. 不确定性估计方法</h3><h4 id="1-Predictive-Entropy（预测熵）"><a href="#1-Predictive-Entropy（预测熵）" class="headerlink" title="1. Predictive Entropy（预测熵）"></a>1. Predictive Entropy（预测熵）</h4><p>序列级预测熵定义为：</p>
-<script type="math/tex; mode=display">H_{\text{pred}}(x) = \mathbb{E}_{y \sim p(y|x)}[-\log p(y \mid x)]</script><p>通过蒙特卡罗采样近似：</p>
-<script type="math/tex; mode=display">H_{\text{pred}}(x) \approx \frac{1}{K}\sum_{i=1}^{K} -\log p(y^i \mid x)</script><p>更高的预测熵表示模型对其采样生成平均分配了更低的概率，反映更大的序列级不确定性。</p>
+\[H_{\text{pred}}(x) = \mathbb{E}_{y \sim p(y|x)}[-\log p(y \mid x)]\]<p>通过蒙特卡罗采样近似：</p>
+\[H_{\text{pred}}(x) \approx \frac{1}{K}\sum_{i=1}^{K} -\log p(y^i \mid x)\]<p>更高的预测熵表示模型对其采样生成平均分配了更低的概率，反映更大的序列级不确定性。</p>
 <h4 id="2-Length-Normalized-Predictive-Entropy（长度归一化预测熵）"><a href="#2-Length-Normalized-Predictive-Entropy（长度归一化预测熵）" class="headerlink" title="2. Length-Normalized Predictive Entropy（长度归一化预测熵）"></a>2. Length-Normalized Predictive Entropy（长度归一化预测熵）</h4><p>预测熵可能受答案长度偏差影响（更长的序列通常累积更大的负对数似然）。为减少此效应，引入长度归一化：</p>
-<script type="math/tex; mode=display">H_{\text{norm}}(x) = \mathbb{E}_{y \sim p(y|x)}\left[\frac{-\log p(y \mid x)}{|y|}\right]</script><p>实际采用 token 级估计器：</p>
-<script type="math/tex; mode=display">H_{\text{norm}}^{\text{tok}}(x) = \frac{\sum_{i=1}^{K} -\log p(y^i \mid x)}{\sum_{i=1}^{K} |y^i|}</script><p>这可视为期望比值的近似，能更稳定地估计跨采样响应的平均 token 级不确定性。</p>
+\[H_{\text{norm}}(x) = \mathbb{E}_{y \sim p(y|x)}\left[\frac{-\log p(y \mid x)}{|y|}\right]\]<p>实际采用 token 级估计器：</p>
+\[H_{\text{norm}}^{\text{tok}}(x) = \frac{\sum_{i=1}^{K} -\log p(y^i \mid x)}{\sum_{i=1}^{K} |y^i|}\]<p>这可视为期望比值的近似，能更稳定地估计跨采样响应的平均 token 级不确定性。</p>
 <h4 id="3-Semantic-Entropy（语义熵）"><a href="#3-Semantic-Entropy（语义熵）" class="headerlink" title="3. Semantic Entropy（语义熵）"></a>3. Semantic Entropy（语义熵）</h4><p>序列级似然度无法区分表面形式变化和真正的语义不确定性。语义熵通过对采样答案进行语义等价聚类来解决此问题。</p>
 <p>语义等价通过<strong>双向蕴含聚类</strong>（bidirectional entailment clustering）判定：使用 NLI 模型检验两个答案 $s$ 和 $s’$ 是否互相蕴含。两个答案被归入同一语义聚类当且仅当双向蕴含关系均成立。</p>
 <p>聚类概率质量通过求和获得：</p>
-<script type="math/tex; mode=display">p(c_k \mid x) = \sum_{s \in c_k} p(s \mid x)</script><p>语义熵定义为：</p>
-<script type="math/tex; mode=display">H_{\text{sem}}(x) = -\sum_k p(c_k \mid x) \log p(c_k \mid x)</script><p>当大多数采样答案收敛到同一语义聚类时，语义熵较低；当概率质量分散到多个语义不同的答案时，语义熵较高。</p>
+\[p(c_k \mid x) = \sum_{s \in c_k} p(s \mid x)\]<p>语义熵定义为：</p>
+\[H_{\text{sem}}(x) = -\sum_k p(c_k \mid x) \log p(c_k \mid x)\]<p>当大多数采样答案收敛到同一语义聚类时，语义熵较低；当概率质量分散到多个语义不同的答案时，语义熵较高。</p>
 <h4 id="4-Discrete-Semantic-Entropy（离散语义熵）"><a href="#4-Discrete-Semantic-Entropy（离散语义熵）" class="headerlink" title="4. Discrete Semantic Entropy（离散语义熵）"></a>4. Discrete Semantic Entropy（离散语义熵）</h4><p>对于具有预定义离散答案空间的任务，语义变化自然受到候选答案集的约束。设 $\mathcal{A}$ 为候选答案集，将每个采样响应映射到 $\mathcal{A}$ 中的选项，估计经验答案分布：</p>
-<script type="math/tex; mode=display">p(a \mid x) \approx \frac{\text{count}(a)}{K}, \quad a \in \mathcal{A}</script><p>离散语义熵为：</p>
-<script type="math/tex; mode=display">H_{\text{disc}}(x) = -\sum_{a \in \mathcal{A}} p(a \mid x) \log p(a \mid x)</script><p>可视为语义熵在封闭式答案空间的离散对应版本，避免了语义等价聚类的需要。</p>
+\[p(a \mid x) \approx \frac{\text{count}(a)}{K}, \quad a \in \mathcal{A}\]<p>离散语义熵为：</p>
+\[H_{\text{disc}}(x) = -\sum_{a \in \mathcal{A}} p(a \mid x) \log p(a \mid x)\]<p>可视为语义熵在封闭式答案空间的离散对应版本，避免了语义等价聚类的需要。</p>
 <h4 id="5-P-True"><a href="#5-P-True" class="headerlink" title="5. P(True)"></a>5. P(True)</h4><p>自验证型置信度估计。给定输入 $x$ 和候选答案 $\hat{y}$，提示模型判断答案是否受输入支持：</p>
-<script type="math/tex; mode=display">P(\text{true} \mid x, \hat{y}) = p(\text{true} \mid x, \hat{y})</script><p>模型被约束产生二元决策（true/false），置信度分数由这两个验证 token 的归一化似然度计算。更高的 P(True) 表示模型对自身答案正确性的置信度更高。本文仅使用自验证，不依赖外部验证模型。</p>
+\[P(\text{true} \mid x, \hat{y}) = p(\text{true} \mid x, \hat{y})\]<p>模型被约束产生二元决策（true/false），置信度分数由这两个验证 token 的归一化似然度计算。更高的 P(True) 表示模型对自身答案正确性的置信度更高。本文仅使用自验证，不依赖外部验证模型。</p>
 <h4 id="方法总结"><a href="#方法总结" class="headerlink" title="方法总结"></a>方法总结</h4><div class="table-container">
 <table>
 <thead>
@@ -946,7 +947,7 @@
 <p>总体而言，可信度基准揭示了比通用推理基准<strong>更加异质的图景</strong>——没有单一的一致性主导方法，而是呈现出更强的基准和模型依赖变化。这本身就是一个重要发现：<strong>不确定性估计在可信度导向的音频任务中可能本质上更加困难。</strong></p>
 <h3 id="V-D-应用：基于不确定性的自适应推理"><a href="#V-D-应用：基于不确定性的自适应推理" class="headerlink" title="V-D. 应用：基于不确定性的自适应推理"></a>V-D. 应用：基于不确定性的自适应推理</h3><p>超越将不确定性作为诊断信号，作者进一步探索其用于改善推理时决策。核心动机是并非所有样本都需要相同的推理力度——部分可通过直接推理正确回答，其余可能需要更审慎的推理过程。</p>
 <p>自适应推理定义为：</p>
-<script type="math/tex; mode=display">\hat{y}_{\text{adaptive}}(x) = \begin{cases} \hat{y}_{\text{reason}}(x), & \text{if } u(x) > \tau \\ \hat{y}_{\text{direct}}(x), & \text{otherwise} \end{cases}</script><p>其中 $u(x)$ 为不确定性分数，$\tau = 0.25$ 为预定义阈值。推理模式采用 <strong>caption-then-reason</strong> 策略：先提示模型描述音频内容，再基于描述逐步回答问题。</p>
+\[\hat{y}_{\text{adaptive}}(x) = \begin{cases} \hat{y}_{\text{reason}}(x), &amp; \text{if } u(x) &gt; \tau \\ \hat{y}_{\text{direct}}(x), &amp; \text{otherwise} \end{cases}\]<p>其中 $u(x)$ 为不确定性分数，$\tau = 0.25$ 为预定义阈值。推理模式采用 <strong>caption-then-reason</strong> 策略：先提示模型描述音频内容，再基于描述逐步回答问题。</p>
 <p><img src="/images/paper_figs/pareto-figure.png" srcset="/img/loading.gif" lazyload alt="Cost–accuracy Pareto frontier"><br><em>图 1：四个基准上 Reasoning 与 Adaptive 推理的成本-准确率 Pareto 前沿。空心方块为 Reasoning（100% token 成本），实心圆为 Adaptive（降低成本）。虚线箭头表示从全推理到自适应推理的转移。灰色虚线为 Pareto 前沿。</em></p>
 <p><strong>自适应推理结果（Table IV）：</strong></p>
 <div class="table-container">

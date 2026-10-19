@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -366,8 +367,7 @@
 <li>通过将教师模型的 CTC 输出与学生模型的延迟 CTC 输出（右移若干 chunk）对齐，有效缓解蒸馏过程中 non-blank token 的错配问题</li>
 </ul>
 <p>延迟知识蒸馏损失定义为：</p>
-<script type="math/tex; mode=display">
-\mathcal{L}_{distill} = \frac{1}{BT} \sum_{b=1}^{B} \sum_{t=1}^{T} \min_{\tau \in \mathcal{D}} \sum_{c=1}^{C} \text{KL}(p_{student}^{(b, t+\tau, c)} \| p_{teacher}^{(b, t, c)})</script><p>其中：</p>
+\[\mathcal{L}_{distill} = \frac{1}{BT} \sum_{b=1}^{B} \sum_{t=1}^{T} \min_{\tau \in \mathcal{D}} \sum_{c=1}^{C} \text{KL}(p_{student}^{(b, t+\tau, c)} \| p_{teacher}^{(b, t, c)})\]<p>其中：</p>
 <ul>
 <li>$B$ 为 batch size</li>
 <li>$T$ 为时间步数</li>
@@ -375,27 +375,23 @@
 <li>$\mathcal{D} = {0, 1, 2, \ldots, d}$ 为 TAB 定义的允许延迟范围，$d$ 为 TAB 大小决定的最大延迟</li>
 </ul>
 <p>KL 散度计算公式：</p>
-<script type="math/tex; mode=display">
-\text{KL}(p_{student} \| p_{teacher}) = \sum_{i} p_{student}(i) \cdot \log \frac{p_{student}(i)}{p_{teacher}(i)}</script><p>TAB 的关键特性：</p>
+\[\text{KL}(p_{student} \| p_{teacher}) = \sum_{i} p_{student}(i) \cdot \log \frac{p_{student}(i)}{p_{teacher}(i)}\]<p>TAB 的关键特性：</p>
 <ul>
 <li>动态确定延迟范围，选择最优的 chunk 数来补偿流式/非流式模型之间的潜在延迟</li>
 <li>在各种时间延迟下计算 KL 散度，选择最小化损失的延迟作为最终 KL loss</li>
 <li>允许对 token 发射延迟进行细粒度控制</li>
 </ul>
 <h4 id="2-2-2-联合训练（Joint-Training）"><a href="#2-2-2-联合训练（Joint-Training）" class="headerlink" title="2.2.2 联合训练（Joint Training）"></a>2.2.2 联合训练（Joint Training）</h4><p>总体损失函数为 ASR 任务损失和延迟知识蒸馏损失的加权组合：</p>
-<script type="math/tex; mode=display">
-\mathcal{L}_{joint} = \mathcal{L}_{asr} + \alpha \mathcal{L}_{distill}</script><p>其中 $\alpha$ 为控制蒸馏损失贡献的超参数。</p>
+\[\mathcal{L}_{joint} = \mathcal{L}_{asr} + \alpha \mathcal{L}_{distill}\]<p>其中 $\alpha$ 为控制蒸馏损失贡献的超参数。</p>
 <p>ASR 任务损失进一步分解为 CTC 损失和 AED 损失的加权和：</p>
-<script type="math/tex; mode=display">
-\mathcal{L}_{asr}(x, y) = \lambda \mathcal{L}_{CTC}(x, y) + (1 - \lambda) \mathcal{L}_{AED}(x, y)</script><p>其中 $\lambda$ 平衡 CTC 和 AED 损失的贡献，$x$ 为输入特征，$y$ 为目标序列。</p>
+\[\mathcal{L}_{asr}(x, y) = \lambda \mathcal{L}_{CTC}(x, y) + (1 - \lambda) \mathcal{L}_{AED}(x, y)\]<p>其中 $\lambda$ 平衡 CTC 和 AED 损失的贡献，$x$ 为输入特征，$y$ 为目标序列。</p>
 <h3 id="2-3-解码"><a href="#2-3-解码" class="headerlink" title="2.3 解码"></a>2.3 解码</h3><p>采用与 U2++ 相同的两遍重打分解码策略：</p>
 <ol>
 <li><strong>第一遍</strong>：帧同步 CTC 解码器通过前缀束搜索（prefix beam search）生成候选假设集合</li>
 <li><strong>第二遍</strong>：Attention 解码器为 n-best 候选计算得分</li>
 </ol>
 <p>最终得分：</p>
-<script type="math/tex; mode=display">
-S_{final} = \lambda \cdot S_{CTC} + S_{AED}</script><p>选择最终得分最高的候选作为最优输出。</p>
+\[S_{final} = \lambda \cdot S_{CTC} + S_{AED}\]<p>选择最终得分最高的候选作为最优输出。</p>
 <h2 id="3-实验"><a href="#3-实验" class="headerlink" title="3. 实验"></a>3. 实验</h2><h3 id="3-1-数据集"><a href="#3-1-数据集" class="headerlink" title="3.1 数据集"></a>3.1 数据集</h3><ul>
 <li><strong>AISHELL-1</strong>：178 小时中文普通话数据，测试集包含 7,176 条语音</li>
 <li><strong>WenetSpeech</strong>：10,000 小时多领域中文普通话数据，包含 Test Meeting 和 Test Net 两个测试集（共约 33,100 条语音）</li>

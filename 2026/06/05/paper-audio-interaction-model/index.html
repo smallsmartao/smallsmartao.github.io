@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -342,8 +343,7 @@
 <p><img src="/images/paper_figs/aim/aim_overview.png" srcset="/img/loading.gif" lazyload alt="Figure 1: Audio-Interaction 的能力概览"></p>
 <hr>
 <h2 id="2-方法：SoundFlow-框架"><a href="#2-方法：SoundFlow-框架" class="headerlink" title="2. 方法：SoundFlow 框架"></a>2. 方法：SoundFlow 框架</h2><p>本文提出 <strong>Audio-Interaction</strong> 模型与 <strong>SoundFlow</strong> 端到端框架，将音频交互形式化为 always-on 的感知-决策-响应循环：</p>
-<script type="math/tex; mode=display">
-(d_t, r_t) = f(a_{\leq t},\; d_{<t},\; r_{<t})</script><p>其中 $a_t$ 为当前音频 chunk，$d_t \in {\texttt{<silent>}, \texttt{<response>}}$ 为流式干预决策，$r_t$ 为生成响应。在此循环下，翻译、识别、对话、主动辅助均作为指令自然统一于单一交互范式。</p>
+\[(d_t, r_t) = f(a_{\leq t},\; d_{&lt;t},\; r_{&lt;t})\]<p>其中 $a_t$ 为当前音频 chunk，$d_t \in {\texttt{<silent>}, \texttt{<response>}}$ 为流式干预决策，$r_t$ 为生成响应。在此循环下，翻译、识别、对话、主动辅助均作为指令自然统一于单一交互范式。</p>
 <p><img src="/images/paper_figs/aim/aim_training.png" srcset="/img/loading.gif" lazyload alt="SoundFlow 框架训练流程"></p>
 <p>SoundFlow 包含三个核心组件：<strong>流式数据构造</strong>、<strong>交互感知训练</strong>、<strong>异步低延迟推理</strong>。</p>
 <h3 id="2-1-流式数据构造"><a href="#2-1-流式数据构造" class="headerlink" title="2.1 流式数据构造"></a>2.1 流式数据构造</h3><h4 id="2-1-1-时频联合预处理模块（TFJP）"><a href="#2-1-1-时频联合预处理模块（TFJP）" class="headerlink" title="2.1.1 时频联合预处理模块（TFJP）"></a>2.1.1 时频联合预处理模块（TFJP）</h4><p>TFJP 模块对每段音频进行时域-频域联合正则化，使片段平滑、自然，为下游拼接做准备。流程包括：</p>
@@ -361,8 +361,7 @@
 <li><strong>片段锚定</strong>：通过检索（Top-3 候选验证）或生成（音频生成模型合成）获取最终音频片段</li>
 </ol>
 <h3 id="2-2-流式训练"><a href="#2-2-流式训练" class="headerlink" title="2.2 流式训练"></a>2.2 流式训练</h3><h4 id="2-2-1-流式建模"><a href="#2-2-1-流式建模" class="headerlink" title="2.2.1 流式建模"></a>2.2.1 流式建模</h4><p>模型以 <strong>400ms</strong> 为 chunk 增量消费音频。每步预测一个特殊 token $d_t$ 决定是否响应：</p>
-<script type="math/tex; mode=display">
-d_t, r_t = f_{\text{det}}(a_t, \mathcal{C}_t), \quad r_t = \begin{cases} \varnothing, & d_t = \texttt{<silent>} \\ f_{\text{resp}}(a_t, \mathcal{C}_t), & d_t = \texttt{<response>} \end{cases}</script><p>其中 $\mathcal{C}_t$ 为截至步骤 $t$ 的流式上下文。</p>
+\[d_t, r_t = f_{\text{det}}(a_t, \mathcal{C}_t), \quad r_t = \begin{cases} \varnothing, &amp; d_t = \texttt{&lt;silent&gt;} \\ f_{\text{resp}}(a_t, \mathcal{C}_t), &amp; d_t = \texttt{&lt;response&gt;} \end{cases}\]<p>其中 $\mathcal{C}_t$ 为截至步骤 $t$ 的流式上下文。</p>
 <h4 id="2-2-2-上下文记忆与理解感知静默训练"><a href="#2-2-2-上下文记忆与理解感知静默训练" class="headerlink" title="2.2.2 上下文记忆与理解感知静默训练"></a>2.2.2 上下文记忆与理解感知静默训练</h4><p>训练中观察到两种关键失败模式并分别应对：</p>
 <div class="table-container">
 <table>
@@ -385,8 +384,7 @@ d_t, r_t = f_{\text{det}}(a_t, \mathcal{C}_t), \quad r_t = \begin{cases} \varnot
 </table>
 </div>
 <h4 id="2-2-3-双损失多阶段流式转换"><a href="#2-2-3-双损失多阶段流式转换" class="headerlink" title="2.2.3 双损失多阶段流式转换"></a>2.2.3 双损失多阶段流式转换</h4><p>模型初始化自 Qwen2.5-Omni-3B，训练损失为标准语言建模与流式控制目标的组合：</p>
-<script type="math/tex; mode=display">
-\mathcal{L} = \frac{1}{N}\sum_{j=1}^{N}\left[\underbrace{-\log P_\theta(t_j \mid H_j)}_{\mathcal{L}_{\text{LLM}}} + \lambda \underbrace{-\log P_\theta(s_j \mid H_j)}_{\mathcal{L}_{\text{stream}}}\right]</script><p>其中 $t_j$ 为目标文本 token，$s_j$ 为流式控制 token，$\lambda$ 控制相对权重。</p>
+\[\mathcal{L} = \frac{1}{N}\sum_{j=1}^{N}\left[\underbrace{-\log P_\theta(t_j \mid H_j)}_{\mathcal{L}_{\text{LLM}}} + \lambda \underbrace{-\log P_\theta(s_j \mid H_j)}_{\mathcal{L}_{\text{stream}}}\right]\]<p>其中 $t_j$ 为目标文本 token，$s_j$ 为流式控制 token，$\lambda$ 控制相对权重。</p>
 <p><strong>四阶段训练流水线：</strong></p>
 <div class="table-container">
 <table>

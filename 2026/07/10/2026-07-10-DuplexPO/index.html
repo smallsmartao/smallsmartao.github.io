@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -346,19 +347,19 @@
 </ol>
 <hr>
 <h2 id="3-问题形式化"><a href="#3-问题形式化" class="headerlink" title="3. 问题形式化"></a>3. 问题形式化</h2><p>将全双工对话动态学习形式化为帧级策略优化。设 $x_{1:T}$ 为用户音频流，$y_{1:T}$ 为智能体实时交互决策，帧间隔为 $\Delta$。每帧策略预测：</p>
-<script type="math/tex; mode=display">\pi_\theta(y_t \mid y_{<t}, x_{\leq t})</script><p>其中 $y_t$ 表示智能体交互状态（静默、说话、轮次起始、让步等）。</p>
+\[\pi_\theta(y_t \mid y_{&lt;t}, x_{\leq t})\]<p>其中 $y_t$ 表示智能体交互状态（静默、说话、轮次起始、让步等）。</p>
 <p>DuplexPO 不优化整段对话，而是在动态关键窗口 $\mathcal{W} = {W_i}_{i=1}^M$ 上操作。对窗口 $W_i$（时间支撑 $[s_i, e_i)$），策略仅在窗口内采样动作，历史部分教师强制：</p>
-<script type="math/tex; mode=display">R_i = R(W_i, y_{[s_i, e_i)})</script><hr>
+\[R_i = R(W_i, y_{[s_i, e_i)})\]<hr>
 <h2 id="4-Dynamics-Critical-Window-Sampling"><a href="#4-Dynamics-Critical-Window-Sampling" class="headerlink" title="4. Dynamics-Critical Window Sampling"></a>4. Dynamics-Critical Window Sampling</h2><p>先行研究表明，对话轮次转换通常由可能响应点附近的局部时间和韵律线索决定，而非均匀分布于整段对话。DuplexPO 选取短但重要的局部窗口——轮次转换、反向通道、打断——作为优化单元。</p>
 <p>设 $(a_i, b_i)$ 为第 $i$ 个标注智能体片段的起止时间，$c_i$ 为事件元数据。窗口定义为：</p>
-<script type="math/tex; mode=display">W_i = (s_i, e_i, g_i, h_i, c_i)</script><p>参考说话区间离散化：</p>
-<script type="math/tex; mode=display">g_i = \lfloor a_i / \Delta \rfloor, \quad h_i = \lfloor b_i / \Delta \rfloor</script><p>采样窗口包含前导时间 $L$ 和缓冲时间 $B$：</p>
-<script type="math/tex; mode=display">s_i = \max(e_{i-1}, \lfloor (a_i - L) / \Delta \rfloor), \quad \bar{e}_i = \lfloor (b_i + B) / \Delta \rfloor</script><p>边界裁剪防止相邻事件重叠：</p>
-<script type="math/tex; mode=display">e_i = \min(\bar{e}_i, \lfloor (a_{i+1} - L) / \Delta \rfloor, T)</script><hr>
+\[W_i = (s_i, e_i, g_i, h_i, c_i)\]<p>参考说话区间离散化：</p>
+\[g_i = \lfloor a_i / \Delta \rfloor, \quad h_i = \lfloor b_i / \Delta \rfloor\]<p>采样窗口包含前导时间 $L$ 和缓冲时间 $B$：</p>
+\[s_i = \max(e_{i-1}, \lfloor (a_i - L) / \Delta \rfloor), \quad \bar{e}_i = \lfloor (b_i + B) / \Delta \rfloor\]<p>边界裁剪防止相邻事件重叠：</p>
+\[e_i = \min(\bar{e}_i, \lfloor (a_{i+1} - L) / \Delta \rfloor, T)\]<hr>
 <h2 id="5-Factorized-Conversational-Dynamics-Reward-FCDR"><a href="#5-Factorized-Conversational-Dynamics-Reward-FCDR" class="headerlink" title="5. Factorized Conversational Dynamics Reward (FCDR)"></a>5. Factorized Conversational Dynamics Reward (FCDR)</h2><p>FCDR 是本文的核心贡献之一，实现了事件级的细粒度时间信用分配。对窗口 $W_i$ 中采样的继续序列，设 $\hat{S}_i \subseteq [s_i, e_i]$ 为智能体说话帧集合。若 $\hat{S}_i \neq \emptyset$，预测起始为 $\hat{g}_i = \min \hat{S}_i$，起始延迟为：</p>
-<script type="math/tex; mode=display">\tau_i = \Delta(\hat{g}_i - g_i)</script><p>三个二值掩码 $m_i^{\text{on}}, m_i^{\text{bc}}, m_i^{\text{off}}$ 分别指示轮次起始、反向通道和打断让步是否激活。</p>
+\[\tau_i = \Delta(\hat{g}_i - g_i)\]<p>三个二值掩码 $m_i^{\text{on}}, m_i^{\text{bc}}, m_i^{\text{off}}$ 分别指示轮次起始、反向通道和打断让步是否激活。</p>
 <p>最终 FCDR 为加权和：</p>
-<script type="math/tex; mode=display">R_{\text{FCD}}(W_i, \hat{S}_i) = \lambda_{\text{on}} m_i^{\text{on}} R_i^{\text{on}} + \lambda_{\text{bc}} m_i^{\text{bc}} R_i^{\text{bc}} + \lambda_{\text{off}} m_i^{\text{off}} R_i^{\text{off}} + \lambda_{\text{reg}} R_i^{\text{reg}}</script><p>各分量定义如下：</p>
+\[R_{\text{FCD}}(W_i, \hat{S}_i) = \lambda_{\text{on}} m_i^{\text{on}} R_i^{\text{on}} + \lambda_{\text{bc}} m_i^{\text{bc}} R_i^{\text{bc}} + \lambda_{\text{off}} m_i^{\text{off}} R_i^{\text{off}} + \lambda_{\text{reg}} R_i^{\text{reg}}\]<p>各分量定义如下：</p>
 <div class="table-container">
 <table>
 <thead>
@@ -399,8 +400,8 @@
 </div>
 <hr>
 <h2 id="6-Group-based-Policy-Optimization"><a href="#6-Group-based-Policy-Optimization" class="headerlink" title="6. Group-based Policy Optimization"></a>6. Group-based Policy Optimization</h2><p>DuplexPO 使用 GRPO 风格目标优化。对窗口 $i$，跨采样续写归一化奖励得到裁剪组优势：</p>
-<script type="math/tex; mode=display">A_{i,k} = \text{clip}\left(\frac{r_{i,k} - \mu_i}{\sigma_i + \epsilon}, -5, 5\right)</script><p>策略梯度损失仅施加于窗口内的采样 token，并附带 KL 惩罚以约束相对参考 SFT 模型的策略漂移：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{\text{GRPO}} = \mathcal{L}_{\text{policy}} + \beta \mathcal{L}_{\text{KL}}</script><hr>
+\[A_{i,k} = \text{clip}\left(\frac{r_{i,k} - \mu_i}{\sigma_i + \epsilon}, -5, 5\right)\]<p>策略梯度损失仅施加于窗口内的采样 token，并附带 KL 惩罚以约束相对参考 SFT 模型的策略漂移：</p>
+\[\mathcal{L}_{\text{GRPO}} = \mathcal{L}_{\text{policy}} + \beta \mathcal{L}_{\text{KL}}\]<hr>
 <h2 id="7-数据与训练"><a href="#7-数据与训练" class="headerlink" title="7. 数据与训练"></a>7. 数据与训练</h2><h3 id="7-1-数据来源"><a href="#7-1-数据来源" class="headerlink" title="7.1 数据来源"></a>7.1 数据来源</h3><ul>
 <li><strong>Fisher</strong>：对称点对点对话，含词级时间对齐</li>
 <li><strong>Seamless-Naturalistic-HQ</strong>：角色不对称问答交互</li>
@@ -764,9 +765,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/07/10/2026-07-10-Conversational-Timing-ASR/" title="On the Role of Conversational Timing in Synthetic Training Data for ASR">
+                      <a href="/2026/07/10/2026-07-10-Revisiting-PPL-WER/" title="Revisiting the Relation Between Language Model Perplexity and ASR Word Error Rate for Modern End-to-End Speech Recognition">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">On the Role of Conversational Timing in Synthetic Training Data for ASR</span>
+                        <span class="hidden-mobile">Revisiting the Relation Between Language Model Perplexity and ASR Word Error Rate for Modern End-to-End Speech Recognition</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     
@@ -774,8 +775,8 @@
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2026/07/10/2026-07-10-Revisiting-PPL-WER/" title="Revisiting the Relation Between Language Model Perplexity and ASR Word Error Rate for Modern End-to-End Speech Recognition">
-                        <span class="hidden-mobile">Revisiting the Relation Between Language Model Perplexity and ASR Word Error Rate for Modern End-to-End Speech Recognition</span>
+                      <a href="/2026/07/10/2026-07-10-SpeechKV/" title="Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs">
+                        <span class="hidden-mobile">Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>

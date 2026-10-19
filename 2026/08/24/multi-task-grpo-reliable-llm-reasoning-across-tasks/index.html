@@ -79,6 +79,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -331,9 +332,9 @@
 <p>为此，来自 UCL、华为诺亚方舟实验室与巴塞尔大学的研究团队在 ICML 2026 上提出了 <strong>Multi-Task GRPO (MT-GRPO)</strong>（arXiv: 2602.05547）。该方法通过<strong>动态改进感知任务重加权（Improvement-Aware Task Reweighting）</strong>与<strong>保比例保真采样器（Ratio-Preserving Sampler）</strong>，在兼顾平均性能的同时显著拉升最差任务（Worst-Task）准确率 16%~28%，实现了真正均衡可靠的多任务推理。</p>
 <hr>
 <h2 id="算法原理与数学建模"><a href="#算法原理与数学建模" class="headerlink" title="算法原理与数学建模"></a>算法原理与数学建模</h2><h3 id="2-1-多任务鲁棒后训练目标与拉格朗日对偶"><a href="#2-1-多任务鲁棒后训练目标与拉格朗日对偶" class="headerlink" title="2.1 多任务鲁棒后训练目标与拉格朗日对偶"></a>2.1 多任务鲁棒后训练目标与拉格朗日对偶</h3><p>设存在 $K$ 个推理任务，第 $k$ 个任务对应数据集 $D_k$ 与可验证奖励函数 $R_k(x, y)$。定义 KL 正则化的期望奖励为：</p>
-<script type="math/tex; mode=display">J_k(\theta) := \mathbb{E}_{x \sim D_k, y \sim \pi_\theta(\cdot \mid x)} \left[ R_k(x, y) - \tau \, \mathrm{KL}(\pi_\theta \parallel \pi_{\mathrm{ref}}) \right]</script><p>为了避免单一任务被牺牲，MT-GRPO 将目标建模为<strong>带性能差距约束的受约束优化问题</strong>：</p>
-<script type="math/tex; mode=display">\max_{\theta \in \Theta} \quad \frac{1}{K}\sum_{k=1}^K J_k(\theta) \quad \text{s.t.} \quad |J_k(\theta) - J_j(\theta)| \le \varepsilon, \quad \forall 1 \le k < j \le K</script><p>引入任务概率分布向量 $z \in \Delta_K$（满足 $\sum z_k = 1, z_k \ge 0$）后，其拉格朗日 Min-Max 代理目标为：</p>
-<script type="math/tex; mode=display">\max_{\theta \in \Theta} \min_{z \in \Delta_K} \sum_{k=1}^K z_k J_k(\theta) + \frac{\varepsilon}{2} \left\| z - \frac{1}{K}\mathbf{1} \right\|_1</script><p>当 $\varepsilon \to 0$ 时，退化为最差任务奖励最大化（Worst-Case Robustness）。</p>
+\[J_k(\theta) := \mathbb{E}_{x \sim D_k, y \sim \pi_\theta(\cdot \mid x)} \left[ R_k(x, y) - \tau \, \mathrm{KL}(\pi_\theta \parallel \pi_{\mathrm{ref}}) \right]\]<p>为了避免单一任务被牺牲，MT-GRPO 将目标建模为<strong>带性能差距约束的受约束优化问题</strong>：</p>
+\[\max_{\theta \in \Theta} \quad \frac{1}{K}\sum_{k=1}^K J_k(\theta) \quad \text{s.t.} \quad |J_k(\theta) - J_j(\theta)| \le \varepsilon, \quad \forall 1 \le k &lt; j \le K\]<p>引入任务概率分布向量 $z \in \Delta_K$（满足 $\sum z_k = 1, z_k \ge 0$）后，其拉格朗日 Min-Max 代理目标为：</p>
+\[\max_{\theta \in \Theta} \min_{z \in \Delta_K} \sum_{k=1}^K z_k J_k(\theta) + \frac{\varepsilon}{2} \left\| z - \frac{1}{K}\mathbf{1} \right\|_1\]<p>当 $\varepsilon \to 0$ 时，退化为最差任务奖励最大化（Worst-Case Robustness）。</p>
 <hr>
 <h3 id="2-2-解耦-GRPO-损失：基于真实奖励与进展动量的动态重加权"><a href="#2-2-解耦-GRPO-损失：基于真实奖励与进展动量的动态重加权" class="headerlink" title="2.2 解耦 GRPO 损失：基于真实奖励与进展动量的动态重加权"></a>2.2 解耦 GRPO 损失：基于真实奖励与进展动量的动态重加权</h3><p>传统分布鲁棒优化（DRO）通常依据当前批次的 Loss 动态调整权重（Loss 越大权重越高）。<strong>但在 GRPO 中，Loss 在全对与全错时都趋近于 0，无法直接作为任务难度的评价标尺</strong>。</p>
 <p>MT-GRPO 提出<strong>直接利用真实任务级奖励 $J_k(\theta)$ 与短时进展动量</strong>进行重加权：</p>
@@ -341,7 +342,7 @@
 <ol>
 <li><strong>Logit 空间参数化</strong>：定义 $z_t = \text{Softmax}(\xi_t)$，其中 $\xi \in \mathbb{R}^K$。</li>
 <li><p><strong>动态更新梯度计算</strong>：</p>
-<script type="math/tex; mode=display">(g_t)_k = z_{k,t} \left( J_k(\theta_t) - \sum_{j=1}^K z_{j,t} J_j(\theta_t) \right)</script><p>当某任务的奖励低于加权均值时，$(g_t)_k &lt; 0$，在梯度下降 $\xi_{t+1} = \xi_t - \beta g_t$ 下其 Logit 与分配权重 $z_k$ 将自动调高。</p>
+\[(g_t)_k = z_{k,t} \left( J_k(\theta_t) - \sum_{j=1}^K z_{j,t} J_j(\theta_t) \right)\]<p>当某任务的奖励低于加权均值时，$(g_t)_k &lt; 0$，在梯度下降 $\xi_{t+1} = \xi_t - \beta g_t$ 下其 Logit 与分配权重 $z_k$ 将自动调高。</p>
 </li>
 <li><strong>引入改进动量防止权重极化崩溃（Improvement-Aware Regularization）</strong>：<br>若仅针对瞬时表现最差的任务施加极值权重，会导致权重在难任务间剧烈震荡（图中 Worst-task Collapse）。MT-GRPO 引入任务历史提升速度（Improvement Velocity），对处于“快速爬坡期”的任务给予适度宽限，实现全局平滑演进。</li>
 </ol>

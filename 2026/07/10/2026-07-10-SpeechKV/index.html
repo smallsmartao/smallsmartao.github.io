@@ -77,6 +77,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -357,15 +358,15 @@
 <p>Training-free 方法不可避免地存在 train-test mismatch。SpeechKV 属于 trainable 方案，联合训练消除此问题。</p>
 <hr>
 <h2 id="三、方法（Method）"><a href="#三、方法（Method）" class="headerlink" title="三、方法（Method）"></a>三、方法（Method）</h2><h3 id="3-1-Speech-Language-Model-Baseline"><a href="#3-1-Speech-Language-Model-Baseline" class="headerlink" title="3.1 Speech Language Model Baseline"></a>3.1 Speech Language Model Baseline</h3><p>Baseline 遵循 encoder–adapter–LLM 范式：</p>
-<script type="math/tex; mode=display">Z = f_{\text{enc}}(x) \in \mathbb{R}^{T \times d_e} \tag{1}</script><p>其中 $T$ 为帧数，$d_e$ 为编码器隐藏维度。2 层 MLP adapter 投影到 LLM 嵌入空间（无时间下采样）：</p>
-<script type="math/tex; mode=display">A = f_{\text{adp}}(Z) \in \mathbb{R}^{T \times d} \tag{2}</script><p>拼接文本嵌入 $E \in \mathbb{R}^{N \times d}$ 后，输入 $L$ 层 decoder-only LLM，以 next-token prediction 训练：</p>
-<script type="math/tex; mode=display">\mathcal{L} = -\sum_{t=1}^{M} \log p(y_t \mid A, E, y_{<t}) \tag{3}</script><p>由于 $T \gg N + M$，语音 KV cache 主导每步注意力开销。</p>
+\[Z = f_{\text{enc}}(x) \in \mathbb{R}^{T \times d_e} \tag{1}\]<p>其中 $T$ 为帧数，$d_e$ 为编码器隐藏维度。2 层 MLP adapter 投影到 LLM 嵌入空间（无时间下采样）：</p>
+\[A = f_{\text{adp}}(Z) \in \mathbb{R}^{T \times d} \tag{2}\]<p>拼接文本嵌入 $E \in \mathbb{R}^{N \times d}$ 后，输入 $L$ 层 decoder-only LLM，以 next-token prediction 训练：</p>
+\[\mathcal{L} = -\sum_{t=1}^{M} \log p(y_t \mid A, E, y_{&lt;t}) \tag{3}\]<p>由于 $T \gg N + M$，语音 KV cache 主导每步注意力开销。</p>
 <h3 id="3-2-SpeechKV"><a href="#3-2-SpeechKV" class="headerlink" title="3.2 SpeechKV"></a>3.2 SpeechKV</h3><p><img src="/images/paper_figs/speechkv/figure1.png" srcset="/img/loading.gif" lazyload alt="SpeechKV 架构总览"></p>
 <p>从第 $l_0$ 层开始，对语音 KV 序列施加学习式 pooling 算子 $\mathcal{P}_R$（压缩比 $R$）。</p>
 <p><strong>核心操作</strong>：将 $T$ 个语音位置分割为大小为 $R$ 的非重叠窗口。在每个窗口内，学习线性门 $g: \mathbb{R}^{d_h} \to \mathbb{R}$ 对每个 key 向量产生标量 logit，softmax 归一化为权重：</p>
-<script type="math/tex; mode=display">\alpha_j = \frac{\exp(g(k_j))}{\sum_{j'=1}^{R} \exp(g(k_{j'}))}, \quad \hat{k} = \sum_{j=1}^{R} \alpha_j k_j, \quad \hat{v} = \sum_{j=1}^{R} \alpha_j v_j \tag{4}</script><p>门初始化为零，模型从均匀平均出发，逐渐学习强调窗口内的信息性位置。</p>
+\[\alpha_j = \frac{\exp(g(k_j))}{\sum_{j'=1}^{R} \exp(g(k_{j'}))}, \quad \hat{k} = \sum_{j=1}^{R} \alpha_j k_j, \quad \hat{v} = \sum_{j=1}^{R} \alpha_j v_j \tag{4}\]<p>门初始化为零，模型从均匀平均出发，逐渐学习强调窗口内的信息性位置。</p>
 <p>在每层 $l \geq l_0$，全分辨率 query attend 压缩后的 KV 序列：</p>
-<script type="math/tex; mode=display">\text{Attention}^{(l)} = \text{softmax}\left(\frac{Q^{(l)} \hat{K}^{(l)\top}}{\sqrt{d_h}}\right) \hat{V}^{(l)} \tag{5}</script><p>其中 $\hat{K}^{(l)} = \mathcal{P}_R(K^{(l)})$，$\hat{V}^{(l)} = \mathcal{P}_R(V^{(l)})$。注意力掩码相应调整以保持因果性。文本位置不受影响。</p>
+\[\text{Attention}^{(l)} = \text{softmax}\left(\frac{Q^{(l)} \hat{K}^{(l)\top}}{\sqrt{d_h}}\right) \hat{V}^{(l)} \tag{5}\]<p>其中 $\hat{K}^{(l)} = \mathcal{P}_R(K^{(l)})$，$\hat{V}^{(l)} = \mathcal{P}_R(V^{(l)})$。注意力掩码相应调整以保持因果性。文本位置不受影响。</p>
 <p><strong>设计哲学</strong>：压缩操作刻意保持简洁轻量，依赖 LLM 自身的注意力机制有效处理压缩序列。</p>
 <h3 id="3-3-训练与推理"><a href="#3-3-训练与推理" class="headerlink" title="3.3 训练与推理"></a>3.3 训练与推理</h3><ul>
 <li><strong>训练阶段</strong>：SpeechKV 在前向传播中 on-the-fly 应用，与 next-token-prediction loss 联合优化，确保无 train-test mismatch。</li>
@@ -864,9 +865,9 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2026/07/10/2026-07-10-Revisiting-PPL-WER/" title="Revisiting the Relation Between Language Model Perplexity and ASR Word Error Rate for Modern End-to-End Speech Recognition">
+                      <a href="/2026/07/10/2026-07-10-DuplexPO/" title="Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning">
                         <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">Revisiting the Relation Between Language Model Perplexity and ASR Word Error Rate for Modern End-to-End Speech Recognition</span>
+                        <span class="hidden-mobile">Decoupling Conversational Dynamics in Full-Duplex Spoken Models through Reinforcement Learning</span>
                         <span class="visible-mobile">上一篇</span>
                       </a>
                     

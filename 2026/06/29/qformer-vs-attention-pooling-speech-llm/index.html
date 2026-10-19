@@ -78,6 +78,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -339,19 +340,15 @@
 <p>不要让 LLM 被动接收所有视觉/语音 token，而是让一组<strong>可学习的 query</strong>主动去语音特征中”查询”有用信息。</p>
 </blockquote>
 <h4 id="结构组成"><a href="#结构组成" class="headerlink" title="结构组成"></a>结构组成</h4><p>Q-Former 本质上是一个 <strong>Transformer 编码器</strong>，但在标准自注意力的基础上插入了<strong>交叉注意力（Cross-Attention）层</strong>：</p>
-<script type="math/tex; mode=display">
-\text{CrossAttn}(Q, K, V) = \text{softmax}\left(\frac{Q K^\top}{\sqrt{d_k}}\right) V</script><p>其中：</p>
+\[\text{CrossAttn}(Q, K, V) = \text{softmax}\left(\frac{Q K^\top}{\sqrt{d_k}}\right) V\]<p>其中：</p>
 <ul>
 <li>$Q \in \mathbb{R}^{N_q \times d}$：<strong>可学习 query token</strong>（$N_q$ 通常为 32~64 个，固定数量）</li>
 <li>$K, V \in \mathbb{R}^{T \times d}$：来自语音编码器的输出特征（$T$ 为时间帧数，可达上千）</li>
 <li>$d_k$：注意力头维度</li>
 </ul>
 <p>完整的 Q-Former 包含 $L$ 个 Transformer block，每个 block 的计算流程为：</p>
-<script type="math/tex; mode=display">
-\hat{Q}^{(l)} = \text{SelfAttn}(Q^{(l-1)}) + Q^{(l-1)}</script><script type="math/tex; mode=display">
-Q^{(l)} = \text{CrossAttn}(\hat{Q}^{(l)},\ K_{\text{speech}},\ V_{\text{speech}}) + \hat{Q}^{(l)}</script><p>经过 $L$ 层后，$N_q$ 个 query token 被投影为 LLM 的输入嵌入：</p>
-<script type="math/tex; mode=display">
-H_{\text{LLM}} = \text{Linear}(Q^{(L)}) \in \mathbb{R}^{N_q \times d_{\text{LLM}}}</script><p><strong>关键特性</strong>：</p>
+\[\hat{Q}^{(l)} = \text{SelfAttn}(Q^{(l-1)}) + Q^{(l-1)}\]\[Q^{(l)} = \text{CrossAttn}(\hat{Q}^{(l)},\ K_{\text{speech}},\ V_{\text{speech}}) + \hat{Q}^{(l)}\]<p>经过 $L$ 层后，$N_q$ 个 query token 被投影为 LLM 的输入嵌入：</p>
+\[H_{\text{LLM}} = \text{Linear}(Q^{(L)}) \in \mathbb{R}^{N_q \times d_{\text{LLM}}}\]<p><strong>关键特性</strong>：</p>
 <ul>
 <li><strong>输出长度恒定</strong>：无论输入语音多长（$T=100$ 或 $T=3000$），输出始终为 $N_q$ 个 token</li>
 <li><strong>信息瓶颈</strong>：$N_q$ 个 query 必须”学会”从 $T$ 帧中提取所有关键信息，这本身是一种信息瓶颈</li>
@@ -402,19 +399,14 @@ H_{\text{LLM}} = \text{Linear}(Q^{(L)}) \in \mathbb{R}^{N_q \times d_{\text{LLM}
 </div>
 <h3 id="1-2-Attention-Pooling：轻量级的”加权压缩”"><a href="#1-2-Attention-Pooling：轻量级的”加权压缩”" class="headerlink" title="1.2 Attention Pooling：轻量级的”加权压缩”"></a>1.2 Attention Pooling：轻量级的”加权压缩”</h3><p>与 Q-Former 的”重型”方案不同，Attention Pooling 走极简路线——用一个注意力权重层直接将长序列压缩为短序列，再线性投影到 LLM 空间。</p>
 <h4 id="基础形式：全局注意力池化"><a href="#基础形式：全局注意力池化" class="headerlink" title="基础形式：全局注意力池化"></a>基础形式：全局注意力池化</h4><p>最简单的形式是对整个序列做加权求和：</p>
-<script type="math/tex; mode=display">
-\alpha_t = \frac{\exp(w^\top h_t)}{\sum_{t'=1}^{T} \exp(w^\top h_{t'})}</script><script type="math/tex; mode=display">
-z = \sum_{t=1}^{T} \alpha_t h_t</script><p>其中 $w \in \mathbb{R}^{d}$ 是可学习的注意力查询向量，$h_t \in \mathbb{R}^{d}$ 是语音编码器第 $t$ 帧的输出。这会把 $T$ 帧压成<strong>1 个向量</strong>，信息损失较大。</p>
+\[\alpha_t = \frac{\exp(w^\top h_t)}{\sum_{t'=1}^{T} \exp(w^\top h_{t'})}\]\[z = \sum_{t=1}^{T} \alpha_t h_t\]<p>其中 $w \in \mathbb{R}^{d}$ 是可学习的注意力查询向量，$h_t \in \mathbb{R}^{d}$ 是语音编码器第 $t$ 帧的输出。这会把 $T$ 帧压成<strong>1 个向量</strong>，信息损失较大。</p>
 <h4 id="进阶形式：分段注意力池化（Windowed-Strided-Attention-Pooling）"><a href="#进阶形式：分段注意力池化（Windowed-Strided-Attention-Pooling）" class="headerlink" title="进阶形式：分段注意力池化（Windowed / Strided Attention Pooling）"></a>进阶形式：分段注意力池化（Windowed / Strided Attention Pooling）</h4><p>为了保留一定的时间信息，更常见的做法是<strong>按窗口分段池化</strong>：</p>
-<script type="math/tex; mode=display">
-z_k = \sum_{t \in \mathcal{W}_k} \alpha_t^{(k)} h_t, \quad k = 1, \dots, \lceil T/S \rceil</script><p>其中 $\mathcal{W}_k$ 是第 $k$ 个窗口内的帧索引，$S$ 为步长。这样将 $T$ 帧压缩为约 $T/S$ 个 token。</p>
+\[z_k = \sum_{t \in \mathcal{W}_k} \alpha_t^{(k)} h_t, \quad k = 1, \dots, \lceil T/S \rceil\]<p>其中 $\mathcal{W}_k$ 是第 $k$ 个窗口内的帧索引，$S$ 为步长。这样将 $T$ 帧压缩为约 $T/S$ 个 token。</p>
 <p>例如，当 $S=5$（即每 5 帧合并为 1 帧），30 秒语音从 1500 帧压缩为 300 帧。</p>
 <h4 id="进阶形式：多头注意力池化"><a href="#进阶形式：多头注意力池化" class="headerlink" title="进阶形式：多头注意力池化"></a>进阶形式：多头注意力池化</h4><p>引入多个可学习查询向量 ${w_1, \dots, w_M}$，每个独立计算注意力权重并产出一个输出向量：</p>
-<script type="math/tex; mode=display">
-z_m = \sum_{t=1}^{T} \frac{\exp(w_m^\top h_t)}{\sum_{t'} \exp(w_m^\top h_{t'})} h_t, \quad m=1,\dots,M</script><p>输出 $M$ 个 token，再过线性层投影到 LLM 维度。这和 Q-Former 的 query 机制有一定相似性，但<strong>没有自注意力和交叉注意力的多层叠加</strong>，参数量级小得多。</p>
+\[z_m = \sum_{t=1}^{T} \frac{\exp(w_m^\top h_t)}{\sum_{t'} \exp(w_m^\top h_{t'})} h_t, \quad m=1,\dots,M\]<p>输出 $M$ 个 token，再过线性层投影到 LLM 维度。这和 Q-Former 的 query 机制有一定相似性，但<strong>没有自注意力和交叉注意力的多层叠加</strong>，参数量级小得多。</p>
 <h4 id="最终投影"><a href="#最终投影" class="headerlink" title="最终投影"></a>最终投影</h4><p>无论哪种池化形式，最后都需要一个线性投影：</p>
-<script type="math/tex; mode=display">
-H_{\text{LLM}} = \text{Linear}(Z) \in \mathbb{R}^{N_{\text{out}} \times d_{\text{LLM}}}</script><p><strong>关键特性</strong>：</p>
+\[H_{\text{LLM}} = \text{Linear}(Z) \in \mathbb{R}^{N_{\text{out}} \times d_{\text{LLM}}}\]<p><strong>关键特性</strong>：</p>
 <ul>
 <li><strong>参数量极小</strong>：通常只有 1~10M 参数（一个注意力层 + 一个线性层）</li>
 <li><strong>输出长度灵活</strong>：取决于池化策略（全局→1 token，分段→$T/S$ tokens）</li>
@@ -498,10 +490,8 @@ H_{\text{LLM}} = \text{Linear}(Z) \in \mathbb{R}^{N_{\text{out}} \times d_{\text
 </table>
 </div>
 <p>对于一段 30s 语音（$T=1500$，$d=1280$），Q-Former（$L=12$，$N_q=32$）的交叉注意力 FLOPs 约为：</p>
-<script type="math/tex; mode=display">
-12 \times (32 \times 1500 \times 1280 \times 2) \approx 1.47 \times 10^9 \text{ FLOPs}</script><p>而简单注意力池化的 FLOPs 约为：</p>
-<script type="math/tex; mode=display">
-1500 \times 1280 \approx 1.92 \times 10^6 \text{ FLOPs}</script><p>差距约 <strong>3 个数量级</strong>。</p>
+\[12 \times (32 \times 1500 \times 1280 \times 2) \approx 1.47 \times 10^9 \text{ FLOPs}\]<p>而简单注意力池化的 FLOPs 约为：</p>
+\[1500 \times 1280 \approx 1.92 \times 10^6 \text{ FLOPs}\]<p>差距约 <strong>3 个数量级</strong>。</p>
 <h3 id="2-2-序列压缩能力"><a href="#2-2-序列压缩能力" class="headerlink" title="2.2 序列压缩能力"></a>2.2 序列压缩能力</h3><div class="table-container">
 <table>
 <thead>
@@ -613,8 +603,7 @@ H_{\text{LLM}} = \text{Linear}(Z) \in \mathbb{R}^{N_{\text{out}} \times d_{\text
 <p><strong>原因分析</strong>：高层理解任务不需要逐帧精确转录，而需要全局语义把握。Q-Former 的信息瓶颈在这里反而成为优势——它迫使模型学习高度抽象的表示。</p>
 <hr>
 <h2 id="3-深入分析：为什么两种方案各有所长？"><a href="#3-深入分析：为什么两种方案各有所长？" class="headerlink" title="3. 深入分析：为什么两种方案各有所长？"></a>3. 深入分析：为什么两种方案各有所长？</h2><h3 id="3-1-信息瓶颈理论视角"><a href="#3-1-信息瓶颈理论视角" class="headerlink" title="3.1 信息瓶颈理论视角"></a>3.1 信息瓶颈理论视角</h3><p>从信息瓶颈（Information Bottleneck）理论的角度，适配器的本质是学习一个压缩映射：</p>
-<script type="math/tex; mode=display">
-\min_{f} I(X; Z) - \beta \cdot I(Z; Y)</script><p>其中 $X$ 是语音特征，$Z$ 是适配器输出，$Y$ 是目标文本/语义，$\beta$ 控制压缩与保留的权衡。</p>
+\[\min_{f} I(X; Z) - \beta \cdot I(Z; Y)\]<p>其中 $X$ 是语音特征，$Z$ 是适配器输出，$Y$ 是目标文本/语义，$\beta$ 控制压缩与保留的权衡。</p>
 <ul>
 <li><strong>Q-Former</strong>（$N_q$ 小）：强压缩，$I(X; Z)$ 低，适合 $Y$ 是高层语义的任务</li>
 <li><strong>Attention Pooling</strong>（stride 适中）：弱压缩，$I(X; Z)$ 高，适合 $Y$ 需要细粒度对应的任务（如 ASR）</li>

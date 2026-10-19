@@ -79,6 +79,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -333,12 +334,12 @@
 </ol>
 <p>本文从<strong>熵分配（entropy allocation）</strong>的视角重新审视 LLM-ASR，将 ASR 任务视为将高熵语音信号压缩为低熵语言符号的过程。在此视角下，编码器和 LLM 在一个”零和熵预算”下运作：编码器吸收的不确定性越多，LLM 需要解决的就越少。</p>
 <h2 id="2-编码器表征的度量体系"><a href="#2-编码器表征的度量体系" class="headerlink" title="2. 编码器表征的度量体系"></a>2. 编码器表征的度量体系</h2><h3 id="2-1-归一化谱熵（NSE）"><a href="#2-1-归一化谱熵（NSE）" class="headerlink" title="2.1 归一化谱熵（NSE）"></a>2.1 归一化谱熵（NSE）</h3><p>对编码器表征矩阵 $E’ \in \mathbb{R}^{L \times d_e}$ 进行奇异值分解 $E’ = U\Sigma V^\top$，其中 $\Sigma = \text{diag}(\sigma_1, \dots, \sigma_d)$。将奇异值按 $\ell_1$ 范数归一化：</p>
-<script type="math/tex; mode=display">\bar{\sigma}_i = \frac{\sigma_i}{\sum_{j=1}^{d} \sigma_j}</script><p>归一化谱熵定义为：</p>
-<script type="math/tex; mode=display">\text{NSE}(E') = -\frac{1}{\log d} \sum_{i=1}^{d} \bar{\sigma}_i \log(\bar{\sigma}_i)</script><p>NSE 刻画了编码器表征的全局谱几何结构。<strong>低 NSE</strong> 意味着表征更具各向异性、压缩程度更高；<strong>高 NSE</strong> 意味着表征更各向同性，保留了更多残余熵。</p>
+\[\bar{\sigma}_i = \frac{\sigma_i}{\sum_{j=1}^{d} \sigma_j}\]<p>归一化谱熵定义为：</p>
+\[\text{NSE}(E') = -\frac{1}{\log d} \sum_{i=1}^{d} \bar{\sigma}_i \log(\bar{\sigma}_i)\]<p>NSE 刻画了编码器表征的全局谱几何结构。<strong>低 NSE</strong> 意味着表征更具各向异性、压缩程度更高；<strong>高 NSE</strong> 意味着表征更各向同性，保留了更多残余熵。</p>
 <h3 id="2-2-音素可达信息（PAI）"><a href="#2-2-音素可达信息（PAI）" class="headerlink" title="2.2 音素可达信息（PAI）"></a>2.2 音素可达信息（PAI）</h3><p>PAI 度量从编码器表征中可以线性访问到多少音素信息。具体地，将表征通过时间均值和标准差池化得到向量 $u$，将参考转录文本转为音素 token 并构建归一化的 bag-of-phones 计数向量 $P$，经 PCA 和标准化后，在联合高斯假设下计算：</p>
-<script type="math/tex; mode=display">\text{PAI}(E') = \left[\frac{1}{2\log 2} \log \frac{\det \tilde{\Sigma}_{uu} \det \tilde{\Sigma}_{PP}}{\det \tilde{\Sigma}_{[u,P]}}\right]_+</script><p>其中 $\tilde{\Sigma} = \hat{\Sigma} + \lambda I$ 为岭正则化协方差矩阵，$[\cdot]_+$ 为截断非负操作。</p>
+\[\text{PAI}(E') = \left[\frac{1}{2\log 2} \log \frac{\det \tilde{\Sigma}_{uu} \det \tilde{\Sigma}_{PP}}{\det \tilde{\Sigma}_{[u,P]}}\right]_+\]<p>其中 $\tilde{\Sigma} = \hat{\Sigma} + \lambda I$ 为岭正则化协方差矩阵，$[\cdot]_+$ 为截断非负操作。</p>
 <h3 id="2-3-条件语义可达信息（CSAI）"><a href="#2-3-条件语义可达信息（CSAI）" class="headerlink" title="2.3 条件语义可达信息（CSAI）"></a>2.3 条件语义可达信息（CSAI）</h3><p>CSAI 度量在给定音素信息之后，编码器表征中还能线性访问到多少额外的语义信息。语义目标 $C$ 通过冻结的 Qwen3-Embedding-8B 模型编码得到。定义为：</p>
-<script type="math/tex; mode=display">\text{CSAI}(E') = \left[\frac{1}{2\log 2} \log \frac{\det \tilde{\Sigma}_{uu|P} \det \tilde{\Sigma}_{CC|P}}{\det \tilde{\Sigma}_{[u,C]|P}}\right]_+</script><p>CSAI 捕捉的是编码器表征中”超越音素结构”的语义信息——即 $u$ 与 $C$ 之间不能被音素目标 $P$ 所中介的依赖关系。</p>
+\[\text{CSAI}(E') = \left[\frac{1}{2\log 2} \log \frac{\det \tilde{\Sigma}_{uu|P} \det \tilde{\Sigma}_{CC|P}}{\det \tilde{\Sigma}_{[u,C]|P}}\right]_+\]<p>CSAI 捕捉的是编码器表征中”超越音素结构”的语义信息——即 $u$ 与 $C$ 之间不能被音素目标 $P$ 所中介的依赖关系。</p>
 <h3 id="2-4-度量揭示的两种次优模式"><a href="#2-4-度量揭示的两种次优模式" class="headerlink" title="2.4 度量揭示的两种次优模式"></a>2.4 度量揭示的两种次优模式</h3><p><img src="/images/paper_figs/2604_08003/fig1_entropy_metrics.png" srcset="/img/loading.gif" lazyload alt="Figure 1: 端到端联合训练前后编码器指标的变化"></p>
 <p>通过对两组代表性 ASR 模型族进行度量对比（保持编码器架构不变以隔离联合训练的影响），论文揭示了两种截然不同的次优行为模式：</p>
 <p><strong>模式一：FireRedASR-AED → FireRedASR-LLM</strong></p>
@@ -353,9 +354,9 @@
 <li>虽然缓解了表征漂移，但增加了 LLM 的容量需求，迫使 LLM 在其主要建模优势之外解决音素级不确定性，导致参数效率低下</li>
 </ul>
 <h2 id="3-方法论：能力边界感知的多阶段训练"><a href="#3-方法论：能力边界感知的多阶段训练" class="headerlink" title="3. 方法论：能力边界感知的多阶段训练"></a>3. 方法论：能力边界感知的多阶段训练</h2><h3 id="3-1-LLM-ASR-条件生成框架"><a href="#3-1-LLM-ASR-条件生成框架" class="headerlink" title="3.1 LLM-ASR 条件生成框架"></a>3.1 LLM-ASR 条件生成框架</h3><p>输入语音特征 $x$（log-Mel 频谱图），文本指令提示 $t = (t_1, \dots, t_M)$，输出 token 序列 $y = (y_1, \dots, y_N)$。LLM-ASR 将 ASR 建模为条件语言生成：</p>
-<script type="math/tex; mode=display">p_\theta(y|x,t) = \prod_{n=1}^{N} p_\theta(y_n | y_{<n}, x, t)</script><p>参数 $\theta = {\phi, \psi, \omega}$ 分别对应语音编码器、适配器和 LLM 解码器。</p>
+\[p_\theta(y|x,t) = \prod_{n=1}^{N} p_\theta(y_n | y_{&lt;n}, x, t)\]<p>参数 $\theta = {\phi, \psi, \omega}$ 分别对应语音编码器、适配器和 LLM 解码器。</p>
 <p>语音编码器将声学特征映射为连续表征：$E = E_\phi(x) \in \mathbb{R}^{L \times d_e}$。适配器负责模态投影：$Z = A_\psi(\text{Down}_r(E)) \in \mathbb{R}^{L’ \times d_m}$，其中 $\text{Down}_r(\cdot)$ 为下采样算子（帧拼接）。统一连续输入序列通过将 <code>&lt;speech&gt;</code> 占位符替换为投影后的语音嵌入 $Z$ 来构建：</p>
-<script type="math/tex; mode=display">S_{in} = [W(t_1), \dots, W(t_M); Z_1, \dots, Z_{L'}] \in \mathbb{R}^{(M+L') \times d_m}</script><h3 id="3-2-设计原则"><a href="#3-2-设计原则" class="headerlink" title="3.2 设计原则"></a>3.2 设计原则</h3><p>基于度量分析揭示的两种次优模式，论文提出了<strong>能力边界感知（capability-boundary-aware）</strong>的设计原则，包含两个核心要求：</p>
+\[S_{in} = [W(t_1), \dots, W(t_M); Z_1, \dots, Z_{L'}] \in \mathbb{R}^{(M+L') \times d_m}\]<h3 id="3-2-设计原则"><a href="#3-2-设计原则" class="headerlink" title="3.2 设计原则"></a>3.2 设计原则</h3><p>基于度量分析揭示的两种次优模式，论文提出了<strong>能力边界感知（capability-boundary-aware）</strong>的设计原则，包含两个核心要求：</p>
 <ol>
 <li><strong>编码器应在暴露于 LLM 主导的联合优化之前，先被引导向低熵、声学锚定的表征</strong>。这可以提前收窄模态鸿沟，降低后续训练诉诸语义偏差捷径的风险。</li>
 <li><strong>在联合优化过程中，模块间的功能边界应被显式维护</strong>，确保编码器的进一步压缩沿声学锚定方向进行，而非以声学表征质量为代价。</li>
@@ -374,7 +375,7 @@
 </ul>
 <h4 id="3-3-2-对齐与迭代异步-SFT（IA-SFT）"><a href="#3-3-2-对齐与迭代异步-SFT（IA-SFT）" class="headerlink" title="3.3.2 对齐与迭代异步 SFT（IA-SFT）"></a>3.3.2 对齐与迭代异步 SFT（IA-SFT）</h4><p>传统流水线中，对齐和联合 SFT 在预训练完成后顺序执行。本文在对齐和联合 SFT 之间引入 IA-SFT 阶段，且<strong>对齐和 IA-SFT 与预训练异步并行进行</strong>，无需等待预训练完成。</p>
 <p>编码器初始化和更新通过<strong>中心核对齐（CKA）</strong>来监控表征漂移：</p>
-<script type="math/tex; mode=display">\text{CKA}(E^{(a)}, E^{(b)}) = \frac{\langle \tilde{K}^{(a)}, \tilde{K}^{(b)} \rangle_F}{\sqrt{\langle \tilde{K}^{(a)}, \tilde{K}^{(a)} \rangle_F \cdot \langle \tilde{K}^{(b)}, \tilde{K}^{(b)} \rangle_F}}</script><p>其中 $\tilde{K}^{(x)} = C E^{(x)} E^{(x)\top} C$ 为中心化 Gram 矩阵。</p>
+\[\text{CKA}(E^{(a)}, E^{(b)}) = \frac{\langle \tilde{K}^{(a)}, \tilde{K}^{(b)} \rangle_F}{\sqrt{\langle \tilde{K}^{(a)}, \tilde{K}^{(a)} \rangle_F \cdot \langle \tilde{K}^{(b)}, \tilde{K}^{(b)} \rangle_F}}\]<p>其中 $\tilde{K}^{(x)} = C E^{(x)} E^{(x)\top} C$ 为中心化 Gram 矩阵。</p>
 <p><strong>具体流程</strong>：</p>
 <p><strong>(1) 对齐阶段</strong>：预训练运行足够步数后，快照编码器作为参考检查点。持续监控 CKA 分数，当首次降至预设阈值以下时，取新快照初始化对齐阶段的编码器并更新参考检查点。对齐期间编码器和 LLM 均冻结，仅训练适配器。</p>
 <p><strong>(2) IA-SFT 阶段</strong>：对齐完成后进入 IA-SFT，编码器冻结，适配器和 LLM 联合训练。核心机制是 <strong>CKA 驱动的迭代编码器热替换</strong>：每当 CKA 分数降至阈值以下，将正在进行的预训练中的最新编码器检查点热替换到 IA-SFT 模型中，并更新参考检查点。CKA 约束确保每次替换都带来非平凡的表征演化，使 LLM 以课程学习的方式从逐步精炼的编码器中学习。</p>
@@ -676,7 +677,7 @@
 <p>幻觉定义：转录长度超过真实标注 50% 以上且与之完全无关。本文模型在所有场景下的幻觉率均实质性低于所有基线，归因于训练过程中对编码器声学锚定性的显式约束。消融实验确认 IA-SFT 是低幻觉率的主要贡献者——没有 IA-SFT，即使低熵表征也容易被 LLM 的强势梯度主导，导致模型退回语言捷径并产生幻觉。</p>
 <h3 id="5-6-逐层对齐分析：从编码器到适配器"><a href="#5-6-逐层对齐分析：从编码器到适配器" class="headerlink" title="5.6 逐层对齐分析：从编码器到适配器"></a>5.6 逐层对齐分析：从编码器到适配器</h3><p><img src="/images/paper_figs/2604_08003/fig4_layerwise_cka.png" srcset="/img/loading.gif" lazyload alt="Figure 4: 逐层 CKA 分数"></p>
 <p>通过计算真实文本嵌入与各编码器层以及适配器后嵌入之间的线性 CKA 分数：</p>
-<script type="math/tex; mode=display">\text{CKA}_{\text{linear}}(X_l, Y) = \frac{\|X_l^\top Y\|_F^2}{\|X_l^\top X_l\|_F \|Y^\top Y\|_F}</script><p>关键对比（本文模型与 FireRedASR-LLM 共享相同的编码器和适配器架构）：</p>
+\[\text{CKA}_{\text{linear}}(X_l, Y) = \frac{\|X_l^\top Y\|_F^2}{\|X_l^\top X_l\|_F \|Y^\top Y\|_F}\]<p>关键对比（本文模型与 FireRedASR-LLM 共享相同的编码器和适配器架构）：</p>
 <ul>
 <li><strong>FireRedASR-LLM</strong>：CKA 分数在适配器投影后<strong>下降</strong>——高熵编码器表征难以干净地映射到文本嵌入空间，适配器需要同时执行维度投影和补偿不稳定接口、调和不对齐的语义几何，这一双重负担超出了其有限容量</li>
 <li><strong>本文模型</strong>：CKA 分数在适配器接口处<strong>显著上升</strong>（无论是否经过联合 SFT）——因为编码器已经产生了与文本 token 大致同步的低熵表征，IA-SFT 进一步让 LLM 熟悉了这些表征，适配器只需执行简单的维度映射并修正残余的几何不对齐</li>
@@ -730,7 +731,7 @@
 <li>仅移除 IA-SFT 中的编码器热替换（退化为标准的编码器冻结阶段），性能仍低于完整 IA-SFT——静态表征缺乏鲁棒适配所需的多样性，编码器热替换通过作为隐式正则化来缓解这一问题</li>
 </ul>
 <h2 id="6-信息论视角：幻觉作为错误分配的不确定性缩减"><a href="#6-信息论视角：幻觉作为错误分配的不确定性缩减" class="headerlink" title="6. 信息论视角：幻觉作为错误分配的不确定性缩减"></a>6. 信息论视角：幻觉作为错误分配的不确定性缩减</h2><p>论文在附录中提供了信息论视角的深入分析。在编码器-LLM 接口处，目标转录的不确定性可分解为：</p>
-<script type="math/tex; mode=display">H(Y) = I(Y; Z) + H(Y|Z)</script><p>其中 $I(Y; Z)$ 度量通过接口暴露的任务相关信息量，$H(Y|Z)$ 表示 LLM 需要解决的残余不确定性。</p>
+\[H(Y) = I(Y; Z) + H(Y|Z)\]<p>其中 $I(Y; Z)$ 度量通过接口暴露的任务相关信息量，$H(Y|Z)$ 表示 LLM 需要解决的残余不确定性。</p>
 <p>幻觉可被解释为两种失败模式：</p>
 <ol>
 <li><strong>语义污染的编码器表征</strong>：联合优化使编码器表征与文本相关的规律性对齐，部分不确定性缩减通过非声学锚定的模式实现——接口变得对转录更具预测性但失去了对声学变异的鲁棒性</li>

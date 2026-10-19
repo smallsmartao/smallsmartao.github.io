@@ -81,6 +81,7 @@
 
   
 <link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
 
 
 
@@ -334,7 +335,7 @@
 </blockquote>
 <hr>
 <h2 id="1-痛点根源：上下文偏置的“两难困境”"><a href="#1-痛点根源：上下文偏置的“两难困境”" class="headerlink" title="1. 痛点根源：上下文偏置的“两难困境”"></a>1. 痛点根源：上下文偏置的“两难困境”</h2><p>在基于大语言模型的语音识别架构中，模型联合建模声学特征 $\bm{x}$ 与上下文提示 $\bm{c}$：</p>
-<script type="math/tex; mode=display">P(\bm{y} \mid \bm{x}, \bm{c}) = \prod_{t=1}^T P(y_t \mid y_{<t}, \bm{x}, \bm{c})</script><p>这种联合建模在实际业务中面临两大核心脆弱性：</p>
+\[P(\bm{y} \mid \bm{x}, \bm{c}) = \prod_{t=1}^T P(y_t \mid y_{&lt;t}, \bm{x}, \bm{c})\]<p>这种联合建模在实际业务中面临两大核心脆弱性：</p>
 <ol>
 <li><strong>级联雪崩效应（Error Propagation / Cascade Collapse）</strong>：在连续多轮人机对话中，如果第 $k$ 轮 ASR 出现了一个微小的命名实体识别错误，该错误会被原封不动存入 Dialogue History 作为第 $k+1$ 轮的 Context。由于 LLM 自注意力机制高度信任上文连贯性，模型在第 $k+1$ 轮会强行顺着错误语义自洽，导致后续轮次连续崩盘。</li>
 <li><strong>过度偏置与声学脱节（Over-Biasing vs. Acoustic Grounding）</strong>：当用户提供了超长热词列表或泛化上下文时，LLM 解码器倾向于走捷径（Shortcut Learning），仅凭语言模型先验直接输出热词，而无视输入声学证据（Acoustic Evidence）。</li>
@@ -361,7 +362,7 @@
 </li>
 </ol>
 <h3 id="2-2-鲁棒表征学习目标（Robust-Representation-Objectives）"><a href="#2-2-鲁棒表征学习目标（Robust-Representation-Objectives）" class="headerlink" title="2.2 鲁棒表征学习目标（Robust Representation Objectives）"></a>2.2 鲁棒表征学习目标（Robust Representation Objectives）</h3><p>为了防止模型对噪声产生简单过拟合，CNRL 引入了对比学习与对齐正则项：</p>
-<script type="math/tex; mode=display">\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{ASR}}(\bm{y}^* \mid \bm{x}, \tilde{\bm{c}}) + \beta \mathcal{L}_{\text{align}}(\bm{H}_{\text{clean}}, \bm{H}_{\text{noisy}}) + \gamma \mathcal{L}_{\text{consistency}}</script><ul>
+\[\mathcal{L}_{\text{total}} = \mathcal{L}_{\text{ASR}}(\bm{y}^* \mid \bm{x}, \tilde{\bm{c}}) + \beta \mathcal{L}_{\text{align}}(\bm{H}_{\text{clean}}, \bm{H}_{\text{noisy}}) + \gamma \mathcal{L}_{\text{consistency}}\]<ul>
 <li><strong>声学锚定机制（Acoustic Anchoring）</strong>：当上下文受到严重扰动时，模型隐层表征 $\bm{H}_{\text{noisy}}$ 与真实声学特征的对齐损失 $\mathcal{L}_{\text{align}}$ 权重急剧上升，强迫解码器自动切断对 $\tilde{\bm{c}}$ 的依赖，回退（Fallback）到纯声学主导模式。</li>
 </ul>
 <h3 id="2-3-实证收益"><a href="#2-3-实证收益" class="headerlink" title="2.3 实证收益"></a>2.3 实证收益</h3><ul>
@@ -376,9 +377,9 @@
 <li>只有当对方口音严重、语速过快或背景极其嘈杂（声学不确定度很高）时，我们才会借助屏幕或上下文提示去“猜”词。</li>
 </ul>
 <p>论文将该机制形式化为一套基于 <strong>LLM 预测熵（Entropy）与声学后验置信度（Acoustic Confidence）</strong> 的动态门控机制：</p>
-<script type="math/tex; mode=display">P_{\text{final}}(y_t \mid \bm{x}, \bm{c}) = (1 - g_t) \cdot P_{\text{acoustic}}(y_t \mid \bm{x}) + g_t \cdot P_{\text{biased}}(y_t \mid \bm{x}, \bm{c})</script><p>其中门控系数 $g_t \in [0, 1]$ 由当前时刻的声学不确定度动态决定。</p>
+\[P_{\text{final}}(y_t \mid \bm{x}, \bm{c}) = (1 - g_t) \cdot P_{\text{acoustic}}(y_t \mid \bm{x}) + g_t \cdot P_{\text{biased}}(y_t \mid \bm{x}, \bm{c})\]<p>其中门控系数 $g_t \in [0, 1]$ 由当前时刻的声学不确定度动态决定。</p>
 <h3 id="3-2-动态门控系数-g-t-的精确计算"><a href="#3-2-动态门控系数-g-t-的精确计算" class="headerlink" title="3.2 动态门控系数 $g_t$ 的精确计算"></a>3.2 动态门控系数 $g_t$ 的精确计算</h3><p>门控系数的计算结合了时序声学特征的不确定度评估：</p>
-<script type="math/tex; mode=display">g_t = \sigma \left( W_g \cdot [\mathcal{H}(P_{\text{acoustic}}(y_t)), 1 - \mathcal{C}_{\text{acoustic}}(\bm{x}_t), \bm{h}_t] + b_g \right)</script><ol>
+\[g_t = \sigma \left( W_g \cdot [\mathcal{H}(P_{\text{acoustic}}(y_t)), 1 - \mathcal{C}_{\text{acoustic}}(\bm{x}_t), \bm{h}_t] + b_g \right)\]<ol>
 <li><strong>声学输出熵 $\mathcal{H}(P_{\text{acoustic}})$</strong>：衡量纯声学分支在预测当前 Token 时的分布平坦程度；熵越低，说明声学证据越确凿，$g_t \to 0$；</li>
 <li><strong>声学局部置信度 $\mathcal{C}_{\text{acoustic}}$</strong>：基于声学 Encoder 输出特征的能量与信噪比（SNR）预估；</li>
 <li><strong>隐层语义状态 $\bm{h}_t$</strong>：结合当前已生成文本的自回归状态。</li>
