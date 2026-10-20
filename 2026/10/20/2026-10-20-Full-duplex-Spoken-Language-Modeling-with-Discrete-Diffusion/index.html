@@ -1,0 +1,1229 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息 标题：Full-duplex Spoken Language Modeling with Discrete Diffusion 作者：Chen Chen、Pin-Jui Ku、Ankita Pasad、Ante Jukić、Zhehuai Chen、Boris Ginsburg 机构：NVIDIA 版本：arXiv v1，2026 年 10 月 13 日 论文：arXiv:2610.17">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Full-duplex Spoken Language Modeling with Discrete Diffusion">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/10/20/2026-10-20-Full-duplex-Spoken-Language-Modeling-with-Discrete-Diffusion/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息 标题：Full-duplex Spoken Language Modeling with Discrete Diffusion 作者：Chen Chen、Pin-Jui Ku、Ankita Pasad、Ante Jukić、Zhehuai Chen、Boris Ginsburg 机构：NVIDIA 版本：arXiv v1，2026 年 10 月 13 日 论文：arXiv:2610.17">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/diffuplex-discrete-diffusion.png">
+<meta property="article:published_time" content="2026-10-20T10:20:00.000Z">
+<meta property="article:modified_time" content="2026-10-20T10:28:35.404Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="Discrete Diffusion">
+<meta property="article:tag" content="Full-Duplex">
+<meta property="article:tag" content="NVIDIA">
+<meta property="article:tag" content="Speech-LLM">
+<meta property="article:tag" content="Spoken Dialogue">
+<meta property="article:tag" content="Turn-Taking">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/diffuplex-discrete-diffusion.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Full-duplex Spoken Language Modeling with Discrete Diffusion - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/diffuplex-discrete-diffusion.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Full-duplex Spoken Language Modeling with Discrete Diffusion"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-20 18:20" pubdate>
+          2026年10月20日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          13 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Full-duplex Spoken Language Modeling with Discrete Diffusion</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年10月20日 晚上
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>：Full-duplex Spoken Language Modeling with Discrete Diffusion</li>
+<li><strong>作者</strong>：Chen Chen、Pin-Jui Ku、Ankita Pasad、Ante Jukić、Zhehuai Chen、Boris Ginsburg</li>
+<li><strong>机构</strong>：NVIDIA</li>
+<li><strong>版本</strong>：arXiv v1，2026 年 10 月 13 日</li>
+<li><strong>论文</strong>：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2610.17780">arXiv:2610.17780</a></li>
+<li><strong>项目主页</strong>：<a target="_blank" rel="noopener" href="https://cchen1436.github.io/diffuplex-website">Diffuplex</a></li>
+</ul>
+<blockquote>
+<p><strong>一句话概括</strong>：Diffuplex 把“何时说”留在随真实时间推进的自回归交互策略中，把“说什么”交给沿独立计算轴并行去噪的离散扩散语言模型，从而避免高层语义计算被 80 ms 音频帧率锁死。</p>
+</blockquote>
+<p>这篇论文真正改变的不是语音编码器或 TTS，而是<strong>全双工语音模型的计算坐标系</strong>。Moshi 一类模型把感知、话轮控制和内容生成压进同一条帧同步自回归时间线；Diffuplex 则让 AR 分支持续监听并决定何时取得话轮，一旦触发，再由扩散分支并行生成和修正整块回答。</p>
+<p>这种解耦带来了很强的速度与智能平衡：开启 thinking 时，Stage 2 模型在 9 个 VoiceBench 子集上的 Overall 为 86.9；完整全双工设置为 82.3。论文在单张 GB300 上报告平均每次前向确定 13.0 个 token、最高 1,872 tokens/s。不过，受控消融也揭示了关键边界：同一模型用 AR 解码得到 85.1，高于无 thinking 的扩散解码 84.1。扩散的核心价值并不是这张表中质量最高，而是并行吞吐、可伸缩推理计算以及与实时交互时间轴的结构性解耦。</p>
+<span id="more"></span>
+<h2 id="一、全双工模型为什么会“又快又笨”？"><a href="#一、全双工模型为什么会“又快又笨”？" class="headerlink" title="一、全双工模型为什么会“又快又笨”？"></a>一、全双工模型为什么会“又快又笨”？</h2><p>理想语音助手要同时完成两件事：</p>
+<ol>
+<li><strong>When to say</strong>：判断用户是否说完、是否只是停顿、何时接话、何时因打断而让出话轮；</li>
+<li><strong>What to say</strong>：理解语义、调用知识、进行推理并形成高质量回答。</li>
+</ol>
+<p>现有全双工模型通常把两者塞进同一条帧同步 AR 时间线。以 80 ms 为一步时，模型必须持续推进用户和系统的音频 token 流。论文认为这造成两类问题：</p>
+<ul>
+<li><strong>目标冲突</strong>：密集的低层时序对齐监督会稀释高层语义生成所需的表示；</li>
+<li><strong>帧率绑定</strong>：语义计算只能跟随真实音频时间一步一步前进，难以弹性增加 Chain-of-Thought 等 test-time compute。</li>
+</ul>
+<p>反过来，强大的 turn-based AR 模型能专注“说什么”，却通常依赖外部 VAD 或端点检测来决定“何时说”，也无法天然处理重叠、反向通道和用户打断。</p>
+<p>Diffuplex 的核心假设是：<strong>会话控制和回答生成应当协同，但不必共享同一条顺序计算链。</strong></p>
+<p><img src="/images/paper_figs/diffuplex/intelligence_efficiency.png" srcset="/img/loading.gif" lazyload alt="Diffuplex 的智能、延迟与输出速度位置"></p>
+<p><em>原论文 Figure 1。左图比较无 thinking 的全双工模型与 first-audio latency；右图比较开启 thinking 的模型与输出速度。两侧共享 VoiceBench Overall 纵轴，但横轴和运行形态不同，不能把左右散点当作同一受控实验。</em></p>
+<h2 id="二、两条计算轴：水平追踪时间，垂直生成语义"><a href="#二、两条计算轴：水平追踪时间，垂直生成语义" class="headerlink" title="二、两条计算轴：水平追踪时间，垂直生成语义"></a>二、两条计算轴：水平追踪时间，垂直生成语义</h2><p><img src="/images/paper_figs/diffuplex/architecture.png" srcset="/img/loading.gif" lazyload alt="Diffuplex 双计算轴与离散扩散生成流程"></p>
+<p><em>原论文 Figure 2。左侧是随真实时间前进的 AR interaction policy；<code>&lt;bos&gt;</code> 在时刻 $\theta$ 触发向下展开的扩散去噪。右侧是语音表示和文本指令作为条件，对 256-token canvas 进行双向迭代修正。</em></p>
+<p>Diffuplex 由一个共享 backbone 支撑两种模式：</p>
+<ul>
+<li><strong>AR interaction policy</strong>：水平轴，以 80 ms chunk 持续读入用户语音，决定听、说、取得或让出话轮；</li>
+<li><strong>Discrete diffusion response generator</strong>：垂直轴，在触发时基于已观察语音和文本指令，并行完善一整块回答 token。</li>
+</ul>
+<p>这不是两套完全独立的模型。二者共享 backbone 参数，但使用<strong>独立 KV cache</strong>：AR cache 随流式音频因果增长；当 policy 输出 <code>&lt;bos&gt;</code> 后，已观察语音上下文再单独 prefill，初始化 diffusion cache。这样，交互历史和回答去噪状态不会混在同一缓存中。</p>
+<h2 id="三、三阶段训练：先听懂，再会答，最后学会接话"><a href="#三、三阶段训练：先听懂，再会答，最后学会接话" class="headerlink" title="三、三阶段训练：先听懂，再会答，最后学会接话"></a>三、三阶段训练：先听懂，再会答，最后学会接话</h2><h3 id="3-1-Stage-1：Speech–Text-Modality-Alignment"><a href="#3-1-Stage-1：Speech–Text-Modality-Alignment" class="headerlink" title="3.1 Stage 1：Speech–Text Modality Alignment"></a>3.1 Stage 1：Speech–Text Modality Alignment</h3><p>前端由 Parakeet speech encoder 和随机初始化 projector 构成，把连续声学表示映射到 DiffusionGemma 的 embedding space。文本 DLM 在这一阶段保持冻结，迫使前端适配其预训练文本表示。</p>
+<p>Stage 1 分为两个子阶段：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>数据与规模</th>
+<th>可训练模块</th>
+<th>更新数与资源</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stage 1a</td>
+<td>LibriSpeech 960 小时、281,099 utterances</td>
+<td>Projector</td>
+<td>1,098 updates，global batch 512</td>
+</tr>
+<tr>
+<td>Stage 1b</td>
+<td>32-source 英文 ASR mixture，主要来自 Granary；约 206 万次采样呈现</td>
+<td>Speech encoder + Projector</td>
+<td>4,032 updates，global batch 512</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>训练目标以 diffusion transcript reconstruction 为主，并加入辅助 AR next-token loss。作者尝试过 CTC auxiliary loss，但未获得稳定收益。Stage 1 模型在 LibriSpeech test-clean/test-other 的 WER 为 2.3/4.2。</p>
+<h3 id="3-2-Stage-2：Spoken-Instruction-Following"><a href="#3-2-Stage-2：Spoken-Instruction-Following" class="headerlink" title="3.2 Stage 2：Spoken Instruction Following"></a>3.2 Stage 2：Spoken Instruction Following</h3><p>Stage 2 使用 600K 条 Nemotron-Omni spoken-instruction 样本，并混入 5% ASR replay（37.5K 条转录样本）。70% 回答直接监督 final answer，不包含显式 <code>&lt;think&gt;</code>，以强化无 thinking 模式。</p>
+<p>此时联合优化 speech encoder、projector 和 DLM，但冻结 MoE router。作者观察到一个典型冲突：</p>
+<ul>
+<li>学习率太小，DLM 长文本生成稳定，但语音 grounding 较弱；</li>
+<li>学习率加大，语音适配改善，却会导致预训练语言分布漂移，出现重复和错误终止；</li>
+<li>只给三类模块设置不同学习率，或混入 text-only replay，都不足以解决。</li>
+</ul>
+<h4 id="Text-Anchored-Distillation"><a href="#Text-Anchored-Distillation" class="headerlink" title="Text-Anchored Distillation"></a>Text-Anchored Distillation</h4><p>作者保留一份冻结文本 DLM 作为 anchor：学生读取 spoken request，教师读取其 written counterpart，然后同时对 diffusion canvas 和 causal AR readout 做 forward KL：</p>
+\[\mathcal{L}_{\mathrm{anchor}}
+=
+\lambda_{\mathrm{diff}}
+\operatorname{KL}\!\left(p_T^{\mathrm{diff}}\|p_S^{\mathrm{diff}}\right)
++
+\lambda_{\mathrm{AR}}
+\operatorname{KL}\!\left(p_T^{\mathrm{AR}}\|p_S^{\mathrm{AR}}\right),\]<p>其中论文配置 $\lambda_{\mathrm{diff}}=3.0$、$\lambda_{\mathrm{AR}}=1.0$。这不是简单把 transcript 当监督标签，而是在回答分布层面要求语音学生保持文本教师的语言能力。</p>
+<p>Stage 2 在 64 张 GPU 上训练，最大 padded sequence length 为 8,192，global batch 128，选用 2,266 updates 的 checkpoint。</p>
+<h3 id="3-3-Stage-3：Full-Duplex-Interaction-Modeling"><a href="#3-3-Stage-3：Full-Duplex-Interaction-Modeling" class="headerlink" title="3.3 Stage 3：Full-Duplex Interaction Modeling"></a>3.3 Stage 3：Full-Duplex Interaction Modeling</h3><p>Stage 3 不再更新 response generator，只训练四状态 interaction head 和 listening-mode LoRA。用户音频按 80 ms 分块，每步预测：</p>
+<ul>
+<li><code>&lt;listen&gt;</code>：继续听；</li>
+<li><code>&lt;speak&gt;</code>：保持系统话轮；</li>
+<li><code>&lt;bos&gt;</code>：开始取得话轮并触发回答生成；</li>
+<li><code>&lt;eos&gt;</code>：结束输出、让出话轮。</li>
+</ul>
+<p>状态损失为：</p>
+\[\mathcal{L}_{\mathrm{policy}}
+=-\sum_t w_{s_t}
+\log p(s_t\mid a_{\le t},s_{&lt;t}),\]<p>其中稀疏的 <code>&lt;bos&gt;/&lt;eos&gt;</code> 转移使用更大权重。目标还加入短 reaction delay，因为模型不能在没有足够声学证据时预知用户行为。</p>
+<p>Stage 3 使用严格因果、无 lookahead 的 10 秒 trailing window。为了适应 Stage 2 非因果表征到流式表征的变化，作者加入轻量 listening-mode LoRA；该 LoRA 只服务 AR listening pathway，计算 diffusion context 时不启用。</p>
+<p>主 Stage 3 数据包括 120 小时 clean synthetic conversation 和 70 小时 internal conversational corpus；另训练加入 Fisher 电话对话的版本。policy 训练 3,000 updates，global batch 32，使用 16 张 GPU。</p>
+<h2 id="四、离散扩散回答如何真正流式播出？"><a href="#四、离散扩散回答如何真正流式播出？" class="headerlink" title="四、离散扩散回答如何真正流式播出？"></a>四、离散扩散回答如何真正流式播出？</h2><h3 id="4-1-256-token-Canvas-与最多-48-次去噪"><a href="#4-1-256-token-Canvas-与最多-48-次去噪" class="headerlink" title="4.1 256-token Canvas 与最多 48 次去噪"></a>4.1 256-token Canvas 与最多 48 次去噪</h3><p>当 AR policy 输出 <code>&lt;bos&gt;</code> 时，已观察语音特征与 text prompt 经 DLM causal pass prefill，建立 diffusion KV cache。回答由连续的 256-token canvas 组成，每次 denoising pass 都对整块 canvas 做一次双向前向。</p>
+<p>每轮使用 entropy-bounded sampler：选取低熵且 mutual-information bound 不超过 $\beta=0.1$ 的位置保留采样 token，其他位置重新加噪；采样温度在最多 $N=48$ 次 pass 内线性衰减。当连续两轮最高概率 token 不变且平均 entropy 低于阈值 $\gamma$ 时提前停止。一个 canvas 收敛后才写入 cache，再打开下一块。</p>
+<h3 id="4-2-Anchored-Prefix：先定住前-8-个-token"><a href="#4-2-Anchored-Prefix：先定住前-8-个-token" class="headerlink" title="4.2 Anchored Prefix：先定住前 8 个 token"></a>4.2 Anchored Prefix：先定住前 8 个 token</h3><p>离线 DLM 通常要等整个 canvas 收敛，首词才最终确定。Diffuplex 发现前部位置会更早稳定，因此将首个 canvas 的前 $n=8$ 个 token 提前提交给 TTS。</p>
+<p>位置 0 由 prefill 时的 causal AR readout argmax 初始化，不增加额外前向。前 $K-1$ 次 pass 中，未接受的前部位置以 denoiser argmax 回填，而不是重新噪声化。位置 $i&lt;n$ 在第一次满足下式时冻结：</p>
+\[H\!\left(p_i^{(j)}\right)&lt;\tau
+\quad\text{或}\quad j=K,\]<p>其中 $\tau=0.05$。冻结 token 不再采样，所以首 8 个 token 最迟在 $K$ 次去噪后即可发送给 TTS，剩余 canvas 同时继续 refinement。</p>
+<h3 id="4-3-更锋利的去噪日程"><a href="#4-3-更锋利的去噪日程" class="headerlink" title="4.3 更锋利的去噪日程"></a>4.3 更锋利的去噪日程</h3><p>预训练 DiffusionGemma 的温度为 $0.8\to0.4$、置信阈值 $\gamma=0.005$，后段 pass 往往只是在确认已收敛结果。论文将其改成 $0.7\to0.2$，并把 $\gamma$ 放宽到 0.025，以减少连续语音 packet 间的去噪次数。</p>
+<p>更尖锐的 schedule 偶尔会产生退化循环，因此若 canvas 尾部出现至少 32 个、且只由不超过 2 种 token 构成的重复段，系统会截断响应。</p>
+<h3 id="4-4-TTS-与用户打断"><a href="#4-4-TTS-与用户打断" class="headerlink" title="4.4 TTS 与用户打断"></a>4.4 TTS 与用户打断</h3><p>已提交文本流入 CosyVoice 3；anchored prefix 形成第一个语音 packet，因此开头合成和剩余文本去噪重叠。Diffuplex 本身不绑定特定 TTS，只要求能够及时接收文本片段；无需 TTS 原生支持流式生成。</p>
+<p>当 policy 输出 <code>&lt;eos&gt;</code>，尚未播放的回答音频立即截断。如果用户在一秒内打断，未说出口的 canvas 不写入下一轮 KV cache，只保留真正进入会话的内容，避免频繁打断污染上下文。</p>
+<h2 id="五、语音智能结果：82-3-不是-86-9，也不是同一种运行模式"><a href="#五、语音智能结果：82-3-不是-86-9，也不是同一种运行模式" class="headerlink" title="五、语音智能结果：82.3 不是 86.9，也不是同一种运行模式"></a>五、语音智能结果：82.3 不是 86.9，也不是同一种运行模式</h2><p>VoiceBench 使用 9 个子集：3 个 open-ended QA 以 1–5 judge scale 评分，其他子集和 Overall 为 0–100。论文比较的系统在模型规模、数据、thinking 和运行形态上不同，因此表格是<strong>完整系统比较</strong>，不是某个组件的受控胜负。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>设置</th>
+<th>运行模式</th>
+<th style="text-align:right">VoiceBench Overall ↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stage 2 w/o thinking</td>
+<td>Turn-based diffusion</td>
+<td style="text-align:right">84.1</td>
+</tr>
+<tr>
+<td>Stage 2 w. thinking</td>
+<td>Turn-based diffusion</td>
+<td style="text-align:right"><strong>86.9</strong></td>
+</tr>
+<tr>
+<td>Stage 3，$K=4$</td>
+<td>Full-duplex，anchored prefix</td>
+<td style="text-align:right">82.3</td>
+</tr>
+<tr>
+<td>最强表中 Full-duplex AR 基线（Nemotron-3 VoiceChat）</td>
+<td>Full-duplex AR</td>
+<td style="text-align:right">58.1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Thinking 最大收益出现在 IFEval（+7.2）、MMSU（+5.6）、BBH（+5.0）和 OpenBookQA（+4.4），而开放式 QA 变化较小。</p>
+<p>Stage 3 比 Stage 2 无 thinking 低 1.8 分，主要下降在 MMSU（-5.5）、OpenBookQA（-3.8）与 WildVoice。因为 Stage 3 冻结 response generator，这不是继续训练造成的语言遗忘，更可能与 streaming turn decision 和 early-prefix decoding 的运行方式变化一致；但论文没有将两者完全隔离。Stage 3 仍比表中最强 FD AR baseline 高 24.2 分。</p>
+<p>作者还把相同适配方案迁移到 Nemotron-Labs-Diffusion-8B，thinking 模式约为 78.7，说明方法可迁移至第二个 DLM backbone；论文把较低分数主要归因于基础文本模型能力较弱。</p>
+<h2 id="六、会话行为：更快接话和正确等待之间存在冲突"><a href="#六、会话行为：更快接话和正确等待之间存在冲突" class="headerlink" title="六、会话行为：更快接话和正确等待之间存在冲突"></a>六、会话行为：更快接话和正确等待之间存在冲突</h2><p>Full-Duplex-Bench 检查 turn-taking、user interruption 和 pause handling。更高 TOR 更好，latency 和 pause-handling score 越低越好。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th style="text-align:right">TOR-v1 ↑</th>
+<th style="text-align:right">TOR-v3 ↑</th>
+<th style="text-align:right">Turn latency ↓</th>
+<th style="text-align:right">Interruption TOR ↑</th>
+<th style="text-align:right">Interruption latency ↓</th>
+<th style="text-align:right">Pause Syn. ↓</th>
+<th style="text-align:right">Pause Candor ↓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Diffuplex + Fisher</td>
+<td style="text-align:right">0.933</td>
+<td style="text-align:right">0.980</td>
+<td style="text-align:right"><strong>0.396 s</strong></td>
+<td style="text-align:right">0.945</td>
+<td style="text-align:right"><strong>0.239 s</strong></td>
+<td style="text-align:right">0.679</td>
+<td style="text-align:right">0.667</td>
+</tr>
+<tr>
+<td>Diffuplex w/o Fisher</td>
+<td style="text-align:right"><strong>1.000</strong></td>
+<td style="text-align:right"><strong>0.990</strong></td>
+<td style="text-align:right">0.536 s</td>
+<td style="text-align:right"><strong>1.000</strong></td>
+<td style="text-align:right">0.691 s</td>
+<td style="text-align:right"><strong>0.380</strong></td>
+<td style="text-align:right"><strong>0.431</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>加入 Fisher 后，policy 更激进，接话和响应打断更快，但更容易把自然犹豫误判为回合结束；不使用 Fisher 则更依赖语义证据，turn accuracy 和 pause handling 更好，但 latency 更高。</p>
+<p>这个结果说明“全双工延迟”不是只靠模型结构决定，训练语料中的对话节奏会直接塑造策略。Moshi、PersonaPlex 等使用 Fisher 风格数据的模型也呈现类似倾向：接话快，但更容易在暂时停顿处抢话。</p>
+<h2 id="七、为什么离散扩散这么快？TPF-与-TPS-要分开看"><a href="#七、为什么离散扩散这么快？TPF-与-TPS-要分开看" class="headerlink" title="七、为什么离散扩散这么快？TPF 与 TPS 要分开看"></a>七、为什么离散扩散这么快？TPF 与 TPS 要分开看</h2><p><img src="/images/paper_figs/diffuplex/decoding_efficiency.png" srcset="/img/loading.gif" lazyload alt="Diffuplex 解码效率、激活参数与 AlpacaEval 质量"></p>
+<p><em>原论文效率图。所有速度在同一张 GB300、batch 1、bf16 weights/KV cache 的评测条件下测量；Diffuplex 的 GB300 部署另使用附录说明的特殊量化和 CUDA runtime。</em></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型类型</th>
+<th style="text-align:right">Tokens finalized per forward（TPF）</th>
+<th style="text-align:right">Output speed（TPS）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AR baselines</td>
+<td style="text-align:right">1.00</td>
+<td style="text-align:right">74–482 tok/s</td>
+</tr>
+<tr>
+<td>DIFFA-2</td>
+<td style="text-align:right">0.37</td>
+<td style="text-align:right">101 tok/s</td>
+</tr>
+<tr>
+<td><strong>Diffuplex</strong></td>
+<td style="text-align:right"><strong>13.0</strong></td>
+<td style="text-align:right"><strong>1,872 tok/s</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Diffuplex 每次前向平均确定 13.0 个答案 token，而 AR 模型每次只能确定 1 个。它在 GB300 上达到 1,872 tok/s，明显高于 Nemotron-3 Omni 的 394 和 Qwen3-Omni-Thinking 的 300。</p>
+<p>但 TPS 增幅小于 TPF 增幅，因为 diffusion pass 要处理整块 256-token canvas，每次前向比 AR 单 token step 更贵。TPF 表达的是并行确定 token 的能力，TPS 才是实际吞吐。</p>
+<p>此外，1,872 tok/s 不是纯 PyTorch bf16 的通用数字。附录中的 GB300 引擎使用 torch-free CUDA runtime、NVFP4 MoE、FP8 dense/head、FlashAttention-4、图捕获和按 shape 调优的 kernel；模型占用 16.2 GB。H100 上报告 1,045 tok/s，RTX 6000 的 bf16 结果为 473.2 tok/s。不同硬件与精度不能直接横比。</p>
+<h2 id="八、消融：扩散不是这张表中质量最高的解码方式"><a href="#八、消融：扩散不是这张表中质量最高的解码方式" class="headerlink" title="八、消融：扩散不是这张表中质量最高的解码方式"></a>八、消融：扩散不是这张表中质量最高的解码方式</h2><p>所有消融关闭 thinking：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>设置</th>
+<th style="text-align:right">VoiceBench Overall ↑</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Diffuplex，spoken input + diffusion</td>
+<td style="text-align:right">84.1</td>
+</tr>
+<tr>
+<td>Text input</td>
+<td style="text-align:right"><strong>90.1</strong></td>
+</tr>
+<tr>
+<td>Spoken input + AR decoding</td>
+<td style="text-align:right"><strong>85.1</strong></td>
+</tr>
+<tr>
+<td>w/o text anchor</td>
+<td style="text-align:right">66.1</td>
+</tr>
+<tr>
+<td>w/o Stage 1</td>
+<td style="text-align:right">29.9</td>
+</tr>
+<tr>
+<td>w/o trainable DLM</td>
+<td style="text-align:right">64.7</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>三点最关键：</p>
+<ol>
+<li><strong>Stage 1 不可省</strong>：不做显式 speech–text alignment，分数从 84.1 降到 29.9；</li>
+<li><strong>Text anchor 是核心</strong>：去掉跨模态教师约束后降至 66.1；</li>
+<li><strong>只调前端不够</strong>：冻结 DLM 时只有 64.7，说明强语音指令能力需要受控适配语言 backbone。</li>
+</ol>
+<p>值得特别强调：AR decoding 得到 85.1，高于 diffusion 的 84.1。论文没有证明扩散在同一模型上生成质量绝对更高；扩散的主要优势是并行吞吐、可伸缩的 test-time compute，以及能在独立轴上与实时交互协同。</p>
+<p>Text input 的 90.1 仍比 spoken diffusion 高 6 分，说明语音条件化没有完全恢复基础文本能力。</p>
+<h2 id="九、Anchored-Prefix-的延迟—质量曲线"><a href="#九、Anchored-Prefix-的延迟—质量曲线" class="headerlink" title="九、Anchored Prefix 的延迟—质量曲线"></a>九、Anchored Prefix 的延迟—质量曲线</h2><p><img src="/images/paper_figs/diffuplex/prefix_latency.png" srcset="/img/loading.gif" lazyload alt="首 8 个 token 提交的延迟—质量权衡"></p>
+<p><em>附录 Figure。这里从人工给定 turn boundary 开始计时，包含 denoising + TTS，明确排除 Stage 3 AR turn-decision delay，所以不能把 296 ms 直接当作完整端到端 first-audio latency。</em></p>
+<p>固定 $n=8$：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Prefix pass cap</th>
+<th style="text-align:right">VoiceBench Overall ↑</th>
+<th style="text-align:right">First audio mean ↓</th>
+<th style="text-align:right">平均提交 passes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>$K=2$</td>
+<td style="text-align:right">80.5</td>
+<td style="text-align:right"><strong>251 ms</strong></td>
+<td style="text-align:right">2.0</td>
+</tr>
+<tr>
+<td>$K=4$</td>
+<td style="text-align:right">82.3</td>
+<td style="text-align:right">296 ms</td>
+<td style="text-align:right">3.8</td>
+</tr>
+<tr>
+<td>$K=6$</td>
+<td style="text-align:right">82.6</td>
+<td style="text-align:right">309 ms</td>
+<td style="text-align:right">4.3</td>
+</tr>
+<tr>
+<td>No cap</td>
+<td style="text-align:right"><strong>84.0</strong></td>
+<td style="text-align:right">497 ms</td>
+<td style="text-align:right">11.5</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>$K=4$ 是论文主设置：比 $K=2$ 多 45 ms，却提升 1.8 分；从 $K=4$ 到 $K=6$ 只多 13 ms、提升 0.3；不设 cap 能恢复到 84.0，但平均 first audio 接近 0.5 秒。</p>
+<p><img src="/images/paper_figs/diffuplex/prefix_quality.png" srcset="/img/loading.gif" lazyload alt="不同 Prefix pass cap 的 VoiceBench 分项"></p>
+<p>这条曲线说明 anchored prefix 不是免费的：越早冻结开头，模型越少有机会修正前部 token。系统把后续语音播放时间当作计算缓冲区，以换取低首包延迟。</p>
+<h2 id="十、与现有全双工路线的定位"><a href="#十、与现有全双工路线的定位" class="headerlink" title="十、与现有全双工路线的定位"></a>十、与现有全双工路线的定位</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>路线</th>
+<th>When-to-say</th>
+<th>What-to-say</th>
+<th>语义计算是否受音频帧率绑定</th>
+<th>Thinking / 弹性计算</th>
+<th>用户打断</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Moshi 等帧同步 Audio-Token AR</td>
+<td>与双流音频生成位于同一 12.5 Hz 时间线</td>
+<td>自回归文本/音频流</td>
+<td>是</td>
+<td>很难插入独立长推理链</td>
+<td>原生双流，可快速让权</td>
+</tr>
+<tr>
+<td>SemanticVAD + 大 CDE</td>
+<td>外置轻量语义 DM 高频判断</td>
+<td>大模型按需生成</td>
+<td>否，但系统是模块级解耦</td>
+<td>由 CDE 决定</td>
+<td>DM 控制停止/继续</td>
+</tr>
+<tr>
+<td>MFIA / Moshi RL</td>
+<td>仍在同一帧同步 policy 上，通过 RL 优化 pause/turn/backchannel/interruption</td>
+<td>同一模型文本/音频流</td>
+<td>是</td>
+<td>重点是行为后训练，不改变生成轴</td>
+<td>通过交互奖励改善</td>
+</tr>
+<tr>
+<td><strong>Diffuplex</strong></td>
+<td>共享 backbone 的 80 ms AR 四状态 policy</td>
+<td>独立 diffusion canvas 并行去噪</td>
+<td><strong>否</strong></td>
+<td><strong>可增加去噪 pass 与 thinking</strong></td>
+<td><code>&lt;eos&gt;</code> 截断音频，未说 canvas 可丢弃</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="10-1-与-Moshi-的差别"><a href="#10-1-与-Moshi-的差别" class="headerlink" title="10.1 与 Moshi 的差别"></a>10.1 与 Moshi 的差别</h3><p>Moshi 通过低帧率 codec、双通道音频流和 inner monologue，在一条实时 AR 时钟上统一听、想、说，优势是端到端音频交互紧密；代价是高层语义生成必须跟着物理帧率推进。</p>
+<p>Diffuplex 将语音理解和回答内容保留在文本 DLM 中，TTS 外置。它不是纯端到端 audio-to-audio model，但语义计算可以脱离播放时间并行扩展。</p>
+<h3 id="10-2-与-SemanticVAD-CDE-的差别"><a href="#10-2-与-SemanticVAD-CDE-的差别" class="headerlink" title="10.2 与 SemanticVAD + CDE 的差别"></a>10.2 与 SemanticVAD + CDE 的差别</h3><p>外置 SemanticVAD 把高频对话管理交给 0.5B 模型，把回复交给更大的 CDE，属于<strong>系统级模块解耦</strong>。Diffuplex 则让 AR policy 与 DLM 共用 backbone 参数但分离 cache 和计算模式，是<strong>同一 backbone 内的双轴解耦</strong>。</p>
+<h3 id="10-3-与-MFIA-的差别"><a href="#10-3-与-MFIA-的差别" class="headerlink" title="10.3 与 MFIA 的差别"></a>10.3 与 MFIA 的差别</h3><p>MFIA 在 Moshi/PersonaPlex 原有单时间线框架上，用多维奖励优化 pause、turn-taking、backchannel 和 interruption，同时用 LLM judge 防止语义退化。它改善“同一时间线学得好不好”；Diffuplex则改变“语义生成是否必须位于这条时间线”。两者作用层次不同。</p>
+<h2 id="十一、局限与复现边界"><a href="#十一、局限与复现边界" class="headerlink" title="十一、局限与复现边界"></a>十一、局限与复现边界</h2><ol>
+<li><strong>英文与内部数据</strong>：Stage 1/2 主要是英文，Stage 1b 和 Stage 3 均包含 internal corpus，不能直接外推到多语言和所有交互域。</li>
+<li><strong>外置 TTS</strong>：系统输出先是文字，再交给 CosyVoice 3；它不是统一生成音频 token 的端到端 spoken model，TTS 质量和延迟会影响最终体验。</li>
+<li><strong>质量因素未完全隔离</strong>：Stage 3 相比 Stage 2 同时改变了 turn policy 和 early-prefix inference，1.8 分下降无法单独归因；Fisher 与其他数据配方也同时改变了交互策略。</li>
+<li><strong>效率依赖专用实现</strong>：1,872 tok/s 使用 GB300 特化 CUDA、NVFP4/FP8 和 FlashAttention-4，普通框架和硬件难以直接复现。</li>
+<li><strong>Prefix latency 口径有限</strong>：251–497 ms 从 supplied turn boundary 开始，不包含 AR policy 识别话轮终点的延迟；Figure 1 的约 0.40 秒才是论文汇总的完整 first-audio operating point。</li>
+<li><strong>Canvas 与上下文限制</strong>：响应按 256-token canvas 生成，Stage 2 最大 padded length 8,192；Stage 3 policy 只有 10 秒 trailing window，这些都会影响长上下文和超长回答。</li>
+<li><strong>代码与 checkpoint 尚未发布</strong>：论文明确写的是“will be available soon”，截至 v1 仍不能据此完成独立复现。</li>
+<li><strong>评估边界</strong>：部分基线数值由作者复现，closed-source realtime 模型因 API latency overhead 被排除；不同系统的 active parameters、thinking、语音输出结构和训练数据都不同。</li>
+<li><strong>扩散质量并非无条件胜出</strong>：同一模型 AR decode 比 diffusion 高 1 分，当前证据支持的是效率—智能平衡，而不是 diffusion 在所有质量指标上优于 AR。</li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>Diffuplex 的核心贡献可以概括为一句话：</p>
+<blockquote>
+<p><strong>让会话控制服从真实时间，让语义生成拥有自己的计算时间。</strong></p>
+</blockquote>
+<p>它用 80 ms AR policy 持续回答“现在该不该说”，用离散扩散 canvas 并行回答“具体应该说什么”。anchored prefix 再把前 8 个已稳定 token 提前交给 TTS，让语音播放成为后续去噪的时间缓冲。</p>
+<p>实验支持了三点：</p>
+<ul>
+<li>双轴结构让完整全双工系统在 VoiceBench 上达到 82.3，显著高于表中的开放全双工 AR 基线；</li>
+<li>离散扩散能在特化 GB300 引擎上达到 13.0 TPF 和 1,872 tok/s；</li>
+<li>text anchor、显式模态对齐和 DLM joint adaptation 都不可缺少。</li>
+</ul>
+<p>但论文也诚实暴露了代价：越早提交 prefix，回答质量越低；Fisher 让系统更快，却更容易抢话；AR decoding 在同模型无 thinking 条件下仍比 diffusion 高 1 分；最大速度依赖高度优化的硬件栈。</p>
+<p>因此，Diffuplex 最重要的意义不是证明“扩散必然替代 AR”，而是提出了一个更合理的全双工设计问题：</p>
+<p><strong>为什么高层思考必须和麦克风的物理帧率共用同一条计算时间线？</strong></p>
+<p>当这两条轴被拆开，实时语音助手终于可以在持续倾听和快速响应的同时，把更多计算留给真正的语言推理。</p>
+<h2 id="参考与延伸阅读"><a href="#参考与延伸阅读" class="headerlink" title="参考与延伸阅读"></a>参考与延伸阅读</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2610.17780">Full-duplex Spoken Language Modeling with Discrete Diffusion</a></li>
+<li><a target="_blank" rel="noopener" href="https://cchen1436.github.io/diffuplex-website">项目主页：Diffuplex</a></li>
+<li><a href="/2026/08/30/2026-08-30-Moshi-Speech-Text-Foundation-Model-Real-Time-Dialogue/">站内：Moshi: a speech-text foundation model for real-time dialogue</a></li>
+<li><a href="/2026/04/03/llm-full-duplex-dialogue-management/">站内：LLM-Enhanced Dialogue Management for Full-Duplex Spoken Dialogue Systems</a></li>
+<li><a href="/2026/06/10/paper-mfia-full-duplex-interactivity/">站内：Multi-Faceted Interactivity Alignment in Full-Duplex Speech Models</a></li>
+<li><a href="/2026/04/03/speech-llm-realtime-reasoning-survey/">站内：Think While You Speak: A Survey of Real-Time Reasoning in Speech LLMs</a></li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/Full-Duplex/" class="print-no-link">#Full-Duplex</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech-LLM</a>
+      
+        <a href="/tags/Turn-Taking/" class="print-no-link">#Turn-Taking</a>
+      
+        <a href="/tags/Spoken-Dialogue/" class="print-no-link">#Spoken Dialogue</a>
+      
+        <a href="/tags/Discrete-Diffusion/" class="print-no-link">#Discrete Diffusion</a>
+      
+        <a href="/tags/NVIDIA/" class="print-no-link">#NVIDIA</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Full-duplex Spoken Language Modeling with Discrete Diffusion</div>
+      <div>https://smallsmartao.github.io/2026/10/20/2026-10-20-Full-duplex-Spoken-Language-Modeling-with-Discrete-Diffusion/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月20日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年10月20日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/20/2026-10-20-ConvexLLM-Convex-Hull-Speech-Interface/" title="ConvexLLM：用冻结文本嵌入的凸组合连接语音与大语言模型">
+                        <span class="hidden-mobile">ConvexLLM：用冻结文本嵌入的凸组合连接语音与大语言模型</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+  
+<script src="/js/home-video-banner.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
