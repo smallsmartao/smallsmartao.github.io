@@ -1,0 +1,1393 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息 标题：ConvexLLM: Scaling Convex-Hull Speech Interfaces to General-Purpose Audio Intelligence 作者：Ming-Hao Hsu、Shujie Liu、Yuxuan Hu、Yuxiang Wang、Yingda Shen、Jinyu Li、Zhizheng Wu 机构：香港中文大学（深圳）、Microsof">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ConvexLLM：用冻结文本嵌入的凸组合连接语音与大语言模型">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/10/20/2026-10-20-ConvexLLM-Convex-Hull-Speech-Interface/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息 标题：ConvexLLM: Scaling Convex-Hull Speech Interfaces to General-Purpose Audio Intelligence 作者：Ming-Hao Hsu、Shujie Liu、Yuxuan Hu、Yuxiang Wang、Yingda Shen、Jinyu Li、Zhizheng Wu 机构：香港中文大学（深圳）、Microsof">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/convexllm-cgate.png">
+<meta property="article:published_time" content="2026-10-20T02:00:00.000Z">
+<meta property="article:modified_time" content="2026-10-20T02:12:55.239Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="Audio LLM">
+<meta property="article:tag" content="C-GATE">
+<meta property="article:tag" content="Speech-LLM">
+<meta property="article:tag" content="多模态对齐">
+<meta property="article:tag" content="知识蒸馏">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/convexllm-cgate.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>ConvexLLM：用冻结文本嵌入的凸组合连接语音与大语言模型 - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/convexllm-cgate.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="ConvexLLM：用冻结文本嵌入的凸组合连接语音与大语言模型"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-20 10:00" pubdate>
+          2026年10月20日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          48 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">ConvexLLM：用冻结文本嵌入的凸组合连接语音与大语言模型</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年10月20日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>：ConvexLLM: Scaling Convex-Hull Speech Interfaces to General-Purpose Audio Intelligence</li>
+<li><strong>作者</strong>：Ming-Hao Hsu、Shujie Liu、Yuxuan Hu、Yuxiang Wang、Yingda Shen、Jinyu Li、Zhizheng Wu</li>
+<li><strong>机构</strong>：香港中文大学（深圳）、Microsoft Research、Microsoft Research Asia</li>
+<li><strong>版本</strong>：arXiv v1，2026 年 10 月 16 日</li>
+<li><strong>论文</strong>：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2610.23539">arXiv:2610.23539</a></li>
+</ul>
+<blockquote>
+<p><strong>一句话概括</strong>：ConvexLLM 不让语音连接器自由生成任意向量，而是让每个音频位置选择若干个冻结的文本 embedding，再对它们做连续凸组合。它研究的是：能否用文本嵌入作为固定表示基础，让 LLM 更容易调用语音中的语言信息，同时少破坏原有文本能力。</p>
+</blockquote>
+<p>这篇论文最值得关注的不是“又一个模型刷新榜单”，而是一个更具体的任务取舍：</p>
+<p><strong>在论文的 2B 受控接口对比中，C-GATE 的语音语言任务综合分最高，MLP 的转录错误率最低，Q-Former 的 MMAU 音频理解平均分最高。</strong></p>
+<p>三种接口各有所长。理解这种差异，比把它们排成一条简单的优劣链更有价值。</p>
+<span id="more"></span>
+<h2 id="一、为什么连接器不只是维度变换？"><a href="#一、为什么连接器不只是维度变换？" class="headerlink" title="一、为什么连接器不只是维度变换？"></a>一、为什么连接器不只是维度变换？</h2><p>在此前的<a href="/2026/08/18/speech-language-interface-evolution-8-papers/">语音—语言接口演进综述</a>中，我们讨论了离散音频 token、连续投影、Q-Former 和 CTC posterior 等路线。它们都要回答同一个问题：</p>
+<blockquote>
+<p>语音编码器产生的表示，应该以什么形式进入一个主要通过文本预训练的语言模型？</p>
+</blockquote>
+<p>最常见的连续接口可以写成：</p>
+\[H=\operatorname{AudioEncoder}(a),\qquad
+Z=\operatorname{Projector}(H).\]<p>只要 $Z$ 的最后一维与 LLM 隐藏维度一致，就能把它作为连续输入，拼到文本 prompt 旁边。但<strong>维度一致不代表分布一致，更不代表功能一致</strong>。</p>
+<p>MLP 可以输出任意实数向量；Q-Former 也可以产生与文本 embedding 分布差异很大的表示。LLM 随后必须学习如何解释这种新输入，而适配过程可能改变它原有的文本处理行为。</p>
+<p>ConvexLLM 的思路是：与其让连接器从头创造一种输入语言，不如要求它始终使用 LLM 已有的文本 embedding 作为固定基础。</p>
+<h3 id="1-1-离散、无约束连续与凸组合"><a href="#1-1-离散、无约束连续与凸组合" class="headerlink" title="1.1 离散、无约束连续与凸组合"></a>1.1 离散、无约束连续与凸组合</h3><p><img src="/images/paper_figs/convexllm/interface_types.png" srcset="/img/loading.gif" lazyload alt="三类输入接口的几何差别"></p>
+<p><em>原论文 Figure 1：离散接口选择 embedding 行；无约束接口可输出凸包外的点；凸接口允许连续变化，但输出始终位于文本 embedding 的凸包内。</em></p>
+<p>设文本输入嵌入表为：</p>
+\[E\in\mathbb{R}^{V\times d_l}.\]<p>三种输入形式的区别是：</p>
+<ul>
+<li><strong>离散查表</strong>：每个位置直接选择一行 $E_v$；</li>
+<li><strong>无约束连续投影</strong>：输出任意 $\tilde e\in\mathbb{R}^{d_l}$；</li>
+<li><strong>凸组合</strong>：输出若干 embedding 的非负加权平均，且权重之和为 1。</li>
+</ul>
+<p>第三种形式满足：</p>
+\[\tilde e=\sum_v\alpha_v E_v,
+\qquad \alpha_v\ge 0,
+\qquad \sum_v\alpha_v=1,\]<p>因此：</p>
+\[\tilde e\in\operatorname{conv}(E).\]<p>这种“文本约束”是<strong>几何约束</strong>。它不要求每个音频位置都对应一个可读词，也不是先运行 ASR、再把转录交给 LLM。C-GATE 此前已在语音识别和情感识别中进行过受控研究；ConvexLLM 则把它扩展到完整的通用语音/音频语言模型，并同时考察交互、推理、识别与非语音音频理解。</p>
+<h2 id="二、C-GATE：对冻结词表做稀疏注意力读取"><a href="#二、C-GATE：对冻结词表做稀疏注意力读取" class="headerlink" title="二、C-GATE：对冻结词表做稀疏注意力读取"></a>二、C-GATE：对冻结词表做稀疏注意力读取</h2><h3 id="2-1-整体数据流"><a href="#2-1-整体数据流" class="headerlink" title="2.1 整体数据流"></a>2.1 整体数据流</h3><p><img src="/images/paper_figs/convexllm/architecture.png" srcset="/img/loading.gif" lazyload alt="ConvexLLM 架构与 C-GATE 路由"></p>
+<p><em>原论文 Figure 2：音频经编码器、时间池化和 C-GATE 后形成连续输入；图中的冻结状态以 Stage 1 为准，后续阶段会逐步解冻 encoder 与 decoder blocks。</em></p>
+<p>完整链路为：</p>
+\[a\rightarrow H\rightarrow\bar H\rightarrow\tilde E
+\rightarrow\operatorname{LLM}\rightarrow y.\]<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>声学编码器</td>
+<td>Whisper-large-v3</td>
+</tr>
+<tr>
+<td>主模型 Decoder</td>
+<td>Qwen3.5-9B</td>
+</tr>
+<tr>
+<td>受控接口对比 Decoder</td>
+<td>Qwen3.5-2B</td>
+</tr>
+<tr>
+<td>时间压缩</td>
+<td>stride 4 的均值池化</td>
+</tr>
+<tr>
+<td>路由维度 $d_r$</td>
+<td>512</td>
+</tr>
+<tr>
+<td>默认支持集大小 $K$</td>
+<td>16</td>
+</tr>
+<tr>
+<td>路由温度 $\tau_r$</td>
+<td>可学习，初始化 1.0</td>
+</tr>
+<tr>
+<td>混合温度 $\tau_m$</td>
+<td>固定 0.7</td>
+</tr>
+<tr>
+<td>Query 投影 dropout</td>
+<td>0.1</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>声学编码器输出：</p>
+\[H\in\mathbb{R}^{T\times d_a}.\]<p>均值池化后：</p>
+\[\bar H\in\mathbb{R}^{T'\times d_a},
+\qquad T'\approx T/4.\]<p>C-GATE 为每个池化后的音频位置生成一个 $d_l$ 维输入，所以输出长度仍是 $T’$。这里的 $K$ 表示<strong>每个音频位置混合多少个词表 embedding</strong>，不是送入 LLM 的音频 token 总数。</p>
+<h3 id="2-2-音频生成-Query，文本-embedding-生成-Key"><a href="#2-2-音频生成-Query，文本-embedding-生成-Key" class="headerlink" title="2.2 音频生成 Query，文本 embedding 生成 Key"></a>2.2 音频生成 Query，文本 embedding 生成 Key</h3><p>对第 $t$ 个池化声学状态：</p>
+\[q_t=f_\phi(\bar h_t)\in\mathbb{R}^{d_r},\]<p>其中 $f_\phi$ 包含仿射变换、LayerNorm 和训练时 dropout。</p>
+<p>文本 embedding 表 $E$ 本身冻结，但通过可学习线性映射形成 key：</p>
+\[k_v=W_kE_v\in\mathbb{R}^{d_r}.\]<p>因此：</p>
+<ul>
+<li>query 来自音频；</li>
+<li>key 来自文本 embedding 的可学习投影；</li>
+<li>value 是原始、冻结的文本 embedding。</li>
+</ul>
+<p>它类似一次跨模态 attention，但查找对象不是音频时间轴，而是整个文本词表。</p>
+<h3 id="2-3-全词表打分并选择-Top-K"><a href="#2-3-全词表打分并选择-Top-K" class="headerlink" title="2.3 全词表打分并选择 Top-K"></a>2.3 全词表打分并选择 Top-K</h3>\[s_{t,v}
+=
+\frac{q_t^\top k_v}{\sqrt{d_r}\,\tau_r},
+\qquad
+S_t=\operatorname{TopK}_v(s_{t,v}).\]<p>实现中分数会裁剪到 $[-30,30]$。词表按每块 2,048 行分块评分，最后合并全局 Top-K。这个技巧减少峰值内存，但<strong>不会把全词表检索变成近似检索，也不减少理论评分量</strong>。</p>
+<h3 id="2-4-支持集内归一化并进行凸组合"><a href="#2-4-支持集内归一化并进行凸组合" class="headerlink" title="2.4 支持集内归一化并进行凸组合"></a>2.4 支持集内归一化并进行凸组合</h3>\[\alpha_{t,v}
+=
+\frac{\exp(s_{t,v}/\tau_m)}
+{\sum_{u\in S_t}\exp(s_{t,u}/\tau_m)},
+\qquad v\in S_t,\]\[\tilde e_t
+=
+\sum_{v\in S_t}\alpha_{t,v}E_v.\]<p>因为权重非负且和为 1，$\tilde e_t$ 必在冻结文本 embedding 的凸包内。</p>
+<p>$\tau_r$ 和 $\tau_m$ 都影响混合分布的尖锐程度。在忽略裁剪造成并列分数的理想情况下，正温度缩放不会改变 Top-K 排序，因此它们不是两个互相独立的“选词规则”。</p>
+<p>Top-K 索引选择本身不可微；在普通 $K&gt;1$ 设置中，梯度通过已选 embedding 的分数回传给 query/key 路由器。$K=1$ 的特殊梯度处理将在后文讨论。</p>
+<h3 id="2-5-为什么-C-GATE-不是“软转录”？"><a href="#2-5-为什么-C-GATE-不是“软转录”？" class="headerlink" title="2.5 为什么 C-GATE 不是“软转录”？"></a>2.5 为什么 C-GATE 不是“软转录”？</h3><p>C-GATE 并未使用 CTC 或逐帧 token 标签监督路由权重。它学习的是：</p>
+<blockquote>
+<p>哪些文本 embedding 的组合，能够帮助下游 decoder 完成当前音频任务？</p>
+</blockquote>
+<p>这与“当前音频帧最可能对应哪个文字 token”不是同一目标。即使 value 来自文本 embedding，连续权重和支持集序列仍可承载韵律、说话方式或环境信息；反过来，论文也没有证明路由权重具有人类可读的逐词语义。</p>
+<p>更准确的定义是：<strong>vocabulary-grounded continuous interface——以冻结词表为基础的连续音频接口</strong>。</p>
+<h2 id="三、训练：输入几何约束与输出行为蒸馏"><a href="#三、训练：输入几何约束与输出行为蒸馏" class="headerlink" title="三、训练：输入几何约束与输出行为蒸馏"></a>三、训练：输入几何约束与输出行为蒸馏</h2><p>ConvexLLM 同时使用接口约束、分阶段解冻、文本 replay 和文本教师蒸馏。它们作用在不同位置，不能混成一个贡献。</p>
+<h3 id="3-1-三阶段解冻"><a href="#3-1-三阶段解冻" class="headerlink" title="3.1 三阶段解冻"></a>3.1 三阶段解冻</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>C-GATE</th>
+<th>声学编码器</th>
+<th>Decoder blocks</th>
+<th>Text embedding / LM head</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Stage 1</td>
+<td>训练</td>
+<td>冻结</td>
+<td>冻结</td>
+<td>冻结</td>
+</tr>
+<tr>
+<td>Stage 2</td>
+<td>训练</td>
+<td>训练</td>
+<td>冻结</td>
+<td>冻结</td>
+</tr>
+<tr>
+<td>Stage 3</td>
+<td>训练</td>
+<td>训练</td>
+<td>训练</td>
+<td>冻结</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Stage 1 先让接口适应两端已有表示；虽然 decoder 参数冻结，梯度仍可穿过 decoder 回传到接口。Stage 2 解冻声学编码器。Stage 3 再联合调整 decoder blocks。</p>
+<p>所以，<strong>冻结 embedding 不等于冻结整个 LLM</strong>。后期 decoder 仍在学习如何解释这些凸组合输入。</p>
+<h3 id="3-2-基础目标：回答-token-的交叉熵"><a href="#3-2-基础目标：回答-token-的交叉熵" class="headerlink" title="3.2 基础目标：回答 token 的交叉熵"></a>3.2 基础目标：回答 token 的交叉熵</h3><p>给定音频 $a$、任务 prompt $x$ 和回答 $y_{1:N}$：</p>
+\[\mathcal{L}_{\mathrm{CE}}(a,x,y_i)
+=-\log p_\theta(y_i\mid a,x,y_{\lt i}).\]<p>只有回答 token 参与损失；prompt、音频位置和 padding 均被 mask。文本 replay 使用相同目标，只是不包含音频。</p>
+<h3 id="3-3-9B-主模型：Text-Teacher-Distillation"><a href="#3-3-9B-主模型：Text-Teacher-Distillation" class="headerlink" title="3.3 9B 主模型：Text-Teacher Distillation"></a>3.3 9B 主模型：Text-Teacher Distillation</h3><p>Stage 3 中，如果音频存在对应书面内容 $w$，论文用冻结的原始 Qwen3.5-9B 作为文本教师，让音频学生匹配教师的 next-token 分布：</p>
+\[\mathcal{L}_{\mathrm{KL}}(a,x,w,y_i)
+=
+\operatorname{KL}\left(
+ p_{\bar\theta}(\cdot\mid w,y_{\lt i})
+\middle\|
+ p_\theta(\cdot\mid a,x,y_{\lt i})
+\right).\]<p>这里的 $w$ 可以是合成语音指令对应的书面问题，也可以是真实语音的转录。这个 KL 对齐的是<strong>回答端语言模型行为</strong>，不是音频 embedding，也不是强迫 C-GATE 权重等于 ASR posterior。</p>
+<p>论文按样本类型选择目标：</p>
+\[\mathcal{L}_i=
+\begin{cases}
+\mathcal{L}_{\mathrm{KL},i}, &amp; \text{有书面对应的音频样本},\\
+\mathcal{L}_{\mathrm{CE},i}, &amp; \text{其他音频样本或文本 replay}.
+\end{cases}\]<p>这不是对所有样本统一使用 $\mathcal{L}_{CE}+\lambda\mathcal{L}_{KL}$。蒸馏温度为 1.0，教师只在训练时出现。</p>
+<h3 id="3-4-主模型与接口消融不是同一训练配方"><a href="#3-4-主模型与接口消融不是同一训练配方" class="headerlink" title="3.4 主模型与接口消融不是同一训练配方"></a>3.4 主模型与接口消融不是同一训练配方</h3><p>9B 主模型 Stage 1/2 各训练 7,000 updates，Stage 3 在 7,500 updates 评估；Stage 3 有效 batch 为 512，使用 KL/CE 分流目标。2B 接口实验则用累计 5,000 Stage 1、7,000 Stage 2 和 18,000 Stage 3 updates，有效 batch 为 256，Stage 3 全部使用 CE。</p>
+<p>2B Stage 3 的数据族采样为：识别 35%、ASR-derived instruction 15%、交互与音频理解 35%、文本 replay 15%。因此，9B 与 2B 的差异不能只解释成参数规模。</p>
+<h2 id="四、主结果：语言知识与推理强，不是所有音频任务都领先"><a href="#四、主结果：语言知识与推理强，不是所有音频任务都领先" class="headerlink" title="四、主结果：语言知识与推理强，不是所有音频任务都领先"></a>四、主结果：语言知识与推理强，不是所有音频任务都领先</h2><h3 id="4-1-指标口径"><a href="#4-1-指标口径" class="headerlink" title="4.1 指标口径"></a>4.1 指标口径</h3><p>VoiceBench Overall 是 11 个子任务在 0–100 尺度上的等权平均，不包含 MMAU 与 LibriSpeech。部分开放式任务和 SD-QA 使用 GPT-5.4 judge；MMAU Test-mini 有 1,000 道 sound/music/speech 选择题；LibriSpeech 报 corpus-level WER。</p>
+<h3 id="4-2-完整系统结果"><a href="#4-2-完整系统结果" class="headerlink" title="4.2 完整系统结果"></a>4.2 完整系统结果</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th style="text-align:right">VoiceBench Overall ↑</th>
+<th style="text-align:right">MMAU Avg ↑</th>
+<th style="text-align:right">LibriSpeech clean WER ↓</th>
+<th style="text-align:right">other WER ↓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ConvexLLM</strong></td>
+<td style="text-align:right"><strong>75.36</strong></td>
+<td style="text-align:right">62.50</td>
+<td style="text-align:right">2.39</td>
+<td style="text-align:right">5.07</td>
+</tr>
+<tr>
+<td>MiniCPM-o 4.5</td>
+<td style="text-align:right">73.04</td>
+<td style="text-align:right">74.23</td>
+<td style="text-align:right">1.72</td>
+<td style="text-align:right">3.98</td>
+</tr>
+<tr>
+<td>Kimi-Audio</td>
+<td style="text-align:right">70.26</td>
+<td style="text-align:right">66.23</td>
+<td style="text-align:right"><strong>1.40</strong></td>
+<td style="text-align:right"><strong>2.59</strong></td>
+</tr>
+<tr>
+<td>MiMo-Audio</td>
+<td style="text-align:right">67.01</td>
+<td style="text-align:right"><strong>76.63</strong></td>
+<td style="text-align:right">3.19</td>
+<td style="text-align:right">6.40</td>
+</tr>
+<tr>
+<td>Qwen2.5-Omni</td>
+<td style="text-align:right">66.00</td>
+<td style="text-align:right">74.83</td>
+<td style="text-align:right">1.85</td>
+<td style="text-align:right">3.53</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>ConvexLLM 的 VoiceBench 领先主要来自 spoken knowledge 与 reasoning：OpenBookQA 90.33、MMSU 72.32、SpeechMMLU 73.42、BBH 80.40；其中 BBH 比下一名高 8.80 分。</p>
+<p>但它并未全面领先：</p>
+<ul>
+<li>MMAU 比 MiMo-Audio 低 14.13 个百分点；</li>
+<li>ASR 明显落后于 Kimi-Audio；</li>
+<li>IFEval 64.30、SD-QA 41.94，均低于 MiniCPM-o 4.5 的 78.00 和 54.79。</li>
+</ul>
+<p>这组结果支持“文本能力能被语音输入有效调用”，却不能说明所有声学信息都被更完整地保留。</p>
+<p>更重要的是，主表各系统在 decoder、训练数据、规模和适配方法上都不相同。它比较的是<strong>完整系统</strong>，不能把 75.36 单独归因于 C-GATE。</p>
+<h2 id="五、2B-受控接口对比：三类任务，三个赢家"><a href="#五、2B-受控接口对比：三类任务，三个赢家" class="headerlink" title="五、2B 受控接口对比：三类任务，三个赢家"></a>五、2B 受控接口对比：三类任务，三个赢家</h2><h3 id="5-1-控制条件"><a href="#5-1-控制条件" class="headerlink" title="5.1 控制条件"></a>5.1 控制条件</h3><p>论文将三种接口放在同一个 Whisper-large-v3 和 Qwen3.5-2B 之间，参数量匹配到约 1.7M：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>接口</th>
+<th style="text-align:right">参数量</th>
+<th>结构</th>
+<th>输出位置数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MLP</td>
+<td style="text-align:right">1,706,494</td>
+<td>1280→510→2048，GELU + LayerNorm</td>
+<td>$T’$</td>
+</tr>
+<tr>
+<td>Q-Former</td>
+<td style="text-align:right">1,708,268</td>
+<td>64 queries、宽度 280、单层 8-head cross-attention</td>
+<td>64</td>
+</tr>
+<tr>
+<td>C-GATE</td>
+<td style="text-align:right">1,705,473</td>
+<td>512 维路由、Top-16 frozen embeddings</td>
+<td>$T’$</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>这点很重要：旧有印象中 Q-Former 常是上亿参数，但本文使用的是<strong>小型、参数匹配版本</strong>。因此这里不是“大连接器输给小连接器”。</p>
+<p>三者共享 Stage 3 数据、CE 目标、有效 batch、学习率与调度。不过 Q-Former 输出固定 64 个位置，另外两者保留 $T’$；每种接口也只训练了一个模型，不能代表所有超参数配置下的最优结果。</p>
+<h3 id="5-2-受控结果"><a href="#5-2-受控结果" class="headerlink" title="5.2 受控结果"></a>5.2 受控结果</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>接口</th>
+<th style="text-align:right">Text Overall ↑</th>
+<th style="text-align:right">Speech Overall ↑</th>
+<th style="text-align:right">Speech–Text gap ↓</th>
+<th style="text-align:right">MMAU Avg ↑</th>
+<th style="text-align:right">clean WER ↓</th>
+<th style="text-align:right">other WER ↓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MLP</td>
+<td style="text-align:right">62.72</td>
+<td style="text-align:right">58.80</td>
+<td style="text-align:right">3.92</td>
+<td style="text-align:right">60.70</td>
+<td style="text-align:right"><strong>2.10</strong></td>
+<td style="text-align:right"><strong>4.60</strong></td>
+</tr>
+<tr>
+<td>Q-Former</td>
+<td style="text-align:right">61.63</td>
+<td style="text-align:right">54.19</td>
+<td style="text-align:right">7.44</td>
+<td style="text-align:right"><strong>61.40</strong></td>
+<td style="text-align:right">2.49</td>
+<td style="text-align:right">5.52</td>
+</tr>
+<tr>
+<td><strong>C-GATE</strong></td>
+<td style="text-align:right"><strong>63.20</strong></td>
+<td style="text-align:right"><strong>60.35</strong></td>
+<td style="text-align:right"><strong>2.86</strong></td>
+<td style="text-align:right">59.40</td>
+<td style="text-align:right">2.46</td>
+<td style="text-align:right">5.54</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>结论非常清晰：</p>
+<ul>
+<li><strong>C-GATE</strong>：语音语言综合任务最好；</li>
+<li><strong>MLP</strong>：逐词转录最好；</li>
+<li><strong>Q-Former</strong>：MMAU 平均最好。</li>
+</ul>
+<p>C-GATE 相对 MLP 的 VoiceBench 优势主要集中于 OpenBookQA（59.78 vs 52.97）、MMSU（43.92 vs 41.28）和 SpeechMMLU（46.52 vs 43.63），三者贡献了约 1.12 个综合分差距。</p>
+<p>论文给出的配对样本 bootstrap 95% 区间分别为 OpenBookQA [1.98, 11.65]、MMSU [0.68, 4.55]、SpeechMMLU [1.71, 4.07]。这些是测试样本重采样，不是多随机种子训练方差。</p>
+<h3 id="5-3-“文本能力保留”不是无退化"><a href="#5-3-“文本能力保留”不是无退化" class="headerlink" title="5.3 “文本能力保留”不是无退化"></a>5.3 “文本能力保留”不是无退化</h3><p>C-GATE 的 Text Overall 为 63.20，高于原始 Qwen3.5-2B 的 60.55，但分项并非全都提升。例如文本 BBH 从 76.60 降到 68.20；MLP 降至 63.60，Q-Former 降至 56.20。</p>
+<p>三种适配模型在开放式回答、SD-QA 和 SpeechMMLU 上提高，却在 IFEval、OpenBookQA、MMSU 和 BBH 上下降。所以严谨说法应是：</p>
+<blockquote>
+<p>C-GATE 在这组任务上的文本综合分与 MLP 接近，在若干推理任务上退化较少；它没有保证每项文本能力都不下降。</p>
+</blockquote>
+<h3 id="5-4-C-GATE-的-ASR-代价主要是替换错误"><a href="#5-4-C-GATE-的-ASR-代价主要是替换错误" class="headerlink" title="5.4 C-GATE 的 ASR 代价主要是替换错误"></a>5.4 C-GATE 的 ASR 代价主要是替换错误</h3><p>相比 MLP，C-GATE 的 clean/other WER 分别高 0.36/0.94 个百分点。附录统计多出 689 次词编辑，其中 559 次是 substitution，占 81.1%。speaker-bootstrap 95% 区间分别为 [0.24, 0.48] 和 [0.73, 1.19]。</p>
+<p>这说明语音知识问答更好，不等于逐词听写更准；但论文没有足够证据把替换错误归因为“语言先验压过声学证据”。</p>
+<h2 id="六、Top-K：连续混合重要，但-K-不是越大越全面"><a href="#六、Top-K：连续混合重要，但-K-不是越大越全面" class="headerlink" title="六、Top-K：连续混合重要，但 K 不是越大越全面"></a>六、Top-K：连续混合重要，但 K 不是越大越全面</h2><p><img src="/images/paper_figs/convexllm/topk_ablation.png" srcset="/img/loading.gif" lazyload alt="Top-K 支持集大小消融"></p>
+<p><em>原论文 Figure 3。四个实验从同一个以 $K=16$ 训练得到的 Stage 2 checkpoint 开始，在 Stage 3 改变 $K$。</em></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>$K$</th>
+<th style="text-align:right">VoiceBench Overall ↑</th>
+<th style="text-align:right">MMAU Avg ↑</th>
+<th style="text-align:right">clean WER ↓</th>
+<th style="text-align:right">other WER ↓</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td style="text-align:right">22.30</td>
+<td style="text-align:right">51.80</td>
+<td style="text-align:right">86.48</td>
+<td style="text-align:right">88.65</td>
+</tr>
+<tr>
+<td>4</td>
+<td style="text-align:right">58.99</td>
+<td style="text-align:right">59.30</td>
+<td style="text-align:right">2.87</td>
+<td style="text-align:right">6.25</td>
+</tr>
+<tr>
+<td>16</td>
+<td style="text-align:right">60.35</td>
+<td style="text-align:right"><strong>59.40</strong></td>
+<td style="text-align:right">2.46</td>
+<td style="text-align:right">5.54</td>
+</tr>
+<tr>
+<td>64</td>
+<td style="text-align:right"><strong>61.53</strong></td>
+<td style="text-align:right">58.50</td>
+<td style="text-align:right"><strong>2.35</strong></td>
+<td style="text-align:right"><strong>5.37</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3 id="6-1-为什么-K-1-会崩？"><a href="#6-1-为什么-K-1-会崩？" class="headerlink" title="6.1 为什么 K=1 会崩？"></a>6.1 为什么 K=1 会崩？</h3><p>单元素 softmax 恒为 1，普通梯度无法通过这个常量训练路由器。因此 $K=1$ 使用 straight-through estimator：前向选择最高分 embedding，反向使用全词表 softmax 加权平均的梯度。</p>
+<p>严重退化说明的是：<strong>在这套初始化和训练配方中，单一 embedding 硬选择远不如连续混合。</strong> 它不能推出所有离散音频 token 方法都会失败，因为独立训练的 tokenizer、扩展音频词表和不同目标并未被测试。</p>
+<h3 id="6-2-K-64-的收益与代价"><a href="#6-2-K-64-的收益与代价" class="headerlink" title="6.2 K=64 的收益与代价"></a>6.2 K=64 的收益与代价</h3><p>$K$ 从 4 增到 64 时，WER 和 VoiceBench 持续改善，但 MMAU 在 $K=16$ 达到最高平均分。默认 $K=16$ 是任务折中，不是理论全局最优。</p>
+<p>固定支持集后，$K$ 个归一化权重有 $K-1$ 个连续自由度；但不同音频位置还能选择不同支持集。因此整体表示不是一个固定低维子空间。与此同时，$K$ 增大表示每个位置混合更多 embedding，<strong>不代表输出序列变长</strong>。</p>
+<h2 id="七、几何分析：更早接近文本，但不是因果证明"><a href="#七、几何分析：更早接近文本，但不是因果证明" class="headerlink" title="七、几何分析：更早接近文本，但不是因果证明"></a>七、几何分析：更早接近文本，但不是因果证明</h2><p><img src="/images/paper_figs/convexllm/interface_geometry.png" srcset="/img/loading.gif" lazyload alt="接口的文本主方向能量、跨层对齐与表示范数"></p>
+<p><em>原论文 Figure 4。几何诊断使用另一组三个 2B 模型：Stage 3 仅训练 6,000 updates，loss 归一化方式也与主接口实验不同。</em></p>
+<h3 id="7-1-文本主方向能量"><a href="#7-1-文本主方向能量" class="headerlink" title="7.1 文本主方向能量"></a>7.1 文本主方向能量</h3><p>作者对 248,077 个 tokenizer 覆盖的 embedding 行做 PCA，并计算：</p>
+\[R_X(k)=
+\frac{\sum_{j=1}^{k}\lVert X_cv_j\rVert_2^2}
+{\lVert X_c\rVert_F^2}.\]<p>前 100 个文本主方向覆盖的变化比例为：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>表示</th>
+<th style="text-align:right">Top-100 文本主方向能量</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C-GATE</td>
+<td style="text-align:right"><strong>28.4%</strong></td>
+</tr>
+<tr>
+<td>书面问题 token</td>
+<td style="text-align:right">23.7%</td>
+</tr>
+<tr>
+<td>MLP</td>
+<td style="text-align:right">8.8%</td>
+</tr>
+<tr>
+<td>Q-Former</td>
+<td style="text-align:right">4.9%</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>这说明 C-GATE 的变化更沿文本 embedding 的主要方向展开。但各集合分别中心化，所以该指标去除了均值位移；它也不直接衡量语义正确性。</p>
+<h3 id="7-2-跨层-Speech–Text-对齐"><a href="#7-2-跨层-Speech–Text-对齐" class="headerlink" title="7.2 跨层 Speech–Text 对齐"></a>7.2 跨层 Speech–Text 对齐</h3><p>对同一问题的语音和文字表示做中心化余弦相似度后：</p>
+<ul>
+<li>C-GATE 到 decoder block 7 已达约 0.69；</li>
+<li>block 7–19 保持约 0.69–0.73；</li>
+<li>block 7 时，MLP/Q-Former 仅约 0.45/0.44；</li>
+<li>MLP 到最后一层才接近 C-GATE；</li>
+<li>Q-Former 峰值约 0.63。</li>
+</ul>
+<p>随机重配语音与文本问题后，95% 相似度落在接近零的 ±0.03 内，说明这个信号不只是公共背景成分。</p>
+<h3 id="7-3-输入尺度"><a href="#7-3-输入尺度" class="headerlink" title="7.3 输入尺度"></a>7.3 输入尺度</h3><p>MLP 和 Q-Former 输入范数分别为 36.7 和 25.2，文本 embedding 仅为 0.65。C-GATE 从第一层开始的尺度演化更接近文字表示。</p>
+<p><img src="/images/paper_figs/convexllm/input_pca.png" srcset="/img/loading.gif" lazyload alt="单位归一化后的输入 PCA"></p>
+<p><em>原论文 Figure 5：20 个问题的输入先做单位 L2 归一化，再投影到书面问题 token 的前两个主成分。前两维只解释 16.12% 和 7.64% 的文字 token 方差，不能把二维聚簇直接解释成高维表示坍塌。</em></p>
+<p>总体上，几何诊断与设计动机一致：C-GATE 让语音以更接近文本的方向、尺度和较早跨层对应关系进入 decoder。但论文没有通过独立干预拆开“范数、方向、凸包”各自的作用，几何相似也不等于功能等价。</p>
+<h2 id="八、放回现有连接器谱系：C-GATE-改变了哪一层？"><a href="#八、放回现有连接器谱系：C-GATE-改变了哪一层？" class="headerlink" title="八、放回现有连接器谱系：C-GATE 改变了哪一层？"></a>八、放回现有连接器谱系：C-GATE 改变了哪一层？</h2><p>过去常把接口选择简化成“MLP 还是 Q-Former”，但至少要拆成三维：</p>
+<ol>
+<li>输入来自离散 tokenizer 还是连续 encoder；</li>
+<li>时间轴如何压缩；</li>
+<li>接口输出受到什么几何/词表约束。</li>
+</ol>
+<h3 id="8-1-五类路线对照"><a href="#8-1-五类路线对照" class="headerlink" title="8.1 五类路线对照"></a>8.1 五类路线对照</h3><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>路线</th>
+<th>进入 LLM 的表示</th>
+<th>文本词表约束</th>
+<th>时间结构/长度</th>
+<th>主要优劣与适用任务</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>离散音频 token</td>
+<td>Token 查表向量</td>
+<td>常扩展音频词表或 codebook，不一定复用原文本行</td>
+<td>由 codec/tokenizer 决定</td>
+<td>统一自回归序列；受量化误差和 token rate 影响，适合生成式统一建模</td>
+</tr>
+<tr>
+<td>MLP / Conv projector</td>
+<td>任意连续投影向量</td>
+<td>通常无</td>
+<td>Stride/pooling 后保持局部顺序</td>
+<td>简单高效、ASR 强；decoder 要适应新分布</td>
+</tr>
+<tr>
+<td>Q-Former</td>
+<td>Query 汇聚的连续向量</td>
+<td>通常无</td>
+<td>可固定 query 数，压缩强</td>
+<td>擅长全局抽取，时序细节和表现依结构而异</td>
+</tr>
+<tr>
+<td>CTC posterior / LegoSLM</td>
+<td>Posterior 对 embedding 的软组合</td>
+<td>显式联系识别词表</td>
+<td>取决于 CTC 时间率与压缩</td>
+<td>识别监督明确、前后端可解耦；可能形成语言内容瓶颈</td>
+</tr>
+<tr>
+<td><strong>C-GATE</strong></td>
+<td>Top-K frozen text embeddings 的凸组合</td>
+<td><strong>显式且固定</strong></td>
+<td>本文先 stride-4 pooling，接口保持 $T’$</td>
+<td>连续表达又受词表几何约束；语言推理强，但有全词表路由成本</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>C-GATE 位于“离散 token”和“无约束连续 projector”之间：它不是离散选择，但每个连续输出都锚定在冻结文本 embedding 的凸包内。</p>
+<h3 id="8-2-与-Attention-Pooling：加权对象不同"><a href="#8-2-与-Attention-Pooling：加权对象不同" class="headerlink" title="8.2 与 Attention Pooling：加权对象不同"></a>8.2 与 Attention Pooling：加权对象不同</h3><p><a href="/2026/06/29/qformer-vs-attention-pooling-speech-llm/">Q-Former 与 Attention Pooling</a>主要讨论如何从时间轴中汇聚音频：</p>
+\[z=\sum_t\beta_t h_t.\]<p>C-GATE 的加权对象则是词表：</p>
+\[\tilde e_t=\sum_v\alpha_{t,v}E_v.\]<p>前者回答“保留哪些音频信息”，后者回答“当前音频状态以什么语言空间表示”。两者不在同一维度上竞争；ConvexLLM 自己就先做时间均值池化，再做词表凸组合。</p>
+<h3 id="8-3-与-LegoSLM：同是软词表接口，权重语义不同"><a href="#8-3-与-LegoSLM：同是软词表接口，权重语义不同" class="headerlink" title="8.3 与 LegoSLM：同是软词表接口，权重语义不同"></a>8.3 与 LegoSLM：同是软词表接口，权重语义不同</h3><p>CTC posterior 与 C-GATE 形式上都可能写成 $Z=PE$，但 $P$ 的来源不同：</p>
+<ul>
+<li>CTC posterior 与识别词表、转录监督直接关联；</li>
+<li>C-GATE 权重由音频 query 与词表 key 路由，并通过下游任务学习。</li>
+</ul>
+<p>因此 C-GATE 无需先获得 CTC 对齐，却也没有 CTC posterior 的直接识别概率含义。</p>
+<h3 id="8-4-与-JSTIP：接口约束和训练序列可正交"><a href="#8-4-与-JSTIP：接口约束和训练序列可正交" class="headerlink" title="8.4 与 JSTIP：接口约束和训练序列可正交"></a>8.4 与 JSTIP：接口约束和训练序列可正交</h3><p><a href="/2026/07/06/JSTIP-Rethinking-Speech-LLM-Integration-for-ASR/">JSTIP</a>通过词级/段级语音—文本交错改变训练上下文；C-GATE 改变输入几何；text-teacher distillation 改变回答分布监督；text replay 改变数据组成。</p>
+<p>它们分别作用在序列、输入、输出监督与数据层面，理论上可组合；但 ConvexLLM 没有报告 “C-GATE + JSTIP” 实验，不能提前宣称必然互补。</p>
+<h2 id="九、局限与工程代价"><a href="#九、局限与工程代价" class="headerlink" title="九、局限与工程代价"></a>九、局限与工程代价</h2><h3 id="9-1-Top-K-稀疏输出不等于低成本路由"><a href="#9-1-Top-K-稀疏输出不等于低成本路由" class="headerlink" title="9.1 Top-K 稀疏输出不等于低成本路由"></a>9.1 Top-K 稀疏输出不等于低成本路由</h3><p>对 $T’$ 个音频位置、词表 $V$ 和路由维度 $d_r$，全词表 query–key 评分复杂度为：</p>
+\[O(T'Vd_r),\]<p>支持集混合另需：</p>
+\[O(T'Kd_l).\]<p>2B embedding 表约 24.8 万行，路由空间并不小。按 2,048 行分块只省内存，不降低渐近计算。另一方面，Q-Former 固定输出 64 个位置，可能降低后续 decoder prefill；C-GATE/MLP 保留 $T’$。</p>
+<p>论文没有给出完整吞吐、首 token 延迟、峰值显存和能耗，不能仅凭约 1.7M 接口参数就宣称 C-GATE 成本最低。</p>
+<h3 id="9-2-冻结-embedding-是稳定参照，不是“自然文本等价”"><a href="#9-2-冻结-embedding-是稳定参照，不是“自然文本等价”" class="headerlink" title="9.2 冻结 embedding 是稳定参照，不是“自然文本等价”"></a>9.2 冻结 embedding 是稳定参照，不是“自然文本等价”</h3><p>凸包性质可以严格证明，但下列命题不能由此推出：</p>
+<ul>
+<li>输出等价于真实文字 token；</li>
+<li>所有文本能力都会保留；</li>
+<li>任意声学信息都能被凸包充分表达。</li>
+</ul>
+<p>三个受控接口都冻结 input embedding 和 output head，因此论文也没有单独消融“冻结 vs 解冻 embedding”的净效果。</p>
+<h3 id="9-3-非语音音频未必天然适配文本几何"><a href="#9-3-非语音音频未必天然适配文本几何" class="headerlink" title="9.3 非语音音频未必天然适配文本几何"></a>9.3 非语音音频未必天然适配文本几何</h3><p>ConvexLLM 能做环境声和音乐任务，但主模型 MMAU 落后于最强系统，2B C-GATE 也低于 MLP/Q-Former；增大 $K$ 没持续改善 MMAU。这可能与 encoder、数据、优化和词表约束共同相关，不能单独归因于凸包瓶颈。</p>
+<h3 id="9-4-“少于-0-3M-小时”只统计适配暴露上界"><a href="#9-4-“少于-0-3M-小时”只统计适配暴露上界" class="headerlink" title="9.4 “少于 0.3M 小时”只统计适配暴露上界"></a>9.4 “少于 0.3M 小时”只统计适配暴露上界</h3><p>论文把各阶段样本按 30 秒上限计为音频，得到不超过 0.271M 小时。它包含重复采样和部分文本 replay，不是去重数据时长；也不包含 Whisper-large-v3 约 1M 小时弱标签与 4M 小时伪标签预训练，更不包含 Qwen3.5 预训练。</p>
+<p>所以可以说“以较少音频适配暴露取得强 VoiceBench”，不能说模型全生命周期数据少几十倍，因此接口数据效率必然高同样倍数。</p>
+<h3 id="9-5-证据边界"><a href="#9-5-证据边界" class="headerlink" title="9.5 证据边界"></a>9.5 证据边界</h3><ul>
+<li>主表是不同基座与数据的完整系统对比；</li>
+<li>2B 每种接口只训练一个模型；</li>
+<li>几何诊断使用另一套训练步数和 loss 归一化；</li>
+<li>9B 没有完整拆开 C-GATE、KL、replay 的单独贡献；</li>
+<li>部分任务依赖单次 GPT-5.4 judge；</li>
+<li>输入上限 30 秒，未系统报告流式、多语言、口音与公平性；</li>
+<li>输出端是文本，不能从“general-purpose audio”推导出语音生成或全双工能力。</li>
+</ul>
+<h2 id="十、工程启示：区分“听得准”与“调用得好”"><a href="#十、工程启示：区分“听得准”与“调用得好”" class="headerlink" title="十、工程启示：区分“听得准”与“调用得好”"></a>十、工程启示：区分“听得准”与“调用得好”</h2><ul>
+<li><strong>主要目标是 ASR</strong>：MLP/Conv 仍是强基线；本文在 LibriSpeech、Common Voice 和 FLEURS 上均由 MLP 领先。</li>
+<li><strong>目标是口语知识问答与推理</strong>：C-GATE 值得认真比较，它的 2B VoiceBench、知识任务与 speech–text gap 更好。</li>
+<li><strong>目标是环境声、音乐和复杂音频事件</strong>：不要沿用语言任务排名；本文 Q-Former 在 2B MMAU 领先。</li>
+<li><strong>关心部署成本</strong>：同时测量路由成本、输出序列长度、decoder prefill、端到端延迟与显存，而非只看接口参数量。</li>
+</ul>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>ConvexLLM 展示了一种值得加入 Speech–LLM 工具箱的接口：</p>
+<blockquote>
+<p>用冻结文本 embedding 构造连续音频输入，让模型学习“如何组合与解释”，而不是让 projector 自由创造全部输入向量。</p>
+</blockquote>
+<p>它最有说服力的证据来自三方面：</p>
+<ol>
+<li>9B 完整系统取得本表最高 VoiceBench 十一任务综合分；</li>
+<li>参数匹配的 2B 比较中，C-GATE 的语音语言综合表现优于 MLP/Q-Former；</li>
+<li>独立几何诊断显示，其表示更早呈现与配对文本相关的方向、尺度和跨层对应关系。</li>
+</ol>
+<p>同样重要的是，它没有消除任务取舍：</p>
+<ul>
+<li>更强语音推理不等于更低 WER；</li>
+<li>文本平均分较高不等于每项文本能力都不退化；</li>
+<li>凸组合不等于自然文字；</li>
+<li>稀疏支持集不等于廉价路由；</li>
+<li>几何更接近文本不等于功能等价。</li>
+</ul>
+<p>如果传统 connector 主要解决“怎样把声音投影到 LLM 的维度”，那么 ConvexLLM 进一步追问的是：</p>
+<p><strong>我们是否应该约束声音进入 LLM 时所使用的表示基础，而不只是匹配它的向量维度？</strong></p>
+<p>这比单一榜单排名更值得继续研究。</p>
+<h2 id="参考与延伸阅读"><a href="#参考与延伸阅读" class="headerlink" title="参考与延伸阅读"></a>参考与延伸阅读</h2><ol>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2610.23539">ConvexLLM: Scaling Convex-Hull Speech Interfaces to General-Purpose Audio Intelligence</a></li>
+<li><a href="/2026/08/18/speech-language-interface-evolution-8-papers/">站内：Speech–LLM 接口演进综述</a></li>
+<li><a href="/2026/06/29/qformer-vs-attention-pooling-speech-llm/">站内：Q-Former vs Attention Pooling</a></li>
+<li><a href="/2026/07/06/JSTIP-Rethinking-Speech-LLM-Integration-for-ASR/">站内：JSTIP 精读</a></li>
+<li><a target="_blank" rel="noopener" href="https://arxiv.org/abs/2405.19041">BLSP-KD: Bootstrapping Language-Speech Pre-training via Knowledge Distillation</a></li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech-LLM</a>
+      
+        <a href="/tags/Audio-LLM/" class="print-no-link">#Audio LLM</a>
+      
+        <a href="/tags/C-GATE/" class="print-no-link">#C-GATE</a>
+      
+        <a href="/tags/%E5%A4%9A%E6%A8%A1%E6%80%81%E5%AF%B9%E9%BD%90/" class="print-no-link">#多模态对齐</a>
+      
+        <a href="/tags/%E7%9F%A5%E8%AF%86%E8%92%B8%E9%A6%8F/" class="print-no-link">#知识蒸馏</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>ConvexLLM：用冻结文本嵌入的凸组合连接语音与大语言模型</div>
+      <div>https://smallsmartao.github.io/2026/10/20/2026-10-20-ConvexLLM-Convex-Hull-Speech-Interface/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月20日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年10月20日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/13/2026-10-13-Streaming-SpeechLLMs-BESTOW-MoCha-ASR/" title="Streaming SpeechLLMs: From BESTOW&#39;s Fixed Wait-k to MoCha-ASR&#39;s Adaptive Latency Optimization">
+                        <span class="hidden-mobile">Streaming SpeechLLMs: From BESTOW&#39;s Fixed Wait-k to MoCha-ASR&#39;s Adaptive Latency Optimization</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+  
+<script src="/js/home-video-banner.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
