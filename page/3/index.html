@@ -241,6 +241,81 @@
     
     
       <div class="col-12 col-md-4 m-auto index-img">
+        <a href="/2026/08/19/lora-explained-speech-llm/" target="_self">
+          <img src="/images/paper_img/lora_explained_speech_llm.png" srcset="/img/loading.gif" lazyload alt="LoRA 到底做了什么？">
+        </a>
+      </div>
+    
+    <article class="col-12 col-md-8 mx-auto index-info">
+      <h2 class="index-header">
+        
+        <a href="/2026/08/19/lora-explained-speech-llm/" target="_self">
+          LoRA 到底做了什么？
+        </a>
+      </h2>
+
+      
+      <a class="index-excerpt " href="/2026/08/19/lora-explained-speech-llm/" target="_self">
+        <div>
+          在大模型（LLM）与多模态模型（如 Speech LLM）的落地实践中，几乎每位 AI 工程师都会频繁使用或接触 LoRA（Low-Rank Adaptation）。它常被称为“轻量级微调神器”，只需极少的显存和几兆字节的存储，就能让几十亿甚至几百亿参数的基础模型迅速适应下游垂直场景。 但剥开各种封装库的外壳，LoRA 的底层数学和工程逻辑究竟是什么？在包含音频编码器、跨模态投影层与文本解码器的复
+        </div>
+      </a>
+
+      <div class="index-btm post-metas">
+        
+          <div class="post-meta mr-3">
+            <i class="iconfont icon-date"></i>
+            <time datetime="2026-08-19 10:25" pubdate>
+              2026-08-19
+            </time>
+          </div>
+        
+        
+          <div class="post-meta mr-3 d-flex align-items-center">
+            <i class="iconfont icon-category"></i>
+            
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E6%8A%80%E6%9C%AF%E7%AC%94%E8%AE%B0/" class="category-chain-item">技术笔记</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+          </div>
+        
+        
+          <div class="post-meta">
+            <i class="iconfont icon-tags"></i>
+            
+              <a href="/tags/Speech-LLM/">#Speech LLM</a>
+            
+              <a href="/tags/LoRA/">#LoRA</a>
+            
+              <a href="/tags/PEFT/">#PEFT</a>
+            
+              <a href="/tags/%E5%BE%AE%E8%B0%83/">#微调</a>
+            
+              <a href="/tags/%E6%A8%A1%E5%9E%8B%E6%9E%B6%E6%9E%84/">#模型架构</a>
+            
+          </div>
+        
+      </div>
+    </article>
+  </div>
+
+  <div class="row mx-auto index-card">
+    
+    
+      <div class="col-12 col-md-4 m-auto index-img">
         <a href="/2026/08/18/on-policy-vs-off-policy-speech-llm/" target="_self">
           <img src="/images/paper_img/on_policy_vs_off_policy_speech_llm_v2.png" srcset="/img/loading.gif" lazyload alt="深入浅出强化学习：On-Policy 与 Off-Policy 的数学本质与 Speech-LLM 训练实战">
         </a>
@@ -903,79 +978,6 @@
               <a href="/tags/Full-Duplex/">#Full-Duplex</a>
             
               <a href="/tags/Reinforcement-Learning/">#Reinforcement Learning</a>
-            
-          </div>
-        
-      </div>
-    </article>
-  </div>
-
-  <div class="row mx-auto index-card">
-    
-    
-      <div class="col-12 col-md-4 m-auto index-img">
-        <a href="/2026/07/10/2026-07-10-SpeechKV/" target="_self">
-          <img src="/images/paper_img/speechkv_cover_pixel.png" srcset="/img/loading.gif" lazyload alt="Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs">
-        </a>
-      </div>
-    
-    <article class="col-12 col-md-8 mx-auto index-info">
-      <h2 class="index-header">
-        
-        <a href="/2026/07/10/2026-07-10-SpeechKV/" target="_self">
-          Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs
-        </a>
-      </h2>
-
-      
-      <a class="index-excerpt " href="/2026/07/10/2026-07-10-SpeechKV/" target="_self">
-        <div>
-          为什么需要 SpeechKV？Speech LLM 面临一个根本性的效率瓶颈：语音序列远长于文本。英语 ASR 中，一个文本 token 对应约 300ms 语音，而常见语音编码器每 80ms 产生一帧——同等语义信息下，语音序列长度约为文本的 4 倍。在自回归解码阶段，模型需在每一步 attend 所有前序位置，KV cache 的线性增长直接导致延迟和显存消耗随序列长度线性增长。 现有方案的标
-        </div>
-      </a>
-
-      <div class="index-btm post-metas">
-        
-          <div class="post-meta mr-3">
-            <i class="iconfont icon-date"></i>
-            <time datetime="2026-07-10 00:00" pubdate>
-              2026-07-10
-            </time>
-          </div>
-        
-        
-          <div class="post-meta mr-3 d-flex align-items-center">
-            <i class="iconfont icon-category"></i>
-            
-
-<span class="category-chains">
-  
-  
-    
-      <span class="category-chain">
-        
-  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
-  
-  
-
-      </span>
-    
-  
-</span>
-
-          </div>
-        
-        
-          <div class="post-meta">
-            <i class="iconfont icon-tags"></i>
-            
-              <a href="/tags/ASR/">#ASR</a>
-            
-              <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/">#论文解读</a>
-            
-              <a href="/tags/Speech-LLM/">#Speech LLM</a>
-            
-              <a href="/tags/KV-Cache/">#KV Cache</a>
             
           </div>
         
