@@ -1,0 +1,1183 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息 标题：Interleaved Speech Language Models Latently Work In Text 作者：Talia Sternberg、Gallil Maimon、Yossi Adi 机构：The Hebrew University of Jerusalem 版本：arXiv v2，2026 年 9 月 6 日 论文：arXiv:2606.22473 项目主页：Sp">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Interleaved Speech Language Models Latently Work In Text">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/10/23/2026-10-23-Interleaved-Speech-Language-Models-Latently-Work-In-Text/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息 标题：Interleaved Speech Language Models Latently Work In Text 作者：Talia Sternberg、Gallil Maimon、Yossi Adi 机构：The Hebrew University of Jerusalem 版本：arXiv v2，2026 年 9 月 6 日 论文：arXiv:2606.22473 项目主页：Sp">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/interleaved-slm-latent-text.jpg">
+<meta property="article:published_time" content="2026-10-23T06:52:00.000Z">
+<meta property="article:modified_time" content="2026-10-23T07:00:01.421Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="Interpretability">
+<meta property="article:tag" content="Logit Lens">
+<meta property="article:tag" content="Multimodal Learning">
+<meta property="article:tag" content="Speech Language Model">
+<meta property="article:tag" content="Speech-LLM">
+<meta property="article:tag" content="论文解读">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/interleaved-slm-latent-text.jpg">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Interleaved Speech Language Models Latently Work In Text - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/interleaved-slm-latent-text.jpg') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Interleaved Speech Language Models Latently Work In Text"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-10-23 14:52" pubdate>
+          2026年10月23日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          37 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Interleaved Speech Language Models Latently Work In Text</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年10月23日 下午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>：Interleaved Speech Language Models Latently Work In Text</li>
+<li><strong>作者</strong>：Talia Sternberg、Gallil Maimon、Yossi Adi</li>
+<li><strong>机构</strong>：The Hebrew University of Jerusalem</li>
+<li><strong>版本</strong>：arXiv v2，2026 年 9 月 6 日</li>
+<li><strong>论文</strong>：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2606.22473">arXiv:2606.22473</a></li>
+<li><strong>项目主页</strong>：<a target="_blank" rel="noopener" href="https://pages.cs.huji.ac.il/adiyoss-lab/slm_work_in_text/">Speech LMs Latently Work In Text</a></li>
+</ul>
+<blockquote>
+<p><strong>一句话概括</strong>：交错式语音语言模型虽然只接受 next-token prediction 训练，却会在中间层形成可解码的当前词、文本续写与事实答案，再在输出端回到语音 token 空间；这种“隐式潜在转写”与语音事实知识能力正相关，但论文尚未证明模型会因果性地使用它。</p>
+</blockquote>
+<p>一段语音进入端到端 Speech LM 后，模型内部究竟以什么形式处理它？直觉上，输入和输出都是离散语音单元，隐藏状态也许会一直留在“语音空间”。这篇论文观察到另一条轨迹：交错式 Speech LM 会先经过一个文本化的中间阶段，当前说出的词、下一词乃至尚未说出口的事实答案，都可能从中间隐藏状态中被解码出来。</p>
+<p>最具代表性的结果来自 Llama-3.2 3B PI-1/3 官方模型。在受控数据上，当前词的累计 Recall@10 分别达到 61.9%（logit lens）、68.1%（latent lens）和 87.7%（linear probe）；在七个自然语音语料的聚合结果中，对应数值为 71.7%、40.3% 和 89.4%。三种读出器的绝对值不能直接横向比较，但它们从不同角度共同说明：中间层携带了高度可恢复的词汇信息。</p>
+<span id="more"></span>
+<h2 id="一、为什么研究“模型内部是否在转写”"><a href="#一、为什么研究“模型内部是否在转写”" class="headerlink" title="一、为什么研究“模型内部是否在转写”"></a>一、为什么研究“模型内部是否在转写”</h2><p>交错式 Speech LM 通常把离散语音单元和文本 token 放进同一条序列。例如一句话可以被构造成：</p>
+<figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">[TEXT] the monkey climbed<br>[SPEECH] Hu14 Hu62 Hu9 ... Hu31<br>[TEXT] tree.<br></code></pre></td></tr></table></figure>
+<p>关键在于，同一个词只以语音或文本中的一种形式出现。模型没有同时看到某段语音及其逐字转写，也没有接受 ASR loss；它只需完成 next-token prediction。</p>
+<p>已有研究发现，文本 LM 初始化和语音—文本交错训练能够改善 Speech LM 的语义能力，但内部机制仍不清楚：模型究竟直接在语音表示上进行语义计算，还是先把语音映射到一种文本式“工作空间”，借用文本 LM 已形成的能力，再映射回语音？</p>
+<p>论文把中间层中可解码出对应文本词的现象称为 <strong>implicit latent transcription（隐式潜在转写）</strong>。它并不意味着模型显式输出 transcript，而是指当前语音词对应的文本 token 已经存在于可读出的隐藏表征中。</p>
+<h2 id="二、模型与受控训练配置"><a href="#二、模型与受控训练配置" class="headerlink" title="二、模型与受控训练配置"></a>二、模型与受控训练配置</h2><p>论文分析 Llama-3.2 和 Qwen2.5 两个模型家族，三组代表模型为：</p>
+<ul>
+<li>Llama-3.2 3B PI-1/3 20k（官方 SIMS checkpoint）；</li>
+<li>Llama-3.2 3B PI-2/3 20k；</li>
+<li>Qwen2.5 3B PI-1/3 60k。</li>
+</ul>
+<p>命名中的字母表示：</p>
+<ul>
+<li><strong>P</strong>：从预训练文本 LM 初始化；</li>
+<li><strong>R</strong>：随机初始化；</li>
+<li><strong>S</strong>：语音数据；</li>
+<li><strong>T</strong>：文本数据；</li>
+<li><strong>I-$r$</strong>：包含语音—文本交错数据，$r$ 是交错 token 在训练 token 中的比例。</li>
+</ul>
+<p>所有受控 Llama-3.2 变体采用相同架构和优化设置：序列长度 2048、有效 batch size 32、训练 20K steps，目标只有 next-token prediction。</p>
+<p>交错样本中，语音 span 长度从 $\operatorname{Poisson}(\lambda=10)$ 采样，直到语音 span 覆盖约 $\eta=0.3$ 的词。时间对齐 transcript 只用于确定词边界和分配模态；每个词只会以语音或文本形式出现，并不是平行的“语音—转写”监督对。</p>
+<p>语音数据包括 LibriSpeech、LibriLight、VoxPopuli、TED-LIUM、People’s Speech、Spoken Wikipedia Corpus 和合成 sTinyStories；文本来自经 Gopher 规则过滤的 RedPajama。语音以 mHuBERT 特征配合 500-unit k-means codebook 离散化，文本使用 Llama-3.2 tokenizer。</p>
+<h2 id="三、三种互补的隐藏状态读出方法"><a href="#三、三种互补的隐藏状态读出方法" class="headerlink" title="三、三种互补的隐藏状态读出方法"></a>三、三种互补的隐藏状态读出方法</h2><h3 id="3-1-Logit-lens：借用模型自己的输出头"><a href="#3-1-Logit-lens：借用模型自己的输出头" class="headerlink" title="3.1 Logit lens：借用模型自己的输出头"></a>3.1 Logit lens：借用模型自己的输出头</h3><p>设第 $\ell$ 层、位置 $i$ 的隐藏状态为 $h_i^{(\ell)}$。Logit lens 将最终层使用的归一化和词表投影提前应用到中间层：</p>
+\[p_{\text{logit}}^{(\ell)}(x\mid i)
+=
+\operatorname{softmax}\left(
+W_{\text{out}}\operatorname{Norm}_f(h_i^{(\ell)})
+\right)_x.\]<p>这样，每一层都会得到一个联合语音—文本词表上的概率分布。它无需额外训练，但只能读出已经与模型输出投影对齐的信息。</p>
+<h3 id="3-2-Latent-lens：在文本表示库中检索"><a href="#3-2-Latent-lens：在文本表示库中检索" class="headerlink" title="3.2 Latent lens：在文本表示库中检索"></a>3.2 Latent lens：在文本表示库中检索</h3><p>作者从 held-out RedPajama 收集评测词和随机干扰词的上下文化表示，在每一层对同一个词的多次出现求平均，构造该层的文本词表示库。随后计算语音隐藏状态与词表示的余弦相似度，以 top-$k$ 近邻作为解码结果。</p>
+<p>它不依赖输出头，检验的是语音隐藏状态是否在几何上接近“同一模型处理文本时形成的词表示”。</p>
+<h3 id="3-3-Linear-probe：信息能否被线性提取"><a href="#3-3-Linear-probe：信息能否被线性提取" class="headerlink" title="3.3 Linear probe：信息能否被线性提取"></a>3.3 Linear probe：信息能否被线性提取</h3><p>第三种方法为每个模型、每一层和每种目标分别训练 affine-softmax 分类器，同时冻结 Speech LM。分类空间包含 tokenizer 对应的 RedPajama 最常见 10,000 个 token 和全部评测目标，训练数据来自 People’s Speech 的 500 万个对齐语音 token 位置。</p>
+<p>Linear probe 能证明信息可以被额外监督的线性分类器读出，但不能证明原模型在生成过程中实际使用了该方向。</p>
+<p><img src="/images/paper_figs/interleaved-slm-latent-text/three-decoding-methods.png" srcset="/img/loading.gif" lazyload alt="三种解码方法对当前词、下一词和事实答案的累计召回"></p>
+<p><em>原论文 Figure 3。虚线为 Recall@1，实线为 Recall@10。当前词信号最强，下一词和事实答案较弱，但在多个模型和解码方法中都可恢复。</em></p>
+<h2 id="四、词级指标如何处理一段语音-token"><a href="#四、词级指标如何处理一段语音-token" class="headerlink" title="四、词级指标如何处理一段语音 token"></a>四、词级指标如何处理一段语音 token</h2><p>一个词通常横跨多个离散语音 token，最可读的位置也不固定。令 $S(w)$ 表示词 $w$ 对齐到的语音位置集合。对解码器 $j$，累计 Recall@$k$ 定义为：</p>
+\[\frac{1}{|\mathcal D|}
+\sum_{w\in\mathcal D}
+\mathbf 1\left[
+\exists\,\ell\le L,\ i\in S(w):
+y_w\in\operatorname{TopK}(p_j^{(\ell)}(i),k)
+\right].\]<p>也就是说，截至第 $L$ 层，只要目标词曾在该词某个对齐位置进入 top-$k$，就算成功找回。所有方法统一采用小写、去标点，并对第一个 word-start token 做精确匹配。</p>
+<p>为了排除高频词天然容易进入 top-$k$ 的影响，作者为每个金标词从同一 RedPajama 词频区间抽取 20 个控制词，使用完全相同的 span 和累计召回流程，并报告 95% 置信区间。</p>
+<h2 id="五、结果一：隐藏状态经历“语音—文本—语音”三阶段"><a href="#五、结果一：隐藏状态经历“语音—文本—语音”三阶段" class="headerlink" title="五、结果一：隐藏状态经历“语音—文本—语音”三阶段"></a>五、结果一：隐藏状态经历“语音—文本—语音”三阶段</h2><p><img src="/images/paper_figs/interleaved-slm-latent-text/modality-shift.png" srcset="/img/loading.gif" lazyload alt="语音输入与文本输入在各层的模态概率质量"></p>
+<p><em>原论文 Figure 2。青色为文本 token 概率质量，黄色为语音 token；下排只统计 top-200 token，用于控制两类词表规模差异。</em></p>
+<p>对 SIMS-Llama3.2-3B 的语音输入，logit-lens 概率质量呈现清晰轨迹：</p>
+<ul>
+<li><strong>第 0–2 层</strong>：speech token 占主导；</li>
+<li><strong>第 2–25 层</strong>：概率质量明显转向 text token；</li>
+<li><strong>第 26–28 层</strong>：重新回到 speech token 域。</li>
+</ul>
+<p>文本输入则始终集中在文本 token。作者进一步只保留概率最高的 200 个 token，三阶段模式依然存在，因此不能简单归因于文本词表更大。</p>
+<p>这一结果说明中间状态经输出头投影后进入了文本词表区域，但它本身还不能证明模型编码的是<strong>正确转写</strong>，因此需要后续词级实验。</p>
+<h2 id="六、结果二：当前词确实能从中间层恢复"><a href="#六、结果二：当前词确实能从中间层恢复" class="headerlink" title="六、结果二：当前词确实能从中间层恢复"></a>六、结果二：当前词确实能从中间层恢复</h2><p>在受控事实提示集上，官方 Llama-3.2 3B PI-1/3 的累计 Recall@10 为：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>解码方法</th>
+<th style="text-align:right">当前词</th>
+<th style="text-align:right">下一词</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Logit lens</td>
+<td style="text-align:right">61.9</td>
+<td style="text-align:right">23.9</td>
+</tr>
+<tr>
+<td>Latent lens</td>
+<td style="text-align:right">68.1</td>
+<td style="text-align:right">41.2</td>
+</tr>
+<tr>
+<td>Linear probe</td>
+<td style="text-align:right">87.7</td>
+<td style="text-align:right">30.6</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>三项结果分别表明：当前词已与模型输出词表中的正确 token 对齐；语音状态在几何上接近同词的文本表示；词汇信息可被线性分类器高比例恢复。</p>
+<p>Linear probe 接受了额外监督，不能因 87.7 最高就称其为“更好的内部解释器”。真正重要的是，三种假设不同的方法给出了同一方向的结论。非累计逐层曲线还显示，召回主要集中在中间层，到输出端时下降，与模态概率质量的三阶段轨迹一致。</p>
+<h3 id="6-1-任意位置聚合有没有夸大效果？"><a href="#6-1-任意位置聚合有没有夸大效果？" class="headerlink" title="6.1 任意位置聚合有没有夸大效果？"></a>6.1 任意位置聚合有没有夸大效果？</h3><p>对官方 Llama PI-1/3，附录比较了更严格的 span selector：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>span 选择方式</th>
+<th style="text-align:right">Recall@10</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>span 中任意位置</td>
+<td style="text-align:right">61.7</td>
+</tr>
+<tr>
+<td>只看最后 25%</td>
+<td style="text-align:right">38.6</td>
+</tr>
+<tr>
+<td>只看最后一个 token</td>
+<td style="text-align:right">33.9</td>
+</tr>
+<tr>
+<td>只看第一个 token</td>
+<td style="text-align:right">9.2</td>
+</tr>
+<tr>
+<td>对所有位置的召回取平均</td>
+<td style="text-align:right">22.9</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>任意位置聚合确实最敏感，但只看最后一个 token 时仍有 33.9%，说明 max 操作没有凭空制造现象。第一个 token 的召回较低，也符合模型需要更多声学上下文才能辨认完整词的解释。</p>
+<p>信号在词内很局部：至少命中过一次的 word-layer pair 中，82.2% 的目标最多只在两个位置出现，而对齐词 span 的中位长度为 6 个语音 token。与此同时，已被 Recall@10 找回的词中，37.7% 连续保持至少 5 层，24.4% 至少 8 层，17.3% 至少 10 层，11.1% 至少 15 层。</p>
+<h2 id="七、不只转写当前词，还会形成文本续写"><a href="#七、不只转写当前词，还会形成文本续写" class="headerlink" title="七、不只转写当前词，还会形成文本续写"></a>七、不只转写当前词，还会形成文本续写</h2><p>作者把解码目标换成句子的下一词，以及事实提示末尾对应的正确答案。下一词信号整体弱于当前词，但这并不全是模型能力问题：例如 <code>United</code> 后既可能接 <code>Kingdom</code>，也可能接 <code>States</code>，单一金标会低估合理续写。</p>
+<p><img src="/images/paper_figs/interleaved-slm-latent-text/capital-uk-logit-lens.png" srcset="/img/loading.gif" lazyload alt="“The capital of the United Kingdom is...” 的中间层 logit lens"></p>
+<p><em>原论文 Figure 1。横轴为语音位置，纵轴为 Transformer 层；输入没有说出答案，但 “London” 在后部中间层变得可解码。</em></p>
+<p>事实答案提供了更明确的观察窗口。在语音提示 “The capital of the United Kingdom is…” 中，输入里从未出现的 <code>London</code> 会在中间层被 logit lens 解码出来。这说明隐藏状态不仅回顾当前声学内容，也包含基于上下文形成的文本续写假设。</p>
+<p>不过，论文没有观察到稳定的“先转写、再预测”层序。当前词与续写信号可能重叠出现，而不是严格串行的两步流水线。</p>
+<h2 id="八、自然语音中仍然存在"><a href="#八、自然语音中仍然存在" class="headerlink" title="八、自然语音中仍然存在"></a>八、自然语音中仍然存在</h2><p>受控事实集由 Kokoro-82M 合成，便于精确对齐，但可能过于干净。作者又从 People’s Speech、LibriSpeech、VoxPopuli、TED-LIUM、Spoken Wikipedia Corpus、VCTK 和 Flickr8k 各抽取 300 条，共评测 2,100 条自然语音。</p>
+<p>七个语料聚合后的 Recall@10 为：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>方法</th>
+<th style="text-align:right">当前词</th>
+<th style="text-align:right">下一词</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Llama PI-1/3 官方</td>
+<td>Logit lens</td>
+<td style="text-align:right">71.7</td>
+<td style="text-align:right">27.1</td>
+</tr>
+<tr>
+<td></td>
+<td>Latent lens</td>
+<td style="text-align:right">40.3</td>
+<td style="text-align:right">20.0</td>
+</tr>
+<tr>
+<td></td>
+<td>Linear probe</td>
+<td style="text-align:right">89.4</td>
+<td style="text-align:right">57.4</td>
+</tr>
+<tr>
+<td>Llama PI-2/3</td>
+<td>Logit lens</td>
+<td style="text-align:right">57.7</td>
+<td style="text-align:right">17.4</td>
+</tr>
+<tr>
+<td></td>
+<td>Latent lens</td>
+<td style="text-align:right">51.7</td>
+<td style="text-align:right">28.2</td>
+</tr>
+<tr>
+<td></td>
+<td>Linear probe</td>
+<td style="text-align:right">87.7</td>
+<td style="text-align:right">58.5</td>
+</tr>
+<tr>
+<td>Qwen2.5 PI-1/3</td>
+<td>Logit lens</td>
+<td style="text-align:right">40.8</td>
+<td style="text-align:right">16.5</td>
+</tr>
+<tr>
+<td></td>
+<td>Latent lens</td>
+<td style="text-align:right">43.6</td>
+<td style="text-align:right">28.9</td>
+</tr>
+<tr>
+<td></td>
+<td>Linear probe</td>
+<td style="text-align:right">88.0</td>
+<td style="text-align:right">56.7</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>不同语料的绝对值差异较大，说明说话人、录音条件和语言分布都会影响可解码性；但总体模式并不局限于合成语音或单一模型家族。</p>
+<h2 id="九、哪些训练条件促成隐式转写"><a href="#九、哪些训练条件促成隐式转写" class="headerlink" title="九、哪些训练条件促成隐式转写"></a>九、哪些训练条件促成隐式转写</h2><p>论文在相同 Llama-3.2 3B 架构和优化设置下改变初始化与数据构成。主文表 2 的 logit-lens Recall@10 如下：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th style="text-align:right">文本预训练</th>
+<th style="text-align:right">文本数据</th>
+<th style="text-align:right">交错数据</th>
+<th style="text-align:right">当前词</th>
+<th style="text-align:right">下一词</th>
+<th style="text-align:right">答案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PI-1/3 官方</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">61.88</td>
+<td style="text-align:right">23.91</td>
+<td style="text-align:right">41.60</td>
+</tr>
+<tr>
+<td>PI-1/3 ours</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">48.75</td>
+<td style="text-align:right">15.31</td>
+<td style="text-align:right">26.40</td>
+</tr>
+<tr>
+<td>PI-2/3</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">49.06</td>
+<td style="text-align:right">15.78</td>
+<td style="text-align:right">24.00</td>
+</tr>
+<tr>
+<td>PI-5/6</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">2.66</td>
+<td style="text-align:right">1.72</td>
+<td style="text-align:right">4.00</td>
+</tr>
+<tr>
+<td>PST</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">✗</td>
+<td style="text-align:right">3.75</td>
+<td style="text-align:right">3.28</td>
+<td style="text-align:right">0.00</td>
+</tr>
+<tr>
+<td>PS</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">✗</td>
+<td style="text-align:right">✗</td>
+<td style="text-align:right">0.16</td>
+<td style="text-align:right">0.00</td>
+<td style="text-align:right">0.00</td>
+</tr>
+<tr>
+<td>RST</td>
+<td style="text-align:right">✗</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">✗</td>
+<td style="text-align:right">5.78</td>
+<td style="text-align:right">6.72</td>
+<td style="text-align:right">4.80</td>
+</tr>
+<tr>
+<td>RI-1/3</td>
+<td style="text-align:right">✗</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">✓</td>
+<td style="text-align:right">2.19</td>
+<td style="text-align:right">5.78</td>
+<td style="text-align:right">7.20</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>这组受控比较支持三个判断：</p>
+<ol>
+<li><strong>只有文本数据不够</strong>：PST 没有交错样本，当前词 Recall@10 仅 3.75；</li>
+<li><strong>只有交错数据也不够</strong>：随机初始化的 RI-1/3 只有 2.19；</li>
+<li><strong>交错比例不是越高越好</strong>：PI-1/3 与 PI-2/3 接近 49，而 PI-5/6 降到 2.66。</li>
+</ol>
+<p>因此，在论文设置中，强隐式转写最容易出现在“文本 LM 预训练先验 + 适量语音—文本交错”的组合中。作者推测过高交错比例可能改变训练分布，或减少纯模态上下文的暴露，但实验没有单独验证这个解释。</p>
+<h2 id="十、隐式转写与事实知识的关系"><a href="#十、隐式转写与事实知识的关系" class="headerlink" title="十、隐式转写与事实知识的关系"></a>十、隐式转写与事实知识的关系</h2><p>论文构造了 282 条单答案短提示，覆盖颜色、星期、月份、物体功能、国家语言、亲属关系、数值事实、反义词、首都、简单算术和数列等 13 类。每条真事实都配有一个同类别错误版本；若</p>
+\[\log p(\text{真事实}) &gt; \log p(\text{同类别反事实}),\]<p>就记为回答正确。</p>
+<p><img src="/images/paper_figs/interleaved-slm-latent-text/transcription-knowledge-correlation.png" srcset="/img/loading.gif" lazyload alt="隐式转写召回与事实知识准确率的跨模型相关"></p>
+<p><em>原论文 Figure 5。左图为当前词、右图为下一词。散点跨越不同模型架构、规模、初始化、训练预算和数据配方，因此这里只能解释为相关。</em></p>
+<p>跨模型的 Spearman 秩相关为：</p>
+<ul>
+<li>当前词 Recall@10：$\rho=0.70,\ p=0.0053$；</li>
+<li>下一词 Recall@10：$\rho=0.65,\ p=0.0119$。</li>
+</ul>
+<p>两者都通过 Bonferroni 校正后的 $\alpha=0.025$ 阈值。证据允许说：隐式转写较强的模型，通常也有更高的语音事实知识准确率。</p>
+<p>但它不能推出“模型因为先转写成文本，所以事实能力才提高”。模型规模、预训练质量、训练预算和数据混合都可能共同影响两个指标；随机初始化模型也会出现非零转写分数，却仍缺少知识能力。论文没有主动增强或削弱隐式转写后再测知识准确率，因此这里只是跨模型关联，不是因果机制。</p>
+<h2 id="十一、定性案例：边听边修正文本假设"><a href="#十一、定性案例：边听边修正文本假设" class="headerlink" title="十一、定性案例：边听边修正文本假设"></a>十一、定性案例：边听边修正文本假设</h2><p>单词级可视化揭示了两种探索性现象。</p>
+<p>第一，隐式转写有时会随声学证据逐步形成：<code>white</code> 先出现 <code>why</code>，<code>lime</code> 先出现 <code>lie</code>，<code>kingdom</code> 先出现 <code>king</code>，<code>Pakistan</code> 先出现 <code>pack</code>，<code>teacher</code> 则从 <code>tea</code> 到 <code>teach</code> 再到完整单词。这与“首 token 召回低、末 token 召回更高”的统计结果相互呼应。</p>
+<p>第二，隐式转写也会犯声学错误，例如 <code>lime</code> 有时被解码成 <code>line</code>。一旦语音被压入文本式表示，细微声学差异可能提前丢失或被误判。这个文本工作空间可能帮助模型调用文本知识，也可能成为错误传播和语音—文本模态差距的来源。</p>
+<h2 id="十二、论文真正证明了什么"><a href="#十二、论文真正证明了什么" class="headerlink" title="十二、论文真正证明了什么"></a>十二、论文真正证明了什么</h2><p>把证据按强度排列，可以得到一条清晰但有限的结论链：</p>
+<ol>
+<li>语音输入的中间层经输出头投影后，概率质量从语音词表转向文本词表，再回到语音词表；</li>
+<li>正确当前词可被 logit lens、latent lens 和 linear probe 三种方法恢复；</li>
+<li>中间层还编码下一词和事实答案等文本续写信息；</li>
+<li>该现象同时存在于合成提示和七类自然语音；</li>
+<li>受控 Llama 比较显示，文本 LM 初始化与适量交错训练的组合最容易产生强信号；</li>
+<li>跨模型看，隐式转写召回与事实知识准确率正相关。</li>
+</ol>
+<p>前四点是表征层面的直接证据，第五点是训练配置的受控比较，第六点只是统计关联。它们不能被合并成更强的说法——“模型一定先转写，再依赖文字进行因果推理”。</p>
+<h2 id="十三、局限与开放问题"><a href="#十三、局限与开放问题" class="headerlink" title="十三、局限与开放问题"></a>十三、局限与开放问题</h2><h3 id="13-1-可读不等于被使用"><a href="#13-1-可读不等于被使用" class="headerlink" title="13.1 可读不等于被使用"></a>13.1 可读不等于被使用</h3><p>三种方法都在回答隐藏状态中“有什么信息”，而不是模型生成时“依赖什么信息”。即使三者一致，也不能确定文本式表征在原始前向计算中承担因果作用。</p>
+<h3 id="13-2-尚未定位具体电路"><a href="#13-2-尚未定位具体电路" class="headerlink" title="13.2 尚未定位具体电路"></a>13.2 尚未定位具体电路</h3><p>论文没有确定哪些 attention head、MLP、残差分量或层间路径计算了隐式转写，也没有使用 activation patching、ablation 或 steering 验证具体机制。</p>
+<h3 id="13-3-知识关系没有经过干预验证"><a href="#13-3-知识关系没有经过干预验证" class="headerlink" title="13.3 知识关系没有经过干预验证"></a>13.3 知识关系没有经过干预验证</h3><p>最高相关系数为 $\rho=0.70$，仍有大量模型间差异未被解释。要验证因果关系，需要主动改变隐式转写强度，并在其他因素尽量不变时观察知识准确率是否随之变化。</p>
+<h3 id="13-4-文本化可能损害声学能力"><a href="#13-4-文本化可能损害声学能力" class="headerlink" title="13.4 文本化可能损害声学能力"></a>13.4 文本化可能损害声学能力</h3><p>Speech LM 的价值之一，是保留文本无法表达的韵律、情绪、说话人和环境信息。如果训练目标过度鼓励文本化，可能改善文本充分任务，却损害依赖声学细节的任务。论文没有评测这一权衡。</p>
+<h3 id="13-5-隐式转写没有消除模态差距"><a href="#13-5-隐式转写没有消除模态差距" class="headerlink" title="13.5 隐式转写没有消除模态差距"></a>13.5 隐式转写没有消除模态差距</h3><p>既然模型能进入文本空间，为什么语音能力仍落后于文本？作者提出三种待验证方向：隐式转写本身有错误；模态转换消耗了计算；语音 token 缺少时间压缩，使后续语言推理更困难。</p>
+<h2 id="十四、结论"><a href="#十四、结论" class="headerlink" title="十四、结论"></a>十四、结论</h2><p>这篇论文为交错式 Speech LM 提供了一条可测量的内部计算轨迹：</p>
+\[\text{离散语音表示}
+\rightarrow
+\text{可解码的文本词与文本续写}
+\rightarrow
+\text{语音 token 输出}.\]<p>这条轨迹同时得到输出头投影、文本表示检索和监督线性探针的支持，并从合成提示泛化到自然语音。受控训练比较进一步表明，文本预训练先验与适量交错监督的组合至关重要；仅有文本数据、仅共享词表，或从随机初始化开始接受交错训练，都没有产生同等强度的现象。</p>
+<p>但最关键的一步仍未完成：隐藏状态中存在文字信息，不等于模型必须依赖它。后续研究需要从“读出”走向“干预”——定位产生隐式转写的计算路径，改变它，再分别测量文本知识、语音生成和细粒度声学能力，才能判断这个文本工作空间究竟是 Speech LM 的核心机制、一个有用接口，还是与性能共同出现的表征副产物。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li>Sternberg, T., Maimon, G., &amp; Adi, Y. <em>Interleaved Speech Language Models Latently Work In Text</em>. arXiv:2606.22473, 2026.</li>
+<li>Maimon et al. <em>SIMS: Scaling Speech Language Models with Interleaved Speech-Text Training</em>.</li>
+<li>Nostalgebraist. <em>Interpreting GPT: The Logit Lens</em>.</li>
+<li>Krojer et al. <em>Latent Lens: Revealing Highly Interpretable Visual and Textual Representations in Language Models</em>.</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="print-no-link">#论文解读</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech-LLM</a>
+      
+        <a href="/tags/Speech-Language-Model/" class="print-no-link">#Speech Language Model</a>
+      
+        <a href="/tags/Multimodal-Learning/" class="print-no-link">#Multimodal Learning</a>
+      
+        <a href="/tags/Interpretability/" class="print-no-link">#Interpretability</a>
+      
+        <a href="/tags/Logit-Lens/" class="print-no-link">#Logit Lens</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Interleaved Speech Language Models Latently Work In Text</div>
+      <div>https://smallsmartao.github.io/2026/10/23/2026-10-23-Interleaved-Speech-Language-Models-Latently-Work-In-Text/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年10月23日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年10月23日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/22/2026-10-22-daily-history-dynasties-55-81/" title="每日一页历史·朝代史下卷：从五代风云到鸦片战争">
+                        <span class="hidden-mobile">每日一页历史·朝代史下卷：从五代风云到鸦片战争</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+  
+<script src="/js/home-video-banner.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

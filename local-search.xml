@@ -4,6 +4,41 @@
   
   
   <entry>
+    <title>Interleaved Speech Language Models Latently Work In Text</title>
+    <link href="/2026/10/23/2026-10-23-Interleaved-Speech-Language-Models-Latently-Work-In-Text/"/>
+    <url>/2026/10/23/2026-10-23-Interleaved-Speech-Language-Models-Latently-Work-In-Text/</url>
+    
+    <content type="html"><![CDATA[<h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul><li><strong>标题</strong>：Interleaved Speech Language Models Latently Work In Text</li><li><strong>作者</strong>：Talia Sternberg、Gallil Maimon、Yossi Adi</li><li><strong>机构</strong>：The Hebrew University of Jerusalem</li><li><strong>版本</strong>：arXiv v2，2026 年 9 月 6 日</li><li><strong>论文</strong>：<a href="https://arxiv.org/abs/2606.22473">arXiv:2606.22473</a></li><li><strong>项目主页</strong>：<a href="https://pages.cs.huji.ac.il/adiyoss-lab/slm_work_in_text/">Speech LMs Latently Work In Text</a></li></ul><blockquote><p><strong>一句话概括</strong>：交错式语音语言模型虽然只接受 next-token prediction 训练，却会在中间层形成可解码的当前词、文本续写与事实答案，再在输出端回到语音 token 空间；这种“隐式潜在转写”与语音事实知识能力正相关，但论文尚未证明模型会因果性地使用它。</p></blockquote><p>一段语音进入端到端 Speech LM 后，模型内部究竟以什么形式处理它？直觉上，输入和输出都是离散语音单元，隐藏状态也许会一直留在“语音空间”。这篇论文观察到另一条轨迹：交错式 Speech LM 会先经过一个文本化的中间阶段，当前说出的词、下一词乃至尚未说出口的事实答案，都可能从中间隐藏状态中被解码出来。</p><p>最具代表性的结果来自 Llama-3.2 3B PI-1/3 官方模型。在受控数据上，当前词的累计 Recall@10 分别达到 61.9%（logit lens）、68.1%（latent lens）和 87.7%（linear probe）；在七个自然语音语料的聚合结果中，对应数值为 71.7%、40.3% 和 89.4%。三种读出器的绝对值不能直接横向比较，但它们从不同角度共同说明：中间层携带了高度可恢复的词汇信息。</p><span id="more"></span><h2 id="一、为什么研究“模型内部是否在转写”"><a href="#一、为什么研究“模型内部是否在转写”" class="headerlink" title="一、为什么研究“模型内部是否在转写”"></a>一、为什么研究“模型内部是否在转写”</h2><p>交错式 Speech LM 通常把离散语音单元和文本 token 放进同一条序列。例如一句话可以被构造成：</p><figure class="highlight text"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs text">[TEXT] the monkey climbed<br>[SPEECH] Hu14 Hu62 Hu9 ... Hu31<br>[TEXT] tree.<br></code></pre></td></tr></table></figure><p>关键在于，同一个词只以语音或文本中的一种形式出现。模型没有同时看到某段语音及其逐字转写，也没有接受 ASR loss；它只需完成 next-token prediction。</p><p>已有研究发现，文本 LM 初始化和语音—文本交错训练能够改善 Speech LM 的语义能力，但内部机制仍不清楚：模型究竟直接在语音表示上进行语义计算，还是先把语音映射到一种文本式“工作空间”，借用文本 LM 已形成的能力，再映射回语音？</p><p>论文把中间层中可解码出对应文本词的现象称为 <strong>implicit latent transcription（隐式潜在转写）</strong>。它并不意味着模型显式输出 transcript，而是指当前语音词对应的文本 token 已经存在于可读出的隐藏表征中。</p><h2 id="二、模型与受控训练配置"><a href="#二、模型与受控训练配置" class="headerlink" title="二、模型与受控训练配置"></a>二、模型与受控训练配置</h2><p>论文分析 Llama-3.2 和 Qwen2.5 两个模型家族，三组代表模型为：</p><ul><li>Llama-3.2 3B PI-1/3 20k（官方 SIMS checkpoint）；</li><li>Llama-3.2 3B PI-2/3 20k；</li><li>Qwen2.5 3B PI-1/3 60k。</li></ul><p>命名中的字母表示：</p><ul><li><strong>P</strong>：从预训练文本 LM 初始化；</li><li><strong>R</strong>：随机初始化；</li><li><strong>S</strong>：语音数据；</li><li><strong>T</strong>：文本数据；</li><li><strong>I-$r$</strong>：包含语音—文本交错数据，$r$ 是交错 token 在训练 token 中的比例。</li></ul><p>所有受控 Llama-3.2 变体采用相同架构和优化设置：序列长度 2048、有效 batch size 32、训练 20K steps，目标只有 next-token prediction。</p><p>交错样本中，语音 span 长度从 $\operatorname{Poisson}(\lambda=10)$ 采样，直到语音 span 覆盖约 $\eta=0.3$ 的词。时间对齐 transcript 只用于确定词边界和分配模态；每个词只会以语音或文本形式出现，并不是平行的“语音—转写”监督对。</p><p>语音数据包括 LibriSpeech、LibriLight、VoxPopuli、TED-LIUM、People’s Speech、Spoken Wikipedia Corpus 和合成 sTinyStories；文本来自经 Gopher 规则过滤的 RedPajama。语音以 mHuBERT 特征配合 500-unit k-means codebook 离散化，文本使用 Llama-3.2 tokenizer。</p><h2 id="三、三种互补的隐藏状态读出方法"><a href="#三、三种互补的隐藏状态读出方法" class="headerlink" title="三、三种互补的隐藏状态读出方法"></a>三、三种互补的隐藏状态读出方法</h2><h3 id="3-1-Logit-lens：借用模型自己的输出头"><a href="#3-1-Logit-lens：借用模型自己的输出头" class="headerlink" title="3.1 Logit lens：借用模型自己的输出头"></a>3.1 Logit lens：借用模型自己的输出头</h3><p>设第 $\ell$ 层、位置 $i$ 的隐藏状态为 $h_i^{(\ell)}$。Logit lens 将最终层使用的归一化和词表投影提前应用到中间层：</p><script type="math/tex; mode=display">p_{\text{logit}}^{(\ell)}(x\mid i)=\operatorname{softmax}\left(W_{\text{out}}\operatorname{Norm}_f(h_i^{(\ell)})\right)_x.</script><p>这样，每一层都会得到一个联合语音—文本词表上的概率分布。它无需额外训练，但只能读出已经与模型输出投影对齐的信息。</p><h3 id="3-2-Latent-lens：在文本表示库中检索"><a href="#3-2-Latent-lens：在文本表示库中检索" class="headerlink" title="3.2 Latent lens：在文本表示库中检索"></a>3.2 Latent lens：在文本表示库中检索</h3><p>作者从 held-out RedPajama 收集评测词和随机干扰词的上下文化表示，在每一层对同一个词的多次出现求平均，构造该层的文本词表示库。随后计算语音隐藏状态与词表示的余弦相似度，以 top-$k$ 近邻作为解码结果。</p><p>它不依赖输出头，检验的是语音隐藏状态是否在几何上接近“同一模型处理文本时形成的词表示”。</p><h3 id="3-3-Linear-probe：信息能否被线性提取"><a href="#3-3-Linear-probe：信息能否被线性提取" class="headerlink" title="3.3 Linear probe：信息能否被线性提取"></a>3.3 Linear probe：信息能否被线性提取</h3><p>第三种方法为每个模型、每一层和每种目标分别训练 affine-softmax 分类器，同时冻结 Speech LM。分类空间包含 tokenizer 对应的 RedPajama 最常见 10,000 个 token 和全部评测目标，训练数据来自 People’s Speech 的 500 万个对齐语音 token 位置。</p><p>Linear probe 能证明信息可以被额外监督的线性分类器读出，但不能证明原模型在生成过程中实际使用了该方向。</p><p><img src="/images/paper_figs/interleaved-slm-latent-text/three-decoding-methods.png" alt="三种解码方法对当前词、下一词和事实答案的累计召回"></p><p><em>原论文 Figure 3。虚线为 Recall@1，实线为 Recall@10。当前词信号最强，下一词和事实答案较弱，但在多个模型和解码方法中都可恢复。</em></p><h2 id="四、词级指标如何处理一段语音-token"><a href="#四、词级指标如何处理一段语音-token" class="headerlink" title="四、词级指标如何处理一段语音 token"></a>四、词级指标如何处理一段语音 token</h2><p>一个词通常横跨多个离散语音 token，最可读的位置也不固定。令 $S(w)$ 表示词 $w$ 对齐到的语音位置集合。对解码器 $j$，累计 Recall@$k$ 定义为：</p><script type="math/tex; mode=display">\frac{1}{|\mathcal D|}\sum_{w\in\mathcal D}\mathbf 1\left[\exists\,\ell\le L,\ i\in S(w):y_w\in\operatorname{TopK}(p_j^{(\ell)}(i),k)\right].</script><p>也就是说，截至第 $L$ 层，只要目标词曾在该词某个对齐位置进入 top-$k$，就算成功找回。所有方法统一采用小写、去标点，并对第一个 word-start token 做精确匹配。</p><p>为了排除高频词天然容易进入 top-$k$ 的影响，作者为每个金标词从同一 RedPajama 词频区间抽取 20 个控制词，使用完全相同的 span 和累计召回流程，并报告 95% 置信区间。</p><h2 id="五、结果一：隐藏状态经历“语音—文本—语音”三阶段"><a href="#五、结果一：隐藏状态经历“语音—文本—语音”三阶段" class="headerlink" title="五、结果一：隐藏状态经历“语音—文本—语音”三阶段"></a>五、结果一：隐藏状态经历“语音—文本—语音”三阶段</h2><p><img src="/images/paper_figs/interleaved-slm-latent-text/modality-shift.png" alt="语音输入与文本输入在各层的模态概率质量"></p><p><em>原论文 Figure 2。青色为文本 token 概率质量，黄色为语音 token；下排只统计 top-200 token，用于控制两类词表规模差异。</em></p><p>对 SIMS-Llama3.2-3B 的语音输入，logit-lens 概率质量呈现清晰轨迹：</p><ul><li><strong>第 0–2 层</strong>：speech token 占主导；</li><li><strong>第 2–25 层</strong>：概率质量明显转向 text token；</li><li><strong>第 26–28 层</strong>：重新回到 speech token 域。</li></ul><p>文本输入则始终集中在文本 token。作者进一步只保留概率最高的 200 个 token，三阶段模式依然存在，因此不能简单归因于文本词表更大。</p><p>这一结果说明中间状态经输出头投影后进入了文本词表区域，但它本身还不能证明模型编码的是<strong>正确转写</strong>，因此需要后续词级实验。</p><h2 id="六、结果二：当前词确实能从中间层恢复"><a href="#六、结果二：当前词确实能从中间层恢复" class="headerlink" title="六、结果二：当前词确实能从中间层恢复"></a>六、结果二：当前词确实能从中间层恢复</h2><p>在受控事实提示集上，官方 Llama-3.2 3B PI-1/3 的累计 Recall@10 为：</p><div class="table-container"><table><thead><tr><th>解码方法</th><th style="text-align:right">当前词</th><th style="text-align:right">下一词</th></tr></thead><tbody><tr><td>Logit lens</td><td style="text-align:right">61.9</td><td style="text-align:right">23.9</td></tr><tr><td>Latent lens</td><td style="text-align:right">68.1</td><td style="text-align:right">41.2</td></tr><tr><td>Linear probe</td><td style="text-align:right">87.7</td><td style="text-align:right">30.6</td></tr></tbody></table></div><p>三项结果分别表明：当前词已与模型输出词表中的正确 token 对齐；语音状态在几何上接近同词的文本表示；词汇信息可被线性分类器高比例恢复。</p><p>Linear probe 接受了额外监督，不能因 87.7 最高就称其为“更好的内部解释器”。真正重要的是，三种假设不同的方法给出了同一方向的结论。非累计逐层曲线还显示，召回主要集中在中间层，到输出端时下降，与模态概率质量的三阶段轨迹一致。</p><h3 id="6-1-任意位置聚合有没有夸大效果？"><a href="#6-1-任意位置聚合有没有夸大效果？" class="headerlink" title="6.1 任意位置聚合有没有夸大效果？"></a>6.1 任意位置聚合有没有夸大效果？</h3><p>对官方 Llama PI-1/3，附录比较了更严格的 span selector：</p><div class="table-container"><table><thead><tr><th>span 选择方式</th><th style="text-align:right">Recall@10</th></tr></thead><tbody><tr><td>span 中任意位置</td><td style="text-align:right">61.7</td></tr><tr><td>只看最后 25%</td><td style="text-align:right">38.6</td></tr><tr><td>只看最后一个 token</td><td style="text-align:right">33.9</td></tr><tr><td>只看第一个 token</td><td style="text-align:right">9.2</td></tr><tr><td>对所有位置的召回取平均</td><td style="text-align:right">22.9</td></tr></tbody></table></div><p>任意位置聚合确实最敏感，但只看最后一个 token 时仍有 33.9%，说明 max 操作没有凭空制造现象。第一个 token 的召回较低，也符合模型需要更多声学上下文才能辨认完整词的解释。</p><p>信号在词内很局部：至少命中过一次的 word-layer pair 中，82.2% 的目标最多只在两个位置出现，而对齐词 span 的中位长度为 6 个语音 token。与此同时，已被 Recall@10 找回的词中，37.7% 连续保持至少 5 层，24.4% 至少 8 层，17.3% 至少 10 层，11.1% 至少 15 层。</p><h2 id="七、不只转写当前词，还会形成文本续写"><a href="#七、不只转写当前词，还会形成文本续写" class="headerlink" title="七、不只转写当前词，还会形成文本续写"></a>七、不只转写当前词，还会形成文本续写</h2><p>作者把解码目标换成句子的下一词，以及事实提示末尾对应的正确答案。下一词信号整体弱于当前词，但这并不全是模型能力问题：例如 <code>United</code> 后既可能接 <code>Kingdom</code>，也可能接 <code>States</code>，单一金标会低估合理续写。</p><p><img src="/images/paper_figs/interleaved-slm-latent-text/capital-uk-logit-lens.png" alt="“The capital of the United Kingdom is...” 的中间层 logit lens"></p><p><em>原论文 Figure 1。横轴为语音位置，纵轴为 Transformer 层；输入没有说出答案，但 “London” 在后部中间层变得可解码。</em></p><p>事实答案提供了更明确的观察窗口。在语音提示 “The capital of the United Kingdom is…” 中，输入里从未出现的 <code>London</code> 会在中间层被 logit lens 解码出来。这说明隐藏状态不仅回顾当前声学内容，也包含基于上下文形成的文本续写假设。</p><p>不过，论文没有观察到稳定的“先转写、再预测”层序。当前词与续写信号可能重叠出现，而不是严格串行的两步流水线。</p><h2 id="八、自然语音中仍然存在"><a href="#八、自然语音中仍然存在" class="headerlink" title="八、自然语音中仍然存在"></a>八、自然语音中仍然存在</h2><p>受控事实集由 Kokoro-82M 合成，便于精确对齐，但可能过于干净。作者又从 People’s Speech、LibriSpeech、VoxPopuli、TED-LIUM、Spoken Wikipedia Corpus、VCTK 和 Flickr8k 各抽取 300 条，共评测 2,100 条自然语音。</p><p>七个语料聚合后的 Recall@10 为：</p><div class="table-container"><table><thead><tr><th>模型</th><th>方法</th><th style="text-align:right">当前词</th><th style="text-align:right">下一词</th></tr></thead><tbody><tr><td>Llama PI-1/3 官方</td><td>Logit lens</td><td style="text-align:right">71.7</td><td style="text-align:right">27.1</td></tr><tr><td></td><td>Latent lens</td><td style="text-align:right">40.3</td><td style="text-align:right">20.0</td></tr><tr><td></td><td>Linear probe</td><td style="text-align:right">89.4</td><td style="text-align:right">57.4</td></tr><tr><td>Llama PI-2/3</td><td>Logit lens</td><td style="text-align:right">57.7</td><td style="text-align:right">17.4</td></tr><tr><td></td><td>Latent lens</td><td style="text-align:right">51.7</td><td style="text-align:right">28.2</td></tr><tr><td></td><td>Linear probe</td><td style="text-align:right">87.7</td><td style="text-align:right">58.5</td></tr><tr><td>Qwen2.5 PI-1/3</td><td>Logit lens</td><td style="text-align:right">40.8</td><td style="text-align:right">16.5</td></tr><tr><td></td><td>Latent lens</td><td style="text-align:right">43.6</td><td style="text-align:right">28.9</td></tr><tr><td></td><td>Linear probe</td><td style="text-align:right">88.0</td><td style="text-align:right">56.7</td></tr></tbody></table></div><p>不同语料的绝对值差异较大，说明说话人、录音条件和语言分布都会影响可解码性；但总体模式并不局限于合成语音或单一模型家族。</p><h2 id="九、哪些训练条件促成隐式转写"><a href="#九、哪些训练条件促成隐式转写" class="headerlink" title="九、哪些训练条件促成隐式转写"></a>九、哪些训练条件促成隐式转写</h2><p>论文在相同 Llama-3.2 3B 架构和优化设置下改变初始化与数据构成。主文表 2 的 logit-lens Recall@10 如下：</p><div class="table-container"><table><thead><tr><th>模型</th><th style="text-align:right">文本预训练</th><th style="text-align:right">文本数据</th><th style="text-align:right">交错数据</th><th style="text-align:right">当前词</th><th style="text-align:right">下一词</th><th style="text-align:right">答案</th></tr></thead><tbody><tr><td>PI-1/3 官方</td><td style="text-align:right">✓</td><td style="text-align:right">✓</td><td style="text-align:right">✓</td><td style="text-align:right">61.88</td><td style="text-align:right">23.91</td><td style="text-align:right">41.60</td></tr><tr><td>PI-1/3 ours</td><td style="text-align:right">✓</td><td style="text-align:right">✓</td><td style="text-align:right">✓</td><td style="text-align:right">48.75</td><td style="text-align:right">15.31</td><td style="text-align:right">26.40</td></tr><tr><td>PI-2/3</td><td style="text-align:right">✓</td><td style="text-align:right">✓</td><td style="text-align:right">✓</td><td style="text-align:right">49.06</td><td style="text-align:right">15.78</td><td style="text-align:right">24.00</td></tr><tr><td>PI-5/6</td><td style="text-align:right">✓</td><td style="text-align:right">✓</td><td style="text-align:right">✓</td><td style="text-align:right">2.66</td><td style="text-align:right">1.72</td><td style="text-align:right">4.00</td></tr><tr><td>PST</td><td style="text-align:right">✓</td><td style="text-align:right">✓</td><td style="text-align:right">✗</td><td style="text-align:right">3.75</td><td style="text-align:right">3.28</td><td style="text-align:right">0.00</td></tr><tr><td>PS</td><td style="text-align:right">✓</td><td style="text-align:right">✗</td><td style="text-align:right">✗</td><td style="text-align:right">0.16</td><td style="text-align:right">0.00</td><td style="text-align:right">0.00</td></tr><tr><td>RST</td><td style="text-align:right">✗</td><td style="text-align:right">✓</td><td style="text-align:right">✗</td><td style="text-align:right">5.78</td><td style="text-align:right">6.72</td><td style="text-align:right">4.80</td></tr><tr><td>RI-1/3</td><td style="text-align:right">✗</td><td style="text-align:right">✓</td><td style="text-align:right">✓</td><td style="text-align:right">2.19</td><td style="text-align:right">5.78</td><td style="text-align:right">7.20</td></tr></tbody></table></div><p>这组受控比较支持三个判断：</p><ol><li><strong>只有文本数据不够</strong>：PST 没有交错样本，当前词 Recall@10 仅 3.75；</li><li><strong>只有交错数据也不够</strong>：随机初始化的 RI-1/3 只有 2.19；</li><li><strong>交错比例不是越高越好</strong>：PI-1/3 与 PI-2/3 接近 49，而 PI-5/6 降到 2.66。</li></ol><p>因此，在论文设置中，强隐式转写最容易出现在“文本 LM 预训练先验 + 适量语音—文本交错”的组合中。作者推测过高交错比例可能改变训练分布，或减少纯模态上下文的暴露，但实验没有单独验证这个解释。</p><h2 id="十、隐式转写与事实知识的关系"><a href="#十、隐式转写与事实知识的关系" class="headerlink" title="十、隐式转写与事实知识的关系"></a>十、隐式转写与事实知识的关系</h2><p>论文构造了 282 条单答案短提示，覆盖颜色、星期、月份、物体功能、国家语言、亲属关系、数值事实、反义词、首都、简单算术和数列等 13 类。每条真事实都配有一个同类别错误版本；若</p><script type="math/tex; mode=display">\log p(\text{真事实}) > \log p(\text{同类别反事实}),</script><p>就记为回答正确。</p><p><img src="/images/paper_figs/interleaved-slm-latent-text/transcription-knowledge-correlation.png" alt="隐式转写召回与事实知识准确率的跨模型相关"></p><p><em>原论文 Figure 5。左图为当前词、右图为下一词。散点跨越不同模型架构、规模、初始化、训练预算和数据配方，因此这里只能解释为相关。</em></p><p>跨模型的 Spearman 秩相关为：</p><ul><li>当前词 Recall@10：$\rho=0.70,\ p=0.0053$；</li><li>下一词 Recall@10：$\rho=0.65,\ p=0.0119$。</li></ul><p>两者都通过 Bonferroni 校正后的 $\alpha=0.025$ 阈值。证据允许说：隐式转写较强的模型，通常也有更高的语音事实知识准确率。</p><p>但它不能推出“模型因为先转写成文本，所以事实能力才提高”。模型规模、预训练质量、训练预算和数据混合都可能共同影响两个指标；随机初始化模型也会出现非零转写分数，却仍缺少知识能力。论文没有主动增强或削弱隐式转写后再测知识准确率，因此这里只是跨模型关联，不是因果机制。</p><h2 id="十一、定性案例：边听边修正文本假设"><a href="#十一、定性案例：边听边修正文本假设" class="headerlink" title="十一、定性案例：边听边修正文本假设"></a>十一、定性案例：边听边修正文本假设</h2><p>单词级可视化揭示了两种探索性现象。</p><p>第一，隐式转写有时会随声学证据逐步形成：<code>white</code> 先出现 <code>why</code>，<code>lime</code> 先出现 <code>lie</code>，<code>kingdom</code> 先出现 <code>king</code>，<code>Pakistan</code> 先出现 <code>pack</code>，<code>teacher</code> 则从 <code>tea</code> 到 <code>teach</code> 再到完整单词。这与“首 token 召回低、末 token 召回更高”的统计结果相互呼应。</p><p>第二，隐式转写也会犯声学错误，例如 <code>lime</code> 有时被解码成 <code>line</code>。一旦语音被压入文本式表示，细微声学差异可能提前丢失或被误判。这个文本工作空间可能帮助模型调用文本知识，也可能成为错误传播和语音—文本模态差距的来源。</p><h2 id="十二、论文真正证明了什么"><a href="#十二、论文真正证明了什么" class="headerlink" title="十二、论文真正证明了什么"></a>十二、论文真正证明了什么</h2><p>把证据按强度排列，可以得到一条清晰但有限的结论链：</p><ol><li>语音输入的中间层经输出头投影后，概率质量从语音词表转向文本词表，再回到语音词表；</li><li>正确当前词可被 logit lens、latent lens 和 linear probe 三种方法恢复；</li><li>中间层还编码下一词和事实答案等文本续写信息；</li><li>该现象同时存在于合成提示和七类自然语音；</li><li>受控 Llama 比较显示，文本 LM 初始化与适量交错训练的组合最容易产生强信号；</li><li>跨模型看，隐式转写召回与事实知识准确率正相关。</li></ol><p>前四点是表征层面的直接证据，第五点是训练配置的受控比较，第六点只是统计关联。它们不能被合并成更强的说法——“模型一定先转写，再依赖文字进行因果推理”。</p><h2 id="十三、局限与开放问题"><a href="#十三、局限与开放问题" class="headerlink" title="十三、局限与开放问题"></a>十三、局限与开放问题</h2><h3 id="13-1-可读不等于被使用"><a href="#13-1-可读不等于被使用" class="headerlink" title="13.1 可读不等于被使用"></a>13.1 可读不等于被使用</h3><p>三种方法都在回答隐藏状态中“有什么信息”，而不是模型生成时“依赖什么信息”。即使三者一致，也不能确定文本式表征在原始前向计算中承担因果作用。</p><h3 id="13-2-尚未定位具体电路"><a href="#13-2-尚未定位具体电路" class="headerlink" title="13.2 尚未定位具体电路"></a>13.2 尚未定位具体电路</h3><p>论文没有确定哪些 attention head、MLP、残差分量或层间路径计算了隐式转写，也没有使用 activation patching、ablation 或 steering 验证具体机制。</p><h3 id="13-3-知识关系没有经过干预验证"><a href="#13-3-知识关系没有经过干预验证" class="headerlink" title="13.3 知识关系没有经过干预验证"></a>13.3 知识关系没有经过干预验证</h3><p>最高相关系数为 $\rho=0.70$，仍有大量模型间差异未被解释。要验证因果关系，需要主动改变隐式转写强度，并在其他因素尽量不变时观察知识准确率是否随之变化。</p><h3 id="13-4-文本化可能损害声学能力"><a href="#13-4-文本化可能损害声学能力" class="headerlink" title="13.4 文本化可能损害声学能力"></a>13.4 文本化可能损害声学能力</h3><p>Speech LM 的价值之一，是保留文本无法表达的韵律、情绪、说话人和环境信息。如果训练目标过度鼓励文本化，可能改善文本充分任务，却损害依赖声学细节的任务。论文没有评测这一权衡。</p><h3 id="13-5-隐式转写没有消除模态差距"><a href="#13-5-隐式转写没有消除模态差距" class="headerlink" title="13.5 隐式转写没有消除模态差距"></a>13.5 隐式转写没有消除模态差距</h3><p>既然模型能进入文本空间，为什么语音能力仍落后于文本？作者提出三种待验证方向：隐式转写本身有错误；模态转换消耗了计算；语音 token 缺少时间压缩，使后续语言推理更困难。</p><h2 id="十四、结论"><a href="#十四、结论" class="headerlink" title="十四、结论"></a>十四、结论</h2><p>这篇论文为交错式 Speech LM 提供了一条可测量的内部计算轨迹：</p><script type="math/tex; mode=display">\text{离散语音表示}\rightarrow\text{可解码的文本词与文本续写}\rightarrow\text{语音 token 输出}.</script><p>这条轨迹同时得到输出头投影、文本表示检索和监督线性探针的支持，并从合成提示泛化到自然语音。受控训练比较进一步表明，文本预训练先验与适量交错监督的组合至关重要；仅有文本数据、仅共享词表，或从随机初始化开始接受交错训练，都没有产生同等强度的现象。</p><p>但最关键的一步仍未完成：隐藏状态中存在文字信息，不等于模型必须依赖它。后续研究需要从“读出”走向“干预”——定位产生隐式转写的计算路径，改变它，再分别测量文本知识、语音生成和细粒度声学能力，才能判断这个文本工作空间究竟是 Speech LM 的核心机制、一个有用接口，还是与性能共同出现的表征副产物。</p><h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol><li>Sternberg, T., Maimon, G., &amp; Adi, Y. <em>Interleaved Speech Language Models Latently Work In Text</em>. arXiv:2606.22473, 2026.</li><li>Maimon et al. <em>SIMS: Scaling Speech Language Models with Interleaved Speech-Text Training</em>.</li><li>Nostalgebraist. <em>Interpreting GPT: The Logit Lens</em>.</li><li>Krojer et al. <em>Latent Lens: Revealing Highly Interpretable Visual and Textual Representations in Language Models</em>.</li></ol>]]></content>
+    
+    
+    <categories>
+      
+      <category>论文解读</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>论文解读</tag>
+      
+      <tag>Speech-LLM</tag>
+      
+      <tag>Speech Language Model</tag>
+      
+      <tag>Multimodal Learning</tag>
+      
+      <tag>Interpretability</tag>
+      
+      <tag>Logit Lens</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>每日一页历史·朝代史下卷：从五代风云到鸦片战争</title>
     <link href="/2026/10/22/2026-10-22-daily-history-dynasties-55-81/"/>
     <url>/2026/10/22/2026-10-22-daily-history-dynasties-55-81/</url>
@@ -150,11 +185,11 @@
       
       <tag>Speech-LLM</tag>
       
-      <tag>Turn-Taking</tag>
+      <tag>Discrete Diffusion</tag>
       
       <tag>Spoken Dialogue</tag>
       
-      <tag>Discrete Diffusion</tag>
+      <tag>Turn-Taking</tag>
       
       <tag>NVIDIA</tag>
       
@@ -216,9 +251,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>Speech LLM</tag>
       
@@ -292,11 +327,11 @@
     
     <tags>
       
+      <tag>论文解读</tag>
+      
       <tag>ASR</tag>
       
       <tag>Data Augmentation</tag>
-      
-      <tag>论文解读</tag>
       
       <tag>Low-Resource ASR</tag>
       
@@ -496,6 +531,43 @@
   
   
   <entry>
+    <title>凯圣王 × 谭成义三分化训练计划</title>
+    <link href="/2026/08/30/2026-08-30-Kaishengwang-TanChengyi-3Split-Strength-Training-Guide/"/>
+    <url>/2026/08/30/2026-08-30-Kaishengwang-TanChengyi-3Split-Strength-Training-Guide/</url>
+    
+    <content type="html"><![CDATA[<blockquote><p><strong>核心事实来源</strong>：Bilibili 凯圣王 × 谭成义（谭指）《三分化①——训练计划》（BV1FcdZBNEm3）官方黑板板书与现场讲授。<br><strong>体系定位</strong>：打破新老流派对立，融合<strong>力量举主项线性进阶、神经疲劳管理、解剖学力线对齐与功能性关节开发</strong>的新手/进阶者年度三分化模型。</p></blockquote><hr><h2 id="一、-为什么自然训练者应该放弃五分化，主打三分化？"><a href="#一、-为什么自然训练者应该放弃五分化，主打三分化？" class="headerlink" title="一、 为什么自然训练者应该放弃五分化，主打三分化？"></a>一、 为什么自然训练者应该放弃五分化，主打三分化？</h2><p>在计划开篇，凯圣王与谭成义明确指出了分化设计的生理底层：</p><ol><li><strong>五分化（胸/背/肩/臂/腿）的频率陷阱</strong>：<ul><li>五分化单次训练虽然泵感强烈，但单一肌群练一次要等 $6\sim 7$ 天才练下一次；</li><li>自然健身者一次训练激发的<strong>肌蛋白合成窗口仅维持 $24 \sim 48$ 小时</strong>，后半周肌肉处于“无刺激空转”状态；而且单次 20+ 组的大容量极易堆积不可逆的神经疲劳与软组织慢性炎症。</li></ul></li><li><strong>三分化（推/拉/腿）的超量恢复红利</strong>：<ul><li>循环频次高（每周每个部位刺激 $1.5 \sim 2$ 次），单次单部位仅需 <strong>$6 \sim 10$ 组高质量正式组</strong>；</li><li>在神经系统不崩溃的前提下，保证每一次负重都在最高神经募集度和高动作质量下完成。</li></ul></li></ol><hr><h2 id="二、-计划的核心动作编排（黑板板书）"><a href="#二、-计划的核心动作编排（黑板板书）" class="headerlink" title="二、 计划的核心动作编排（黑板板书）"></a>二、 计划的核心动作编排（黑板板书）</h2><p>这份计划融合了凯圣王的力量举主项哲学与谭指的解剖孤立控制：</p><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs markdown">[Day 1：推日 (Push)] —— 胸、三角肌前/中束、肱三头肌<br><span class="hljs-bullet">  1.</span> 平板杠铃卧推（主项：力量神经开发 + 身体功能筛查）<br><span class="hljs-bullet">  2.</span> 哑铃上斜卧推（胸锁延长线堆肉，30°角）<br><span class="hljs-bullet">  3.</span> 双杠臂屈伸（下胸 + 三头 + 前束 + 肩胛远固定能力，提供退阶方案）<br><span class="hljs-bullet">  4.</span> 仰卧曲柄杠铃臂屈伸（肩屈位三头长头离心）<br><span class="hljs-bullet">  5.</span> 龙门架 / 哑铃 Y 字侧平举（中束孤立，肩胛冈平面，避免推肩带来的肘肩疲劳）<br><br>[Day 2：拉日 (Pull)] —— 背阔肌、上背/三角肌后束、肱二头肌<br><span class="hljs-bullet">  1.</span> 单手钢线下拉（力线与背阔肌纤维走向完全吻合）<br><span class="hljs-bullet">  2.</span> 对握高位下拉（背阔肌上部与大圆肌，上重量的主项）<br><span class="hljs-bullet">  3.</span> 单手器械划船（胸/手支撑消除腰部代偿，强化水平面拉力）<br><span class="hljs-bullet">  4.</span> 坐姿开肘划船 / 海豹划船（重点练中下斜方肌，拮抗推日的胸椎屈曲）<br><span class="hljs-bullet">  5.</span> 坐姿钢线弯举（肩屈位二头肌孤立）<br><br>[Day 3：腿日 (Legs)] —— 下肢后侧链为主、单侧稳定与股四头肌<br><span class="hljs-bullet">  1.</span> 单腿哑铃硬拉（单侧髋稳定，开发臀中臀小肌与骨盆控制）<br><span class="hljs-bullet">  2.</span> 保加利亚分腿蹲（双关节屈伸与旋转刚性，单腿超负荷）<br><span class="hljs-bullet">  3.</span> 颈前深蹲（避开足背屈受限，以股四头肌与全身功能开发为主）<br><span class="hljs-bullet">  4.</span> 罗马尼亚硬拉（RDL：纯正髋铰链，后侧链从臀到腘绳肌）<br><span class="hljs-bullet">  5.</span> 山羊挺身（竖脊肌与后侧链顶峰终结）<br></code></pre></td></tr></table></figure><hr><h2 id="三、-动作选择背后的“新老结合”与生物力学深意"><a href="#三、-动作选择背后的“新老结合”与生物力学深意" class="headerlink" title="三、 动作选择背后的“新老结合”与生物力学深意"></a>三、 动作选择背后的“新老结合”与生物力学深意</h2><h3 id="1-为什么一定要保留杠铃卧推作为主项？"><a href="#1-为什么一定要保留杠铃卧推作为主项？" class="headerlink" title="1. 为什么一定要保留杠铃卧推作为主项？"></a>1. 为什么一定要保留杠铃卧推作为主项？</h3><ul><li><strong>动作筛查价值</strong>：杠铃卧推不仅能上最大机械张力，更能作为“身体动作模式的筛查工具”——做不到触胸或触胸前肩前扣，往往暴露出<strong>胸椎活动度不足、肩胛后缩能力差、肩外展过多代偿、或肱骨从盂肱关节脱位前顶</strong>。</li><li><strong>开发肌间协调性</strong>：卧推是菱形肌、前锯肌、胸椎伸展度与上胸进气（腹压）高度协同的全身动作，不能被纯固定器械完全替代。</li></ul><h3 id="2-为什么推日不安排“推肩（Overhead-Press）”？"><a href="#2-为什么推日不安排“推肩（Overhead-Press）”？" class="headerlink" title="2. 为什么推日不安排“推肩（Overhead Press）”？"></a>2. 为什么推日不安排“推肩（Overhead Press）”？</h3><ul><li>卧推、上斜哑铃卧推和双杠臂屈伸已经给<strong>三角肌前束</strong>和<strong>肘关节</strong>施加了极大的压迫；如果推日再加入大重量推肩，极易导致肘关节和肩袖过度劳损。</li><li>因此直接选用 <strong>Y 字侧平举</strong> 专攻中束：在肩胛冈平面（外展前斜 $30^\circ$）做外旋位抬起，背部不易借力，既保全肘关节又精准刺激中束。</li></ul><h3 id="3-为什么拉日强调“海豹划船-坐姿开肘划船”？"><a href="#3-为什么拉日强调“海豹划船-坐姿开肘划船”？" class="headerlink" title="3. 为什么拉日强调“海豹划船 / 坐姿开肘划船”？"></a>3. 为什么拉日强调“海豹划船 / 坐姿开肘划船”？</h3><ul><li><strong>拮抗推日的恢复作用</strong>：推日做多了，胸大肌紧张容易导致胸椎处于屈曲（含胸）状态；海豹划船与开肘划船专注收缩<strong>中下斜方肌与菱形肌</strong>，通过肩胛骨充分后缩，拉伸胸椎前侧，改善圆肩与肩痛。</li><li><strong>绝对无下背借力</strong>：胸部紧贴支撑垫，完全杜绝用下背甩动代偿。</li></ul><h3 id="4-为什么腿日选“颈前深蹲”而不是传统后蹲？"><a href="#4-为什么腿日选“颈前深蹲”而不是传统后蹲？" class="headerlink" title="4. 为什么腿日选“颈前深蹲”而不是传统后蹲？"></a>4. 为什么腿日选“颈前深蹲”而不是传统后蹲？</h3><ul><li>大部分训练者存在<strong>踝关节背屈活动度受限</strong>，做杠铃颈后深蹲时容易弯腰弓背、骨盆眨眼；</li><li><strong>颈前深蹲（Front Squat）</strong>强制躯干保持直立，更安全地轰击股四头肌，同时深度激活核心抗阻伸展能力。</li></ul><hr><h2 id="四、-核心递进法则：线性进阶与神经疲劳管理"><a href="#四、-核心递进法则：线性进阶与神经疲劳管理" class="headerlink" title="四、 核心递进法则：线性进阶与神经疲劳管理"></a>四、 核心递进法则：线性进阶与神经疲劳管理</h2><p>凯圣王强调：“<strong>很多人理解的线性就是一直加重量，结果最后神经直接爆掉。</strong>”</p><h3 id="1-杠铃卧推的“容量-to-强度”周期递进模型"><a href="#1-杠铃卧推的“容量-to-强度”周期递进模型" class="headerlink" title="1. 杠铃卧推的“容量 $\to$ 强度”周期递进模型"></a>1. 杠铃卧推的“容量 $\to$ 强度”周期递进模型</h3><p>主项的目标是<strong>开发神经募集效率与动作熟练度</strong>，切忌一上来就冲极限：</p><ul><li><strong>第 1 阶段（磨练动作熟练度，RPE 8，保留 2 次余量）</strong>：<ul><li>第 1 组：15 次（热身组，找一个能做 20 次的极轻重量，刷轨迹与呼吸）；</li><li>第 2 组：12 次（正式组，RPE 8）；</li><li>第 3 组：10 次（正式组，微加重量，RPE 8）；</li><li>第 4 组：8 次（正式组，微加重量，RPE 8）。</li></ul></li><li><strong>第 2 阶段（强度递进，容量压缩）</strong>：<ul><li>下次训练：将 10 次组替换为 8 次组（$15 \to 12 \to 8 \to 8$）；</li><li>再次训练：将 12 次组替换为 8 次组（$15 \to 8 \to 8 \to 8$）；</li><li>进阶到除热身外做 <strong>4 个 8 次组</strong>。</li></ul></li><li><strong>第 3 阶段（进入大强度神经冲刺）</strong>：<ul><li>此时容量压到极低，转为 <strong>2 组 $\times$ 6 次（RPE 8）</strong>，组间歇拉长到 3~5 分钟；</li><li>随后按周递进到 $3 \times 6 \to 4 \times 6 \to 2 \times 5 \to 3 \times 5 \to 4 \times 5$。</li></ul></li></ul><h3 id="2-哪些动作该力竭？哪些动作严禁力竭？"><a href="#2-哪些动作该力竭？哪些动作严禁力竭？" class="headerlink" title="2. 哪些动作该力竭？哪些动作严禁力竭？"></a>2. 哪些动作该力竭？哪些动作严禁力竭？</h3><p>这是谭指特别澄清的肌肉生理学关键：</p><ul><li><strong>大重量复合主项（卧推/硬拉/深蹲，负荷 $75\% \sim 85\%\text{1RM}$）</strong>：<ul><li><strong>严禁力竭</strong>！大负荷启动的第一刻就已经募集了全部快肌纤维（白肌），靠的是神经适应与动作渐进；一旦做到力竭，中枢神经系统（CNS）需要数天恢复，直接拖垮整个周期的训练频率。</li></ul></li><li><strong>轻重量单关节孤立动作（侧平举/钢线下拉/弯举，负荷 $30\% \sim 50\%\text{1RM}$）</strong>：<ul><li><strong>必须力竭 / 接近力竭（如 10+10 或 10+5 休息停顿法）</strong>！轻重量只有在接近力竭的后几个动作中，才能完全调动高门槛的肌原纤维白肌参与，达到真正的肌肥大效应；且单关节动作无神经和腰椎消耗，极易快速恢复。</li></ul></li></ul><hr><h2 id="五、-休息与疲劳监测的科学原则"><a href="#五、-休息与疲劳监测的科学原则" class="headerlink" title="五、 休息与疲劳监测的科学原则"></a>五、 休息与疲劳监测的科学原则</h2><p>凯圣王与谭成义提醒：“<strong>三分化不等于死板的练三天歇一天，而是根据身体反馈动态调整。</strong>”</p><ol><li><strong>个体恢复差异</strong>：专业运动员睡眠恢复极佳可以练 3 休 1；工作繁忙、生活压力大的普通人，如果疲劳累积，练 2 天歇 1 天也完全合理，<strong>坚决不推荐连练 4 天</strong>；</li><li><strong>客观疲劳监测手段</strong>：<ul><li><strong>握力计监测（交感神经状态）</strong>：早上起床或训练前测试握力，若显著低于个人基线，说明神经系统未恢复；</li><li><strong>晨脉监测</strong>：晨起静息心率如果异常偏高 $5 \sim 10\text{ bpm}$，提示身体处于过度疲劳或未修复状态；</li></ul></li><li><strong>一个月后的动作微调</strong>：<ul><li>训练一个月后，若肩屈位仰卧臂屈伸累积了肘部疲劳，可微调为肩伸位的下压；</li><li>二头内侧刺激充分后可换角练外侧，通过动作力线的微调释放局部关节压力。</li></ul></li></ol><hr><h2 id="六、-总结与执行铁律"><a href="#六、-总结与执行铁律" class="headerlink" title="六、 总结与执行铁律"></a>六、 总结与执行铁律</h2><ul><li><strong>循证科学大于盲目毅力</strong>：健身不是跟自己较劲，动作变形的加重毫无意义；</li><li><strong>主项留余量，小项拼力竭</strong>：卧推硬拉守住 RPE 8，侧平举弯举推到烧灼力竭；</li><li><strong>力线与关节健康第一</strong>：利用胸部支撑划船和单手钢线把力线对齐肌纤维，保护胸椎与肩袖，兼顾大力量与好体态！</li></ul>]]></content>
+    
+    
+    <categories>
+      
+      <category>健身笔记</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>健身</tag>
+      
+      <tag>力量训练</tag>
+      
+      <tag>三分化</tag>
+      
+      <tag>动作要领</tag>
+      
+      <tag>训练计划</tag>
+      
+      <tag>凯圣王</tag>
+      
+      <tag>谭成义</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>论文解读：Moshi: a speech-text foundation model for real-time dialogue</title>
     <link href="/2026/08/30/2026-08-30-Moshi-Speech-Text-Foundation-Model-Real-Time-Dialogue/"/>
     <url>/2026/08/30/2026-08-30-Moshi-Speech-Text-Foundation-Model-Real-Time-Dialogue/</url>
@@ -547,50 +619,13 @@
       
       <tag>力量训练</tag>
       
+      <tag>动作要领</tag>
+      
+      <tag>谭成义</tag>
+      
       <tag>四分化</tag>
       
-      <tag>动作要领</tag>
-      
-      <tag>谭成义</tag>
-      
       <tag>康复与体态</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
-    <title>凯圣王 × 谭成义三分化训练计划</title>
-    <link href="/2026/08/30/2026-08-30-Kaishengwang-TanChengyi-3Split-Strength-Training-Guide/"/>
-    <url>/2026/08/30/2026-08-30-Kaishengwang-TanChengyi-3Split-Strength-Training-Guide/</url>
-    
-    <content type="html"><![CDATA[<blockquote><p><strong>核心事实来源</strong>：Bilibili 凯圣王 × 谭成义（谭指）《三分化①——训练计划》（BV1FcdZBNEm3）官方黑板板书与现场讲授。<br><strong>体系定位</strong>：打破新老流派对立，融合<strong>力量举主项线性进阶、神经疲劳管理、解剖学力线对齐与功能性关节开发</strong>的新手/进阶者年度三分化模型。</p></blockquote><hr><h2 id="一、-为什么自然训练者应该放弃五分化，主打三分化？"><a href="#一、-为什么自然训练者应该放弃五分化，主打三分化？" class="headerlink" title="一、 为什么自然训练者应该放弃五分化，主打三分化？"></a>一、 为什么自然训练者应该放弃五分化，主打三分化？</h2><p>在计划开篇，凯圣王与谭成义明确指出了分化设计的生理底层：</p><ol><li><strong>五分化（胸/背/肩/臂/腿）的频率陷阱</strong>：<ul><li>五分化单次训练虽然泵感强烈，但单一肌群练一次要等 $6\sim 7$ 天才练下一次；</li><li>自然健身者一次训练激发的<strong>肌蛋白合成窗口仅维持 $24 \sim 48$ 小时</strong>，后半周肌肉处于“无刺激空转”状态；而且单次 20+ 组的大容量极易堆积不可逆的神经疲劳与软组织慢性炎症。</li></ul></li><li><strong>三分化（推/拉/腿）的超量恢复红利</strong>：<ul><li>循环频次高（每周每个部位刺激 $1.5 \sim 2$ 次），单次单部位仅需 <strong>$6 \sim 10$ 组高质量正式组</strong>；</li><li>在神经系统不崩溃的前提下，保证每一次负重都在最高神经募集度和高动作质量下完成。</li></ul></li></ol><hr><h2 id="二、-计划的核心动作编排（黑板板书）"><a href="#二、-计划的核心动作编排（黑板板书）" class="headerlink" title="二、 计划的核心动作编排（黑板板书）"></a>二、 计划的核心动作编排（黑板板书）</h2><p>这份计划融合了凯圣王的力量举主项哲学与谭指的解剖孤立控制：</p><figure class="highlight markdown"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><code class="hljs markdown">[Day 1：推日 (Push)] —— 胸、三角肌前/中束、肱三头肌<br><span class="hljs-bullet">  1.</span> 平板杠铃卧推（主项：力量神经开发 + 身体功能筛查）<br><span class="hljs-bullet">  2.</span> 哑铃上斜卧推（胸锁延长线堆肉，30°角）<br><span class="hljs-bullet">  3.</span> 双杠臂屈伸（下胸 + 三头 + 前束 + 肩胛远固定能力，提供退阶方案）<br><span class="hljs-bullet">  4.</span> 仰卧曲柄杠铃臂屈伸（肩屈位三头长头离心）<br><span class="hljs-bullet">  5.</span> 龙门架 / 哑铃 Y 字侧平举（中束孤立，肩胛冈平面，避免推肩带来的肘肩疲劳）<br><br>[Day 2：拉日 (Pull)] —— 背阔肌、上背/三角肌后束、肱二头肌<br><span class="hljs-bullet">  1.</span> 单手钢线下拉（力线与背阔肌纤维走向完全吻合）<br><span class="hljs-bullet">  2.</span> 对握高位下拉（背阔肌上部与大圆肌，上重量的主项）<br><span class="hljs-bullet">  3.</span> 单手器械划船（胸/手支撑消除腰部代偿，强化水平面拉力）<br><span class="hljs-bullet">  4.</span> 坐姿开肘划船 / 海豹划船（重点练中下斜方肌，拮抗推日的胸椎屈曲）<br><span class="hljs-bullet">  5.</span> 坐姿钢线弯举（肩屈位二头肌孤立）<br><br>[Day 3：腿日 (Legs)] —— 下肢后侧链为主、单侧稳定与股四头肌<br><span class="hljs-bullet">  1.</span> 单腿哑铃硬拉（单侧髋稳定，开发臀中臀小肌与骨盆控制）<br><span class="hljs-bullet">  2.</span> 保加利亚分腿蹲（双关节屈伸与旋转刚性，单腿超负荷）<br><span class="hljs-bullet">  3.</span> 颈前深蹲（避开足背屈受限，以股四头肌与全身功能开发为主）<br><span class="hljs-bullet">  4.</span> 罗马尼亚硬拉（RDL：纯正髋铰链，后侧链从臀到腘绳肌）<br><span class="hljs-bullet">  5.</span> 山羊挺身（竖脊肌与后侧链顶峰终结）<br></code></pre></td></tr></table></figure><hr><h2 id="三、-动作选择背后的“新老结合”与生物力学深意"><a href="#三、-动作选择背后的“新老结合”与生物力学深意" class="headerlink" title="三、 动作选择背后的“新老结合”与生物力学深意"></a>三、 动作选择背后的“新老结合”与生物力学深意</h2><h3 id="1-为什么一定要保留杠铃卧推作为主项？"><a href="#1-为什么一定要保留杠铃卧推作为主项？" class="headerlink" title="1. 为什么一定要保留杠铃卧推作为主项？"></a>1. 为什么一定要保留杠铃卧推作为主项？</h3><ul><li><strong>动作筛查价值</strong>：杠铃卧推不仅能上最大机械张力，更能作为“身体动作模式的筛查工具”——做不到触胸或触胸前肩前扣，往往暴露出<strong>胸椎活动度不足、肩胛后缩能力差、肩外展过多代偿、或肱骨从盂肱关节脱位前顶</strong>。</li><li><strong>开发肌间协调性</strong>：卧推是菱形肌、前锯肌、胸椎伸展度与上胸进气（腹压）高度协同的全身动作，不能被纯固定器械完全替代。</li></ul><h3 id="2-为什么推日不安排“推肩（Overhead-Press）”？"><a href="#2-为什么推日不安排“推肩（Overhead-Press）”？" class="headerlink" title="2. 为什么推日不安排“推肩（Overhead Press）”？"></a>2. 为什么推日不安排“推肩（Overhead Press）”？</h3><ul><li>卧推、上斜哑铃卧推和双杠臂屈伸已经给<strong>三角肌前束</strong>和<strong>肘关节</strong>施加了极大的压迫；如果推日再加入大重量推肩，极易导致肘关节和肩袖过度劳损。</li><li>因此直接选用 <strong>Y 字侧平举</strong> 专攻中束：在肩胛冈平面（外展前斜 $30^\circ$）做外旋位抬起，背部不易借力，既保全肘关节又精准刺激中束。</li></ul><h3 id="3-为什么拉日强调“海豹划船-坐姿开肘划船”？"><a href="#3-为什么拉日强调“海豹划船-坐姿开肘划船”？" class="headerlink" title="3. 为什么拉日强调“海豹划船 / 坐姿开肘划船”？"></a>3. 为什么拉日强调“海豹划船 / 坐姿开肘划船”？</h3><ul><li><strong>拮抗推日的恢复作用</strong>：推日做多了，胸大肌紧张容易导致胸椎处于屈曲（含胸）状态；海豹划船与开肘划船专注收缩<strong>中下斜方肌与菱形肌</strong>，通过肩胛骨充分后缩，拉伸胸椎前侧，改善圆肩与肩痛。</li><li><strong>绝对无下背借力</strong>：胸部紧贴支撑垫，完全杜绝用下背甩动代偿。</li></ul><h3 id="4-为什么腿日选“颈前深蹲”而不是传统后蹲？"><a href="#4-为什么腿日选“颈前深蹲”而不是传统后蹲？" class="headerlink" title="4. 为什么腿日选“颈前深蹲”而不是传统后蹲？"></a>4. 为什么腿日选“颈前深蹲”而不是传统后蹲？</h3><ul><li>大部分训练者存在<strong>踝关节背屈活动度受限</strong>，做杠铃颈后深蹲时容易弯腰弓背、骨盆眨眼；</li><li><strong>颈前深蹲（Front Squat）</strong>强制躯干保持直立，更安全地轰击股四头肌，同时深度激活核心抗阻伸展能力。</li></ul><hr><h2 id="四、-核心递进法则：线性进阶与神经疲劳管理"><a href="#四、-核心递进法则：线性进阶与神经疲劳管理" class="headerlink" title="四、 核心递进法则：线性进阶与神经疲劳管理"></a>四、 核心递进法则：线性进阶与神经疲劳管理</h2><p>凯圣王强调：“<strong>很多人理解的线性就是一直加重量，结果最后神经直接爆掉。</strong>”</p><h3 id="1-杠铃卧推的“容量-to-强度”周期递进模型"><a href="#1-杠铃卧推的“容量-to-强度”周期递进模型" class="headerlink" title="1. 杠铃卧推的“容量 $\to$ 强度”周期递进模型"></a>1. 杠铃卧推的“容量 $\to$ 强度”周期递进模型</h3><p>主项的目标是<strong>开发神经募集效率与动作熟练度</strong>，切忌一上来就冲极限：</p><ul><li><strong>第 1 阶段（磨练动作熟练度，RPE 8，保留 2 次余量）</strong>：<ul><li>第 1 组：15 次（热身组，找一个能做 20 次的极轻重量，刷轨迹与呼吸）；</li><li>第 2 组：12 次（正式组，RPE 8）；</li><li>第 3 组：10 次（正式组，微加重量，RPE 8）；</li><li>第 4 组：8 次（正式组，微加重量，RPE 8）。</li></ul></li><li><strong>第 2 阶段（强度递进，容量压缩）</strong>：<ul><li>下次训练：将 10 次组替换为 8 次组（$15 \to 12 \to 8 \to 8$）；</li><li>再次训练：将 12 次组替换为 8 次组（$15 \to 8 \to 8 \to 8$）；</li><li>进阶到除热身外做 <strong>4 个 8 次组</strong>。</li></ul></li><li><strong>第 3 阶段（进入大强度神经冲刺）</strong>：<ul><li>此时容量压到极低，转为 <strong>2 组 $\times$ 6 次（RPE 8）</strong>，组间歇拉长到 3~5 分钟；</li><li>随后按周递进到 $3 \times 6 \to 4 \times 6 \to 2 \times 5 \to 3 \times 5 \to 4 \times 5$。</li></ul></li></ul><h3 id="2-哪些动作该力竭？哪些动作严禁力竭？"><a href="#2-哪些动作该力竭？哪些动作严禁力竭？" class="headerlink" title="2. 哪些动作该力竭？哪些动作严禁力竭？"></a>2. 哪些动作该力竭？哪些动作严禁力竭？</h3><p>这是谭指特别澄清的肌肉生理学关键：</p><ul><li><strong>大重量复合主项（卧推/硬拉/深蹲，负荷 $75\% \sim 85\%\text{1RM}$）</strong>：<ul><li><strong>严禁力竭</strong>！大负荷启动的第一刻就已经募集了全部快肌纤维（白肌），靠的是神经适应与动作渐进；一旦做到力竭，中枢神经系统（CNS）需要数天恢复，直接拖垮整个周期的训练频率。</li></ul></li><li><strong>轻重量单关节孤立动作（侧平举/钢线下拉/弯举，负荷 $30\% \sim 50\%\text{1RM}$）</strong>：<ul><li><strong>必须力竭 / 接近力竭（如 10+10 或 10+5 休息停顿法）</strong>！轻重量只有在接近力竭的后几个动作中，才能完全调动高门槛的肌原纤维白肌参与，达到真正的肌肥大效应；且单关节动作无神经和腰椎消耗，极易快速恢复。</li></ul></li></ul><hr><h2 id="五、-休息与疲劳监测的科学原则"><a href="#五、-休息与疲劳监测的科学原则" class="headerlink" title="五、 休息与疲劳监测的科学原则"></a>五、 休息与疲劳监测的科学原则</h2><p>凯圣王与谭成义提醒：“<strong>三分化不等于死板的练三天歇一天，而是根据身体反馈动态调整。</strong>”</p><ol><li><strong>个体恢复差异</strong>：专业运动员睡眠恢复极佳可以练 3 休 1；工作繁忙、生活压力大的普通人，如果疲劳累积，练 2 天歇 1 天也完全合理，<strong>坚决不推荐连练 4 天</strong>；</li><li><strong>客观疲劳监测手段</strong>：<ul><li><strong>握力计监测（交感神经状态）</strong>：早上起床或训练前测试握力，若显著低于个人基线，说明神经系统未恢复；</li><li><strong>晨脉监测</strong>：晨起静息心率如果异常偏高 $5 \sim 10\text{ bpm}$，提示身体处于过度疲劳或未修复状态；</li></ul></li><li><strong>一个月后的动作微调</strong>：<ul><li>训练一个月后，若肩屈位仰卧臂屈伸累积了肘部疲劳，可微调为肩伸位的下压；</li><li>二头内侧刺激充分后可换角练外侧，通过动作力线的微调释放局部关节压力。</li></ul></li></ol><hr><h2 id="六、-总结与执行铁律"><a href="#六、-总结与执行铁律" class="headerlink" title="六、 总结与执行铁律"></a>六、 总结与执行铁律</h2><ul><li><strong>循证科学大于盲目毅力</strong>：健身不是跟自己较劲，动作变形的加重毫无意义；</li><li><strong>主项留余量，小项拼力竭</strong>：卧推硬拉守住 RPE 8，侧平举弯举推到烧灼力竭；</li><li><strong>力线与关节健康第一</strong>：利用胸部支撑划船和单手钢线把力线对齐肌纤维，保护胸椎与肩袖，兼顾大力量与好体态！</li></ul>]]></content>
-    
-    
-    <categories>
-      
-      <category>健身笔记</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>健身</tag>
-      
-      <tag>力量训练</tag>
-      
-      <tag>动作要领</tag>
-      
-      <tag>谭成义</tag>
-      
-      <tag>三分化</tag>
-      
-      <tag>训练计划</tag>
-      
-      <tag>凯圣王</tag>
       
     </tags>
     
@@ -619,13 +654,13 @@
       
       <tag>LLM</tag>
       
-      <tag>Reasoning</tag>
-      
       <tag>RL</tag>
       
       <tag>GRPO</tag>
       
       <tag>Multi-Task Learning</tag>
+      
+      <tag>Reasoning</tag>
       
     </tags>
     
@@ -650,9 +685,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>Speech LLM</tag>
       
@@ -683,9 +718,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>Streaming</tag>
       
@@ -899,9 +934,9 @@
       
       <tag>投机解码</tag>
       
-      <tag>综述</tag>
-      
       <tag>推理加速</tag>
+      
+      <tag>综述</tag>
       
     </tags>
     
@@ -926,9 +961,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>Whisper</tag>
       
@@ -959,9 +994,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -990,9 +1025,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>Speech-LLM</tag>
       
@@ -1054,9 +1089,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -1087,13 +1122,13 @@
     
     <tags>
       
+      <tag>论文解读</tag>
+      
       <tag>ASR</tag>
       
       <tag>Conversational AI</tag>
       
       <tag>Data Augmentation</tag>
-      
-      <tag>论文解读</tag>
       
     </tags>
     
@@ -1133,37 +1168,6 @@
   
   
   <entry>
-    <title>Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs</title>
-    <link href="/2026/07/10/2026-07-10-SpeechKV/"/>
-    <url>/2026/07/10/2026-07-10-SpeechKV/</url>
-    
-    <content type="html"><![CDATA[<h2 id="为什么需要-SpeechKV？"><a href="#为什么需要-SpeechKV？" class="headerlink" title="为什么需要 SpeechKV？"></a>为什么需要 SpeechKV？</h2><p>Speech LLM 面临一个根本性的效率瓶颈：语音序列远长于文本。英语 ASR 中，一个文本 token 对应约 300ms 语音，而常见语音编码器每 80ms 产生一帧——同等语义信息下，语音序列长度约为文本的 4 倍。在自回归解码阶段，模型需在每一步 attend 所有前序位置，KV cache 的线性增长直接导致延迟和显存消耗随序列长度线性增长。</p><p>现有方案的标准做法是在 adapter 层对语音进行早期下采样（CTC blank filtering、CIF 累积、Q-Former 等），但这种”先压缩后推理”的范式引入了不可逆信息损失——一旦在 LLM 之前丢弃了细粒度声学细节，后续层便无法恢复。</p><p>SpeechKV 提出了一个优雅的替代思路：<strong>将压缩延迟到 LLM 内部</strong>，对中间层的语音 KV cache 施加学习式 pooling，让 LLM 自身决定保留哪些声学特征。</p><span id="more"></span><h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul><li><strong>标题</strong>: Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs</li><li><strong>作者</strong>: Ke-Han Lu, Keqi Deng, Ruchao Fan, Rui Zhao, Jinyu Li (Microsoft)</li><li><strong>arXiv</strong>: <a href="https://arxiv.org/abs/2607.06827">2607.06827</a></li><li><strong>发表时间</strong>: 2026年7月</li></ul><hr><h2 id="一、引言（Introduction）"><a href="#一、引言（Introduction）" class="headerlink" title="一、引言（Introduction）"></a>一、引言（Introduction）</h2><p>LLM 在 NLP 任务中展现了卓越能力，研究者将其扩展到语音模态，形成 Speech LLM 家族。典型架构包含三个组件：预训练语音编码器 → 模态适配器 → LLM backbone。</p><p>核心挑战在于语音序列长度。以英语 ASR 为例，语音帧率约 80ms/帧，而文本 token 对应约 300ms，导致语音 KV cache 在解码阶段成为主要瓶颈。</p><p>作者的初步实验观察到：Speech LLM 在浅层自然地将相邻语音信息合并，在深层产生近重复表示。基于此观察，SpeechKV 在中间层对语音 KV 序列施加学习式 pooling，允许 LLM 学习保留哪些特征、如何融合语音与文本。</p><p><strong>主要贡献</strong>：</p><ol><li>提出 SpeechKV：在 Speech LLM 中间层对语音 KV cache 施加学习式 pooling 压缩</li><li>将语音压缩到文本级粒度仍维持 baseline 性能，同时获得 1.49–2× 解码加速</li><li>实证分析表明相邻语音表示在 LLM 层间逐渐变得冗余，为”在 LLM 内部压缩”提供理论动机</li></ol><hr><h2 id="二、相关工作（Related-Work）"><a href="#二、相关工作（Related-Work）" class="headerlink" title="二、相关工作（Related Work）"></a>二、相关工作（Related Work）</h2><h3 id="2-1-Speech-LLMs-与语音序列压缩"><a href="#2-1-Speech-LLMs-与语音序列压缩" class="headerlink" title="2.1 Speech LLMs 与语音序列压缩"></a>2.1 Speech LLMs 与语音序列压缩</h3><p>Speech LLM 采用 encoder–adapter–LLM 范式。核心挑战是弥合连续语音与离散文本之间的模态和长度差异。</p><p>现有预 LLM 压缩方案包括：</p><ul><li><strong>CTC-based</strong>：边界合并或 blank filtering</li><li><strong>CIF-based</strong>：动态累积声学特征</li><li><strong>Q-Former</strong>：提取固定数量的语音表示</li></ul><p>这些方法引入瓶颈，导致后续 LLM 层无法恢复已丢弃的信息。</p><h3 id="2-2-LLM-中的-KV-Cache-压缩"><a href="#2-2-LLM-中的-KV-Cache-压缩" class="headerlink" title="2.2 LLM 中的 KV Cache 压缩"></a>2.2 LLM 中的 KV Cache 压缩</h3><p>KV cache 线性增长是长上下文 LLM 推理的已知瓶颈。现有方法分两大类：</p><ul><li><strong>Training-free</strong>：基于注意力统计或 recency 的 eviction（H2O、SnapKV、StreamingLLM），低比特量化（KVQuant）</li><li><strong>Trainable</strong>：学习式合并或摘要上下文为更短的 KV cache（Dynamic Memory Compression 等）</li></ul><p>Training-free 方法不可避免地存在 train-test mismatch。SpeechKV 属于 trainable 方案，联合训练消除此问题。</p><hr><h2 id="三、方法（Method）"><a href="#三、方法（Method）" class="headerlink" title="三、方法（Method）"></a>三、方法（Method）</h2><h3 id="3-1-Speech-Language-Model-Baseline"><a href="#3-1-Speech-Language-Model-Baseline" class="headerlink" title="3.1 Speech Language Model Baseline"></a>3.1 Speech Language Model Baseline</h3><p>Baseline 遵循 encoder–adapter–LLM 范式：</p><script type="math/tex; mode=display">Z = f_{\text{enc}}(x) \in \mathbb{R}^{T \times d_e} \tag{1}</script><p>其中 $T$ 为帧数，$d_e$ 为编码器隐藏维度。2 层 MLP adapter 投影到 LLM 嵌入空间（无时间下采样）：</p><script type="math/tex; mode=display">A = f_{\text{adp}}(Z) \in \mathbb{R}^{T \times d} \tag{2}</script><p>拼接文本嵌入 $E \in \mathbb{R}^{N \times d}$ 后，输入 $L$ 层 decoder-only LLM，以 next-token prediction 训练：</p><script type="math/tex; mode=display">\mathcal{L} = -\sum_{t=1}^{M} \log p(y_t \mid A, E, y_{<t}) \tag{3}</script><p>由于 $T \gg N + M$，语音 KV cache 主导每步注意力开销。</p><h3 id="3-2-SpeechKV"><a href="#3-2-SpeechKV" class="headerlink" title="3.2 SpeechKV"></a>3.2 SpeechKV</h3><p><img src="/images/paper_figs/speechkv/figure1.png" alt="SpeechKV 架构总览"></p><p>从第 $l_0$ 层开始，对语音 KV 序列施加学习式 pooling 算子 $\mathcal{P}_R$（压缩比 $R$）。</p><p><strong>核心操作</strong>：将 $T$ 个语音位置分割为大小为 $R$ 的非重叠窗口。在每个窗口内，学习线性门 $g: \mathbb{R}^{d_h} \to \mathbb{R}$ 对每个 key 向量产生标量 logit，softmax 归一化为权重：</p><script type="math/tex; mode=display">\alpha_j = \frac{\exp(g(k_j))}{\sum_{j'=1}^{R} \exp(g(k_{j'}))}, \quad \hat{k} = \sum_{j=1}^{R} \alpha_j k_j, \quad \hat{v} = \sum_{j=1}^{R} \alpha_j v_j \tag{4}</script><p>门初始化为零，模型从均匀平均出发，逐渐学习强调窗口内的信息性位置。</p><p>在每层 $l \geq l_0$，全分辨率 query attend 压缩后的 KV 序列：</p><script type="math/tex; mode=display">\text{Attention}^{(l)} = \text{softmax}\left(\frac{Q^{(l)} \hat{K}^{(l)\top}}{\sqrt{d_h}}\right) \hat{V}^{(l)} \tag{5}</script><p>其中 $\hat{K}^{(l)} = \mathcal{P}_R(K^{(l)})$，$\hat{V}^{(l)} = \mathcal{P}_R(V^{(l)})$。注意力掩码相应调整以保持因果性。文本位置不受影响。</p><p><strong>设计哲学</strong>：压缩操作刻意保持简洁轻量，依赖 LLM 自身的注意力机制有效处理压缩序列。</p><h3 id="3-3-训练与推理"><a href="#3-3-训练与推理" class="headerlink" title="3.3 训练与推理"></a>3.3 训练与推理</h3><ul><li><strong>训练阶段</strong>：SpeechKV 在前向传播中 on-the-fly 应用，与 next-token-prediction loss 联合优化，确保无 train-test mismatch。</li><li><strong>推理阶段</strong>：压缩在 prefill 阶段一次性完成，压缩后的 KV 存入 cache，在每个解码步实现 $R$ 倍语音 KV cache 缩减，直接转化为更小显存占用和更快解码速度。</li></ul><hr><h2 id="四、实验设置（Experiment-Setup）"><a href="#四、实验设置（Experiment-Setup）" class="headerlink" title="四、实验设置（Experiment Setup）"></a>四、实验设置（Experiment Setup）</h2><h3 id="4-1-模型配置"><a href="#4-1-模型配置" class="headerlink" title="4.1 模型配置"></a>4.1 模型配置</h3><div class="table-container"><table><thead><tr><th>组件</th><th>配置</th></tr></thead><tbody><tr><td>LLM Backbone</td><td>Qwen3-1.7B（28层 Transformer decoder）</td></tr><tr><td>Speech Encoder</td><td>预训练 encoder-decoder ASR 模型（3 conv + 24 conformer blocks，80ms 帧率）</td></tr><tr><td>Adapter</td><td>2层 MLP（无时间下采样）</td></tr></tbody></table></div><p><strong>压缩方法对比</strong>：</p><div class="table-container"><table><thead><tr><th>方法</th><th>压缩位置</th><th>描述</th></tr></thead><tbody><tr><td>Concat-MLP</td><td>Adapter</td><td>拼接 $R$ 相邻帧 → 2层 MLP</td></tr><tr><td>Window Q-Former</td><td>Adapter</td><td>2层 Transformer cross-attention 合并 $R$ 帧</td></tr><tr><td>HS Compression</td><td>LLM 内部</td><td>对第 $l_0$ 层整个 hidden state 做 pooling（含 query）</td></tr><tr><td><strong>SpeechKV</strong></td><td>LLM 内部</td><td>仅压缩 key/value，保留全分辨率 query 和 residual stream</td></tr></tbody></table></div><h3 id="4-2-训练数据"><a href="#4-2-训练数据" class="headerlink" title="4.2 训练数据"></a>4.2 训练数据</h3><p>总计 71K 小时开源 ASR 数据：</p><div class="table-container"><table><thead><tr><th>Dataset</th><th>Hours</th><th>Utts (K)</th></tr></thead><tbody><tr><td>Multilingual LibriSpeech (en)</td><td>44,659.7</td><td>10,808.0</td></tr><tr><td>GigaSpeech</td><td>13,714.4</td><td>11,659.8</td></tr><tr><td>SPGISpeech</td><td>4,996.6</td><td>1,965.3</td></tr><tr><td>LibriSpeech</td><td>1,920.0</td><td>560.8</td></tr><tr><td>LibriHeavy</td><td>1,852.2</td><td>469.4</td></tr><tr><td>Common Voice 15</td><td>1,688.3</td><td>1,069.7</td></tr><tr><td>VoxPopuli</td><td>1,045.2</td><td>365.0</td></tr><tr><td>TED-LIUM 3</td><td>907.6</td><td>536.5</td></tr><tr><td>Earnings-22</td><td>287.2</td><td>104.0</td></tr><tr><td>AMI</td><td>156.3</td><td>217.0</td></tr><tr><td>FLEURS</td><td>15.0</td><td>5.2</td></tr><tr><td><strong>Total</strong></td><td><strong>71,242.5</strong></td><td><strong>27,760.8</strong></td></tr></tbody></table></div><h3 id="4-3-训练细节"><a href="#4-3-训练细节" class="headerlink" title="4.3 训练细节"></a>4.3 训练细节</h3><ul><li>优化器：AdamW，peak lr = 2×10⁻⁵，linear warmup 100 steps，warmup-decay schedule</li><li>DeepSpeed ZeRO Stage 1</li><li>有效 batch size ≈ 200K tokens</li><li>训练 10,000 steps（覆盖全训练集约 1 epoch）</li><li>LoRA rank 32，约 480M 可训练参数（总 2.2B）</li><li>硬件：8× H100 GPU，约 1 天/run</li></ul><h3 id="4-4-评测"><a href="#4-4-评测" class="headerlink" title="4.4 评测"></a>4.4 评测</h3><p>三个测试套件：</p><ol><li><strong>OpenASR</strong>（7 个公开 benchmark）：domain 内 ASR 评估</li><li><strong>In-house ASR</strong>（4 个内部测试集）：dictation、financial calls、broadcast、voicemail（domain 外）</li><li><strong>In-house Entity Recognition</strong>（2 个实体密集测试集）：banking、medical domain，报告 Entity Error Rate (EER)</li></ol><hr><h2 id="五、实验结果（Results）"><a href="#五、实验结果（Results）" class="headerlink" title="五、实验结果（Results）"></a>五、实验结果（Results）</h2><h3 id="5-1-主要结果"><a href="#5-1-主要结果" class="headerlink" title="5.1 主要结果"></a>5.1 主要结果</h3><div class="table-container"><table><thead><tr><th>Method</th><th>In-house ER ↓</th><th>In-house ASR ↓</th><th>OpenASR ↓</th></tr></thead><tbody><tr><td><strong>Open-sourced Models</strong></td><td></td><td></td><td></td></tr><tr><td>Whisper-L-v3</td><td>8.41</td><td>4.91</td><td>7.95</td></tr><tr><td>Phi4-mm</td><td>11.36</td><td>4.89</td><td>6.60</td></tr><tr><td><strong>Our Models</strong></td><td></td><td></td><td></td></tr><tr><td>MLP (Baseline)</td><td>14.41</td><td>5.78</td><td>6.12</td></tr><tr><td><strong>R=4</strong></td><td></td><td></td><td></td></tr><tr><td>Concat-MLP</td><td>15.84</td><td>6.29</td><td>6.07</td></tr><tr><td>Window Q-Former</td><td>14.70</td><td>6.23</td><td>6.02</td></tr><tr><td>HS Compression</td><td>15.22</td><td>5.79</td><td>6.06</td></tr><tr><td><strong>SpeechKV</strong></td><td><strong>13.46</strong></td><td><strong>5.71</strong></td><td><strong>5.98</strong></td></tr><tr><td><strong>R=8</strong></td><td></td><td></td><td></td></tr><tr><td>Concat-MLP</td><td>17.52</td><td>6.63</td><td>6.43</td></tr><tr><td>Window Q-Former</td><td>16.41</td><td>6.50</td><td>6.64</td></tr><tr><td>HS Compression</td><td>16.98</td><td>6.22</td><td>6.31</td></tr><tr><td><strong>SpeechKV</strong></td><td><strong>14.91</strong></td><td><strong>5.95</strong></td><td><strong>6.05</strong></td></tr></tbody></table></div><p><strong>关键发现</strong>：</p><ul><li><strong>R=4 时 SpeechKV 不仅不降反升</strong>：相对 baseline，In-house ER 提升 6.6%，In-house ASR 提升 1.2%，OpenASR 提升 2.3%。</li><li><strong>R=8 时 SpeechKV 优雅退化</strong>：In-house ER 仅退化 3.5%，ASR 退化 2.9%，OpenASR 几乎持平。而竞争方法退化 8%–20%。</li><li>作者推测原因：(1) 每层保留完整音频信息的访问路径；(2) 压缩粒度与 LLM 预训练的文本 token rate 对齐，形成结构性正则化。</li></ul><h3 id="5-2-逐层分析与消融实验"><a href="#5-2-逐层分析与消融实验" class="headerlink" title="5.2 逐层分析与消融实验"></a>5.2 逐层分析与消融实验</h3><p><img src="/images/paper_figs/speechkv/local_similarity_comparison.png" alt="逐层局部相似度"></p><p><strong>Local Similarity 分析</strong>：测量相邻语音位置间的 cosine similarity。</p><ul><li>Baseline 在前 4 层急剧上升（模型主动聚合局部声学特征），约第 5 层进入平台期（局部聚合基本完成，时间冗余自然出现）。</li><li>SpeechKV(R=4) 的相似度曲线紧跟 baseline 自然上升趋势，说明压缩与模型本身的聚合行为一致。</li><li>SpeechKV(R=8) 相似度在所有层都被抬高，模型需重构表示以适应更激进压缩。</li></ul><p><strong>起始层消融</strong>：</p><div class="table-container"><table><thead><tr><th>Method</th><th>$l_0$</th><th>In-house ER</th><th>In-house ASR</th><th>OpenASR</th></tr></thead><tbody><tr><td>MLP Baseline</td><td>–</td><td>14.41</td><td>5.78</td><td>6.12</td></tr><tr><td>SpeechKV (R=4)</td><td>3</td><td>14.33</td><td>5.87</td><td>6.12</td></tr><tr><td>SpeechKV (R=4)</td><td><strong>5</strong></td><td><strong>13.46</strong></td><td><strong>5.71</strong></td><td><strong>5.98</strong></td></tr><tr><td>SpeechKV (R=4)</td><td>7</td><td>13.56</td><td>6.23</td><td>5.93</td></tr><tr><td>SpeechKV (R=8)</td><td>3</td><td>16.70</td><td>7.06</td><td>6.53</td></tr><tr><td>SpeechKV (R=8)</td><td><strong>5</strong></td><td><strong>14.91</strong></td><td><strong>5.95</strong></td><td><strong>6.05</strong></td></tr><tr><td>SpeechKV (R=8)</td><td>7</td><td>15.25</td><td>6.49</td><td>6.08</td></tr></tbody></table></div><p>最优起始层为 $l_0=5$：过早压缩（layer 3）在 local similarity 尚未收敛时介入；过晚（layer 7）时模型已开始高层处理的特化。</p><h3 id="5-3-注意力分析"><a href="#5-3-注意力分析" class="headerlink" title="5.3 注意力分析"></a>5.3 注意力分析</h3><p><img src="/images/paper_figs/speechkv/KV_layer4_27.png" alt="注意力图对比"></p><p><strong>Baseline</strong>（左列）：</p><ul><li>浅层（Layer 4）：注意力弥散，模型仍在聚合局部声学特征</li><li>深层（Layer 27）：出现清晰的单调对齐模式，但注意力分散在相邻近重复位置上</li></ul><p><strong>SpeechKV</strong>（右列）：</p><ul><li>浅层（Layer 4）：即使此层未施加压缩，已出现单调对齐——深层 KV 缩短迫使模型在更早层建立跨模态对应</li><li>深层（Layer 27）：压缩后的 key 序列产生更尖锐、集中的注意力峰值，冗余位置已被合并</li></ul><p>这表明 SpeechKV 重塑了层间表示：浅层更早建立跨模态对应，深层更高效地在去重复 key 表示上操作。</p><h3 id="5-4-解码速度"><a href="#5-4-解码速度" class="headerlink" title="5.4 解码速度"></a>5.4 解码速度</h3><p><img src="/images/paper_figs/speechkv/speedup.png" alt="解码加速"></p><p>在 A100 80GB GPU + vLLM 上的端到端解码加速：</p><div class="table-container"><table><thead><tr><th>Audio Length</th><th>Baseline</th><th>R=4</th><th>R=8</th></tr></thead><tbody><tr><td>30s</td><td>1.00×</td><td>1.49×</td><td>1.62×</td></tr><tr><td>5min</td><td>1.00×</td><td>1.88×</td><td>1.87×</td></tr><tr><td>10min</td><td>1.00×</td><td>2.02×</td><td>2.03×</td></tr></tbody></table></div><p>加速随音频长度增长：语音 KV cache 在总注意力开销中占比更大时，压缩收益更显著。R=8 相比 R=4 仅有边际额外加速，因为 feed-forward 层和文本 KV cache 成为新瓶颈。</p><p><strong>R=4 是最佳实践点</strong>：精度匹配 baseline，解码速度 1.49–2× 提升。</p><hr><h2 id="六、结论（Conclusion）"><a href="#六、结论（Conclusion）" class="headerlink" title="六、结论（Conclusion）"></a>六、结论（Conclusion）</h2><p>SpeechKV 将语音 KV cache 压缩延迟到 LLM 中间层，通过保留全分辨率 query 和 residual stream，让 LLM 预训练参数自行决定保留哪些声学特征。</p><p>在 71K 小时训练的 Qwen3-1.7B Speech LLM 上：</p><ul><li>R=4 压缩到文本粒度仍匹配甚至超越 baseline（实体识别相对提升 6.6%）</li><li>至少 1.49× 解码加速，随音频长度扩展</li><li>注意力分析揭示 SpeechKV 作为结构性正则化：浅层更早建立跨模态对应，深层注意力更集中</li></ul><p><strong>未来方向</strong>：扩展到 ASR 之外的语音任务、研究自适应跨层压缩比、进一步分析 Speech LLM 的逐层动态。</p><hr><h2 id="个人思考"><a href="#个人思考" class="headerlink" title="个人思考"></a>个人思考</h2><p>SpeechKV 的核心洞察极其简洁：语音在 LLM 浅层自然聚合后变得时间冗余，与其在 LLM 之前强制压缩（承担不可逆信息损失），不如让 LLM 先看完整信息再压缩 KV cache。这实际上是一种”先理解后摘要”的策略。</p><p>更令人意外的是 R=4 压缩不仅无损反而增益——压缩后粒度恰好对齐文本 token rate，形成对 LLM 预训练分布的结构性正则化。这暗示 Speech LLM 的一个深层问题：未压缩时，深层大量冗余 key 实际上是在”稀释”注意力。</p><p>从工程角度看，SpeechKV 的实现极为轻量（仅一个线性门 + softmax weighted sum），无需修改推理框架核心逻辑，与 vLLM 等系统的兼容性良好。这使其具有很强的实用部署价值。</p>]]></content>
-    
-    
-    <categories>
-      
-      <category>论文解读</category>
-      
-    </categories>
-    
-    
-    <tags>
-      
-      <tag>ASR</tag>
-      
-      <tag>论文解读</tag>
-      
-      <tag>Speech LLM</tag>
-      
-      <tag>KV Cache</tag>
-      
-    </tags>
-    
-  </entry>
-  
-  
-  
-  <entry>
     <title>Revisiting the Relation Between Language Model Perplexity and ASR Word Error Rate for Modern End-to-End Speech Recognition</title>
     <link href="/2026/07/10/2026-07-10-Revisiting-PPL-WER/"/>
     <url>/2026/07/10/2026-07-10-Revisiting-PPL-WER/</url>
@@ -1180,13 +1184,44 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>Language Model</tag>
       
       <tag>Perplexity</tag>
+      
+    </tags>
+    
+  </entry>
+  
+  
+  
+  <entry>
+    <title>Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs</title>
+    <link href="/2026/07/10/2026-07-10-SpeechKV/"/>
+    <url>/2026/07/10/2026-07-10-SpeechKV/</url>
+    
+    <content type="html"><![CDATA[<h2 id="为什么需要-SpeechKV？"><a href="#为什么需要-SpeechKV？" class="headerlink" title="为什么需要 SpeechKV？"></a>为什么需要 SpeechKV？</h2><p>Speech LLM 面临一个根本性的效率瓶颈：语音序列远长于文本。英语 ASR 中，一个文本 token 对应约 300ms 语音，而常见语音编码器每 80ms 产生一帧——同等语义信息下，语音序列长度约为文本的 4 倍。在自回归解码阶段，模型需在每一步 attend 所有前序位置，KV cache 的线性增长直接导致延迟和显存消耗随序列长度线性增长。</p><p>现有方案的标准做法是在 adapter 层对语音进行早期下采样（CTC blank filtering、CIF 累积、Q-Former 等），但这种”先压缩后推理”的范式引入了不可逆信息损失——一旦在 LLM 之前丢弃了细粒度声学细节，后续层便无法恢复。</p><p>SpeechKV 提出了一个优雅的替代思路：<strong>将压缩延迟到 LLM 内部</strong>，对中间层的语音 KV cache 施加学习式 pooling，让 LLM 自身决定保留哪些声学特征。</p><span id="more"></span><h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul><li><strong>标题</strong>: Compress the Cache, Not the Speech Embedding: KV Compression for Efficient Speech LLMs</li><li><strong>作者</strong>: Ke-Han Lu, Keqi Deng, Ruchao Fan, Rui Zhao, Jinyu Li (Microsoft)</li><li><strong>arXiv</strong>: <a href="https://arxiv.org/abs/2607.06827">2607.06827</a></li><li><strong>发表时间</strong>: 2026年7月</li></ul><hr><h2 id="一、引言（Introduction）"><a href="#一、引言（Introduction）" class="headerlink" title="一、引言（Introduction）"></a>一、引言（Introduction）</h2><p>LLM 在 NLP 任务中展现了卓越能力，研究者将其扩展到语音模态，形成 Speech LLM 家族。典型架构包含三个组件：预训练语音编码器 → 模态适配器 → LLM backbone。</p><p>核心挑战在于语音序列长度。以英语 ASR 为例，语音帧率约 80ms/帧，而文本 token 对应约 300ms，导致语音 KV cache 在解码阶段成为主要瓶颈。</p><p>作者的初步实验观察到：Speech LLM 在浅层自然地将相邻语音信息合并，在深层产生近重复表示。基于此观察，SpeechKV 在中间层对语音 KV 序列施加学习式 pooling，允许 LLM 学习保留哪些特征、如何融合语音与文本。</p><p><strong>主要贡献</strong>：</p><ol><li>提出 SpeechKV：在 Speech LLM 中间层对语音 KV cache 施加学习式 pooling 压缩</li><li>将语音压缩到文本级粒度仍维持 baseline 性能，同时获得 1.49–2× 解码加速</li><li>实证分析表明相邻语音表示在 LLM 层间逐渐变得冗余，为”在 LLM 内部压缩”提供理论动机</li></ol><hr><h2 id="二、相关工作（Related-Work）"><a href="#二、相关工作（Related-Work）" class="headerlink" title="二、相关工作（Related Work）"></a>二、相关工作（Related Work）</h2><h3 id="2-1-Speech-LLMs-与语音序列压缩"><a href="#2-1-Speech-LLMs-与语音序列压缩" class="headerlink" title="2.1 Speech LLMs 与语音序列压缩"></a>2.1 Speech LLMs 与语音序列压缩</h3><p>Speech LLM 采用 encoder–adapter–LLM 范式。核心挑战是弥合连续语音与离散文本之间的模态和长度差异。</p><p>现有预 LLM 压缩方案包括：</p><ul><li><strong>CTC-based</strong>：边界合并或 blank filtering</li><li><strong>CIF-based</strong>：动态累积声学特征</li><li><strong>Q-Former</strong>：提取固定数量的语音表示</li></ul><p>这些方法引入瓶颈，导致后续 LLM 层无法恢复已丢弃的信息。</p><h3 id="2-2-LLM-中的-KV-Cache-压缩"><a href="#2-2-LLM-中的-KV-Cache-压缩" class="headerlink" title="2.2 LLM 中的 KV Cache 压缩"></a>2.2 LLM 中的 KV Cache 压缩</h3><p>KV cache 线性增长是长上下文 LLM 推理的已知瓶颈。现有方法分两大类：</p><ul><li><strong>Training-free</strong>：基于注意力统计或 recency 的 eviction（H2O、SnapKV、StreamingLLM），低比特量化（KVQuant）</li><li><strong>Trainable</strong>：学习式合并或摘要上下文为更短的 KV cache（Dynamic Memory Compression 等）</li></ul><p>Training-free 方法不可避免地存在 train-test mismatch。SpeechKV 属于 trainable 方案，联合训练消除此问题。</p><hr><h2 id="三、方法（Method）"><a href="#三、方法（Method）" class="headerlink" title="三、方法（Method）"></a>三、方法（Method）</h2><h3 id="3-1-Speech-Language-Model-Baseline"><a href="#3-1-Speech-Language-Model-Baseline" class="headerlink" title="3.1 Speech Language Model Baseline"></a>3.1 Speech Language Model Baseline</h3><p>Baseline 遵循 encoder–adapter–LLM 范式：</p><script type="math/tex; mode=display">Z = f_{\text{enc}}(x) \in \mathbb{R}^{T \times d_e} \tag{1}</script><p>其中 $T$ 为帧数，$d_e$ 为编码器隐藏维度。2 层 MLP adapter 投影到 LLM 嵌入空间（无时间下采样）：</p><script type="math/tex; mode=display">A = f_{\text{adp}}(Z) \in \mathbb{R}^{T \times d} \tag{2}</script><p>拼接文本嵌入 $E \in \mathbb{R}^{N \times d}$ 后，输入 $L$ 层 decoder-only LLM，以 next-token prediction 训练：</p><script type="math/tex; mode=display">\mathcal{L} = -\sum_{t=1}^{M} \log p(y_t \mid A, E, y_{<t}) \tag{3}</script><p>由于 $T \gg N + M$，语音 KV cache 主导每步注意力开销。</p><h3 id="3-2-SpeechKV"><a href="#3-2-SpeechKV" class="headerlink" title="3.2 SpeechKV"></a>3.2 SpeechKV</h3><p><img src="/images/paper_figs/speechkv/figure1.png" alt="SpeechKV 架构总览"></p><p>从第 $l_0$ 层开始，对语音 KV 序列施加学习式 pooling 算子 $\mathcal{P}_R$（压缩比 $R$）。</p><p><strong>核心操作</strong>：将 $T$ 个语音位置分割为大小为 $R$ 的非重叠窗口。在每个窗口内，学习线性门 $g: \mathbb{R}^{d_h} \to \mathbb{R}$ 对每个 key 向量产生标量 logit，softmax 归一化为权重：</p><script type="math/tex; mode=display">\alpha_j = \frac{\exp(g(k_j))}{\sum_{j'=1}^{R} \exp(g(k_{j'}))}, \quad \hat{k} = \sum_{j=1}^{R} \alpha_j k_j, \quad \hat{v} = \sum_{j=1}^{R} \alpha_j v_j \tag{4}</script><p>门初始化为零，模型从均匀平均出发，逐渐学习强调窗口内的信息性位置。</p><p>在每层 $l \geq l_0$，全分辨率 query attend 压缩后的 KV 序列：</p><script type="math/tex; mode=display">\text{Attention}^{(l)} = \text{softmax}\left(\frac{Q^{(l)} \hat{K}^{(l)\top}}{\sqrt{d_h}}\right) \hat{V}^{(l)} \tag{5}</script><p>其中 $\hat{K}^{(l)} = \mathcal{P}_R(K^{(l)})$，$\hat{V}^{(l)} = \mathcal{P}_R(V^{(l)})$。注意力掩码相应调整以保持因果性。文本位置不受影响。</p><p><strong>设计哲学</strong>：压缩操作刻意保持简洁轻量，依赖 LLM 自身的注意力机制有效处理压缩序列。</p><h3 id="3-3-训练与推理"><a href="#3-3-训练与推理" class="headerlink" title="3.3 训练与推理"></a>3.3 训练与推理</h3><ul><li><strong>训练阶段</strong>：SpeechKV 在前向传播中 on-the-fly 应用，与 next-token-prediction loss 联合优化，确保无 train-test mismatch。</li><li><strong>推理阶段</strong>：压缩在 prefill 阶段一次性完成，压缩后的 KV 存入 cache，在每个解码步实现 $R$ 倍语音 KV cache 缩减，直接转化为更小显存占用和更快解码速度。</li></ul><hr><h2 id="四、实验设置（Experiment-Setup）"><a href="#四、实验设置（Experiment-Setup）" class="headerlink" title="四、实验设置（Experiment Setup）"></a>四、实验设置（Experiment Setup）</h2><h3 id="4-1-模型配置"><a href="#4-1-模型配置" class="headerlink" title="4.1 模型配置"></a>4.1 模型配置</h3><div class="table-container"><table><thead><tr><th>组件</th><th>配置</th></tr></thead><tbody><tr><td>LLM Backbone</td><td>Qwen3-1.7B（28层 Transformer decoder）</td></tr><tr><td>Speech Encoder</td><td>预训练 encoder-decoder ASR 模型（3 conv + 24 conformer blocks，80ms 帧率）</td></tr><tr><td>Adapter</td><td>2层 MLP（无时间下采样）</td></tr></tbody></table></div><p><strong>压缩方法对比</strong>：</p><div class="table-container"><table><thead><tr><th>方法</th><th>压缩位置</th><th>描述</th></tr></thead><tbody><tr><td>Concat-MLP</td><td>Adapter</td><td>拼接 $R$ 相邻帧 → 2层 MLP</td></tr><tr><td>Window Q-Former</td><td>Adapter</td><td>2层 Transformer cross-attention 合并 $R$ 帧</td></tr><tr><td>HS Compression</td><td>LLM 内部</td><td>对第 $l_0$ 层整个 hidden state 做 pooling（含 query）</td></tr><tr><td><strong>SpeechKV</strong></td><td>LLM 内部</td><td>仅压缩 key/value，保留全分辨率 query 和 residual stream</td></tr></tbody></table></div><h3 id="4-2-训练数据"><a href="#4-2-训练数据" class="headerlink" title="4.2 训练数据"></a>4.2 训练数据</h3><p>总计 71K 小时开源 ASR 数据：</p><div class="table-container"><table><thead><tr><th>Dataset</th><th>Hours</th><th>Utts (K)</th></tr></thead><tbody><tr><td>Multilingual LibriSpeech (en)</td><td>44,659.7</td><td>10,808.0</td></tr><tr><td>GigaSpeech</td><td>13,714.4</td><td>11,659.8</td></tr><tr><td>SPGISpeech</td><td>4,996.6</td><td>1,965.3</td></tr><tr><td>LibriSpeech</td><td>1,920.0</td><td>560.8</td></tr><tr><td>LibriHeavy</td><td>1,852.2</td><td>469.4</td></tr><tr><td>Common Voice 15</td><td>1,688.3</td><td>1,069.7</td></tr><tr><td>VoxPopuli</td><td>1,045.2</td><td>365.0</td></tr><tr><td>TED-LIUM 3</td><td>907.6</td><td>536.5</td></tr><tr><td>Earnings-22</td><td>287.2</td><td>104.0</td></tr><tr><td>AMI</td><td>156.3</td><td>217.0</td></tr><tr><td>FLEURS</td><td>15.0</td><td>5.2</td></tr><tr><td><strong>Total</strong></td><td><strong>71,242.5</strong></td><td><strong>27,760.8</strong></td></tr></tbody></table></div><h3 id="4-3-训练细节"><a href="#4-3-训练细节" class="headerlink" title="4.3 训练细节"></a>4.3 训练细节</h3><ul><li>优化器：AdamW，peak lr = 2×10⁻⁵，linear warmup 100 steps，warmup-decay schedule</li><li>DeepSpeed ZeRO Stage 1</li><li>有效 batch size ≈ 200K tokens</li><li>训练 10,000 steps（覆盖全训练集约 1 epoch）</li><li>LoRA rank 32，约 480M 可训练参数（总 2.2B）</li><li>硬件：8× H100 GPU，约 1 天/run</li></ul><h3 id="4-4-评测"><a href="#4-4-评测" class="headerlink" title="4.4 评测"></a>4.4 评测</h3><p>三个测试套件：</p><ol><li><strong>OpenASR</strong>（7 个公开 benchmark）：domain 内 ASR 评估</li><li><strong>In-house ASR</strong>（4 个内部测试集）：dictation、financial calls、broadcast、voicemail（domain 外）</li><li><strong>In-house Entity Recognition</strong>（2 个实体密集测试集）：banking、medical domain，报告 Entity Error Rate (EER)</li></ol><hr><h2 id="五、实验结果（Results）"><a href="#五、实验结果（Results）" class="headerlink" title="五、实验结果（Results）"></a>五、实验结果（Results）</h2><h3 id="5-1-主要结果"><a href="#5-1-主要结果" class="headerlink" title="5.1 主要结果"></a>5.1 主要结果</h3><div class="table-container"><table><thead><tr><th>Method</th><th>In-house ER ↓</th><th>In-house ASR ↓</th><th>OpenASR ↓</th></tr></thead><tbody><tr><td><strong>Open-sourced Models</strong></td><td></td><td></td><td></td></tr><tr><td>Whisper-L-v3</td><td>8.41</td><td>4.91</td><td>7.95</td></tr><tr><td>Phi4-mm</td><td>11.36</td><td>4.89</td><td>6.60</td></tr><tr><td><strong>Our Models</strong></td><td></td><td></td><td></td></tr><tr><td>MLP (Baseline)</td><td>14.41</td><td>5.78</td><td>6.12</td></tr><tr><td><strong>R=4</strong></td><td></td><td></td><td></td></tr><tr><td>Concat-MLP</td><td>15.84</td><td>6.29</td><td>6.07</td></tr><tr><td>Window Q-Former</td><td>14.70</td><td>6.23</td><td>6.02</td></tr><tr><td>HS Compression</td><td>15.22</td><td>5.79</td><td>6.06</td></tr><tr><td><strong>SpeechKV</strong></td><td><strong>13.46</strong></td><td><strong>5.71</strong></td><td><strong>5.98</strong></td></tr><tr><td><strong>R=8</strong></td><td></td><td></td><td></td></tr><tr><td>Concat-MLP</td><td>17.52</td><td>6.63</td><td>6.43</td></tr><tr><td>Window Q-Former</td><td>16.41</td><td>6.50</td><td>6.64</td></tr><tr><td>HS Compression</td><td>16.98</td><td>6.22</td><td>6.31</td></tr><tr><td><strong>SpeechKV</strong></td><td><strong>14.91</strong></td><td><strong>5.95</strong></td><td><strong>6.05</strong></td></tr></tbody></table></div><p><strong>关键发现</strong>：</p><ul><li><strong>R=4 时 SpeechKV 不仅不降反升</strong>：相对 baseline，In-house ER 提升 6.6%，In-house ASR 提升 1.2%，OpenASR 提升 2.3%。</li><li><strong>R=8 时 SpeechKV 优雅退化</strong>：In-house ER 仅退化 3.5%，ASR 退化 2.9%，OpenASR 几乎持平。而竞争方法退化 8%–20%。</li><li>作者推测原因：(1) 每层保留完整音频信息的访问路径；(2) 压缩粒度与 LLM 预训练的文本 token rate 对齐，形成结构性正则化。</li></ul><h3 id="5-2-逐层分析与消融实验"><a href="#5-2-逐层分析与消融实验" class="headerlink" title="5.2 逐层分析与消融实验"></a>5.2 逐层分析与消融实验</h3><p><img src="/images/paper_figs/speechkv/local_similarity_comparison.png" alt="逐层局部相似度"></p><p><strong>Local Similarity 分析</strong>：测量相邻语音位置间的 cosine similarity。</p><ul><li>Baseline 在前 4 层急剧上升（模型主动聚合局部声学特征），约第 5 层进入平台期（局部聚合基本完成，时间冗余自然出现）。</li><li>SpeechKV(R=4) 的相似度曲线紧跟 baseline 自然上升趋势，说明压缩与模型本身的聚合行为一致。</li><li>SpeechKV(R=8) 相似度在所有层都被抬高，模型需重构表示以适应更激进压缩。</li></ul><p><strong>起始层消融</strong>：</p><div class="table-container"><table><thead><tr><th>Method</th><th>$l_0$</th><th>In-house ER</th><th>In-house ASR</th><th>OpenASR</th></tr></thead><tbody><tr><td>MLP Baseline</td><td>–</td><td>14.41</td><td>5.78</td><td>6.12</td></tr><tr><td>SpeechKV (R=4)</td><td>3</td><td>14.33</td><td>5.87</td><td>6.12</td></tr><tr><td>SpeechKV (R=4)</td><td><strong>5</strong></td><td><strong>13.46</strong></td><td><strong>5.71</strong></td><td><strong>5.98</strong></td></tr><tr><td>SpeechKV (R=4)</td><td>7</td><td>13.56</td><td>6.23</td><td>5.93</td></tr><tr><td>SpeechKV (R=8)</td><td>3</td><td>16.70</td><td>7.06</td><td>6.53</td></tr><tr><td>SpeechKV (R=8)</td><td><strong>5</strong></td><td><strong>14.91</strong></td><td><strong>5.95</strong></td><td><strong>6.05</strong></td></tr><tr><td>SpeechKV (R=8)</td><td>7</td><td>15.25</td><td>6.49</td><td>6.08</td></tr></tbody></table></div><p>最优起始层为 $l_0=5$：过早压缩（layer 3）在 local similarity 尚未收敛时介入；过晚（layer 7）时模型已开始高层处理的特化。</p><h3 id="5-3-注意力分析"><a href="#5-3-注意力分析" class="headerlink" title="5.3 注意力分析"></a>5.3 注意力分析</h3><p><img src="/images/paper_figs/speechkv/KV_layer4_27.png" alt="注意力图对比"></p><p><strong>Baseline</strong>（左列）：</p><ul><li>浅层（Layer 4）：注意力弥散，模型仍在聚合局部声学特征</li><li>深层（Layer 27）：出现清晰的单调对齐模式，但注意力分散在相邻近重复位置上</li></ul><p><strong>SpeechKV</strong>（右列）：</p><ul><li>浅层（Layer 4）：即使此层未施加压缩，已出现单调对齐——深层 KV 缩短迫使模型在更早层建立跨模态对应</li><li>深层（Layer 27）：压缩后的 key 序列产生更尖锐、集中的注意力峰值，冗余位置已被合并</li></ul><p>这表明 SpeechKV 重塑了层间表示：浅层更早建立跨模态对应，深层更高效地在去重复 key 表示上操作。</p><h3 id="5-4-解码速度"><a href="#5-4-解码速度" class="headerlink" title="5.4 解码速度"></a>5.4 解码速度</h3><p><img src="/images/paper_figs/speechkv/speedup.png" alt="解码加速"></p><p>在 A100 80GB GPU + vLLM 上的端到端解码加速：</p><div class="table-container"><table><thead><tr><th>Audio Length</th><th>Baseline</th><th>R=4</th><th>R=8</th></tr></thead><tbody><tr><td>30s</td><td>1.00×</td><td>1.49×</td><td>1.62×</td></tr><tr><td>5min</td><td>1.00×</td><td>1.88×</td><td>1.87×</td></tr><tr><td>10min</td><td>1.00×</td><td>2.02×</td><td>2.03×</td></tr></tbody></table></div><p>加速随音频长度增长：语音 KV cache 在总注意力开销中占比更大时，压缩收益更显著。R=8 相比 R=4 仅有边际额外加速，因为 feed-forward 层和文本 KV cache 成为新瓶颈。</p><p><strong>R=4 是最佳实践点</strong>：精度匹配 baseline，解码速度 1.49–2× 提升。</p><hr><h2 id="六、结论（Conclusion）"><a href="#六、结论（Conclusion）" class="headerlink" title="六、结论（Conclusion）"></a>六、结论（Conclusion）</h2><p>SpeechKV 将语音 KV cache 压缩延迟到 LLM 中间层，通过保留全分辨率 query 和 residual stream，让 LLM 预训练参数自行决定保留哪些声学特征。</p><p>在 71K 小时训练的 Qwen3-1.7B Speech LLM 上：</p><ul><li>R=4 压缩到文本粒度仍匹配甚至超越 baseline（实体识别相对提升 6.6%）</li><li>至少 1.49× 解码加速，随音频长度扩展</li><li>注意力分析揭示 SpeechKV 作为结构性正则化：浅层更早建立跨模态对应，深层注意力更集中</li></ul><p><strong>未来方向</strong>：扩展到 ASR 之外的语音任务、研究自适应跨层压缩比、进一步分析 Speech LLM 的逐层动态。</p><hr><h2 id="个人思考"><a href="#个人思考" class="headerlink" title="个人思考"></a>个人思考</h2><p>SpeechKV 的核心洞察极其简洁：语音在 LLM 浅层自然聚合后变得时间冗余，与其在 LLM 之前强制压缩（承担不可逆信息损失），不如让 LLM 先看完整信息再压缩 KV cache。这实际上是一种”先理解后摘要”的策略。</p><p>更令人意外的是 R=4 压缩不仅无损反而增益——压缩后粒度恰好对齐文本 token rate，形成对 LLM 预训练分布的结构性正则化。这暗示 Speech LLM 的一个深层问题：未压缩时，深层大量冗余 key 实际上是在”稀释”注意力。</p><p>从工程角度看，SpeechKV 的实现极为轻量（仅一个线性门 + softmax weighted sum），无需修改推理框架核心逻辑，与 vLLM 等系统的兼容性良好。这使其具有很强的实用部署价值。</p>]]></content>
+    
+    
+    <categories>
+      
+      <category>论文解读</category>
+      
+    </categories>
+    
+    
+    <tags>
+      
+      <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
+      
+      <tag>Speech LLM</tag>
+      
+      <tag>KV Cache</tag>
       
     </tags>
     
@@ -1244,9 +1279,9 @@
       
       <tag>论文解读</tag>
       
-      <tag>TTS</tag>
-      
       <tag>Speech Language Model</tag>
+      
+      <tag>TTS</tag>
       
       <tag>vLLM</tag>
       
@@ -1275,9 +1310,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -1337,9 +1372,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>Speech Processing</tag>
       
@@ -1430,9 +1465,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>Attention</tag>
       
@@ -1589,9 +1624,9 @@
       
       <tag>论文解读</tag>
       
-      <tag>CTC</tag>
-      
       <tag>Streaming ASR</tag>
+      
+      <tag>CTC</tag>
       
       <tag>Knowledge Distillation</tag>
       
@@ -1618,9 +1653,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>Speech LLM</tag>
       
@@ -1649,9 +1684,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>RAG</tag>
       
@@ -1713,9 +1748,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>Speech LLM</tag>
       
@@ -1744,9 +1779,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>Speech LLM</tag>
       
@@ -1845,11 +1880,11 @@
       
       <tag>Reinforcement Learning</tag>
       
+      <tag>Spoken Dialogue</tag>
+      
       <tag>Turn-Taking</tag>
       
       <tag>GRPO</tag>
-      
-      <tag>Spoken Dialogue</tag>
       
       <tag>Alignment</tag>
       
@@ -1880,9 +1915,9 @@
       
       <tag>Chain-of-Thought</tag>
       
-      <tag>Entity Binding</tag>
-      
       <tag>Reasoning</tag>
+      
+      <tag>Entity Binding</tag>
       
     </tags>
     
@@ -1938,13 +1973,13 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
       
-      <tag>Reinforcement Learning</tag>
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
+      
+      <tag>Reinforcement Learning</tag>
       
       <tag>Few-shot</tag>
       
@@ -1971,9 +2006,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -2101,15 +2136,15 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
       
-      <tag>TTS</tag>
+      <tag>ASR</tag>
       
       <tag>Audio-LLM</tag>
       
       <tag>RLHF</tag>
+      
+      <tag>TTS</tag>
       
     </tags>
     
@@ -2225,9 +2260,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>Whisper</tag>
       
@@ -2384,9 +2419,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -2417,9 +2452,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>Streaming</tag>
       
@@ -2510,9 +2545,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>Speech LLM</tag>
       
@@ -2572,9 +2607,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -2609,9 +2644,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -2644,9 +2679,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -2807,9 +2842,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -2840,9 +2875,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -2875,9 +2910,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -2910,9 +2945,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -2941,9 +2976,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -2976,9 +3011,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -3143,9 +3178,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -3176,9 +3211,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>VAD</tag>
       
@@ -3273,9 +3308,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -3306,9 +3341,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
@@ -3339,9 +3374,9 @@
     
     <tags>
       
-      <tag>ASR</tag>
-      
       <tag>论文解读</tag>
+      
+      <tag>ASR</tag>
       
       <tag>LLM</tag>
       
