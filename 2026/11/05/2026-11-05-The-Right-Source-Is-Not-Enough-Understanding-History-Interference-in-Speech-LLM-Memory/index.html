@@ -1,0 +1,1167 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="论文信息 标题：The Right Source Is Not Enough: Understanding History Interference in Speech-LLM Memory 作者：HongJin Song, Weiqiao Shan, Runwu Shi, Yifei Wu, Yujin Wang, Jiale Luo, Jiasheng Kuang, Xinyu Yang, Z">
+<meta property="og:type" content="article">
+<meta property="og:title" content="The Right Source Is Not Enough: Understanding History Interference in Speech-LLM Memory">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/11/05/2026-11-05-The-Right-Source-Is-Not-Enough-Understanding-History-Interference-in-Speech-LLM-Memory/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="论文信息 标题：The Right Source Is Not Enough: Understanding History Interference in Speech-LLM Memory 作者：HongJin Song, Weiqiao Shan, Runwu Shi, Yifei Wu, Yujin Wang, Jiale Luo, Jiasheng Kuang, Xinyu Yang, Z">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/history-interference-speech-llm.png">
+<meta property="article:published_time" content="2026-11-05T03:22:00.000Z">
+<meta property="article:modified_time" content="2026-11-05T03:34:34.650Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="Activation Patching">
+<meta property="article:tag" content="Audio-LLM">
+<meta property="article:tag" content="MOSS-Audio">
+<meta property="article:tag" content="MiMo-Audio">
+<meta property="article:tag" content="Speech-LLM">
+<meta property="article:tag" content="arXiv">
+<meta property="article:tag" content="历史干扰">
+<meta property="article:tag" content="多轮对话">
+<meta property="article:tag" content="机制解释">
+<meta property="article:tag" content="语音记忆">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/history-interference-speech-llm.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>The Right Source Is Not Enough: Understanding History Interference in Speech-LLM Memory - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/banner/history-interference-speech-llm.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="The Right Source Is Not Enough: Understanding History Interference in Speech-LLM Memory"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-11-05 11:22" pubdate>
+          2026年11月5日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          36 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">The Right Source Is Not Enough: Understanding History Interference in Speech-LLM Memory</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年11月5日 中午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>：The Right Source Is Not Enough: Understanding History Interference in Speech-LLM Memory</li>
+<li><strong>作者</strong>：HongJin Song, Weiqiao Shan, Runwu Shi, Yifei Wu, Yujin Wang, Jiale Luo, Jiasheng Kuang, Xinyu Yang, Zhaoqi Cui, Chuizheng Kong, Ziyu Wu, Guowu Tan, Qiuyu Fang, Chunxiang Jin</li>
+<li><strong>机构</strong>：Beijing Institute of Technology；Northeastern University, China；Institute of Science Tokyo；Ant Group；Wuhan University；Sichuan University</li>
+<li><strong>版本</strong>：arXiv v1，2026-11-03；源码采用 ICLR 2027 样式，但当前应视为预印本</li>
+<li><strong>论文</strong>：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2611.05124">arXiv:2611.05124</a></li>
+</ul>
+<blockquote>
+<p><strong>一句话概括</strong>：Speech-LLM 即使已经识别出当前问题对应的正确历史音频源，其他历史音频中的具体答案值仍可能通过直接读取或中间状态传播进入答案计算；可靠的多轮语音记忆因此不仅需要“记住并检索”，还需要控制被记住的信息如何影响决策。</p>
+</blockquote>
+<p>这篇论文最重要的区分是：<strong>找到正确来源，不等于只使用正确来源。</strong> 在 MOSS-Audio 与 MiMo-Audio 上，作者发现无关历史不是泛泛地让问题变难，而会把错误定向推向历史中出现过的具体值。</p>
+<p>进一步的因果干预显示，两种回答格式存在不同路径：开放式生成的大多数历史值错误依赖模型继续访问无关音频；多项选择错误则可在直接访问被切断后继续存在，因为早期干扰已经写入问题—候选状态。论文的贡献是机制诊断，不是一个可直接部署的修复算法。</p>
+<span id="more"></span>
+<h2 id="1-问题：模型记住了什么，和最终用了什么，是两件事"><a href="#1-问题：模型记住了什么，和最终用了什么，是两件事" class="headerlink" title="1. 问题：模型记住了什么，和最终用了什么，是两件事"></a>1. 问题：模型记住了什么，和最终用了什么，是两件事</h2><p><img src="/images/paper_figs/history-interference-speech-llm/intro_overview_problem.png" srcset="/img/loading.gif" lazyload alt="历史音频干扰答案形成的示意"></p>
+<p><em>论文图 1：模型可以正确保留多个历史事件，却在回答当前问题时让错误事件中的值进入决策。图中路径是概念示意。</em></p>
+<p>多轮 Speech-LLM 通常把此前音频保留在上下文中，以便用户追问旧事件。已有工作因此重点测试两个能力：</p>
+<ol>
+<li>历史音频是否仍被表征；</li>
+<li>当前问题能否检索到相关音频。</li>
+</ol>
+<p>但论文提出第三个问题：<strong>即使相关来源仍然可访问、来源角色也被模型识别，其他来源中的值是否仍会参与答案竞争？</strong></p>
+<p>例如历史中同时出现“图书馆 8 点开门”和“航班 10 点起飞”。用户问航班时间时，模型回答 8 点。这不是完全忘记航班，而是图书馆时间成为了错误证据。</p>
+<p>作者将每段音频 turn 视为一个 source：回答当前问题所需的是 target source，其余为 irrelevant source。重要的是，来源是否相关取决于问题；同一段历史音频在另一个问题下可能正是必要证据。</p>
+<h2 id="2-实验框架：自然语音验证现象，合成语音拆开变量"><a href="#2-实验框架：自然语音验证现象，合成语音拆开变量" class="headerlink" title="2. 实验框架：自然语音验证现象，合成语音拆开变量"></a>2. 实验框架：自然语音验证现象，合成语音拆开变量</h2><p>研究使用两个冻结权重的开源 Speech-LLM：</p>
+<ul>
+<li>MOSS-Audio-8B-Instruct；</li>
+<li>MiMo-Audio-7B-Instruct。</li>
+</ul>
+<h3 id="2-1-自然语音数据"><a href="#2-1-自然语音数据" class="headerlink" title="2.1 自然语音数据"></a>2.1 自然语音数据</h3><p>作者从 LibriSpeech 构造 1,000 个三来源历史，共包含 3,000 段互不重复的主录音与 3,000 个来源特定问题。其中 450 个历史来自 test-clean，550 个来自 test-other；同一历史内的三段录音来自不同说话人和章节。</p>
+<p>每个问题都有成对条件：</p>
+<ul>
+<li><strong>Neutral</strong>：额外来源不包含候选答案值；</li>
+<li><strong>Competing</strong>：额外来源支持某个错误候选值。</li>
+</ul>
+<p>目标音频、问题、候选、来源顺序与 turn 数保持不变；中性替换还匹配词数和时长。</p>
+<h3 id="2-2-受控合成语音"><a href="#2-2-受控合成语音" class="headerlink" title="2.2 受控合成语音"></a>2.2 受控合成语音</h3><p>机制实验使用时间、颜色、地点、数量四类答案，建立三套彼此独立的材料：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>数据集</th>
+<th style="text-align:right">Dev / Test</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Relation-content</td>
+<td style="text-align:right">128 / 512</td>
+<td>历史关系、自然错误、模块控制</td>
+</tr>
+<tr>
+<td>Reading-structure</td>
+<td style="text-align:right">128 / 512</td>
+<td>来源阻断、状态桥接、回答格式对比</td>
+</tr>
+<tr>
+<td>Coherent role reversal</td>
+<td style="text-align:right">128 / 512</td>
+<td>全层 role-value 因子扫描</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>每个 state-transfer episode 派生四个历史变体，因此测试有 2,048 个 condition，但<strong>不是 2,048 个独立 episode</strong>。统计置信区间按完整 episode 重采样，保留其内部配对结构。</p>
+<h2 id="3-指标：把“正确值”和“历史错误值”直接比较"><a href="#3-指标：把“正确值”和“历史错误值”直接比较" class="headerlink" title="3. 指标：把“正确值”和“历史错误值”直接比较"></a>3. 指标：把“正确值”和“历史错误值”直接比较</h2><p>多项选择任务只比较 A–D 四个单 token 标签的下一 token logit。定义 target 相对 historical value 的 margin：</p>
+\[m = \ell(y)-\ell(h),\]<p>其中 $y$ 是正确值对应标签，$h$ 是无关历史值对应标签。$m$ 增大表示决策更偏向当前目标。</p>
+<p>开放式回答则让模型生成短答案，再把实际输出归为 target value、history value 或 other。论文明确没有把自由生成的 sequence score 与选择题 option logit 混为一谈。</p>
+<h2 id="4-行为结果：无关历史会把错误定向推向具体值"><a href="#4-行为结果：无关历史会把错误定向推向具体值" class="headerlink" title="4. 行为结果：无关历史会把错误定向推向具体值"></a>4. 行为结果：无关历史会把错误定向推向具体值</h2><p>在 3,000 个自然语音问题上：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th style="text-align:right">Neutral</th>
+<th style="text-align:right">Competing</th>
+<th style="text-align:right">变化</th>
+<th style="text-align:right">95% CI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MOSS-Audio</td>
+<td style="text-align:right">84.23%</td>
+<td style="text-align:right">78.73%</td>
+<td style="text-align:right">-5.50 pp</td>
+<td style="text-align:right">[-6.73, -4.30]</td>
+</tr>
+<tr>
+<td>MiMo-Audio</td>
+<td style="text-align:right">48.23%</td>
+<td style="text-align:right">39.67%</td>
+<td style="text-align:right">-8.57 pp</td>
+<td style="text-align:right">[-9.80, -7.37]</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>这里的 Neutral 是“中性历史”，不是只输入目标音频的 baseline。为了排除模型本来就没听懂目标音频的情况，作者又筛选出两个模型在 target-only 下都答对的 1,365 个问题；加入 competing history 后，MOSS 与 MiMo 仍分别下降 2.79 和 10.06 个百分点。</p>
+<p>更关键的是固定九 turn 的 load 实验。作者不增加上下文长度，只把中性 turn 替换成支持某个错误候选的语音：</p>
+<ul>
+<li>每增加一个支持该错误值的 turn，其相对正确答案的 score 增加 0.260（MOSS）和 0.089（MiMo）；</li>
+<li>支持另一个错误候选的 turn 仅贡献 0.008 和 -0.001；</li>
+<li>两种支持方向的差异置信区间分别为 [0.195, 0.305] 与 [0.068, 0.111]。</li>
+</ul>
+<p>因此，性能下降不能仅解释为“历史更长”或“位置更远”。干扰携带具体语义方向。</p>
+<p><img src="/images/paper_figs/history-interference-speech-llm/fig09_behavioral_interference.png" srcset="/img/loading.gif" lazyload alt="相关历史既能帮助回忆，也能干扰当前问题"></p>
+<p><em>论文图 3：同一段 near-history 在被问及时是有用记忆，在当前问题中却可能成为有害证据。每个柱子聚合 512 个 test episode。</em></p>
+<h2 id="5-来源角色并没有消失"><a href="#5-来源角色并没有消失" class="headerlink" title="5. 来源角色并没有消失"></a>5. 来源角色并没有消失</h2><p>一个自然解释是：模型根本没弄清问题问的是哪段音频。作者通过 state transfer 检验这一点。</p>
+<p>保持音频、来源顺序与候选不变，只切换问题所询问的事件；在第 17 层后，把 donor 的 question-candidate hidden states 转移给 receiver。结果在两个模型、两个转移方向上，预测有 <strong>98.6%–99.8%</strong> 跟随 donor 的 queried event。只转移孤立 candidate position 时，变化约为 1%–3%。</p>
+<p>为了避免 whole-state transfer 顺带复制答案，作者进一步只转移由开发集拟合的 rank-4 role projection，而且 donor 与 receiver 的答案值不同。在第 24 层：</p>
+<ul>
+<li>earlier → later role shift 使 later-minus-earlier margin 增加 0.99（MOSS）和 0.63（MiMo）；</li>
+<li>reverse shift 则变化 -0.80 与 -0.49。</li>
+</ul>
+<p>这说明“当前问题需要哪个来源”的信息确实存在，而且可以因果性改变答案。历史干扰不能只归咎于来源识别完全失败。</p>
+<h2 id="6-三类因果干预"><a href="#6-三类因果干预" class="headerlink" title="6. 三类因果干预"></a>6. 三类因果干预</h2><p><img src="/images/paper_figs/history-interference-speech-llm/source_value_method.png" srcset="/img/loading.gif" lazyload alt="来源访问、状态转移与低维 role-value 干预"></p>
+<p><em>论文图 2：作者只干预 decoder state；音频经过 audio encoder，而文本问题不经过。所有干预都是已知来源边界的诊断性反事实。</em></p>
+<h3 id="6-1-切断对无关来源的直接访问"><a href="#6-1-切断对无关来源的直接访问" class="headerlink" title="6.1 切断对无关来源的直接访问"></a>6.1 切断对无关来源的直接访问</h3><p>严格 late-block 条件让第 0–17 层正常处理完整历史；第 18–35 层中，所有位于无关来源之后的位置都不能再注意该来源，包括后续音频、问题、候选及 source wrapper token。开放式生成时，新生成 token 在所有层都不能访问该来源。</p>
+<p>这一区分很重要：late block 阻止未来继续读取，但不能擦除前 18 层已经写入其他位置的影响。</p>
+<h3 id="6-2-转移-question-candidate-states"><a href="#6-2-转移-question-candidate-states" class="headerlink" title="6.2 转移 question-candidate states"></a>6.2 转移 question-candidate states</h3><p>作者建立两次匹配运行：</p>
+<ul>
+<li>$F$：完整 early access；</li>
+<li>$E$：第 0–17 层阻断 question position 对无关来源的访问。</li>
+</ul>
+<p>第 17 层后，把 $E$ 的 question-candidate states 放进 $F$，或反向把 $F$ 放进 $E$；两个 receiver 后半程都使用完全相同的 late block。这样便能测试早期历史影响是否被中间状态携带。</p>
+<h3 id="6-3-分离-source-role-与-answer-value"><a href="#6-3-分离-source-role-与-answer-value" class="headerlink" title="6.3 分离 source role 与 answer value"></a>6.3 分离 source role 与 answer value</h3><p>在每层，作者从“音频和值完全相同、只改变询问事件”的 state difference 拟合 rank-4 role basis $U_R$；再从“问题不变、只改变历史值”的差分 $D_V$ 中去除 role projection：</p>
+\[D_{V\perp R}=(I-U_RU_R^\top)D_V,\]<p>随后拟合 rank-4 value basis $U_V$。差分先中心化，再进行 randomized SVD；每层独立拟合，开发集与测试集分开。</p>
+<p>干预只在单层、最后 32 个 prompt position 上加入 projected difference，后续网络继续正常计算。“value”指答案语义，不是 attention head 的 Value tensor。</p>
+<h2 id="7-两条干扰路径：开放生成依赖继续读取，选择题可由状态携带"><a href="#7-两条干扰路径：开放生成依赖继续读取，选择题可由状态携带" class="headerlink" title="7. 两条干扰路径：开放生成依赖继续读取，选择题可由状态携带"></a>7. 两条干扰路径：开放生成依赖继续读取，选择题可由状态携带</h2><div class="table-container">
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th style="text-align:right">MOSS 开放式</th>
+<th style="text-align:right">MiMo 开放式</th>
+<th style="text-align:right">MOSS 选择题</th>
+<th style="text-align:right">MiMo 选择题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Full history $F$</td>
+<td style="text-align:right">151</td>
+<td style="text-align:right">22</td>
+<td style="text-align:right">175</td>
+<td style="text-align:right">94</td>
+</tr>
+<tr>
+<td>Strict late block $F+L$</td>
+<td style="text-align:right">2</td>
+<td style="text-align:right">3</td>
+<td style="text-align:right">124</td>
+<td style="text-align:right">49</td>
+</tr>
+<tr>
+<td>$F+L\leftarrow E$</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">6</td>
+<td style="text-align:right">1</td>
+</tr>
+<tr>
+<td>$E+L\leftarrow F$</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">125</td>
+<td style="text-align:right">49</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>这些是同一批 2,048 个 test condition 上的 history-aligned error count，不是独立 episode 数。</p>
+<p>开放式回答中，late block 几乎消除了错误：MOSS 151→2，MiMo 22→3。这说明在该设置下，模型通常需要继续读取无关音频才能生成历史值。</p>
+<p>多项选择中则有大量错误存活：MOSS 175→124，MiMo 94→49。将 early-blocked states 注入后，错误进一步降至 6 和 1；反向恢复 full-access states，又回到 125 和 49。</p>
+<p>由于两个 receiver 的 late mask 完全相同，差异不能归因于后半程可访问位置不同。结论是：<strong>早期对历史的读取已经改变 question-candidate states，之后即使不能再看原音频，这些状态仍能推动错误候选。</strong></p>
+<p>论文还做了 MOSS 单 token 颜色控制：late block 清除了全部 32 个开放式历史值错误，但 51 个选择题错误中仍有 37 个保留，说明差异不只是开放式自回归需要反复读上下文。</p>
+<h2 id="8-Role-与-Value-在网络深度上的敏感区间不同"><a href="#8-Role-与-Value-在网络深度上的敏感区间不同" class="headerlink" title="8. Role 与 Value 在网络深度上的敏感区间不同"></a>8. Role 与 Value 在网络深度上的敏感区间不同</h2><p><img src="/images/paper_figs/history-interference-speech-llm/fig10_layerwise_role_value.png" srcset="/img/loading.gif" lazyload alt="role 与 value 的逐层因果敏感度"></p>
+<p><em>论文图 4：灰色区域仅用于标示 12–17 层，不代表作者独立证明了一个排他的“记忆模块”。曲线是单层干预后的下游效应。</em></p>
+<p>作者在全部 36 个 decoder layer 上进行因子扫描。定义 role effect 为 $\Delta_R$，在已有 role edit 后增加 value edit 的条件效应为：</p>
+\[\Delta_{V\mid R}=\Delta_{R+V}-\Delta_R.\]<p>结果显示：</p>
+<ul>
+<li>value 条件效应从约第 9–12 层开始明显，在中间层较强；第 16 层为 1.51（MOSS）和 0.95（MiMo）；</li>
+<li>role effect 在更深层增强，MOSS 第 23 层达到 2.14，MiMo 第 22 层达到 1.15；</li>
+<li>改变 role 后，value edit 仍有显著附加效应。</li>
+</ul>
+<p>这不意味着 value 首次在第 9 层出现、role 首次在第 22 层出现。每个单层 edit 都会影响后续所有计算，因此曲线测量的是<strong>干预敏感度</strong>，不是首次表征位置。峰值也是全层扫描中的 test peak，并非独立 held-out layer selection。</p>
+<p>更有意义的解释是：来源角色可以改变决策方向，却没有把其他来源的值完全关在门外。</p>
+<h2 id="9-自然错误修复：联合干预最好，但仍是-oracle-诊断"><a href="#9-自然错误修复：联合干预最好，但仍是-oracle-诊断" class="headerlink" title="9. 自然错误修复：联合干预最好，但仍是 oracle 诊断"></a>9. 自然错误修复：联合干预最好，但仍是 oracle 诊断</h2><p><img src="/images/paper_figs/history-interference-speech-llm/fig11_natural_error_rescue.png" srcset="/img/loading.gif" lazyload alt="自然历史错误的干预恢复率"></p>
+<p><em>论文图 5：role enhancement、counterfactual value shift 与联合干预对自然发生错误的恢复。</em></p>
+<p>作者固定 near-history 中自然发生的历史值错误，并在第 20 层干预：</p>
+<ul>
+<li>MOSS：165 个 condition、122 个 episode，全部复现；</li>
+<li>MiMo：初选 52 个 condition，其中 47 个 condition、37 个 episode 复现；5 个未复现错误被排除。</li>
+</ul>
+<p>episode-averaged 恢复结果为：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>干预</th>
+<th style="text-align:right">MOSS</th>
+<th style="text-align:right">MiMo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Role enhancement</td>
+<td style="text-align:right">43.0% [34.8, 51.6]</td>
+<td style="text-align:right">62.2% [45.9, 77.0]</td>
+</tr>
+<tr>
+<td>Counterfactual value shift</td>
+<td style="text-align:right">68.4% [60.7, 76.2]</td>
+<td style="text-align:right">67.6% [54.1, 81.1]</td>
+</tr>
+<tr>
+<td>Both</td>
+<td style="text-align:right"><strong>79.1% [72.1, 85.7]</strong></td>
+<td style="text-align:right"><strong>83.8% [73.0, 93.2]</strong></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>value shift 不是删除历史，而是沿开发集拟合的 $U_V$，向匹配的 alternative-history state 移动一半距离。role shift 也依赖同一 episode 的历史问题状态。这些干预需要 oracle source boundary 与 counterfactual state，只能证明因果参与，不能直接部署。</p>
+<p><img src="/images/paper_figs/history-interference-speech-llm/fig12_population_competition.png" srcset="/img/loading.gif" lazyload alt="相对 value-role 干预效应与错误频率的关系"></p>
+<p><em>附录图：在同一测试总体内，value effect 相对 role effect 越强，历史值错误越常见；这是描述性关联，不是独立验证的错误预测器。</em></p>
+<p>在第 20 层，按 $D=\Delta_V-\Delta_R$ 分五组，历史值错误率从最低组到最高组：</p>
+<ul>
+<li>MOSS：3.3% → 47.0%；</li>
+<li>MiMo：4.8% → 14.4%。</li>
+</ul>
+<p>但这个指标本身需要对同一 example 做反事实干预，所以不能被描述成在线 error detector。</p>
+<h2 id="10-不能简单归因于-Attention-或-MLP"><a href="#10-不能简单归因于-Attention-或-MLP" class="headerlink" title="10. 不能简单归因于 Attention 或 MLP"></a>10. 不能简单归因于 Attention 或 MLP</h2><p><img src="/images/paper_figs/history-interference-speech-llm/fig13_module_mediation_appendix.png" srcset="/img/loading.gif" lazyload alt="Attention 与 MLP module-output transfer 控制"></p>
+<p><em>附录图：不同模型与层上，attention/MLP transfer 的恢复与保留历史问答能力并不一致。</em></p>
+<p>作者把 target-only donor 的 attention output 或 MLP output 注入包含两来源的 receiver。结果不能支持“错误都来自 attention”或“错误都来自 MLP”的统一结论。</p>
+<p>一个关键反例是：MOSS 第 24 层 attention-output replacement 可强烈恢复当前问题，却让询问历史事件时的准确率接近 0。它可能只是移除了历史证据，而不是学会了选择性使用历史。</p>
+<p>因此，修正当前答案还不够。一个好的方法必须同时满足：</p>
+<ul>
+<li>当前问题不受无关历史值干扰；</li>
+<li>当用户真正追问该历史时，它仍能被正确使用。</li>
+</ul>
+<h2 id="11-与站内“上下文抗噪”文章的关系"><a href="#11-与站内“上下文抗噪”文章的关系" class="headerlink" title="11. 与站内“上下文抗噪”文章的关系"></a>11. 与站内“上下文抗噪”文章的关系</h2><p>站内此前的<a href="/2026/08/31/2026-08-31-Robust-Context-Noise-Learning-and-Gated-Biasing-Speech-LLM/">《上下文也会骗人？Speech-LLM 的抗噪表征学习与动态置信度门控机制》</a>关注历史转录错误、上下文偏置与推理时门控；本文讨论的是更窄、也更基础的机制问题：<strong>历史内容可以完全正确，却因为不相关而成为错误证据。</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>上下文抗噪/门控路线</th>
+<th>本文 role-value 分析</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>干扰来源</td>
+<td>错误、噪声或过度偏置的上下文</td>
+<td>正确但与当前问题无关的历史音频</td>
+</tr>
+<tr>
+<td>核心问题</td>
+<td>是否应信任或注入上下文</td>
+<td>上下文已保留后，哪些值进入答案计算</td>
+</tr>
+<tr>
+<td>分析对象</td>
+<td>训练策略或推理门控</td>
+<td>冻结 Speech-LLM 的内部因果路径</td>
+</tr>
+<tr>
+<td>结论</td>
+<td>需要控制上下文依赖</td>
+<td>检索到正确 source 仍不足以排除错误 value</td>
+</tr>
+<tr>
+<td>当前产物</td>
+<td>面向鲁棒系统设计</td>
+<td>oracle 机制诊断，尚非部署方案</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>跨论文理解上，两者可以衔接：未来的门控不仅要决定“是否读取历史”，还应在 question-conditioned state 形成时限制不相关 value 的写入，否则晚一些再裁剪 KV cache 可能已经来不及。</p>
+<h2 id="12-论文的边界与成熟度审计"><a href="#12-论文的边界与成熟度审计" class="headerlink" title="12. 论文的边界与成熟度审计"></a>12. 论文的边界与成熟度审计</h2><p>这篇论文对自身证据边界写得较清楚，但阅读时仍需保留以下限定：</p>
+<ol>
+<li><strong>预印本状态</strong>：源码使用 ICLR 2027 final-style 命令，但 arXiv v1 不能据此视为已经录用。</li>
+<li><strong>只有两个模型</strong>：共同现象不等于所有 Speech-LLM 都有相同层峰或路径占比。</li>
+<li><strong>受控材料有限</strong>：四类答案与合成事件便于因果识别，但不能估计真实开放对话中的失败率。</li>
+<li><strong>没有自动修复器</strong>：intervention 使用已知来源边界、开发集方向与 matched counterfactual，不能直接在未知线上数据运行。</li>
+<li><strong>峰值不是 held-out 选择</strong>：层网格在测试前确定，但报告的是 scan peak；置信区间为 pointwise，不是峰位置的 simultaneous interval。</li>
+<li><strong>复现资产未随源码提供</strong>：论文说明完整复现还需要实验代码、音频材料与 per-example output；当前 arXiv source package 主要提供论文源码和图。</li>
+<li><strong>权重版本不完全统一</strong>：附录记录模型 configuration hash，却没有统一的 upstream weight revision identifier。</li>
+<li><strong>不解释训练根因</strong>：研究定位了推理时的因果路径，没有证明这些路径由哪类训练数据或目标造成。</li>
+</ol>
+<p>源码中没有发现待填 TODO、占位引用或自相矛盾的主结果数字；相反，作者多次强调 condition 与独立 episode 的区别、错误复现筛选、开放式与选择题指标不可直接等同，以及干预不是部署方案。</p>
+<h2 id="13-工程启示"><a href="#13-工程启示" class="headerlink" title="13. 工程启示"></a>13. 工程启示</h2><p>论文没有提供现成算法，但它改变了多轮语音记忆系统的设计检查表：</p>
+<ol>
+<li><strong>评测不能只问“记没记住”</strong>：同一历史事实应同时测试被问及时能正确使用、不被问时不会干扰。</li>
+<li><strong>来源检索准确率不是终点</strong>：还要测其他来源的 value 是否改变 candidate margin。</li>
+<li><strong>只在解码后段屏蔽历史可能太晚</strong>：早期读取可能已经把影响写进 question-candidate states。</li>
+<li><strong>开放生成与选择题要分开测</strong>：格式会改变信息传播路径，不能用一个 benchmark 替代另一个。</li>
+<li><strong>修复必须保留有用记忆</strong>：只让当前答案变对、却破坏历史追问能力，不算可靠 selective memory。</li>
+<li><strong>需要在状态形成时做条件化控制</strong>：未来可学习 question-conditioned source gate、value routing 或具有保真约束的状态净化，而不是只做静态 cache pruning。</li>
+</ol>
+<h2 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h2><p>这篇论文把 Speech-LLM 的多轮记忆问题从“存储—检索”推进到“证据使用”：</p>
+<ul>
+<li>历史音频中的具体值会定向诱导错误；</li>
+<li>模型同时保留了可用的 source-role 信息；</li>
+<li>开放式生成主要依赖继续读取无关来源；</li>
+<li>选择题干扰则能经 question-candidate states 持续传播；</li>
+<li>role 与 value 在不同深度呈现不同干预敏感度；</li>
+<li>两者共同导致自然错误，联合 oracle 干预恢复最多；</li>
+<li>但任何修复都必须同时保留历史被正确追问时的可用性。</li>
+</ul>
+<p>因此，“找到正确来源”只是可靠语音记忆的必要条件。真正困难的是让模型在当前问题下，只允许相关来源中的值进入答案形成，同时保留其他记忆供未来问题调用。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ul>
+<li>Song, H. et al. <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2611.05124">The Right Source Is Not Enough: Understanding History Interference in Speech-LLM Memory</a>, arXiv:2611.05124, 2026.</li>
+<li>Kim, H. et al. <a target="_blank" rel="noopener" href="https://aclanthology.org/2025.findings-acl.470/">Does Your Voice Assistant Remember? Analyzing Conversational Context Recall and Utilization in Voice Interaction Models</a>, Findings of ACL 2025.</li>
+<li>Xiao, Y. et al. <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2605.27039">Why Can’t They Remember? Uncovering Representation and Retrieval Bottlenecks in Multi-Turn Acoustic Memory</a>, 2026.</li>
+</ul>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech-LLM</a>
+      
+        <a href="/tags/Audio-LLM/" class="print-no-link">#Audio-LLM</a>
+      
+        <a href="/tags/%E8%AF%AD%E9%9F%B3%E8%AE%B0%E5%BF%86/" class="print-no-link">#语音记忆</a>
+      
+        <a href="/tags/%E5%A4%9A%E8%BD%AE%E5%AF%B9%E8%AF%9D/" class="print-no-link">#多轮对话</a>
+      
+        <a href="/tags/%E5%8E%86%E5%8F%B2%E5%B9%B2%E6%89%B0/" class="print-no-link">#历史干扰</a>
+      
+        <a href="/tags/%E6%9C%BA%E5%88%B6%E8%A7%A3%E9%87%8A/" class="print-no-link">#机制解释</a>
+      
+        <a href="/tags/Activation-Patching/" class="print-no-link">#Activation Patching</a>
+      
+        <a href="/tags/MOSS-Audio/" class="print-no-link">#MOSS-Audio</a>
+      
+        <a href="/tags/MiMo-Audio/" class="print-no-link">#MiMo-Audio</a>
+      
+        <a href="/tags/arXiv/" class="print-no-link">#arXiv</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>The Right Source Is Not Enough: Understanding History Interference in Speech-LLM Memory</div>
+      <div>https://smallsmartao.github.io/2026/11/05/2026-11-05-The-Right-Source-Is-Not-Enough-Understanding-History-Interference-in-Speech-LLM-Memory/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年11月5日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年11月5日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/10/26/2026-10-26-Protocols-Minimum-Effective-Dose/" title="如何阅读 Huberman 的《Protocols》：证据分层与健康的最小有效剂量">
+                        <span class="hidden-mobile">如何阅读 Huberman 的《Protocols》：证据分层与健康的最小有效剂量</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+  
+<script src="/js/home-video-banner.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
