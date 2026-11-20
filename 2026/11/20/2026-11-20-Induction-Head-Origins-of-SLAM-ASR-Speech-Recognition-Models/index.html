@@ -1,0 +1,1230 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/mao.png">
+  <link rel="icon" href="/img/favicon.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ao Zhang">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="本文通过定向阻断、注意力头对分析与推理时缩放，研究冻结 LLM 中的 induction heads 如何读取 SLAM-ASR 的连续语音表示，并严格区分机制证据与噪声收益的适用边界。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Induction Head Origins of SLAM-ASR Speech Recognition Models">
+<meta property="og:url" content="https://smallsmartao.github.io/2026/11/20/2026-11-20-Induction-Head-Origins-of-SLAM-ASR-Speech-Recognition-Models/index.html">
+<meta property="og:site_name" content="聪明的小奥">
+<meta property="og:description" content="本文通过定向阻断、注意力头对分析与推理时缩放，研究冻结 LLM 中的 induction heads 如何读取 SLAM-ASR 的连续语音表示，并严格区分机制证据与噪声收益的适用边界。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://smallsmartao.github.io/images/paper_img/slam_asr_induction_heads/index.png">
+<meta property="article:published_time" content="2026-11-20T03:05:00.000Z">
+<meta property="article:modified_time" content="2026-11-20T03:07:08.160Z">
+<meta property="article:author" content="Ao Zhang">
+<meta property="article:tag" content="ASR">
+<meta property="article:tag" content="Differential Attention">
+<meta property="article:tag" content="Induction Head">
+<meta property="article:tag" content="SLAM-ASR">
+<meta property="article:tag" content="Speech LLM">
+<meta property="article:tag" content="机制可解释性">
+<meta property="article:tag" content="语音幻觉">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://smallsmartao.github.io/images/paper_img/slam_asr_induction_heads/index.png">
+  
+  
+    <meta name="referrer" content="no-referrer-when-downgrade">
+  
+  
+  <title>Induction Head Origins of SLAM-ASR Speech Recognition Models - 聪明的小奥</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+  
+<link rel="stylesheet" href="/css/home-video-banner.css">
+<link rel="stylesheet" href="/css/math-display-fix.css">
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"smallsmartao.github.io","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":true,"follow_dnt":true,"baidu":null,"google":null,"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null},"gtag":null,"woyaola":null,"cnzz":null},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+
+
+  
+<meta name="generator" content="Hexo 8.1.1"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>聪明的小奥</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/images/paper_img/slam_asr_induction_heads/banner.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="Induction Head Origins of SLAM-ASR Speech Recognition Models"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-author" aria-hidden="true"></i>
+        Ao Zhang
+      </span>
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2026-11-20 11:05" pubdate>
+          2026年11月20日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          45 分钟
+        
+      </span>
+    
+
+    
+    
+      
+        <span id="busuanzi_container_page_pv" style="display: none">
+          <i class="iconfont icon-eye" aria-hidden="true"></i>
+          <span id="busuanzi_value_page_pv"></span> 次
+        </span>
+        
+
+      
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">Induction Head Origins of SLAM-ASR Speech Recognition Models</h1>
+            
+              <p id="updated-time" class="note note-info" style="">
+                
+                  
+                    本文最后更新于 2026年11月20日 上午
+                  
+                
+              </p>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="论文信息"><a href="#论文信息" class="headerlink" title="论文信息"></a>论文信息</h2><ul>
+<li><strong>标题</strong>：Induction Head Origins of SLAM-ASR Speech Recognition Models</li>
+<li><strong>作者</strong>：Artem Fedorchenko、Tanel Alumäe</li>
+<li><strong>机构</strong>：Tallinn University of Technology, Estonia（爱沙尼亚塔林理工大学）</li>
+<li><strong>版本</strong>：arXiv:2611.24721v1，2026 年 11 月 18 日提交；论文注明 submitted to ICASSP，但这不等同于已经录用</li>
+<li><strong>论文</strong>：<a target="_blank" rel="noopener" href="https://arxiv.org/abs/2611.24721">arXiv 摘要</a> · <a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2611.24721">PDF</a> · <a target="_blank" rel="noopener" href="https://arxiv.org/src/2611.24721">LaTeX 源码</a></li>
+</ul>
+<blockquote>
+<p><strong>一句话概括</strong>：SLAM-ASR 不更新语言模型也能识别语音，部分原因可能是投影器学会了调用文本预训练中已有的 induction heads；论文通过语音注意力阻断、头对分析和推理时缩放，为这种机制提供了干预证据。</p>
+</blockquote>
+<p>这篇论文不是提出一个更复杂的语音接口，而是在追问：<strong>冻结的语言模型究竟借助什么内部结构，读懂连续语音向量？</strong> 在三个 2B–3B 级解码器中，按纯文本前缀匹配能力选出的 induction heads，对 ASR 的影响明显大于同层随机头；作者还发现三个稳定的注意力头对，其输出近似反向，联合起来可以形成受约束的差分注意力，让有效注意力更集中于已经生成的前一个词。</p>
+<p>工程收益则比机制结论窄得多：放大 induction heads 后，Llama 和 Ministral 的改善主要集中在 <strong>0 dB babble 噪声</strong>下；Gemma 的 WER 没有改善，只是比其他缩放策略恶化得少。因此，这更适合被理解为一项有干预证据的机制研究，以及一个条件有限的推理修正尝试，而不是已经解决噪声鲁棒性或完整解释语音识别因果链的通用方案。</p>
+<!-- more -->
+<h2 id="1-Introduction：小投影器为什么能让冻结-LLM-识别语音？"><a href="#1-Introduction：小投影器为什么能让冻结-LLM-识别语音？" class="headerlink" title="1. Introduction：小投影器为什么能让冻结 LLM 识别语音？"></a>1. Introduction：小投影器为什么能让冻结 LLM 识别语音？</h2><p>Speech LLM 通常把语音编码器输出经过可学习投影器，作为连续 soft prompt 送入语言模型。早期方案往往还会训练语音编码器，或通过 LoRA 等方式更新 LLM；SLAM-ASR 的做法更简单：</p>
+<blockquote>
+<p>冻结语音编码器，冻结语言模型，只训练中间的语音投影器。</p>
+</blockquote>
+<p>但投影器输出不是一串已经识别好的文本 token：</p>
+<ol>
+<li>它是连续向量，不必与词表中的任何 token embedding 重合；</li>
+<li>语音向量序列长度与文本 token 序列长度不同；</li>
+<li>一个词可能对应多个语音向量；</li>
+<li>语言模型仍需处理声学序列与输出文本之间的对齐。</li>
+</ol>
+<p>因此，“LLM 已经掌握语言知识”只是宽泛解释，尚未回答这些知识通过哪些内部计算结构转化为读取语音的能力。本文采用 soft-prompting 视角，把投影后的语音序列视作一种<strong>带噪声、带冗余的转录内容表示</strong>。如果它能被 LLM 原有的上下文读取电路理解，就不一定需要重新训练整个解码器。</p>
+<p>论文围绕三个研究问题展开：</p>
+<ul>
+<li><strong>RQ1</strong>：SLAM-ASR 的识别质量是否依赖冻结 LLM 中已有的 induction heads？</li>
+<li><strong>RQ2</strong>：是否存在能够缓解语音表示冗余所带来注意力噪声的头？</li>
+<li><strong>RQ3</strong>：在推理时放大 induction heads，能否改善噪声条件下的识别？</li>
+</ul>
+<p><img src="/images/paper_figs/slam_asr_induction_heads/slam_asr_architecture.png" srcset="/img/loading.gif" lazyload alt="SLAM-ASR 架构"></p>
+<p><em>图 1：SLAM-ASR 只训练橙色的 speech projector；语音编码器与 LLM 都保持冻结。图源为论文原生矢量图。</em></p>
+<p>本站此前的<a href="/2026/08/18/speech-language-interface-evolution-8-papers/">从离散 Token 到原始频谱：Speech–LLM 接口的八篇论文演进综述</a>关注“语音以什么形式进入 LLM”；本文更进一步，研究连续接口进入冻结 LLM 后，<strong>究竟由哪些注意力电路负责读取</strong>。</p>
+<h2 id="2-Background：前缀匹配与差分注意力"><a href="#2-Background：前缀匹配与差分注意力" class="headerlink" title="2. Background：前缀匹配与差分注意力"></a>2. Background：前缀匹配与差分注意力</h2><h3 id="2-1-Induction-heads：从“见过-A-后面跟-B”到继续生成-B"><a href="#2-1-Induction-heads：从“见过-A-后面跟-B”到继续生成-B" class="headerlink" title="2.1 Induction heads：从“见过 A 后面跟 B”到继续生成 B"></a>2.1 Induction heads：从“见过 A 后面跟 B”到继续生成 B</h3><p>Induction head 常见的工作模式可以写成：</p>
+\[\ldots A\,B\ldots A \longrightarrow B.\]<p>当模型读到第二个 $A$ 时，它找到前面一次 $A$ 后面的 $B$，并提高接下来生成 $B$ 的概率。经典解释中，较早层的 previous-token head 会把“前一个 token 是什么”的信息写入当前位置，因此 $B$ 所在位置的 key 携带“前面是 $A$”的信息，能够被第二个 $A$ 的 query 匹配。</p>
+<p>在 SLAM-ASR 中，作者把语音表示看作“第一次出现”，把已经生成的文本看作“第二次出现”。设语音投影向量为 $\mathcal{V}_{s_j}$，已经生成的文本 token 表示为 $\mathcal{V}_{h_i}$，论文直觉是某个词的多个语音向量可能在功能上近似对应文本表示：</p>
+\[\mathcal{V}_{s_1},\mathcal{V}_{s_2}\approx\mathcal{V}_{h_1}.\]<p>当模型处于已生成 token $\mathcal{V}_{h_i}$ 的位置、准备预测 $\mathcal{V}_{h_{i+1}}$ 时，induction head 可以关注语音序列中对应于<strong>下一个待生成词</strong>的部分。这里的“近似”是机制解释，不是逐向量几何等式，也不意味着投影器输出被约束在词表 embedding 上。</p>
+<h3 id="2-2-Differential-attention：减去共同的无关注意力"><a href="#2-2-Differential-attention：减去共同的无关注意力" class="headerlink" title="2.2 Differential attention：减去共同的无关注意力"></a>2.2 Differential attention：减去共同的无关注意力</h3><p>标准 softmax 注意力会给无关位置分配非零权重。Differential attention 用两张注意力图相减，压低两者共同关注的背景：</p>
+\[\left[
+\operatorname{softmax}\left(\frac{\mathbf{Q}_1\mathbf{K}_1^\top}{\sqrt d}\right)
+-\lambda\operatorname{softmax}\left(\frac{\mathbf{Q}_2\mathbf{K}_2^\top}{\sqrt d}\right)
+\right]\mathbf{V}.\]<p>语音接口尤其容易遇到冗余：一个词跨越多个语音 embedding，语言模型需要面对的 key 数量通常多于直接输入文本转录时的数量。本文没有给现成 LLM 安装新的 Differential Transformer 模块，而是研究：<strong>普通预训练 LLM 内部的两个头，能否通过输出方向相反，自发形成类似效果？</strong></p>
+<p>需要区分两类结构：induction heads 主要关注<strong>下一个待生成词</strong>对应的语音区域；论文找到的噪声抵消头对，则使有效注意力集中于<strong>前一个已生成词</strong>对应的语音区域。</p>
+<p><img src="/images/paper_figs/slam_asr_induction_heads/induction_and_noise_cancelling_heads.png" srcset="/img/loading.gif" lazyload alt="Induction head 与注意力噪声抵消头对"></p>
+<p><em>图 2：左下为 induction head 对下一词语音区域的关注；右下为同层头对通过有效注意力减法，集中到前一已生成词的语音区域。图源为论文原生矢量图。</em></p>
+<h2 id="3-Methodology：从定位、阻断到推理干预"><a href="#3-Methodology：从定位、阻断到推理干预" class="headerlink" title="3. Methodology：从定位、阻断到推理干预"></a>3. Methodology：从定位、阻断到推理干预</h2><h3 id="3-1-用纯文本前缀匹配定位-induction-heads"><a href="#3-1-用纯文本前缀匹配定位-induction-heads" class="headerlink" title="3.1 用纯文本前缀匹配定位 induction heads"></a>3.1 用纯文本前缀匹配定位 induction heads</h3><p>记 $(l,h)$ 为第 $l$ 层第 $h$ 个注意力头，$t,j$ 为 query/key 位置，$S$ 为语音投影向量在输入序列中的位置集合。注意力权重为：</p>
+\[a_{t,j}^{l,h}=\operatorname{softmax}_{j\le t}\left(\frac{(q_t^{l,h})^\top k_j^{l,h}}{\sqrt d}\right).\]<p>作者构造两遍完全相同的随机 token 序列：</p>
+\[x=(\mathrm{BOS},r_1,\ldots,r_N,r_1,\ldots,r_N),\qquad N=50,\]<p>其中 $r_i$ 从词表均匀采样。按照论文的索引方式，第二次出现 $r_i$ 时，检查该位置是否关注第一次出现 $r_i$ 后面的 token，由此前缀匹配分数为：</p>
+\[\mathrm{PM}(l,h)=\frac{1}{N-1}\sum_{t=N+1}^{2N-1}a_{t,t-N+1}^{l,h}.\]<p>最终分数在 <strong>40 条随机序列</strong>上取平均，按 $\mathrm{PM}$ 排名最高的 $k$ 个头组成 $\mathcal{C}_k$。这一指标直接度量前缀匹配行为，但没有逐头重建“前缀匹配—复制—输出”的完整电路。</p>
+<p>随后进入语音干预。作者把选中头指向语音位置的 attention logits 设为：</p>
+\[\text{attention logit}_{t,j}^{l,h}\leftarrow-\infty,\qquad j\in S.\]<p>这不是删除整个头，而是禁止该头读取语音 embedding；softmax 会把注意力重新分配到其余上下文。作者比较阻断 $\mathcal C_k$ 与阻断同层、等量随机头后的 WER。头的筛选来自纯文本任务，作用测试来自语音任务，同层随机对照又部分排除了“只是这些层重要”的解释。</p>
+<h3 id="3-2-两个普通注意力头如何近似相减？"><a href="#3-2-两个普通注意力头如何近似相减？" class="headerlink" title="3.2 两个普通注意力头如何近似相减？"></a>3.2 两个普通注意力头如何近似相减？</h3><p>省略层索引，单头输出为：</p>
+\[o_t^h=W_O^h\sum_{j\le t}a_{t,j}^h v_j^h.\]<p>作者先选择：</p>
+<ul>
+<li>$h_1$：阻断其语音注意力后，loss 增加最大的头；</li>
+<li>$h_2$：同层中与 $h_1$ 输出方向最相反的头。</li>
+</ul>
+<p>候选头对还需满足：两个头平均至少把一半注意力放在 $S$ 上，且 $h_2$ 与 $h_1$ 的反向程度明显强于该层其他头。找到的头对都属于同一 GQA key/value 组，因此：</p>
+\[k_j^{h_1}=k_j^{h_2},\qquad v_j^{h_1}=v_j^{h_2}=v_j.\]<p>令 $o_t^{h,S}$ 表示只保留来自语音位置的输出，则有精确恒等式：</p>
+\[o_t^{h_1,S}+o_t^{h_2,S}
+=\sum_{\substack{j\in S\\j\le t}}
+\left(a_{t,j}^{h_1}W_O^{h_1}+a_{t,j}^{h_2}W_O^{h_2}\right)v_j.\]<p>但整体输出反向，并不自动意味着注意力图可以相减。作者还引入关键近似：</p>
+\[W_O^{h_2}v_j\approx-\lambda W_O^{h_1}v_j,\]<p>其中缩放系数通过最小二乘拟合：</p>
+\[\lambda=\operatorname*{arg\,min}_{\lambda'}\sum_j
+\left\|W_O^{h_2}v_j+\lambda'W_O^{h_1}v_j\right\|^2.\]<p>于是：</p>
+\[o_t^{h_1,S}+o_t^{h_2,S}
+\approx W_O^{h_1}\sum_{\substack{j\in S\\j\le t}}
+\left(a_{t,j}^{h_1}-\lambda a_{t,j}^{h_2}\right)v_j,\]<p>对应有效注意力：</p>
+\[A^{\mathrm{eff}}=A^{h_1}-\lambda A^{h_2}.\]<p>它与完整 Differential Transformer 不同：两头共享 key；$\lambda$ 来自已有输出投影关系；没有额外逐头归一化；有效注意力可以为负，也不必求和为 1。因此，“受约束的差分注意力”比“发现了完整差分注意力模块”更准确。</p>
+<p>令 $F_t$ 为与前一个已生成词对齐的语音位置，作者用下式衡量正有效注意力的锐度：</p>
+\[\rho(A)=
+\frac{\sum_{t\in T}\sum_{j\in F_t}[A_{t,j}]_+}
+{\sum_{t\in T}\sum_{j\in S}[A_{t,j}]_+},
+\qquad[x]_+=\max(x,0).\]<p>$\rho$ 越高，正注意力越集中到前一个词对应的语音区域；它不等于全部有符号输出贡献，也不直接等于识别准确率。</p>
+<h3 id="3-3-推理时放大-induction-heads"><a href="#3-3-推理时放大-induction-heads" class="headerlink" title="3.3 推理时放大 induction heads"></a>3.3 推理时放大 induction heads</h3><p>强噪声下，模型可能更多依赖语言先验继续生成，表现为额外插词。论文定义插入率：</p>
+\[I=\frac{N_{\mathrm{ins}}}{N_{\mathrm{ref}}}\times100\%.\]<p>对每个选中头，在所有位置执行：</p>
+\[o_t^{l,h}\leftarrow\alpha o_t^{l,h},\qquad(l,h)\in\mathcal C_k,\]<p>固定 $\alpha=1.5$。缩放的是整个头输出，而不是只放大来自语音位置的部分，也不是调整 attention logits。对照包括：不缩放、缩放 $\mathcal C_k$、缩放同层等量随机头，以及缩放这些层中其余所有头。</p>
+<h2 id="4-Experiments：模型、数据、训练与评估口径"><a href="#4-Experiments：模型、数据、训练与评估口径" class="headerlink" title="4. Experiments：模型、数据、训练与评估口径"></a>4. Experiments：模型、数据、训练与评估口径</h2><h3 id="4-1-模型与完整数据流"><a href="#4-1-模型与完整数据流" class="headerlink" title="4.1 模型与完整数据流"></a>4.1 模型与完整数据流</h3><p>三个指令微调解码器分别为：</p>
+<ul>
+<li>Llama 3.2-3B；</li>
+<li>Gemma 2-2B；</li>
+<li>Ministral 3-3B，仅使用文本解码器。</li>
+</ul>
+<p>三者均使用 GQA。语音端统一为 Whisper turbo encoder。每 5 个连续编码器状态拼接，再经过隐藏维度 2048、ReLU 激活的两层 MLP 投影到相应 LLM embedding 空间：</p>
+\[x_{\mathrm{audio}}
+\xrightarrow{E_{\mathrm{frozen}}}(h_1,\ldots,h_T)
+\xrightarrow{\mathrm{concat}\ 5}(c_1,\ldots,c_M)
+\xrightarrow{P_\theta}(z_1,\ldots,z_M),\]\[c_m=[h_{5m-4};h_{5m-3};h_{5m-2};h_{5m-1};h_{5m}],\]\[P_\theta:\mathbb R^{5d_{\mathrm{enc}}}\rightarrow\mathbb R^{2048}\rightarrow\mathbb R^{d_{\mathrm{LLM}}}.\]<p>语音序列末尾追加一个可训练 end-of-speech embedding，初始化自解码器的 end-of-turn token。文本提示固定为 <code>Transcribe the speech:</code>，并套用各解码器 chat template。</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>模块</th>
+<th>状态</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Whisper turbo encoder</td>
+<td>冻结</td>
+</tr>
+<tr>
+<td>两层 MLP speech projector</td>
+<td>训练</td>
+</tr>
+<tr>
+<td>End-of-speech embedding</td>
+<td>训练</td>
+</tr>
+<tr>
+<td>Llama/Gemma/Ministral decoder</td>
+<td>冻结</td>
+</tr>
+<tr>
+<td>Head output scaling</td>
+<td>仅推理时干预</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>论文没有显式给出 projector 训练损失公式，也没有定义“ASR importance”中的 loss 具体形式。结合数据流推断其通常会使用转录 token 的自回归交叉熵是合理的，但这不是论文明确报告的配置，不能当作已核实事实。</p>
+<h3 id="4-2-数据与优化设置"><a href="#4-2-数据与优化设置" class="headerlink" title="4.2 数据与优化设置"></a>4.2 数据与优化设置</h3><ul>
+<li>训练：LibriSpeech <code>train-clean-100</code>；</li>
+<li>训练验证：<code>dev-other</code> 中 500 条；</li>
+<li>最终来源：<code>test-clean</code> 与 <code>test-other</code>；</li>
+<li>$h_1$ 选择：<code>dev-clean</code> 中 200 条。</li>
+</ul>
+<p>优化设置：AdamW，学习率 $10^{-4}$，weight decay 为 0，1,000 步 warm-up 后保持常数学习率；batch size 32，最多训练 5 epochs，每 500 步验证，early stopping patience 为 3。每个 decoder 训练 3 个随机种子。</p>
+<p>论文没有报告具体 seed、梯度累积、optimizer betas、梯度裁剪、最终训练步数、硬件、训练时长、精确 checkpoint revision、WER 规范化与 scorer 配置。</p>
+<h3 id="4-3-三种评估口径"><a href="#4-3-三种评估口径" class="headerlink" title="4.3 三种评估口径"></a>4.3 三种评估口径</h3><ol>
+<li><strong>重要头选择</strong>：200 条 <code>dev-clean</code>，以阻断后的 loss 增量选择 $h_1$。</li>
+<li><strong>阻断与头对分析</strong>：300 条 <code>test-clean</code>；Montreal Forced Aligner 提供词边界；每个语音 embedding 覆盖 100 ms，并按时间中心归入词；ASR importance、头对指标和注意力峰值使用 teacher forcing；$k=10$。</li>
+<li><strong>推理缩放</strong>：另取不与阻断样本重叠的 400 条 <code>test-clean</code> 与 400 条 <code>test-other</code>；$\alpha=1.5$；选择约 3% 的头，即 Llama 20 个、Gemma 6 个、Ministral 25 个。音频条件包括 clean、babble/white noise 各 5/0 dB SNR。</li>
+</ol>
+<p>注意力机制分析主要观察给定正确生成历史时的计算，不能直接等同于自由生成出错后的完整注意力轨迹。</p>
+<h2 id="5-Results：三个研究问题分别得到了什么答案？"><a href="#5-Results：三个研究问题分别得到了什么答案？" class="headerlink" title="5. Results：三个研究问题分别得到了什么答案？"></a>5. Results：三个研究问题分别得到了什么答案？</h2><h3 id="5-1-RQ1：文本-induction-heads-对语音识别具有功能重要性"><a href="#5-1-RQ1：文本-induction-heads-对语音识别具有功能重要性" class="headerlink" title="5.1 RQ1：文本 induction heads 对语音识别具有功能重要性"></a>5.1 RQ1：文本 induction heads 对语音识别具有功能重要性</h3><p><strong>表 1：阻断 top-10 induction heads 对语音位置的注意力后，WER（%）变化。范围来自 3 个种子。</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Decoder</th>
+<th style="text-align:right">Intact</th>
+<th style="text-align:right">$\mathcal C_{10}$ blocked</th>
+<th style="text-align:right">Random blocked</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Llama</td>
+<td style="text-align:right">3.3–3.6</td>
+<td style="text-align:right"><strong>7.1–8.3</strong></td>
+<td style="text-align:right">3.3–3.6</td>
+</tr>
+<tr>
+<td>Gemma</td>
+<td style="text-align:right">3.8–4.0</td>
+<td style="text-align:right"><strong>23.2–53.5</strong></td>
+<td style="text-align:right">4.0–4.2</td>
+</tr>
+<tr>
+<td>Ministral</td>
+<td style="text-align:right">3.0–3.4</td>
+<td style="text-align:right"><strong>3.9–5.5</strong></td>
+<td style="text-align:right">3.1–3.4</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>三个模型中，阻断 induction heads 都比阻断同层随机头更具破坏性。Gemma 变化尤其大，但横向比较必须注意：10 个头约占 Gemma 总头数 5%，在 Llama 和 Ministral 中仅约 1.5% 和 1.2%，而且 Gemma 的种子跨度最大。</p>
+<p>进一步地，在 ASR importance 最高的 3% 头中，$\mathcal C_k$ 的占比分别为 Llama 40%、Gemma 33%、Ministral 40%，同层随机头仅为 4%–9%。在语音位置内部，$\mathcal C_k$ 的注意力峰值落在正在生成词上的 token 比例为 64%–76%，而“语音注意力总质量最高”的等量头只有 45%–56%。这说明“看了很多语音”与“看向正确语音内容”不是一回事。</p>
+<h3 id="5-2-RQ2：三个模型都找到稳定的噪声抵消头对"><a href="#5-2-RQ2：三个模型都找到稳定的噪声抵消头对" class="headerlink" title="5.2 RQ2：三个模型都找到稳定的噪声抵消头对"></a>5.2 RQ2：三个模型都找到稳定的噪声抵消头对</h3><p><strong>表 2：头对编号与有效注意力。每个模型的头对在三个种子中相同。</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Decoder</th>
+<th>Layer: $h_1,h_2$</th>
+<th style="text-align:right">$-\cos$</th>
+<th style="text-align:right">$\lambda$</th>
+<th style="text-align:right">$\rho(h_1)$</th>
+<th style="text-align:right">$\rho(\mathrm{eff.})$</th>
+<th style="text-align:right">WER blocked $h_1$</th>
+<th style="text-align:right">WER blocked both</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Llama</td>
+<td>8: H8, H6</td>
+<td style="text-align:right">0.72–0.74</td>
+<td style="text-align:right">0.78–0.82</td>
+<td style="text-align:right">0.52–0.57</td>
+<td style="text-align:right"><strong>0.64–0.67</strong></td>
+<td style="text-align:right">45–56</td>
+<td style="text-align:right">3.8–7.2</td>
+</tr>
+<tr>
+<td>Gemma</td>
+<td>8: H1, H0</td>
+<td style="text-align:right">0.66–0.67</td>
+<td style="text-align:right">0.92–0.94</td>
+<td style="text-align:right">0.74–0.76</td>
+<td style="text-align:right"><strong>0.80–0.81</strong></td>
+<td style="text-align:right">58–149</td>
+<td style="text-align:right">15–39</td>
+</tr>
+<tr>
+<td>Ministral</td>
+<td>14: H0, H2</td>
+<td style="text-align:right">0.78–0.79</td>
+<td style="text-align:right">0.73–0.74</td>
+<td style="text-align:right">0.78–0.80</td>
+<td style="text-align:right"><strong>0.80–0.81</strong></td>
+<td style="text-align:right">5.1–13.8</td>
+<td style="text-align:right">3.3–4.2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>$-\cos$ 为逐语音 value 的输出投影中位负余弦，而不是选头时的整体头输出平均余弦。其绝对值没有接近 1，因此反向关系有支持但并非精确等式。</p>
+<p>最重要的是阻断结果的非加性：<strong>只阻断 $h_1$，往往比把 $h_1$ 与 $h_2$ 一起阻断更糟。</strong> 例如 Llama 单独阻断 $h_1$ 后 WER 达到 45%–56%，同时阻断两个头却回到 3.8%–7.2%。这与“只移除一侧，另一侧原本应被抵消的分量留了下来”的解释一致。</p>
+<p>但有效注意力更尖锐，不等于识别对该头对的总依赖更大。Llama 与 Ministral 同时阻断头对的代价相对有限，Gemma 则仍明显受损。表 2 更直接描述“这对头如何联合读取语音”，而不是对总识别能力做线性分解。</p>
+<h3 id="5-3-RQ3：缩放收益集中在强-babble-噪声"><a href="#5-3-RQ3：缩放收益集中在强-babble-噪声" class="headerlink" title="5.3 RQ3：缩放收益集中在强 babble 噪声"></a>5.3 RQ3：缩放收益集中在强 babble 噪声</h3><p><strong>表 3：头输出乘以 $\alpha=1.5$ 后的 WER 与插入率 $I$，单位均为 %。Noisy mean 是 babble/white noise × 5/0 dB 四个条件的均值。</strong></p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th>Decoder</th>
+<th>Scaled</th>
+<th style="text-align:right">Clean WER</th>
+<th style="text-align:right">Babble 0 dB WER</th>
+<th style="text-align:right">Babble 0 dB $I$</th>
+<th style="text-align:right">Noisy mean WER</th>
+<th style="text-align:right">Noisy mean $I$</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Llama</td>
+<td>none</td>
+<td style="text-align:right">4.6</td>
+<td style="text-align:right">89.0</td>
+<td style="text-align:right">40.4</td>
+<td style="text-align:right">41.9</td>
+<td style="text-align:right">15.0</td>
+</tr>
+<tr>
+<td>Llama</td>
+<td>$\mathcal C_k$</td>
+<td style="text-align:right">4.7</td>
+<td style="text-align:right"><strong>81.8</strong></td>
+<td style="text-align:right"><strong>32.1</strong></td>
+<td style="text-align:right"><strong>39.9</strong></td>
+<td style="text-align:right"><strong>12.4</strong></td>
+</tr>
+<tr>
+<td>Llama</td>
+<td>random</td>
+<td style="text-align:right">4.5</td>
+<td style="text-align:right">89.9</td>
+<td style="text-align:right">41.3</td>
+<td style="text-align:right">42.4</td>
+<td style="text-align:right">15.5</td>
+</tr>
+<tr>
+<td>Llama</td>
+<td>same layers</td>
+<td style="text-align:right">4.8</td>
+<td style="text-align:right">111.8</td>
+<td style="text-align:right">63.6</td>
+<td style="text-align:right">50.8</td>
+<td style="text-align:right">23.8</td>
+</tr>
+<tr>
+<td>Gemma</td>
+<td>none</td>
+<td style="text-align:right">4.7</td>
+<td style="text-align:right"><strong>148.6</strong></td>
+<td style="text-align:right">94.9</td>
+<td style="text-align:right"><strong>66.9</strong></td>
+<td style="text-align:right">37.9</td>
+</tr>
+<tr>
+<td>Gemma</td>
+<td>$\mathcal C_k$</td>
+<td style="text-align:right">4.8</td>
+<td style="text-align:right">150.0</td>
+<td style="text-align:right"><strong>94.7</strong></td>
+<td style="text-align:right">67.4</td>
+<td style="text-align:right"><strong>37.7</strong></td>
+</tr>
+<tr>
+<td>Gemma</td>
+<td>random</td>
+<td style="text-align:right">4.8</td>
+<td style="text-align:right">153.6</td>
+<td style="text-align:right">99.0</td>
+<td style="text-align:right">70.0</td>
+<td style="text-align:right">40.7</td>
+</tr>
+<tr>
+<td>Gemma</td>
+<td>same layers</td>
+<td style="text-align:right">5.2</td>
+<td style="text-align:right">156.2</td>
+<td style="text-align:right">101.5</td>
+<td style="text-align:right">72.0</td>
+<td style="text-align:right">42.6</td>
+</tr>
+<tr>
+<td>Ministral</td>
+<td>none</td>
+<td style="text-align:right">4.2</td>
+<td style="text-align:right">86.0</td>
+<td style="text-align:right">39.3</td>
+<td style="text-align:right">39.6</td>
+<td style="text-align:right">14.1</td>
+</tr>
+<tr>
+<td>Ministral</td>
+<td>$\mathcal C_k$</td>
+<td style="text-align:right">4.4</td>
+<td style="text-align:right"><strong>81.8</strong></td>
+<td style="text-align:right"><strong>34.4</strong></td>
+<td style="text-align:right"><strong>38.5</strong></td>
+<td style="text-align:right"><strong>12.6</strong></td>
+</tr>
+<tr>
+<td>Ministral</td>
+<td>random</td>
+<td style="text-align:right">4.3</td>
+<td style="text-align:right">86.0</td>
+<td style="text-align:right">39.6</td>
+<td style="text-align:right">39.9</td>
+<td style="text-align:right">14.4</td>
+</tr>
+<tr>
+<td>Ministral</td>
+<td>same layers</td>
+<td style="text-align:right">4.6</td>
+<td style="text-align:right">94.0</td>
+<td style="text-align:right">45.6</td>
+<td style="text-align:right">43.4</td>
+<td style="text-align:right">16.6</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>相对不缩放：</p>
+<ul>
+<li><strong>Llama</strong>：noisy WER 41.9 → 39.9，插入率 15.0 → 12.4；babble 0 dB WER 下降 7.2 个百分点。</li>
+<li><strong>Ministral</strong>：noisy WER 39.6 → 38.5，插入率 14.1 → 12.6；babble 0 dB WER 下降 4.2 个百分点。</li>
+<li><strong>Gemma</strong>：noisy WER 66.9 → 67.4，反而上升 0.5；插入率只下降 0.2。</li>
+</ul>
+<p>因此 Gemma 的准确结论是：缩放 induction heads <strong>比其他缩放策略更好，但不如不缩放的 WER 基线</strong>。插入率略降也不能单独推出总体识别改善。</p>
+<p>相对同层随机头，$\mathcal C_k$ 的 noisy-mean WER 分别低 2.5、2.6、1.4 个百分点；相对放大同层其余所有头，分别低 10.9、4.6、4.9。这支持“选哪些头很重要”，而不是简单放大这些层就有效。</p>
+<p>论文明确指出，Llama 与 Ministral 相对 baseline 的改善几乎都来自 <strong>babble 0 dB</strong>；其余噪声条件 WER 变化均不足 1 点。Clean WER 最多增加 0.2 点，但没有统计区间。</p>
+<h2 id="6-Discussion：论文解释了什么，又没有解释什么？"><a href="#6-Discussion：论文解释了什么，又没有解释什么？" class="headerlink" title="6. Discussion：论文解释了什么，又没有解释什么？"></a>6. Discussion：论文解释了什么，又没有解释什么？</h2><h3 id="6-1-从“映射到-embedding-空间”转向“让已有电路能够读取”"><a href="#6-1-从“映射到-embedding-空间”转向“让已有电路能够读取”" class="headerlink" title="6.1 从“映射到 embedding 空间”转向“让已有电路能够读取”"></a>6.1 从“映射到 embedding 空间”转向“让已有电路能够读取”</h3><p>本文带来的视角变化是：投影器的目标未必是逐帧复刻文本 token embedding，而可能是把语音变成<strong>现有上下文读取电路可使用的连续提示</strong>。证据链包括：头来自冻结文本模型；定位依据是纯文本前缀匹配；阻断其读取语音会损害识别；teacher forcing 下它们更常关注正确词；部分模型中放大这些头还能减少极强噪声下的插入。</p>
+<p>但这不是完整因果链。论文没有系统追踪 previous-token heads 如何与 induction heads 协作，也没有通过路径级干预重建从声学状态到输出 token 的全部关键步骤。因此更合适的判断是：作者识别了跨模态读取中的重要现有机制，而不是画出了 SLAM-ASR 的完整电路图。</p>
+<h3 id="6-2-差分注意力是已有头之间的关系"><a href="#6-2-差分注意力是已有头之间的关系" class="headerlink" title="6.2 差分注意力是已有头之间的关系"></a>6.2 差分注意力是已有头之间的关系</h3><p>这些头对说明，即使模型没有显式差分注意力架构，两个共享 key/value、输出投影近似相反的头，也可能在特定输入分布上实现相似运算。它与文本模型中的 negative heads、copy-suppression heads 有联系，但不能直接等同：相关文本研究常讨论对被复制 token 的 logits 进行抑制，而本文讨论的是共享 value 的两个头在反向投影近似下形成<strong>注意力图层面的减法</strong>。</p>
+<h3 id="6-3-“只训练高-PM-头”尚未经过实验"><a href="#6-3-“只训练高-PM-头”尚未经过实验" class="headerlink" title="6.3 “只训练高 PM 头”尚未经过实验"></a>6.3 “只训练高 PM 头”尚未经过实验</h3><p>论文讨论部分提出：若 ASR 依赖少量已有头，联合适配解码器时能否只更新 PM 最高的头，而不是更新整个 LLM？这是未来工作，不是已经验证的参数高效训练方案。</p>
+<h2 id="7-成熟度、复现边界与限制"><a href="#7-成熟度、复现边界与限制" class="headerlink" title="7. 成熟度、复现边界与限制"></a>7. 成熟度、复现边界与限制</h2><p>这是一篇仅 5 页、无附录的 arXiv v1。源码使用 ICASSP 2027 模板，但模板不能证明已经录用。三个研究问题都有对应实验，正文没有 TODO/FIXME 或占位表格；源码中的两处 TODO 位于参考文献数据库，涉及卷页与 DOI/页码注释，不是核心实验占位。</p>
+<p>主要限制包括：</p>
+<ol>
+<li><strong>范围有限</strong>：三个 2B–3B 英文解码器、单一 Whisper turbo encoder、LibriSpeech 英语朗读语音、100 小时 projector 训练；没有多语言、真实对话、口音、长音频或更大模型验证。</li>
+<li><strong>噪声有限</strong>：仅 babble 与 white noise 的 5/0 dB；没有真实场景噪声、混响、设备失真，也没有披露噪声素材与混音细节。</li>
+<li><strong>缩放超参未消融</strong>：固定 $\alpha=1.5$、约 3% 的头，没有 $\alpha$ 与 $k$ 敏感性曲线，不能视作跨模型最优设置。</li>
+<li><strong>分析依赖口径</strong>：词级对齐依赖 Montreal Forced Aligner；100 ms embedding 按时间中心分词；机制统计使用 teacher forcing；$\rho$ 只统计有效注意力的正值部分。</li>
+<li><strong>统计与工程报告不足</strong>：没有置信区间、显著性检验、逐 seed 数值、推理延迟、吞吐、显存、训练成本或 hook 开销。</li>
+<li><strong>复现信息不完整</strong>：没有实验代码、模型 checkpoint/revision、具体样本 ID、seed 值、完整训练/解码配置、WER 正规化设置。</li>
+<li><strong>表间口径不同</strong>：表 1 intact WER 来自 300 条 test-clean、报告三种子范围；表 3 clean 合并 400 条 test-clean 与 400 条 test-other、报告三种子均值。数值不同不构成直接矛盾，但后者未解释聚合方式。</li>
+</ol>
+<h2 id="8-Conclusion：识别能力可能来自旧电路，但干预收益并不普适"><a href="#8-Conclusion：识别能力可能来自旧电路，但干预收益并不普适" class="headerlink" title="8. Conclusion：识别能力可能来自旧电路，但干预收益并不普适"></a>8. Conclusion：识别能力可能来自旧电路，但干预收益并不普适</h2><p>这篇论文把“冻结 LLM 能读懂语音”从经验事实推进到可在注意力头层面检验的问题。可以保留三点结论：</p>
+<ol>
+<li><strong>纯文本前缀匹配选出的 induction heads，在三个 SLAM-ASR 解码器中都承担重要的语音读取功能。</strong> 阻断它们对语音位置的注意力，比阻断同层随机头更具破坏性。</li>
+<li><strong>三个模型都存在稳定的反向输出头对。</strong> 在共享 key/value 和逐 value 近似反向的条件下，它们形成受约束的有效注意力减法，使正注意力更集中于前一个已生成词。</li>
+<li><strong>放大 induction heads 是有条件有效的推理干预。</strong> Llama 与 Ministral 的改善主要出现在 babble 0 dB；Gemma 的 WER 没有改善。</li>
+</ol>
+<p>对语音接口设计而言，值得带走的不是“以后只要放大几个头”，而是一个更基础的问题：</p>
+<blockquote>
+<p>一个接口是否有效，不仅取决于它把输入映射到了什么空间，也取决于目标模型已经拥有怎样的读取机制，以及接口能否让这些机制真正用上输入信息。</p>
+</blockquote>
+<p>本文为这种“复用已有计算结构”的解释提供了实质证据；但从重要头定位，到完整电路重建，再到稳定可靠的鲁棒性改进，仍有明显距离。</p>
+<h2 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h2><ol>
+<li>Artem Fedorchenko, Tanel Alumäe. <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2611.24721">Induction Head Origins of SLAM-ASR Speech Recognition Models</a>. arXiv:2611.24721v1, 2026.</li>
+<li>Ziyang Ma et al. <a target="_blank" rel="noopener" href="https://arxiv.org/abs/2402.08846">An Embarrassingly Simple Approach for LLM with Strong ASR Capacity</a>. 2024.</li>
+<li>Nelson Elhage et al. <a target="_blank" rel="noopener" href="https://transformer-circuits.pub/2021/framework/index.html">A Mathematical Framework for Transformer Circuits</a>. 2021.</li>
+<li>Catherine Olsson et al. <a target="_blank" rel="noopener" href="https://transformer-circuits.pub/2022/in-context-learning-and-induction-heads/index.html">In-context Learning and Induction Heads</a>. 2022.</li>
+<li>Tianzhu Ye et al. <em>Differential Transformer</em>. ICLR, 2025.</li>
+</ol>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E8%AE%BA%E6%96%87%E8%A7%A3%E8%AF%BB/" class="category-chain-item">论文解读</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/ASR/" class="print-no-link">#ASR</a>
+      
+        <a href="/tags/Speech-LLM/" class="print-no-link">#Speech LLM</a>
+      
+        <a href="/tags/SLAM-ASR/" class="print-no-link">#SLAM-ASR</a>
+      
+        <a href="/tags/Induction-Head/" class="print-no-link">#Induction Head</a>
+      
+        <a href="/tags/%E6%9C%BA%E5%88%B6%E5%8F%AF%E8%A7%A3%E9%87%8A%E6%80%A7/" class="print-no-link">#机制可解释性</a>
+      
+        <a href="/tags/Differential-Attention/" class="print-no-link">#Differential Attention</a>
+      
+        <a href="/tags/%E8%AF%AD%E9%9F%B3%E5%B9%BB%E8%A7%89/" class="print-no-link">#语音幻觉</a>
+      
+    </div>
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Induction Head Origins of SLAM-ASR Speech Recognition Models</div>
+      <div>https://smallsmartao.github.io/2026/11/20/2026-11-20-Induction-Head-Origins-of-SLAM-ASR-Speech-Recognition-Models/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ao Zhang</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2026年11月20日</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>更新于</div>
+          <div>2026年11月20日</div>
+        </div>
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2026/11/16/2026-11-16-hy-asr-3-0-technical-report/" title="Hy ASR 3.0 Technical Report">
+                        <span class="hidden-mobile">Hy ASR 3.0 Technical Report</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+  
+  
+    <article id="comments" lazyload>
+      
+
+    </article>
+  
+
+
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+  
+  
+
+
+
+
+
+  <script>
+  Fluid.utils.createScript('https://lib.baomitu.com/mermaid/8.14.0/mermaid.min.js', function() {
+    mermaid.initialize({"theme":"default"});
+
+    Fluid.utils.listenDOMLoaded(function() {
+      Fluid.events.registerRefreshCallback(function() {
+        if ('mermaid' in window) {
+          mermaid.init();
+        }
+      });
+    });
+  });
+</script>
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+    <div class="statistics">
+  
+  
+
+  
+    
+      <span id="busuanzi_container_site_pv" style="display: none">
+        总访问量 
+        <span id="busuanzi_value_site_pv"></span>
+         次
+      </span>
+    
+    
+      <span id="busuanzi_container_site_uv" style="display: none">
+        总访客数 
+        <span id="busuanzi_value_site_uv"></span>
+         人
+      </span>
+    
+    
+
+  
+
+</div>
+
+  
+  
+    <!-- 备案信息 ICP for China -->
+    <div class="beian">
+  <span>
+    <a href="http://beian.miit.gov.cn/" target="_blank" rel="nofollow noopener">
+      京ICP证123456号
+    </a>
+  </span>
+  
+    
+      <span>
+        <a
+          href="http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=12345678"
+          rel="nofollow noopener"
+          class="beian-police"
+          target="_blank"
+        >
+          
+            <span style="visibility: hidden; width: 0">|</span>
+            <img src="/img/police_beian.png" srcset="/img/loading.gif" lazyload alt="police-icon"/>
+          
+          <span>京公网安备12345678号</span>
+        </a>
+      </span>
+    
+  
+</div>
+
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  
+      <script>
+        if (!window.MathJax) {
+          window.MathJax = {
+            tex    : {
+              inlineMath: { '[+]': [['$', '$']] }
+            },
+            loader : {
+              load: ['ui/lazy']
+            },
+            options: {
+              renderActions: {
+                insertedScript: [200, () => {
+                  document.querySelectorAll('mjx-container').forEach(node => {
+                    let target = node.parentNode;
+                    if (target.nodeName.toLowerCase() === 'li') {
+                      target.parentNode.classList.add('has-jax');
+                    }
+                  });
+                }, '', false]
+              }
+            }
+          };
+        } else {
+          MathJax.startup.document.state(0);
+          MathJax.texReset();
+          MathJax.typeset();
+          MathJax.typesetPromise();
+        }
+
+        Fluid.events.registerRefreshCallback(function() {
+          if ('MathJax' in window && MathJax.startup.document && typeof MathJax.startup.document.state === 'function') {
+            MathJax.startup.document.state(0);
+            MathJax.texReset();
+            MathJax.typeset();
+            MathJax.typesetPromise();
+          }
+        });
+      </script>
+    
+
+  <script  src="https://lib.baomitu.com/mathjax/3.2.1/es5/tex-mml-chtml.js" ></script>
+
+  <script  src="/js/local-search.js" ></script>
+
+  <script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js" ></script>
+
+
+
+
+  
+<script src="/js/home-video-banner.js"></script>
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
